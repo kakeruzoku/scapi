@@ -1,2 +1,9 @@
-# scratchtools
-ScratchAttachより高機能を目指して。
+# scratch.py
+[ScratchAttach](https://github.com/TimMcCool/scratchattach )より高機能を目指して。
+
+特徴
+- `async` `await` を使ったAPI
+- 型ヒント
+
+# インストール
+`pip install -U discord.py`
