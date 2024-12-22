@@ -4,9 +4,14 @@ from scapi import __version__
 with open('README.md', 'r', encoding='utf-8') as fp:
     readme = fp.read()
 
+with open('scapi/__init__.py', 'r', encoding='utf-8') as fp:
+    init = fp.read()
+
+var = init.replace(" ","").split("__version__=\"")[1].split("\"")[0]
+
 setup(
     name="scapi",
-    version=__version__,
+    version=var,
     description="ScratchAttachより高機能をめざして。",
     long_description=readme,
     long_description_content_type='text/markdown',
