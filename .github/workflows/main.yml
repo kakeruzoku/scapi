@@ -22,11 +22,11 @@ jobs:
       run: |
         python -m venv venv  # 仮想環境の作成
         source venv/bin/activate  # 仮想環境の有効化
-        python -m pip install -r requirements.txt --user
+        python -m pip install -r requirements.txt
     - name: Install pypa/build
       run: |
         source venv/bin/activate  # 仮想環境の有効化
-        python -m pip install build --user
+        python -m pip install build
     - name: Build a binary wheel and a source tarball
       run: |
         source venv/bin/activate  # 仮想環境の有効化
