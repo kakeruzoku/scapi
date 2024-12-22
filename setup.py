@@ -1,11 +1,12 @@
 from setuptools import setup
+from scapi import __version__
 
 with open('README.md', 'r', encoding='utf-8') as fp:
     readme = fp.read()
 
 setup(
     name="scapi",
-    version="0.0.2",
+    version=__version__,
     description="ScratchAttachより高機能をめざして。",
     long_description=readme,
     long_description_content_type='text/markdown',
@@ -15,7 +16,6 @@ setup(
     maintainer_email="kakeruzoku@gmail.com",
     url="https://github.com/kakeruzoku/scapi",
     download_url="https://github.com/kakeruzoku/scapi",
-    packages=["scapi"],
     classifiers=[
         "Development Status :: 5 - Production/Stable",
         "Intended Audience :: Developers",
