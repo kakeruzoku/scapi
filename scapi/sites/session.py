@@ -1,11 +1,12 @@
 import datetime
 import re
 import warnings
-import others.other_api as other_api
-import others.common as common
-import others.error as exception
-from sites import base
-from sites import user,project,studio
+
+from ..others import other_api
+from ..others import common
+from ..others import error as exception
+from . import base
+from . import user,project,studio
 
 
 class SessionStatus:

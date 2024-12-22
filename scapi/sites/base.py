@@ -2,14 +2,14 @@ from abc import ABC, abstractmethod
 from typing import TYPE_CHECKING, Any, AsyncGenerator, Literal
 import random
 
-import others.common as common
-from others import error as exception
+from ..others import common as common
+from ..others import error as exception
 
 if TYPE_CHECKING:
-    from sites.session import Session as Scratch_Session
-    from sites.comment import Comment
-    from sites.studio import Studio
-    from sites.project import Project
+    from .session import Session as Scratch_Session
+    from .comment import Comment
+    from .studio import Studio
+    from .project import Project
 
 class _BaseSiteAPI(ABC):
     raise_class = exception.ObjectNotFound
@@ -128,7 +128,7 @@ async def get_comment_iterator(
         max_limit=40,
         add_params:dict={},
     ) -> AsyncGenerator["Comment",None]:
-    from sites.comment import Comment
+    from .comment import Comment
     for i in range(offset,offset+limit,max_limit):
         l = await common.api_iterative(
             plece.ClientSession,url,

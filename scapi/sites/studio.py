@@ -3,14 +3,14 @@ import random
 from typing import AsyncGenerator, TYPE_CHECKING
 
 
-import others.common as common
-import others.error as exception
-import sites.base as base
-from sites.comment import Comment
+from ..others import common as common
+from ..others import error as exception
+from . import base
+from .comment import Comment
 
 if TYPE_CHECKING:
-    from sites.session import Session
-    from sites.user import User
+    from .session import Session
+    from .user import User
 
 class Studio(base._BaseSiteAPI):
     raise_class = exception.StudioNotFound

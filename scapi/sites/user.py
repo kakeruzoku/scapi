@@ -2,15 +2,15 @@ import datetime
 import random
 from typing import AsyncGenerator, TypedDict, TYPE_CHECKING
 
-from others import common
-import others.error as exception
-import sites.base as base
-import sites.project as project
-import sites.comment as comment
+from ..others import common
+from ..others import error as exception
+from . import base
+from . import project
+from . import comment
 import bs4
 
 if TYPE_CHECKING:
-    from sites.session import Session
+    from .session import Session
     
 
 class User(base._BaseSiteAPI):
