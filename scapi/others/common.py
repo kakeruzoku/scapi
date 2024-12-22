@@ -1,7 +1,7 @@
 import datetime
 import aiohttp
 from multidict import CIMultiDictProxy, CIMultiDict
-from others import error as exceptions
+from . import error as exceptions
 import json
 
 

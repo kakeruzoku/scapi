@@ -3,15 +3,15 @@ import random
 from typing import AsyncGenerator, Literal, TypedDict, TYPE_CHECKING, overload
 import warnings
 
-import others.common as common
-import others.error as exception
-import sites.base as base
+from ..others import  common
+from ..others import error as exception
+from . import base
 
 if TYPE_CHECKING:
-    from sites.session import Session
-    from sites.user import User
-    from sites.studio import Studio
-    from sites.project import Project
+    from .session import Session
+    from .user import User
+    from .studio import Studio
+    from .project import Project
 
 class CommentData(TypedDict):
     place:"Project|Studio"
@@ -30,9 +30,9 @@ class Comment(base._BaseSiteAPI):
         scratch_session:"Session|None"=None,
         **entries
     ) -> None:
-        from sites.user import User
-        from sites.studio import Studio
-        from sites.project import Project
+        from .user import User
+        from .studio import Studio
+        from .project import Project
         
         self.place:Project|Studio = data.get("place")
         self.id:int = data.get("id")
@@ -76,7 +76,7 @@ class Comment(base._BaseSiteAPI):
             raise exception.NoPermission
 
     def _update_from_dict(self, data:dict) -> None:
-        from sites.user import User
+        from .user import User
         self.parent_id = data.get("parent_id",self.parent_id)
         self.commentee_id = data.get("commentee_id",self.commentee_id)
         self.content = data.get("content",self.content)

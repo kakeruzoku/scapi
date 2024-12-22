@@ -3,15 +3,15 @@ import random
 from typing import AsyncGenerator, TYPE_CHECKING
 
 
-import others.common as common
-import others.error as exception
-import sites.base as base
-from sites.comment import Comment
+from ..others import common
+from ..others import error as exception
+from . import base
+from .comment import Comment
 
 if TYPE_CHECKING:
-    from sites.session import Session
-    from sites.user import User
-    from sites.studio import Studio
+    from .session import Session
+    from .user import User
+    from .studio import Studio
 
 class Project(base._BaseSiteAPI):
     raise_class = exception.ObjectNotFound
@@ -51,7 +51,7 @@ class Project(base._BaseSiteAPI):
         self.remix_root:int|None = None
 
     def _update_from_dict(self, data:dict) -> None:
-        from sites.user import User
+        from .user import User
         _author:dict = data.get("author",{})
         self.author = User(self.ClientSession,_author.get("username",None),self.Session)
         self.author._update_from_dict(_author)
@@ -137,7 +137,7 @@ class Project(base._BaseSiteAPI):
     def studios(self, *, limit=40, offset=0) -> AsyncGenerator["Studio",None]:
         common.no_data_checker(self.author)
         common.no_data_checker(self.author.username)
-        from sites.studio import Studio
+        from .studio import Studio
         return base.get_object_iterator(
             self.ClientSession,f"https://api.scratch.mit.edu/users/{self.author.username}/projects/{self.id}/studios",
             None,Studio,self.Session,
@@ -187,7 +187,7 @@ def create_Partial_Project(project_id:int,author_name:"str|None"=None,*,ClientSe
     ClientSession = common.create_ClientSession(ClientSession)
     _project = Project(ClientSession,project_id)
     if author_name is not None:
-        from sites.user import create_Partial_User
+        from .user import create_Partial_User
         _project.author = create_Partial_User(author_name,ClientSession=ClientSession)
     return _project
 

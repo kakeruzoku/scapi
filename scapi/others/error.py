@@ -1,7 +1,7 @@
 from typing import TYPE_CHECKING
 if TYPE_CHECKING:
-    from others.common import Response
-    from sites.base import _BaseSiteAPI
+    from .common import Response
+    from ..sites.base import _BaseSiteAPI
 
 """
 階層表記
