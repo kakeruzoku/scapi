@@ -1,12 +1,11 @@
 from setuptools import setup
-from scapi import __version__
 
 with open('README.md', 'r', encoding='utf-8') as fp:
     readme = fp.read()
 
 setup(
     name="scapi",
-    version=__version__,
+    version="0.0.2",
     description="ScratchAttachより高機能をめざして。",
     long_description=readme,
     long_description_content_type='text/markdown',
