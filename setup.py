@@ -1,5 +1,4 @@
 from setuptools import setup
-from scapi import __version__
 
 with open('README.md', 'r', encoding='utf-8') as fp:
     readme = fp.read()
