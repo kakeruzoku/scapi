@@ -1,5 +1,6 @@
 # Created by kakeruzoku / https://github.com/kakeruzoku/scapi
 # Special Thanks: Timmccool / https://github.com/TimMcCool/scratchattach
+__version__ = "0.0.1"
 from others.common import (
     create_ClientSession,
     Response,
