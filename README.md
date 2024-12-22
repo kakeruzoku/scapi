@@ -7,3 +7,5 @@
 
 # インストール
 `pip install -U discord.py`
+
+Wikiは[こちら](https://github.com/kakeruzoku/scapi/wiki )
