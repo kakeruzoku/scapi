@@ -12,28 +12,35 @@ headers = {
     "referer": "https://scratch.mit.edu",
 }
 
-def create_ClientSession(inp:"Requests|None"=None) -> "Requests":
-    return Requests(
-        header=headers,
-    ) if inp is None else inp
+def create_ClientSession(inp:"ClientSession|None"=None) -> "ClientSession":
+    return inp if isinstance(inp,ClientSession) else ClientSession(header=headers)
 
+json_resp = dict[str,"json_resp"]|list["json_resp"]|str|float|int|bool|None
 class Response:
     def __init__(self,status:int,text:str,headers:CIMultiDictProxy[str]) -> None:
         self.status_code:int = status
         self.text:str = text
         self.headers:CIMultiDict[str] = headers.copy()
     
-    def json(self):
+    def json(self) -> json_resp:
         return json.loads(self.text)
 
-class Requests(aiohttp.ClientSession):
+class ClientSession(aiohttp.ClientSession):
 
     def __init__(self,header:dict) -> None:
         super().__init__()
         self._header = header
         self._cookie = {}
     
-    async def check(self,response:Response) -> None:
+    @property
+    def header(self) -> dict:
+        return self._header.copy()
+    
+    @property
+    def cookie(self) -> dict:
+        return self._cookie.copy()
+    
+    async def _check(self,response:Response) -> None:
         if response.status_code in [403,401]:
             raise exceptions.Unauthorized(response.status_code,response)
         if response.status_code in [429]:
@@ -49,9 +56,9 @@ class Requests(aiohttp.ClientSession):
 
     
     async def get(
-        session,url,*,
-        data=None,json=None,timeout=None,params=None,
-        header=None,cookie=None,check=True
+        session,url:str,*,
+        data=None,json:dict=None,timeout:float=None,params:dict[str,str]=None,
+        header:dict[str,str]=None,cookie:dict[str,str]=None,check:bool=True
     ) -> Response:
         if session.closed: raise exceptions.SessionClosed
         if header is None: header = session._header.copy()
@@ -63,14 +70,14 @@ class Requests(aiohttp.ClientSession):
                 r = Response(response.status,await response.text(),response.headers)
         except Exception as e:
             raise exceptions.HTTPFetchError(e)
-        if check: await session.check(r)
+        if check: await session._check(r)
         return r
     
     
     async def post(
-        session,url,*,
-        data=None,json=None,timeout=None,params=None,
-        header=None,cookie=None,check=True
+        session,url:str,*,
+        data=None,json:dict=None,timeout:float=None,params:dict[str,str]=None,
+        header:dict[str,str]=None,cookie:dict[str,str]=None,check:bool=True
     ) -> Response:
         if session.closed: raise exceptions.SessionClosed
         if header is None: header = session._header.copy()
@@ -82,14 +89,14 @@ class Requests(aiohttp.ClientSession):
                 r = Response(response.status,await response.text(),response.headers)
         except Exception as e:
             raise exceptions.HTTPFetchError(e)
-        if check: await session.check(r)
+        if check: await session._check(r)
         return r
     
     
     async def put(
-        session,url,*,
-        data=None,json=None,timeout=None,params=None,
-        header=None,cookie=None,check=True
+        session,url:str,*,
+        data=None,json:dict=None,timeout:float=None,params:dict[str,str]=None,
+        header:dict[str,str]=None,cookie:dict[str,str]=None,check:bool=True
     ) -> Response:
         if session.closed: raise exceptions.SessionClosed
         if header is None: header = session._header.copy()
@@ -101,13 +108,13 @@ class Requests(aiohttp.ClientSession):
                 r = Response(response.status,await response.text(),response.headers)
         except Exception as e:
             raise exceptions.HTTPFetchError(e)
-        if check: await session.check(r)
+        if check: await session._check(r)
         return r
     
     async def delete(
-        session,url,*,
-        data=None,json=None,timeout=None,params=None,
-        header=None,cookie=None,check=True
+        session,url:str,*,
+        data=None,json:dict=None,timeout:float=None,params:dict[str,str]=None,
+        header:dict[str,str]=None,cookie:dict[str,str]=None,check:bool=True
     ) -> Response:
         if session.closed: raise exceptions.SessionClosed
         if header is None: header = session._header.copy()
@@ -119,13 +126,13 @@ class Requests(aiohttp.ClientSession):
                 r = Response(response.status,await response.text(),response.headers)
         except Exception as e:
             raise exceptions.HTTPFetchError(e)
-        if check: await session.check(r)
+        if check: await session._check(r)
         return r
 
 
 
 async def api_iterative(
-        session:Requests,
+        session:ClientSession,
         url:str,
         *,
         limit:int|None=None,
@@ -166,7 +173,10 @@ def split_int(raw:str, text_before:str, text_after:str) -> int|None:
         return None
     
 def split(raw:str, text_before:str, text_after:str) -> str:
-    return raw.split(text_before)[1].split(text_after)[0]
+    try:
+        return raw.split(text_before)[1].split(text_after)[0]
+    except Exception:
+        return None
     
 def to_dt(text:str,default:datetime.datetime|None=None) -> datetime.datetime|None:
     try:

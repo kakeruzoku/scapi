@@ -18,7 +18,7 @@ class Studio(base._BaseSiteAPI):
 
     def __init__(
         self,
-        ClientSession:common.Requests,
+        ClientSession:common.ClientSession,
         id:int,
         scratch_session:"Session|None"=None,
         **entries
@@ -81,7 +81,7 @@ class Studio(base._BaseSiteAPI):
         )
     
     async def post_comment(self, content, *, parent_id="", commentee_id="") -> Comment:
-        self.has_session()
+        self.has_session_raise()
         data = {
             "commentee_id": commentee_id,
             "content": str(content),
@@ -106,7 +106,7 @@ def create_Partial_Studio(studio_id:int,*,ClientSession=None) -> Studio:
     ClientSession = common.create_ClientSession(ClientSession)
     return Studio(ClientSession,studio_id)
 
-def explore_studios(*, query:str="*", mode:str="trending", language:str="en", limit:int=40, offset:int=0,ClientSession:common.Requests=None) -> AsyncGenerator["Studio",None]:
+def explore_studios(*, query:str="*", mode:str="trending", language:str="en", limit:int=40, offset:int=0,ClientSession:common.ClientSession=None) -> AsyncGenerator["Studio",None]:
     ClientSession = common.create_ClientSession(ClientSession)
     return base.get_object_iterator(
         ClientSession, f"https://api.scratch.mit.edu/explore/studios",
@@ -114,7 +114,7 @@ def explore_studios(*, query:str="*", mode:str="trending", language:str="en", li
         add_params={"language":language,"mode":mode,"q":query}
     )
 
-def search_studios(query:str, *, mode:str="trending", language:str="en", limit:int=40, offset:int=0,ClientSession:common.Requests=None) -> AsyncGenerator["Studio",None]:
+def search_studios(query:str, *, mode:str="trending", language:str="en", limit:int=40, offset:int=0,ClientSession:common.ClientSession=None) -> AsyncGenerator["Studio",None]:
     ClientSession = common.create_ClientSession(ClientSession)
     return base.get_object_iterator(
         ClientSession, f"https://api.scratch.mit.edu/search/studios",

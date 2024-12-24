@@ -18,10 +18,9 @@ class _BaseSiteAPI(ABC):
     def __init__(
             self,
             update_type:str,update_url:str,
-            ClientSession:common.Requests,
+            ClientSession:common.ClientSession,
             Session:"Scratch_Session|None"=None) -> None:
-        self._csid:bytes = random.randbytes(32)
-        self.ClientSession:common.Requests = ClientSession
+        self.ClientSession:common.ClientSession = ClientSession
         self.update_type:Literal["get","post","put","delete"] = update_type
         self.update_url:str = update_url
         self.Session:"Scratch_Session|None" = Session
@@ -42,30 +41,32 @@ class _BaseSiteAPI(ABC):
     def _update_from_dict(self, data) -> None:
         pass
 
-    def has_session(self) -> None:
-        if self.Session is None:
+    @property
+    def has_session(self) -> bool:
+        from .session import Session as Scratch_Session
+        if isinstance(self.Session,Scratch_Session):
+            return True
+        return False
+        
+    def has_session_raise(self):
+        if not self.has_session:
             raise exception.NoSession()
         
-    async def link_session(self,session:"Scratch_Session",if_close:bool=True) -> None:
+    async def link_session(self,session:"Scratch_Session",if_close:bool=False) -> None:
         if if_close:
             await self.session_close()
         self.Session = session
         self.ClientSession = session.ClientSession
 
-    async def session_close(self) -> bool:
+    async def session_close(self) -> None:
         await self.ClientSession.close()
-        del self.ClientSession
 
     @property
     def session_closed(self) -> bool:
         return self.ClientSession.closed
-    
-    def check_closed(self) -> None:
-        if self.session_closed:
-            raise exception.SessionClosed
 
 async def get_object(
-        ClientSession:common.Requests|None,
+        ClientSession:common.ClientSession|None,
         id:Any,Class:_BaseSiteAPI.__class__,
         session:"Scratch_Session|None"=None
     ) -> _BaseSiteAPI:
@@ -86,7 +87,7 @@ async def get_object(
 
 
 async def get_object_iterator(
-        ClientSession:common.Requests,
+        ClientSession:common.ClientSession,
         url:str,raw_name:str|None,
         Class:_BaseSiteAPI.__class__,
         session:"Scratch_Session|None"=None,
@@ -153,5 +154,5 @@ async def get_comment_iterator(
             except Exception as e:
                 print(e)
 
-async def get_count(ClientSession:common.Requests,url,text_before:str, text_after:str) -> int:
+async def get_count(ClientSession:common.ClientSession,url,text_before:str, text_after:str) -> int:
     return common.split_int((await ClientSession.get(url)).text, text_before, text_after)

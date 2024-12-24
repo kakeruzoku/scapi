@@ -1,6 +1,6 @@
 import datetime
 import random
-from typing import AsyncGenerator, TypedDict, TYPE_CHECKING
+from typing import AsyncGenerator, Generator, TypedDict, TYPE_CHECKING
 
 from ..others import common
 from ..others import error as exception
@@ -19,7 +19,7 @@ class User(base._BaseSiteAPI):
 
     def __init__(
         self,
-        ClientSession:common.Requests,
+        ClientSession:common.ClientSession,
         username:str,
         scratch_session:"Session|None"=None,
         **entries
@@ -158,8 +158,36 @@ class User(base._BaseSiteAPI):
             None,project.Project,self.Session,limit=limit,offset=offset
         )
     
-    async def get_comment_by_id(self,id:int) -> comment.UserComment:
-        async for i in self.get_comments(start_page=1,end_page=67):
+    async def love_count(self) -> int:
+        return base.get_count(self.ClientSession,f"https://scratch.mit.edu/projects/all/{self.username}/loves/","</a>&raquo;\n\n (",")")
+    
+    async def loves(self, *, limit=40, offset=0) -> AsyncGenerator[project.Project, None]:
+        for i in range(offset//40+1,(offset+limit-1)//40+2):
+            r = await self.ClientSession.get(f"https://scratch.mit.edu/projects/all/{self.username}/loves/?page={i}",check=False)
+            if r.status_code == 404:
+                return
+            soup = bs4.BeautifulSoup(r.text, "html.parser")
+            projects:bs4.element.ResultSet[bs4.element.Tag] = soup.find_all("li", {"class": "project thumb item"})
+            if len(projects) == 0:
+                return
+            for _project in projects:
+                _ptext = str(_project)
+                id = common.split_int(_ptext,"a href=\"/projects/","/")
+                title = common.split(_ptext,f"<span class=\"title\">\n<a href=\"/projects/{id}/\">","</a>")
+                author_name = common.split(_ptext,f"by <a href=\"/users/","/")
+                _obj = project.Project(self.ClientSession,id,self.Session)
+                _obj._update_from_dict({
+                    "author":{"username":author_name},
+                    "title":title
+                })
+                yield _obj
+
+                
+
+
+    
+    async def get_comment_by_id(self,id:int,start:int=1) -> comment.UserComment:
+        async for i in self.get_comments(start_page=start,end_page=67):
             if id == i.id:
                 return i
             for r in i._reply_cache:
@@ -203,20 +231,20 @@ class User(base._BaseSiteAPI):
                     r_send_dt = reply.find("span", {"class": "time"})['title']
                     reply_obj = comment.UserComment(self,self.ClientSession,self.Session)
                     reply_obj._update_from_dict({
-                        "id":r_id,"parent_id":id,"commentee_id":None,"content":r_content,"sent_dt":r_send_dt,"author":{"username":r_username,"id":r_userid},"_parent_cache":main,"reply_count":0
+                        "id":r_id,"parent_id":id,"commentee_id":None,"content":r_content,"sent_dt":r_send_dt,"author":{"username":r_username,"id":r_userid},"_parent_cache":main,"reply_count":0,"page":i
                     })
                     replies_obj.append(reply_obj)
 
                 main._update_from_dict({
                     "id":id,"parent_id":None,"commentee_id":None,"content":content,"sent_dt":send_dt,
                     "author":{"username":username,"id":userid},
-                    "_reply_cache":replies_obj,"reply_count":len(replies_obj)
+                    "_reply_cache":replies_obj,"reply_count":len(replies_obj),"page":i
                 })
                 yield main
         return
     
     async def post_comment(self, content, *, parent_id="", commentee_id="") -> comment.UserComment:
-        self.has_session()
+        self.has_session_raise()
         data = {
             "commentee_id": commentee_id,
             "content": str(content),
@@ -235,7 +263,7 @@ class User(base._BaseSiteAPI):
                 "username":common.split(text,"data-comment-user=\"","\">"),
                 "id":common.split_int(text,"src=\"//cdn2.scratch.mit.edu/get_image/user/","_")
             },
-            "_reply_cache":[],"reply_count":0
+            "_reply_cache":[],"reply_count":0,"page":1
         })
         return c
     
