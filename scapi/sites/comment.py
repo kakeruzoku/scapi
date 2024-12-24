@@ -25,7 +25,7 @@ class Comment(base._BaseSiteAPI):
 
     def __init__(
         self,
-        ClientSession:common.Requests,
+        ClientSession:common.ClientSession,
         data:CommentData,
         scratch_session:"Session|None"=None,
         **entries
@@ -110,14 +110,14 @@ class Comment(base._BaseSiteAPI):
         )
 
     async def delete(self) -> bool:
-        self.has_session()
+        self.has_session_raise()
         if self.type == "Project":
             return (await self.ClientSession.delete(f"https://api.scratch.mit.edu/proxy/comments/project/{self.place.id}/comment/{self.id}",data="{}")).status_code == 200
         elif self.type == "Studio":
             return (await self.ClientSession.delete(f"https://api.scratch.mit.edu/proxy/comments/studio/{self.place.id}/comment/{self.id}",data="{}")).status_code == 200
 
     async def report(self) -> bool:
-        self.has_session()
+        self.has_session_raise()
         if self.type == "Project":
             return (await self.ClientSession.post(f"https://api.scratch.mit.edu/proxy/project/{self.place.id}/comment/{self.id}/report",json={"reportId":None})).status_code == 200
         elif self.type == "Studio":
@@ -126,7 +126,7 @@ class Comment(base._BaseSiteAPI):
 class UserComment(Comment):
     def __init__(self,user,ClientSession,scratch_session):
         self._csid:bytes = random.randbytes(32)
-        self.ClientSession:common.Requests = ClientSession
+        self.ClientSession:common.ClientSession = ClientSession
         self.update_type = ""
         self.update_url = ""
         self.Session:Session|None = scratch_session
@@ -145,10 +145,11 @@ class UserComment(Comment):
 
         self._parent_cache:"UserComment|None" = None
         self._reply_cache:"list[UserComment]" = None
+        self.page:int = 1
         
     async def update(self):
         warnings.warn(f"The update will take some time.")
-        r = await self.place.get_comment_by_id(self.id)
+        r = await self.place.get_comment_by_id(self.id,self.page)
         self.parent_id = r.parent_id
         self.commentee_id = r.commentee_id
         self.content = r.content
@@ -163,6 +164,7 @@ class UserComment(Comment):
         self._reply_cache = data.get("_reply_cache",[])
         self.id = data.get("id")
         self._parent_cache = data.get("_parent_cache",None)
+        self.page = data.get("page",self.page)
 
     async def get_replies(self, *, limit=40, offset=0) -> AsyncGenerator["UserComment",None]:
         for i in self._reply_cache[offset:offset+limit]:

@@ -1,4 +1,4 @@
-# scratch.py
+# scapi
 [ScratchAttach](https://github.com/TimMcCool/scratchattach )より高機能を目指して。
 
 特徴
@@ -6,6 +6,6 @@
 - 型ヒント
 
 # インストール
-`pip install -U discord.py`
+`pip install -U scapi`
 
 Wikiは[こちら](https://github.com/kakeruzoku/scapi/wiki )

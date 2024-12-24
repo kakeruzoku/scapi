@@ -69,7 +69,7 @@ class Session(base._BaseSiteAPI):
 
     def __init__(
         self,
-        ClientSession:common.Requests,
+        ClientSession:common.ClientSession,
         session_id:str,
         **entries
     ):
@@ -106,13 +106,6 @@ class Session(base._BaseSiteAPI):
         if self.status.has_outstanding_email_confirmation:
             warnings.warn(f"Warning: {self.username} is not email confirmed.")
 
-
-    @property
-    def is_valid(self) -> bool:
-        return (not self.ClientSession.closed) and\
-               (self.session_id is not None) and\
-               (self.status.has_outstanding_email_confirmation == False) and\
-               (self.banned == False)
     
     async def logout(self) -> None:
         await self.ClientSession.post(

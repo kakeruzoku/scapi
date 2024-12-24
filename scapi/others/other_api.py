@@ -2,7 +2,7 @@ import requests as sync_req
 
 
 """
-async def get_csrf_token(ClientSession:Requests) -> str:
+async def get_csrf_token(ClientSession:ClientSession) -> str:
     cs = aiohttp.ClientSession()
     return (await cs.get(
         "https://scratch.mit.edu/csrf_token/",headers={

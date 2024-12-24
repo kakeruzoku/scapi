@@ -19,7 +19,7 @@ class Project(base._BaseSiteAPI):
 
     def __init__(
         self,
-        ClientSession:common.Requests,
+        ClientSession:common.ClientSession,
         id:int,
         scratch_session:"Session|None"=None,
         **entries
@@ -112,7 +112,7 @@ class Project(base._BaseSiteAPI):
         )
     
     async def create_remix(self,title:str|None=None) -> "Project":
-        self.has_session()
+        self.has_session_raise()
         try:
             project_json = self.download()
         except:
@@ -160,7 +160,7 @@ class Project(base._BaseSiteAPI):
         )
     
     async def post_comment(self, content, *, parent_id="", commentee_id="") -> Comment:
-        self.has_session()
+        self.has_session_raise()
         data = {
             "commentee_id": commentee_id,
             "content": str(content),
@@ -192,7 +192,7 @@ def create_Partial_Project(project_id:int,author_name:"str|None"=None,*,ClientSe
     return _project
 
 
-def explore_projects(*, query:str="*", mode:str="trending", language:str="en", limit:int=40, offset:int=0,ClientSession:common.Requests=None) -> AsyncGenerator["Project",None]:
+def explore_projects(*, query:str="*", mode:str="trending", language:str="en", limit:int=40, offset:int=0,ClientSession:common.ClientSession=None) -> AsyncGenerator["Project",None]:
     ClientSession = common.create_ClientSession(ClientSession)
     return base.get_object_iterator(
         ClientSession, f"https://api.scratch.mit.edu/explore/projects",
@@ -200,7 +200,7 @@ def explore_projects(*, query:str="*", mode:str="trending", language:str="en", l
         add_params={"language":language,"mode":mode,"q":query}
     )
 
-def search_projects(query:str, *, mode:str="trending", language:str="en", limit:int=40, offset:int=0,ClientSession:common.Requests=None) -> AsyncGenerator["Project",None]:
+def search_projects(query:str, *, mode:str="trending", language:str="en", limit:int=40, offset:int=0,ClientSession:common.ClientSession=None) -> AsyncGenerator["Project",None]:
     ClientSession = common.create_ClientSession(ClientSession)
     return base.get_object_iterator(
         ClientSession, f"https://api.scratch.mit.edu/search/projects",
