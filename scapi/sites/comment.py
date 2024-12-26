@@ -18,6 +18,7 @@ class CommentData(TypedDict):
     id:int
     data:dict|None
 
+_FALSE:bool = False
 
 class Comment(base._BaseSiteAPI):
     raise_class = exception.CommentNotFound
@@ -43,10 +44,13 @@ class Comment(base._BaseSiteAPI):
 
         if isinstance(self.place,Project):
             self.type = "Project"
-            super().__init__("get",
-                f"https://api.scratch.mit.edu/users/{self.place.author.username}/projects/{self.place.id}/comments/{self.id}",
-                ClientSession,scratch_session
-            )
+            if (self.place.author is None) or _FALSE:
+                super().__init__("get",f"",ClientSession,scratch_session)
+            else:
+                super().__init__("get",
+                    f"https://api.scratch.mit.edu/users/{self.place.author.username}/projects/{self.place.id}/comments/{self.id}",
+                    ClientSession,scratch_session
+                )
         elif isinstance(self.place,Studio):
             self.type = "Studio"
             super().__init__("get",
@@ -77,6 +81,13 @@ class Comment(base._BaseSiteAPI):
     def _is_me_raise(self) -> None:
         if not self._is_me:
             raise exception.NoPermission
+        
+    def __int__(self) -> int: return self.id
+    def __eq__(self,value) -> bool: return isinstance(value,Comment) and self.id == value.id
+    def __lt__(self,value) -> bool: return isinstance(value,Comment) and self.id < value.id
+    def __ne__(self,value) -> bool: return isinstance(value,Comment) and self.id > value.id
+    def __le__(self,value) -> bool: return isinstance(value,Comment) and self.id <= value.id
+    def __ge__(self,value) -> bool: return isinstance(value,Comment) and self.id >= value.id
 
     def _update_from_dict(self, data:dict) -> None:
         from .user import User
@@ -90,6 +101,13 @@ class Comment(base._BaseSiteAPI):
         )
         self.author._update_from_dict(_author)
         self.reply_count = data.get("reply_count",self.reply_count)
+
+    def __int__(self) -> int: return self.id
+    def __eq__(self,value) -> bool: return isinstance(value,Comment) and self.id == value.id
+    def __lt__(self,value) -> bool: return isinstance(value,Comment) and self.id < value.id
+    def __ne__(self,value) -> bool: return isinstance(value,Comment) and self.id > value.id
+    def __le__(self,value) -> bool: return isinstance(value,Comment) and self.id <= value.id
+    def __ge__(self,value) -> bool: return isinstance(value,Comment) and self.id >= value.id
 
     async def get_parent_comment(self,use_cache:bool=True) -> "Comment|None":
         if (self._parent_cache is not None) and (use_cache):

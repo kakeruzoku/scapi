@@ -1,7 +1,7 @@
 # Created by kakeruzoku / https://github.com/kakeruzoku/scapi
 # Special Thanks: Timmccool / https://github.com/TimMcCool/scratchattach
 
-__version__ = "0.2.0"
+__version__ = "0.2.1"
 
 from .others.common import (
     create_ClientSession,

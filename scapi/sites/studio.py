@@ -28,7 +28,7 @@ class Studio(base._BaseSiteAPI):
     ):
         super().__init__("get",f"https://api.scratch.mit.edu/studios/{id}",ClientSession,scratch_session)
 
-        self.id = id
+        self.id = common.try_int(id)
         self.title:str = None
         self.description:str = None
         self.author_id:int = None
@@ -71,6 +71,13 @@ class Studio(base._BaseSiteAPI):
     @property
     def url(self) -> str:
         return f"https://scratch.mit.edu/studios/{self.id}/"
+
+    def __int__(self) -> int: return self.id
+    def __eq__(self,value) -> bool: return isinstance(value,Studio) and self.id == value.id
+    def __lt__(self,value) -> bool: return isinstance(value,Studio) and self.id < value.id
+    def __ne__(self,value) -> bool: return isinstance(value,Studio) and self.id > value.id
+    def __le__(self,value) -> bool: return isinstance(value,Studio) and self.id <= value.id
+    def __ge__(self,value) -> bool: return isinstance(value,Studio) and self.id >= value.id
 
     async def get_comment_by_id(self,id:int) -> Comment:
         return await base.get_object(

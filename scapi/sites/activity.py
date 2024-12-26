@@ -114,7 +114,7 @@ class Activity:
         elif t == "addcomment":
             self.type = ActivityType.Comment
             if data["comment_type"] == 0:
-                self.place = create_Partial_Project(data["comment_obj_id"],author_name="unknown",ClientSession=cs,session=ss)
+                self.place = create_Partial_Project(data["comment_obj_id"],ClientSession=cs,session=ss)
                 self.place.title = data["comment_obj_title"]
             elif data["comment_type"] == 1:
                 self.place = create_Partial_User(data["comment_obj_title"],data["comment_obj_id"],ClientSession=cs,session=ss)
