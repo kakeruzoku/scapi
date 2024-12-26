@@ -68,6 +68,7 @@ class ClientSession(aiohttp.ClientSession):
                 url,data=data,json=json,timeout=timeout,params=params,headers=header,cookies=cookie
             ) as response:
                 r = Response(response.status,await response.text(),response.headers)
+                response.close()
         except Exception as e:
             raise exceptions.HTTPFetchError(e)
         if check: await session._check(r)
@@ -87,6 +88,7 @@ class ClientSession(aiohttp.ClientSession):
                 url,data=data,json=json,timeout=timeout,params=params,headers=header,cookies=cookie
             ) as response:
                 r = Response(response.status,await response.text(),response.headers)
+                response.close()
         except Exception as e:
             raise exceptions.HTTPFetchError(e)
         if check: await session._check(r)
@@ -106,6 +108,7 @@ class ClientSession(aiohttp.ClientSession):
                 url,data=data,json=json,timeout=timeout,params=params,headers=header,cookies=cookie
             ) as response:
                 r = Response(response.status,await response.text(),response.headers)
+                response.close()
         except Exception as e:
             raise exceptions.HTTPFetchError(e)
         if check: await session._check(r)
@@ -124,6 +127,7 @@ class ClientSession(aiohttp.ClientSession):
                 url,data=data,json=json,timeout=timeout,params=params,headers=header,cookies=cookie
             ) as response:
                 r = Response(response.status,await response.text(),response.headers)
+                response.close()
         except Exception as e:
             raise exceptions.HTTPFetchError(e)
         if check: await session._check(r)

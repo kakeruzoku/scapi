@@ -7,6 +7,16 @@
 
 # 0.x.x
 ## 0.1.x
+### 0.2.0
+- **[Fix]** ログインで一定条件下で正しくログインできない問題を修正。
+- **[Add]** 多くのクラスに`__str__`を追加
+- **[Add]** `Activity`クラスの追加
+  - 取得関数 `User.activity`,`Studio.activity`,`Session.message`
+- **[Add]** `ForumTopic`クラスの追加(仮・update等未対応)
+- **[Add]** `create_Partial_*****` に Session を追加できるように
+- **[Add]** `create_Partial_Comment` を追加
+- Session
+  - **[Add]** `create_Partial_myself` の追加
 ### 0.1.0
 - _BaseSiteAPI
   - **[Change]** `_BaseSiteAPI.has_session` を`@property`に変更、bool値を返すように。従来の関数は `_BaseSiteAPI.has_session_raise`

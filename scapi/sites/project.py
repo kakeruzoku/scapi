@@ -17,6 +17,9 @@ class Project(base._BaseSiteAPI):
     raise_class = exception.ObjectNotFound
     id_name = "id"
 
+    def __str__(self):
+        return f"<Project id:{self.id} title:{self.title} Session:{self.Session}>"
+
     def __init__(
         self,
         ClientSession:common.ClientSession,
@@ -183,12 +186,12 @@ async def get_project(project_id:int,*,ClientSession=None) -> Project:
     ClientSession = common.create_ClientSession(ClientSession)
     return await base.get_object(ClientSession,project_id,Project)
 
-def create_Partial_Project(project_id:int,author_name:"str|None"=None,*,ClientSession=None) -> Project:
+def create_Partial_Project(project_id:int,author_name:"str|None"=None,*,ClientSession:common.ClientSession|None=None,session:"Session|None"=None) -> Project:
     ClientSession = common.create_ClientSession(ClientSession)
-    _project = Project(ClientSession,project_id)
+    _project = Project(ClientSession,project_id,session)
     if author_name is not None:
         from .user import create_Partial_User
-        _project.author = create_Partial_User(author_name,ClientSession=ClientSession)
+        _project.author = create_Partial_User(author_name,ClientSession=ClientSession,session=session)
     return _project
 
 

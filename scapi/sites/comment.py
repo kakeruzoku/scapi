@@ -23,6 +23,9 @@ class Comment(base._BaseSiteAPI):
     raise_class = exception.CommentNotFound
     id_name = "data"
 
+    def __str__(self):
+        return f"<Comment id:{self.id} content:{self.content} place:{self.place} Session:{self.Session}>"
+
     def __init__(
         self,
         ClientSession:common.ClientSession,
@@ -124,7 +127,7 @@ class Comment(base._BaseSiteAPI):
             return (await self.ClientSession.post(f"https://api.scratch.mit.edu/proxy/studio/{self.place.id}/comment/{self.id}/report",json={"reportId":None})).status_code == 200
 
 class UserComment(Comment):
-    def __init__(self,user,ClientSession,scratch_session):
+    def __init__(self,user,ClientSession:common.ClientSession,scratch_session:"Session|None"=None):
         self._csid:bytes = random.randbytes(32)
         self.ClientSession:common.ClientSession = ClientSession
         self.update_type = ""
@@ -185,3 +188,28 @@ class UserComment(Comment):
         return (await self.ClientSession.post(
             f"https://scratch.mit.edu/site-api/comments/user/{self.place.username}/rep/",
             json={"id":str(self.id)})).status_code == 200
+
+@overload
+def create_Partial_Comment(comment_id:int,place:"Project|Studio",content:str|None=None,*,ClientSession:common.ClientSession|None=None,session:"Session|None"=None) -> Comment: ...
+
+@overload
+def create_Partial_Comment(comment_id:int,place:"User",content:str|None=None,*,ClientSession:common.ClientSession|None=None,session:"Session|None"=None) -> UserComment: ...
+
+
+def create_Partial_Comment(comment_id:int,place:"Project|Studio|User",author:"User|None"=None,content:str|None=None,*,ClientSession:common.ClientSession|None=None,session:"Session|None"=None) -> Comment|UserComment:
+    from .user import User
+    from .studio import Studio
+    from .project import Project
+    ClientSession = common.create_ClientSession(ClientSession)
+    if isinstance(place, (Project,Studio)):
+        _comment = Comment(ClientSession,{"place":place,"id":comment_id},session)
+    elif isinstance(place, User):
+        _comment = UserComment(place,ClientSession,session)
+    else:
+        raise ValueError
+    _comment.id = comment_id
+    _comment.author = author
+    _comment.content = content
+    return _comment
+
+

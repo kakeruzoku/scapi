@@ -5,7 +5,7 @@ from typing import AsyncGenerator, TYPE_CHECKING
 
 from ..others import common as common
 from ..others import error as exception
-from . import base
+from . import base,activity
 from .comment import Comment
 
 if TYPE_CHECKING:
@@ -15,6 +15,9 @@ if TYPE_CHECKING:
 class Studio(base._BaseSiteAPI):
     raise_class = exception.StudioNotFound
     id_name = "id"
+
+    def __str__(self):
+        return f"<Studio id:{self.id} title:{self.title} Session:{self.Session}>"
 
     def __init__(
         self,
@@ -98,13 +101,30 @@ class Studio(base._BaseSiteAPI):
             self.ClientSession,{"place":self,"data":resp,"id":resp["id"]},self.Session
         )
     
+    async def activity(self, *, limit=40, offset=0) -> AsyncGenerator[activity.Activity, None]:
+        c = 0
+        dt = str(datetime.datetime.now(datetime.timezone.utc))
+        for _ in range(offset,offset+limit,40):
+            r = await common.api_iterative(
+                self.ClientSession,f"https://api.scratch.mit.edu/studios/{self.id}/activity",limit=40,
+                add_params={"dateLimit":dt.replace("+00:00","Z")}
+            )
+            if len(r) == 0: return
+            for j in r:
+                c = c + 1
+                if c == limit: return
+                _obj = activity.Activity(self.ClientSession)
+                _obj._update_from_studio(self,j)
+                dt = str(_obj.datetime - datetime.timedelta(seconds=1))
+                yield _obj
+    
 async def get_studio(studio_id:int,*,ClientSession=None) -> Studio:
     ClientSession = common.create_ClientSession(ClientSession)
     return await base.get_object(ClientSession,studio_id,Studio)
 
-def create_Partial_Studio(studio_id:int,*,ClientSession=None) -> Studio:
+def create_Partial_Studio(studio_id:int,*,ClientSession:common.ClientSession|None=None,session:"Session|None"=None) -> Studio:
     ClientSession = common.create_ClientSession(ClientSession)
-    return Studio(ClientSession,studio_id)
+    return Studio(ClientSession,studio_id,session)
 
 def explore_studios(*, query:str="*", mode:str="trending", language:str="en", limit:int=40, offset:int=0,ClientSession:common.ClientSession=None) -> AsyncGenerator["Studio",None]:
     ClientSession = common.create_ClientSession(ClientSession)

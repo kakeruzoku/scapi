@@ -1,7 +1,7 @@
 # Created by kakeruzoku / https://github.com/kakeruzoku/scapi
 # Special Thanks: Timmccool / https://github.com/TimMcCool/scratchattach
 
-__version__ = "0.1.0"
+__version__ = "0.2.0"
 
 from .others.common import (
     create_ClientSession,
@@ -51,4 +51,12 @@ from .sites.user import (
     User,
     get_user,
     create_Partial_User
+)
+from .sites.activity import (
+    Activity,
+    ActivityType
+)
+from .sites.forum import (
+    ForumTopic,
+    create_Partial_ForumTopic
 )
