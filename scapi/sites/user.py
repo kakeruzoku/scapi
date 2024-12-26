@@ -64,6 +64,13 @@ class User(base._BaseSiteAPI):
         if not self._is_me:
             raise exception.NoPermission
     
+    def __int__(self) -> int: return self.id
+    def __eq__(self,value) -> bool: return isinstance(value,User) and self.id == value.id
+    def __lt__(self,value) -> bool: return isinstance(value,User) and self.id < value.id
+    def __ne__(self,value) -> bool: return isinstance(value,User) and self.id > value.id
+    def __le__(self,value) -> bool: return isinstance(value,User) and self.id <= value.id
+    def __ge__(self,value) -> bool: return isinstance(value,User) and self.id >= value.id
+
     def get_icon_url(self,size:int=90) -> str:
         common.no_data_checker(self.id)
         return f"https://uploads.scratch.mit.edu/get_image/user/{self.id}_{size}x{size}.png"
@@ -285,6 +292,6 @@ def create_Partial_User(username:str,user_id:int|None=None,*,ClientSession:commo
     ClientSession = common.create_ClientSession(ClientSession)
     _user = User(ClientSession,username,session)
     if user_id is not None:
-        _user.id = user_id
+        _user.id = common.try_int(user_id)
     return _user
 

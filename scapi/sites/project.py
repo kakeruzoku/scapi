@@ -28,8 +28,8 @@ class Project(base._BaseSiteAPI):
         **entries
     ) -> None:
         super().__init__("get",f"https://api.scratch.mit.edu/projects/{id}",ClientSession,scratch_session)
-
-        self.id:int = id
+        
+        self.id:int = common.try_int(id)
         self.project_token:str = None
         
         self.author:"User" = None
@@ -106,6 +106,12 @@ class Project(base._BaseSiteAPI):
         
     def __eq__(self, value:object) -> bool:
         return isinstance(value,Project) and value.id == self.id
+    
+    def __int__(self) -> int: return self.id
+    def __lt__(self,value) -> bool: return isinstance(value,Project) and self.id < value.id
+    def __ne__(self,value) -> bool: return isinstance(value,Project) and self.id > value.id
+    def __le__(self,value) -> bool: return isinstance(value,Project) and self.id <= value.id
+    def __ge__(self,value) -> bool: return isinstance(value,Project) and self.id >= value.id
 
     def remixes(self, *, limit=40, offset=0) -> AsyncGenerator["Project",None]:
         return base.get_object_iterator(

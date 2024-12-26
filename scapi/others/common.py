@@ -191,6 +191,12 @@ def to_dt(text:str,default:datetime.datetime|None=None) -> datetime.datetime|Non
 def no_data_checker(obj) -> None:
     if obj is None:
         raise exceptions.NoDataError
+    
+def try_int(inp):
+    try:
+        return int(inp)
+    except Exception as e:
+        raise ValueError(e)
 
 empty_project_json = {
     'targets': [
