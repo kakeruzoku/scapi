@@ -118,6 +118,10 @@ class CommentNotFound(ObjectNotFound):
     """
     コメント取得失敗
     """
+class ForumTopicNotFound(ObjectNotFound):
+    """
+    フォーラム取得失敗
+    """
 
 class NoDataError(Exception):
     """

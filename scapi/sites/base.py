@@ -97,6 +97,7 @@ async def get_object_iterator(
         max_limit=40,
         add_params:dict={}
     ) -> AsyncGenerator[_BaseSiteAPI,None]:
+    c = 0
     for i in range(offset,offset+limit,max_limit):
         l = await common.api_iterative(
             ClientSession,url,
@@ -108,6 +109,8 @@ async def get_object_iterator(
         if raw_name is None:
             raw_name = Class.id_name
         for i in l:
+            c = c + 1
+            if c == limit: return
             try:
                 dicts = {
                     "ClientSession":ClientSession,

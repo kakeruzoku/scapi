@@ -4,9 +4,8 @@ from typing import AsyncGenerator, Generator, TypedDict, TYPE_CHECKING
 
 from ..others import common
 from ..others import error as exception
-from . import base
-from . import project
-from . import comment
+from . import base,project,comment,activity
+
 import bs4
 
 if TYPE_CHECKING:
@@ -16,6 +15,9 @@ if TYPE_CHECKING:
 class User(base._BaseSiteAPI):
     raise_class = exception.UserNotFound
     id_name = "username"
+
+    def __str__(self):
+        return f"<User username:{self.username} id:{self.id} Session:{self.Session}>"
 
     def __init__(
         self,
@@ -35,7 +37,6 @@ class User(base._BaseSiteAPI):
         self.about_me:str = None
         self.wiwo:str = None
         self.country:str = None
-        self.icon_url:str = None
         self.scratchteam:bool = None
 
         self._website_data:common.Response|None = None
@@ -182,7 +183,14 @@ class User(base._BaseSiteAPI):
                 })
                 yield _obj
 
-                
+    async def activity(self,limit=1000) -> AsyncGenerator[activity.Activity, None]:
+        r = await self.ClientSession.get(f"https://scratch.mit.edu/messages/ajax/user-activity/?user={self.username}&max={limit}")
+        souplist = bs4.BeautifulSoup(r.text, 'html.parser').find_all("li")
+        for i in souplist:
+            _obj = activity.Activity(self.ClientSession)
+            _obj._update_from_user(self,i)
+            yield _obj
+        return
 
 
     
@@ -258,7 +266,8 @@ class User(base._BaseSiteAPI):
             "id":common.split_int(text,"data-comment-id=\"","\">"),
             "parent_id":None if parent_id == "" else parent_id,
             "commentee_id":None if commentee_id == "" else commentee_id,
-            "send_dt":common.split(text,"<span class=\"time\" title=\"","\">"),
+            "datetime_create":common.split(text,"<span class=\"time\" title=\"","\">"),
+            "content":content,
             "author":{
                 "username":common.split(text,"data-comment-user=\"","\">"),
                 "id":common.split_int(text,"src=\"//cdn2.scratch.mit.edu/get_image/user/","_")
@@ -272,9 +281,9 @@ async def get_user(username:str,*,ClientSession=None) -> User:
     ClientSession = common.create_ClientSession(ClientSession)
     return await base.get_object(ClientSession,username,User)
 
-def create_Partial_User(username:str,user_id:int|None=None,*,ClientSession=None) -> User:
+def create_Partial_User(username:str,user_id:int|None=None,*,ClientSession:common.ClientSession|None=None,session:"Session|None"=None) -> User:
     ClientSession = common.create_ClientSession(ClientSession)
-    _user = User(ClientSession,username)
+    _user = User(ClientSession,username,session)
     if user_id is not None:
         _user.id = user_id
     return _user

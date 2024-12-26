@@ -1,12 +1,13 @@
+import asyncio
 import datetime
 import re
+from typing import AsyncGenerator
 import warnings
 
 from ..others import other_api
 from ..others import common
 from ..others import error as exception
-from . import base
-from . import user,project,studio
+from . import user,project,studio,activity,base
 
 
 class SessionStatus:
@@ -117,6 +118,12 @@ class Session(base._BaseSiteAPI):
     async def me(self) -> user.User:
         return await base.get_object(self.ClientSession,self.username,user.User,self)
     
+    def create_Partial_myself(self) -> user.User:
+        _user = user.create_Partial_User(self.username,self.status.id,ClientSession=self.ClientSession,session=self)
+        _user._join_date = self.status.dateJoined
+        _user.join_date = self.status.joined_dt
+        return _user
+    
     async def create_project(self,title:str|None=None,project_json:dict|None=None,remix_id:int|None=None) -> project.Project:
         if project_json is None:
             project_json = common.empty_project_json.copy()
@@ -145,6 +152,20 @@ class Session(base._BaseSiteAPI):
             )
         raise exception.ResponseError(response.status_code,response)
     
+    async def message(self, *, limit=40, offset=0) -> AsyncGenerator[activity.Activity, None]:
+        c = 0
+        for i in range(offset,offset+limit,40):
+            r = await common.api_iterative(
+                self.ClientSession,f"https://api.scratch.mit.edu/users/{self.username}/messages",limit=40,offset=i
+            )
+            if len(r) == 0: return
+            for j in r:
+                c = c + 1
+                if c == limit: return
+                _obj = activity.Activity(self.ClientSession)
+                _obj._update_from_message(self,j)
+                yield _obj
+    
     async def get_project(self,project_id:int) -> project.Project:
         return await base.get_object(self.ClientSession,project_id,project.Project,self)
     
@@ -161,17 +182,17 @@ async def session_login(session_id,*,ClientSession=None) -> Session:
 
 async def login(username,password) -> Session:
     ClientSession = common.create_ClientSession()
-    ClientSession.cookie_jar.update_cookies({
-        "scratchcsrftoken" : "a",
-        "scratchlanguage" : "en",
-    })
     try:
         r = await ClientSession.post(
             "https://scratch.mit.edu/login/",
-            json={"username":username,"password":password}
+            json={"username":username,"password":password},
+            cookie={
+                "scratchcsrftoken" : "a",
+                "scratchlanguage" : "en",
+            }
         )
         return await session_login(
-            str(re.search('"(.*)"', r.headers["Set-Cookie"]).group()),
+            str(re.search('"(.*)"', r.headers["Set-Cookie"]).group()).replace("\"",""),
             ClientSession=ClientSession
         )
     except Exception as e:
