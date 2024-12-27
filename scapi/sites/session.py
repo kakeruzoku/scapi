@@ -111,7 +111,7 @@ class Session(base._BaseSiteAPI):
     async def logout(self) -> None:
         await self.ClientSession.post(
             "https://scratch.mit.edu/accounts/logout/",
-            json={"csrfmiddlewaretoken":other_api.get_csrf_token_sync()}
+            json={"csrfmiddlewaretoken":"a"}
         )
         await self.ClientSession.close()
     

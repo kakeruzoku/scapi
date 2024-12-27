@@ -6,7 +6,15 @@
 - **[Other]** その他
 
 # 0.x.x
-## 0.1.x
+## 0.2.x
+### 0.2.2
+2024/12/27更新
+- **[Fix]** IDでintで指定した場合にエラーが発生する問題を修正
+- フォーラム関連
+  - **[Add]** フォーラムのトピックを取得する関数 `get_topic_list` `get_topic_list` を追加
+  - **[Add]** `ForumCategoryType`を追加
+  - **[Add]** `ForumTopic`に`int(), ==,<,>,<=,>=`、その他複数のデータを追加
+
 ### 0.2.1 
 2024/12/26更新
 - **[Fix]** projectなどのIDが`int`ではなく`str`を返すように
@@ -25,6 +33,8 @@
 - **[Add]** `create_Partial_Comment` を追加
 - Session
   - **[Add]** `create_Partial_myself` の追加
+
+## 0.1.x
 ### 0.1.0
 - _BaseSiteAPI
   - **[Change]** `_BaseSiteAPI.has_session` を`@property`に変更、bool値を返すように。従来の関数は `_BaseSiteAPI.has_session_raise`

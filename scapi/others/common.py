@@ -192,11 +192,13 @@ def no_data_checker(obj) -> None:
     if obj is None:
         raise exceptions.NoDataError
     
-def try_int(inp):
+def try_int(inp:str|int) -> int:
     try:
+        if isinstance(inp,int): return inp
+        if inp.isdecimal(): raise ValueError
         return int(inp)
-    except Exception as e:
-        raise ValueError(e)
+    except Exception:
+        raise ValueError
 
 empty_project_json = {
     'targets': [
