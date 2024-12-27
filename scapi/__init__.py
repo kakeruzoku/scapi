@@ -58,5 +58,8 @@ from .sites.activity import (
 )
 from .sites.forum import (
     ForumTopic,
+    ForumCategoryType,
+    get_topic,
+    get_topic_list,
     create_Partial_ForumTopic
 )

@@ -25,6 +25,8 @@ if TYPE_CHECKING:
     - ProjectNotFound プロジェクトない
     - StudioNotFound スタジオない
     - CommentNotFound コメントない
+    - ForumNotFound フォーラム関連
+      - ForumTopicNotFound とぴっくない
 - NoDataError Partial系のデータで、データが存在しないとき
 """
 
@@ -118,9 +120,13 @@ class CommentNotFound(ObjectNotFound):
     """
     コメント取得失敗
     """
-class ForumTopicNotFound(ObjectNotFound):
+class ForumNotFound(ObjectNotFound):
     """
     フォーラム取得失敗
+    """
+class ForumTopicNotFound(ForumNotFound):
+    """
+    フォーラムトピック取得失敗
     """
 
 class NoDataError(Exception):
