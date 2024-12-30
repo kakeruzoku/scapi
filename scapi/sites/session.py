@@ -165,6 +165,21 @@ class Session(base._BaseSiteAPI):
                 _obj = activity.Activity(self.ClientSession)
                 _obj._update_from_message(self,j)
                 yield _obj
+
+    async def feed(self, *, limit=40, offset=0) -> AsyncGenerator[activity.Activity, None]:
+        c = 0
+        for i in range(offset,offset+limit,40):
+            r = await common.api_iterative(
+                self.ClientSession,f"https://api.scratch.mit.edu/users/{self.username}/following/users/activity",
+                limit=40,offset=i
+            )
+            if len(r) == 0: return
+            for j in r:
+                c = c + 1
+                if c == limit: return
+                _obj = activity.Activity(self.ClientSession)
+                _obj._update_from_feed(self,j)
+                yield _obj
     
     async def get_project(self,project_id:int) -> project.Project:
         return await base.get_object(self.ClientSession,project_id,project.Project,self)
