@@ -1,7 +1,14 @@
+import asyncio
 import datetime
+from io import BufferedReader, TextIOWrapper
+import json
+import os
 import random
-from typing import AsyncGenerator, TYPE_CHECKING
-
+import shutil
+from typing import AsyncGenerator, TYPE_CHECKING, TypedDict
+import warnings
+import zipfile
+import aiofiles
 
 from ..others import common
 from ..others import error as exception
@@ -84,7 +91,7 @@ class Project(base._BaseSiteAPI):
         self.views = _stats.get("views",self.views)
 
     @property
-    def _is_me(self) -> bool:
+    def _is_owner(self) -> bool:
         common.no_data_checker(self.author)
         common.no_data_checker(self.author.username)
         if isinstance(self.Session,Session):
@@ -100,8 +107,8 @@ class Project(base._BaseSiteAPI):
     def url(self) -> str:
         return f"https://scratch.mit.edu/projects/{self.id}/"
     
-    def _is_me_raise(self) -> None:
-        if not self._is_me:
+    def _is_owner_raise(self) -> None:
+        if not self._is_owner:
             raise exception.NoPermission
         
     def __eq__(self, value:object) -> bool:
@@ -123,7 +130,7 @@ class Project(base._BaseSiteAPI):
     async def create_remix(self,title:str|None=None) -> "Project":
         self.has_session_raise()
         try:
-            project_json = self.download()
+            project_json = self.load_json()
         except:
             project_json = common.empty_project_json
         if title is None:
@@ -134,7 +141,7 @@ class Project(base._BaseSiteAPI):
 
         return await self.Session.create_project(title,project_json,self.id)
 
-    async def download(self) -> dict:
+    async def load_json(self) -> dict:
         try:
             self.update()
             return (await self.ClientSession.get(
@@ -142,6 +149,117 @@ class Project(base._BaseSiteAPI):
             )).json()
         except Exception as e:
             raise exception.ProjectNotFound(Project,e)
+        
+    async def download(self,save_path,filename:str|None=None) -> str:
+        warnings.warn("Project.download() is not working (You can download but you cannot open this file)")
+        if filename is None:
+            filename = f"{self.id}_{datetime.datetime.now().strftime('%Y%m%d-%H%M%S')}.sb3"
+        if not filename.endswith(".sb3"):
+            filename = filename + ".sb3"
+        zip_directory = os.path.join(save_path,f"_{self.id}_{datetime.datetime.now().strftime('%Y%m%d-%H%M%S')}_download")
+        try:
+            os.makedirs(zip_directory)
+        except:
+            pass
+        project_json = await self.load_json()
+        asset_list:list[str] = []
+        for i in project_json["targets"]:
+            for j in i["costumes"]:
+                asset_list.append(j['md5ext'])
+            for j in i["sounds"]:
+                asset_list.append(j['md5ext'])
+        asset_list = list(set(asset_list))
+        
+        async def assetdownloader(clientsession:common.ClientSession,filepath:str,asset_id:str):
+            r = await clientsession.get(f"https://assets.scratch.mit.edu/internalapi/asset/{asset_id}/get/",is_binary=True)
+            async with aiofiles.open(os.path.join(filepath,asset_id),"bw") as f:
+                await f.write(r.text)
+                #print(f"dl:{asset_id}")
+
+        async def saveproject(filepath:str,asset_id:str):
+            async with aiofiles.open(os.path.join(filepath,asset_id),"w",encoding="utf-8") as f:
+                await f.write(json.dumps(project_json, separators=(',', ':'), ensure_ascii=False))
+                #print(f"dl:{asset_id}")
+        
+        tasks = [assetdownloader(self.ClientSession,zip_directory,asset_id) for asset_id in asset_list] +\
+                [saveproject(zip_directory,"project.json")]
+        await asyncio.gather(*tasks)
+        with zipfile.ZipFile(os.path.join(save_path,filename), "a", zipfile.ZIP_DEFLATED) as f:
+            for asset_id in asset_list:
+                f.write(os.path.join(zip_directory,asset_id))
+                #print(f"ziped:{asset_id}")
+            f.write(os.path.join(zip_directory,"project.json"))
+
+        return os.path.join(save_path,filename).replace("\\","/")
+
+
+
+        
+
+
+    async def love(self,love:bool=True) -> bool:
+        self.has_session_raise()
+        if love:
+            r = (await self.ClientSession.post(f"https://api.scratch.mit.edu/projects/{self.id}/loves/user/{self.Session.username}")).json()
+        else:
+            r = (await self.ClientSession.delete(f"https://api.scratch.mit.edu/projects/{self.id}/loves/user/{self.Session.username}")).json()
+        return r["statusChanged"]
+    
+    async def favorite(self,favorite:bool=True) -> bool:
+        self.has_session_raise()
+        if favorite:
+            r = (await self.ClientSession.post(f"https://api.scratch.mit.edu/projects/{self.id}/favorites/user/{self.Session.username}")).json()
+        else:
+            r = (await self.ClientSession.delete(f"https://api.scratch.mit.edu/projects/{self.id}/favorites/user/{self.Session.username}")).json()
+        return r["statusChanged"]
+    
+    async def view(self) -> bool:
+        common.no_data_checker(self.author)
+        common.no_data_checker(self.author.username)
+        try:
+            await self.ClientSession.post(f"https://api.scratch.mit.edu/users/{self.author.username}/projects/{self.id}/views/")
+        except exception.TooManyRequests:
+            return False
+        return True
+    
+    async def edit(
+            self,
+            comment_allowed:bool|None=None,
+            title:str|None=None,
+            instructions:str|None=None,
+            notes:str|None=None,
+        ):
+        data = {}
+        if comment_allowed is not None: data["comments_allowed"] = comment_allowed
+        if title is not None: data["title"] = title
+        if instructions is not None: data["instructions"] = instructions
+        if notes is not None: data["description"] = notes
+        self._is_owner_raise()
+        r = await self.ClientSession.put(f"https://api.scratch.mit.edu/projects/{self.id}",json=data)
+        self._update_from_dict(r.json())
+
+    async def set_thumbnail(self,file:BufferedReader|str):
+        self._is_owner_raise()
+        if isinstance(file, BufferedReader):
+            thumbnail = file.read()
+        else:
+            with open(file, "rb") as f:
+                thumbnail = f.read()
+        await self.ClientSession.post(
+            f"https://scratch.mit.edu/internalapi/project/thumbnail/{self.id}/set/",
+            data=thumbnail,
+        )
+
+    async def set_json(self,data:dict|str) -> bool:
+        self._is_owner_raise()
+        if isinstance(data,str):
+            data = json.loads(data)
+        r = (await self.ClientSession.put(
+            f"https://projects.scratch.mit.edu/{self.id}",
+            json=data,
+        )).json()
+        return "status" in r and r["status"] == "ok"
+        
         
     def studios(self, *, limit=40, offset=0) -> AsyncGenerator["Studio",None]:
         common.no_data_checker(self.author)
@@ -175,9 +293,7 @@ class Project(base._BaseSiteAPI):
             "content": str(content),
             "parent_id": parent_id,
         }
-        header = self.ClientSession._header|{
-            "referer":self.url
-        }
+        header = self.ClientSession._header|{"referer":self.url}
         resp = (await self.ClientSession.post(
             f"https://api.scratch.mit.edu/proxy/comments/project/{self.id}/",
             header=header,json=data
@@ -185,6 +301,27 @@ class Project(base._BaseSiteAPI):
         return Comment(
             self.ClientSession,{"place":self,"data":resp,"id":resp["id"]},self.Session
         )
+    
+    async def share(self,share:bool):
+        if share:
+            await self.ClientSession.put(f"https://api.scratch.mit.edu/proxy/projects/{self.id}/share/",)
+        else:
+            await self.ClientSession.put(f"https://api.scratch.mit.edu/proxy/projects/{self.id}/unshare/",)
+
+    class project_visibility(TypedDict):
+        projectId:int
+        creatorId:int
+        deleted:bool
+        censored:bool
+        censoredByAdmin:bool
+        censoredByCommunity:bool
+        reshareable:bool
+        message:str
+
+    async def visibility(self) -> project_visibility:
+        r = (await self.ClientSession.get(f"https://api.scratch.mit.edu/users/{self.Session.username}/projects/{self.id}/visibility")).json()
+        return r
+
 
 
 
@@ -192,12 +329,11 @@ async def get_project(project_id:int,*,ClientSession=None) -> Project:
     ClientSession = common.create_ClientSession(ClientSession)
     return await base.get_object(ClientSession,project_id,Project)
 
-def create_Partial_Project(project_id:int,author_name:"str|None"=None,*,ClientSession:common.ClientSession|None=None,session:"Session|None"=None) -> Project:
+def create_Partial_Project(project_id:int,author:"User|None"=None,*,ClientSession:common.ClientSession|None=None,session:"Session|None"=None) -> Project:
     ClientSession = common.create_ClientSession(ClientSession)
     _project = Project(ClientSession,project_id,session)
-    if author_name is not None:
-        from .user import create_Partial_User
-        _project.author = create_Partial_User(author_name,ClientSession=ClientSession,session=session)
+    if author is not None:
+        _project.author = author
     return _project
 
 
