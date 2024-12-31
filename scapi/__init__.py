@@ -1,7 +1,7 @@
 # Created by kakeruzoku / https://github.com/kakeruzoku/scapi
 # Special Thanks: Timmccool / https://github.com/TimMcCool/scratchattach
 
-__version__ = "0.2.2"
+__version__ = "0.3.0"
 
 from .others.common import (
     create_ClientSession,
@@ -59,7 +59,11 @@ from .sites.activity import (
 from .sites.forum import (
     ForumTopic,
     ForumCategoryType,
+    ForumPost,
+    ForumStatus,
+    get_post,
     get_topic,
     get_topic_list,
-    create_Partial_ForumTopic
+    create_Partial_ForumTopic,
+    create_Partial_ForumPost,
 )

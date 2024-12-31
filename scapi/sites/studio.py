@@ -1,16 +1,18 @@
 import datetime
+from io import BufferedReader
 import random
-from typing import AsyncGenerator, TYPE_CHECKING
+from typing import AsyncGenerator, TYPE_CHECKING, TypedDict
 
 
 from ..others import common as common
 from ..others import error as exception
 from . import base,activity
 from .comment import Comment
+from . import project
 
 if TYPE_CHECKING:
     from .session import Session
-    from .user import User
+    from . import user
 
 class Studio(base._BaseSiteAPI):
     raise_class = exception.StudioNotFound
@@ -71,6 +73,17 @@ class Studio(base._BaseSiteAPI):
     @property
     def url(self) -> str:
         return f"https://scratch.mit.edu/studios/{self.id}/"
+    
+    @property
+    def _is_owner(self) -> bool:
+        if isinstance(self.Session,Session):
+            if self.Session.status.id == self.author_id:
+                return True
+        return False
+    
+    def _is_owner_raise(self) -> None:
+        if not self._is_owner:
+            raise exception.NoPermission
 
     def __int__(self) -> int: return self.id
     def __eq__(self,value) -> bool: return isinstance(value,Studio) and self.id == value.id
@@ -108,6 +121,135 @@ class Studio(base._BaseSiteAPI):
             self.ClientSession,{"place":self,"data":resp,"id":resp["id"]},self.Session
         )
     
+    async def follow(self,follow:bool) -> None:
+        # This API 's response == Session.me.featured_data() wtf??????????
+        self.has_session_raise()
+        if follow:
+            self.ClientSession.put(f"https://scratch.mit.edu/site-api/users/bookmarkers/{self.id}/add/?usernames={self.Session.username}")
+        else:
+            self.ClientSession.put(f"https://scratch.mit.edu/site-api/users/bookmarkers/{self.id}/remove/?usernames={self.Session.username}")
+
+    async def set_thumbnail(self,filename:str):
+        self._is_owner_raise(self)
+        with open(filename, "rb") as f:
+            thumbnail = f.read()
+        filename = filename.replace("\\","/").split()
+        if filename.endswith("/"): filename = filename[:-1]
+        filename = filename.split("/")[-1]
+        Extension = filename.split(".")[-1]
+        before = f'------WebKitFormBoundaryhKZwFjoxAyUTMlSh\r\nContent-Disposition: form-data; name="file"; filename="{filename}"\r\nContent-Type: image/{Extension}\r\n\r\n'.encode("utf-8")
+        after = b"\r\n------WebKitFormBoundaryhKZwFjoxAyUTMlSh--\r\n"
+        payload = b"".join([before,thumbnail,after])
+        await self.ClientSession.post(
+            f"https://scratch.mit.edu/site-api/galleries/all/{self.id}/",
+            data=payload,
+            headers={
+                "accept": "*/",
+                "content-type": "multipart/form-data; boundary=----WebKitFormBoundaryhKZwFjoxAyUTMlSh",
+                "Referer": "https://scratch.mit.edu/",
+                "x-csrftoken": "a",
+                "x-requested-with": "XMLHttpRequest",
+            }
+        )
+        return
+    
+    async def edit(self,title:str|None=None,description:str|None=None) -> None:
+        data = {}
+        self._is_owner_raise()
+        if description is not None: data["description"] = description + "\n"
+        if title is not None: data["title"] = title
+        r = await self.ClientSession.put(f"https://api.scratch.mit.edu/projects/{self.id}",json=data)
+        self._update_from_dict(r.json())
+
+    async def open_adding_project(self,is_open:bool=True) -> bool:
+        self.has_session_raise()
+        if is_open:
+            r = (await self.ClientSession.put(f"https://scratch.mit.edu/site-api/galleries/{self.id}/mark/open/")).json()
+        else:
+            r = (await self.ClientSession.put(f"https://scratch.mit.edu/site-api/galleries/{self.id}/mark/closed/")).json()
+        return r.get("success",False)
+        
+    async def open_comment(self,is_open:bool=True,is_update:bool=False) -> bool:
+        self._is_owner_raise()
+        if is_update: await self.update()
+        if self.comments_allowed != is_open:
+            r = await self.ClientSession.post(f"https://scratch.mit.edu/site-api/comments/gallery/{self.id}/toggle-comments/")
+            if r.text == "ok":
+                self.comments_allowed = is_open
+            return True
+        return False
+
+    async def invite(self,username:str) -> bool:
+        self.has_session_raise()
+        r = await self.ClientSession.put(f"https://scratch.mit.edu/site-api/users/curators-in/{self.id}/invite_curator/?usernames={username}")
+        return r.json().get("status","error") == "success"
+    
+    async def accept_invite(self) -> bool:
+        self.has_session_raise()
+        r = await self.ClientSession.put(f"https://scratch.mit.edu/site-api/users/curators-in/{self.id}/add/?usernames={self.Session.username}")
+        return r.json().get("success",False)
+    
+    async def promote(self,username:str) -> bool:
+        self.has_session_raise()
+        try:
+            r = await self.ClientSession.put(f"https://scratch.mit.edu/site-api/users/curators-in/{self.id}/promote/?usernames={username}")
+        except exception.HTTPNotFound:
+            return False
+        return True
+    
+    async def remove_user(self,username:str) -> bool:
+        self.has_session_raise()
+        try:
+            r = await self.ClientSession.put(f"https://scratch.mit.edu/site-api/users/curators-in/{self.id}/remove/?usernames={username}")
+        except exception.HTTPNotFound:
+            return False
+        return True
+    
+    async def transfer_ownership(self,username:str,password:str) -> None:
+        self._is_owner_raise()
+        await self.ClientSession.put(
+            f"https://api.scratch.mit.edu/studios/{self.id}/transfer/{username}",
+            json={"password":password}
+        )
+
+    async def leave(self):
+        self.has_session_raise()
+        await self.remove_user(self.Session.username)
+
+    async def add_project(self,project_id:int):
+        self.has_session_raise()
+        self.ClientSession.post(f"https://api.scratch.mit.edu/studios/{self.id}/project/{project_id}")
+
+    async def remove_project(self,project_id:int):
+        self.has_session_raise()
+        self.ClientSession.delete(f"https://api.scratch.mit.edu/studios/{self.id}/project/{project_id}")
+    
+    def projects(self, *, limit=40, offset=0) -> AsyncGenerator[project.Project, None]:
+        return base.get_object_iterator(
+            self.ClientSession,f"https://api.scratch.mit.edu/studios/{self.id}/projects",
+            None,project.Project,self.Session,
+            limit=limit,offset=offset
+        )
+    
+    def curators(self, *, limit=40, offset=0) -> AsyncGenerator["user.User", None]:
+        from . import user
+        return base.get_object_iterator(
+            self.ClientSession,f"https://api.scratch.mit.edu/studios/{self.id}/curators",
+            None,user.User,self.Session,
+            limit=limit,offset=offset
+        )
+    
+    def managers(self, *, limit=40, offset=0) -> AsyncGenerator["user.User", None]:
+        from . import user
+        return base.get_object_iterator(
+            self.ClientSession,f"https://api.scratch.mit.edu/studios/{self.id}/managers",
+            None,user.User,self.Session,
+            limit=limit,offset=offset
+        )
+    
+    async def host(self) -> "user.User":
+        return [i async for i in self.managers(limit=10)][0]
+    
     async def activity(self, *, limit=40, offset=0) -> AsyncGenerator[activity.Activity, None]:
         c = 0
         dt = str(datetime.datetime.now(datetime.timezone.utc))
@@ -124,6 +266,20 @@ class Studio(base._BaseSiteAPI):
                 _obj._update_from_studio(self,j)
                 dt = str(_obj.datetime - datetime.timedelta(seconds=1))
                 yield _obj
+
+    class studio_roles(TypedDict):
+        manager:bool
+        curator:bool
+        invited:bool
+        following:bool
+
+    async def roles(self) -> studio_roles:
+        self.has_session_raise()
+        return (await self.ClientSession.get(
+            f"https://api.scratch.mit.edu/studios/{self.id}/users/{self.Session.username}",
+        )).json()
+    
+
     
 async def get_studio(studio_id:int,*,ClientSession=None) -> Studio:
     ClientSession = common.create_ClientSession(ClientSession)
