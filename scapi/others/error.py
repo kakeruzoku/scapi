@@ -27,6 +27,8 @@ if TYPE_CHECKING:
     - CommentNotFound コメントない
     - ForumNotFound フォーラム関連
       - ForumTopicNotFound とぴっくない
+      - ForumPostNotFound
+    - ClassroomNotFound
 - NoDataError Partial系のデータで、データが存在しないとき
 """
 
@@ -132,6 +134,11 @@ class ForumPostNotFound(ForumNotFound):
     """
     フォーラムトピック取得失敗
     """
+class ClassroomNotFound(ObjectNotFound):
+    """
+    クラスない
+    """
+
 
 class NoDataError(Exception):
     """

@@ -169,8 +169,8 @@ class User(base._BaseSiteAPI):
     async def love_count(self) -> int:
         return base.get_count(self.ClientSession,f"https://scratch.mit.edu/projects/all/{self.username}/loves/","</a>&raquo;\n\n (",")")
     
-    async def loves(self, *, limit=40, offset=0) -> AsyncGenerator[project.Project, None]:
-        for i in range(offset//40+1,(offset+limit-1)//40+2):
+    async def loves(self, *, start_page=1, end_page=1) -> AsyncGenerator[project.Project, None]:
+        for i in range(start_page,end_page+1):
             r = await self.ClientSession.get(f"https://scratch.mit.edu/projects/all/{self.username}/loves/?page={i}",check=False)
             if r.status_code == 404:
                 return

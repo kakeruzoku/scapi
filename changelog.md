@@ -7,6 +7,15 @@
 
 # 0.x.x
 ## 0.3.x
+### 0.3.1
+2024/12/31更新
+- **[Add]** `Classroom`の追加
+  - **[Add]** `get_classroom` `get_classroom_by_token` の追加
+- Session
+  - **[Add]** `my_classroom` `viewed_projects` `get_forumtopic` `get_forumpost` `explore_projects` `search_projects` `explore_studios` `search_studios` の追加
+- **[Fix]** `Project.download()` がうまくいかない問題を修正
+
+
 ### 0.3.0
 2024/12/31更新
 - ClientSession関連
