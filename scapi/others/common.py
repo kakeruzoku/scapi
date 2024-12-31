@@ -1,5 +1,4 @@
 import datetime
-from typing import Literal, overload
 import aiohttp
 from multidict import CIMultiDictProxy, CIMultiDict
 from . import error as exceptions
@@ -18,9 +17,6 @@ def create_ClientSession(inp:"ClientSession|None"=None) -> "ClientSession":
 
 json_resp = dict[str,"json_resp"]|list["json_resp"]|str|float|int|bool|None
 class Response:
-    def __str__(self) -> str:
-        return f"<Response [{self.status_code}] {self.text}>"
-
     def __init__(self,status:int,text:str,headers:CIMultiDictProxy[str]) -> None:
         self.status_code:int = status
         self.text:str = text
@@ -28,18 +24,6 @@ class Response:
     
     def json(self) -> json_resp:
         return json.loads(self.text)
-    
-class BytesResponse(Response):
-    def __str__(self) -> str:
-        return f"<BytesResponse [{self.status_code}] {len(self.text)}bytes> "
-    
-    def __init__(self,status:int,data:bytes,headers:CIMultiDictProxy[str]) -> None:
-        self.status_code:int = status
-        self.text:bytes = data
-        self.headers:CIMultiDict[str] = headers.copy()
-
-    def json(self) -> None:
-        return None
 
 class ClientSession(aiohttp.ClientSession):
 
@@ -70,126 +54,84 @@ class ClientSession(aiohttp.ClientSession):
         if response.text == '{"code":"BadRequest","message":""}':
             raise exceptions.BadResponse(response.status_code,response)
 
-    async def _send_requests(
-        self,obj:"ClientSession.get|ClientSession.post|ClientSession.put|ClientSession.delete",url:str,*,
+    
+    async def get(
+        session,url:str,*,
         data=None,json:dict=None,timeout:float=None,params:dict[str,str]=None,
-        header:dict[str,str]=None,cookie:dict[str,str]=None,check:bool=True,is_binary:bool=False
-    ):
-        if self.closed: raise exceptions.SessionClosed
-        if header is None: header = self._header.copy()
-        if cookie is None: cookie = self._cookie.copy()
+        header:dict[str,str]=None,cookie:dict[str,str]=None,check:bool=True
+    ) -> Response:
+        if session.closed: raise exceptions.SessionClosed
+        if header is None: header = session._header.copy()
+        if cookie is None: cookie = session._cookie.copy()
         try:
-            async with obj(
+            async with super().get(
                 url,data=data,json=json,timeout=timeout,params=params,headers=header,cookies=cookie
             ) as response:
-                response:aiohttp.ClientResponse
-                if is_binary: r = BytesResponse(response.status,await response.read(),response.headers)
-                else: r = Response(response.status,await response.text(),response.headers)
+                r = Response(response.status,await response.text(),response.headers)
                 response.close()
         except Exception as e:
             raise exceptions.HTTPFetchError(e)
-        if check: await self._check(r)
+        if check: await session._check(r)
         return r
-
-    @overload
-    async def get(
-        self,url:str,*,
-        data=None,json:dict=None,timeout:float=None,params:dict[str,str]=None,
-        header:dict[str,str]=None,cookie:dict[str,str]=None,check:bool=True,is_binary:Literal[False]=False
-    ) -> Response: ...
     
-    @overload
-    async def get(
-        self,url:str,*,
-        data=None,json:dict=None,timeout:float=None,params:dict[str,str]=None,
-        header:dict[str,str]=None,cookie:dict[str,str]=None,check:bool=True,is_binary:Literal[True]
-    ) -> BytesResponse: ...
-
-    async def get(
-        self,url:str,*,
-        data=None,json:dict=None,timeout:float=None,params:dict[str,str]=None,
-        header:dict[str,str]=None,cookie:dict[str,str]=None,check:bool=True,is_binary:bool=False
-    ) -> Response|BytesResponse:
-        return await self._send_requests(
-            super().get,url=url,
-            data=data,json=json,timeout=timeout,params=params,
-            header=header,cookie=cookie,check=check,is_binary=is_binary
-        )
     
-    @overload
     async def post(
-        self,url:str,*,
+        session,url:str,*,
         data=None,json:dict=None,timeout:float=None,params:dict[str,str]=None,
-        header:dict[str,str]=None,cookie:dict[str,str]=None,check:bool=True,is_binary:Literal[False]=False
-    ) -> Response: ...
+        header:dict[str,str]=None,cookie:dict[str,str]=None,check:bool=True
+    ) -> Response:
+        if session.closed: raise exceptions.SessionClosed
+        if header is None: header = session._header.copy()
+        if cookie is None: cookie = session._cookie.copy()
+        try:
+            async with super().post(
+                url,data=data,json=json,timeout=timeout,params=params,headers=header,cookies=cookie
+            ) as response:
+                r = Response(response.status,await response.text(),response.headers)
+                response.close()
+        except Exception as e:
+            raise exceptions.HTTPFetchError(e)
+        if check: await session._check(r)
+        return r
     
-    @overload
-    async def post(
-        self,url:str,*,
-        data=None,json:dict=None,timeout:float=None,params:dict[str,str]=None,
-        header:dict[str,str]=None,cookie:dict[str,str]=None,check:bool=True,is_binary:Literal[True]
-    ) -> BytesResponse: ...
-
-    async def post(
-        self,url:str,*,
-        data=None,json:dict=None,timeout:float=None,params:dict[str,str]=None,
-        header:dict[str,str]=None,cookie:dict[str,str]=None,check:bool=True,is_binary:bool=False
-    ) -> Response|BytesResponse:
-        return await self._send_requests(
-            super().post,url=url,
-            data=data,json=json,timeout=timeout,params=params,
-            header=header,cookie=cookie,check=check,is_binary=is_binary
-        )
     
-    @overload
     async def put(
-        self,url:str,*,
+        session,url:str,*,
         data=None,json:dict=None,timeout:float=None,params:dict[str,str]=None,
-        header:dict[str,str]=None,cookie:dict[str,str]=None,check:bool=True,is_binary:Literal[False]=False
-    ) -> Response: ...
+        header:dict[str,str]=None,cookie:dict[str,str]=None,check:bool=True
+    ) -> Response:
+        if session.closed: raise exceptions.SessionClosed
+        if header is None: header = session._header.copy()
+        if cookie is None: cookie = session._cookie.copy()
+        try:
+            async with super().put(
+                url,data=data,json=json,timeout=timeout,params=params,headers=header,cookies=cookie
+            ) as response:
+                r = Response(response.status,await response.text(),response.headers)
+                response.close()
+        except Exception as e:
+            raise exceptions.HTTPFetchError(e)
+        if check: await session._check(r)
+        return r
     
-    @overload
-    async def put(
-        self,url:str,*,
-        data=None,json:dict=None,timeout:float=None,params:dict[str,str]=None,
-        header:dict[str,str]=None,cookie:dict[str,str]=None,check:bool=True,is_binary:Literal[True]
-    ) -> BytesResponse: ...
-
-    async def put(
-        self,url:str,*,
-        data=None,json:dict=None,timeout:float=None,params:dict[str,str]=None,
-        header:dict[str,str]=None,cookie:dict[str,str]=None,check:bool=True,is_binary:bool=False
-    ) -> Response|BytesResponse:
-        return await self._send_requests(
-            super().put,url=url,
-            data=data,json=json,timeout=timeout,params=params,
-            header=header,cookie=cookie,check=check,is_binary=is_binary
-        )
-    
-    @overload
     async def delete(
-        self,url:str,*,
+        session,url:str,*,
         data=None,json:dict=None,timeout:float=None,params:dict[str,str]=None,
-        header:dict[str,str]=None,cookie:dict[str,str]=None,check:bool=True,is_binary:Literal[False]=False
-    ) -> Response: ...
-    
-    @overload
-    async def delete(
-        self,url:str,*,
-        data=None,json:dict=None,timeout:float=None,params:dict[str,str]=None,
-        header:dict[str,str]=None,cookie:dict[str,str]=None,check:bool=True,is_binary:Literal[True]
-    ) -> BytesResponse: ...
-
-    async def delete(
-        self,url:str,*,
-        data=None,json:dict=None,timeout:float=None,params:dict[str,str]=None,
-        header:dict[str,str]=None,cookie:dict[str,str]=None,check:bool=True,is_binary:bool=False
-    ) -> Response|BytesResponse:
-        return await self._send_requests(
-            super().delete,url=url,
-            data=data,json=json,timeout=timeout,params=params,
-            header=header,cookie=cookie,check=check,is_binary=is_binary
-        )
+        header:dict[str,str]=None,cookie:dict[str,str]=None,check:bool=True
+    ) -> Response:
+        if session.closed: raise exceptions.SessionClosed
+        if header is None: header = session._header.copy()
+        if cookie is None: cookie = session._cookie.copy()
+        try:
+            async with super().delete(
+                url,data=data,json=json,timeout=timeout,params=params,headers=header,cookies=cookie
+            ) as response:
+                r = Response(response.status,await response.text(),response.headers)
+                response.close()
+        except Exception as e:
+            raise exceptions.HTTPFetchError(e)
+        if check: await session._check(r)
+        return r
 
 
 
@@ -252,6 +194,8 @@ def no_data_checker(obj) -> None:
     
 def try_int(inp:str|int) -> int:
     try:
+        if isinstance(inp,int): return inp
+        if inp.isdecimal(): raise ValueError
         return int(inp)
     except Exception:
         raise ValueError
