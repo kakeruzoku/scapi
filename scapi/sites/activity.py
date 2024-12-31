@@ -16,38 +16,37 @@ if TYPE_CHECKING:
     from .user import User
 
 class ActivityType(Enum):
-    #[message/User/Studio/feed]
+    #[message/User/Studio]
     unknown=0
 
     #Studio Activity
-    StudioBecomeCurator=1 #[x o o o]
-    StudioBecomeManager=2 #[o o o o]
-    StudioBecomeHost=3 #[o x o o]
-    StudioInviteCurator=4 #[o x x x]
+    StudioBecomeCurator=1 #[x o o]
+    StudioBecomeManager=2 #[o o o]
+    StudioBecomeHost=3 #[o x o]
+    StudioInviteCurator=4 #[o x x]
     
-    StudioRemoveCurator=5 #[x x o x]
-    StudioRemoveProject=6 #[x x o x]
+    StudioRemoveCurator=5 #[x x o]
+    StudioRemoveProject=6 #[x x o]
 
-    StudioAddProject=7 #[x o o x]
+    StudioAddProject=7 #[x o o]
 
-    StudioUpdate=8 #[x x o x]
-    StudioActivity=9 #[o x x x]
-    StudioFollow=10 #[x o x x]
+    StudioUpdate=8 #[x x o]
+    StudioActivity=9 #[o x x]
+    StudioFollow=10 #[x o x]
 
     #project
-    ProjectLove=11 #[o o x x]
-    ProjectFavorite=12 #[o o x x]
-    ProjectShare=13 #[x o x o]
-    ProjectRemix=14 #[x x x o]
+    ProjectLove=11 #[o o x]
+    ProjectFavorite=12 #[o o x]
+    ProjectShare=13 #[x o x]
 
     #User Activity
-    UserFollowing=15 #[o o x o]
+    UserFollowing=14 #[o o x]
 
     #Forum
-    ForumPost=16 #[o x x x]
+    ForumPost=15 #[o x x]
 
     #Comment
-    Comment=17 #[o x x x]
+    Comment=16 #[o x x]
 
 class Activity:
     id_name = "data"
@@ -167,55 +166,6 @@ class Activity:
         else:
             warnings.warn(f"unknown activitytype: {t} (studio)")
 
-    def _update_from_feed(self,session:"Session",data:dict[str,str]):
-        from .project import create_Partial_Project
-        from .user import create_Partial_User
-        from .studio import create_Partial_Studio
-        self.id = int(data["id"])
-        t,cs,ss = self._update_from_dict(session,data)
-        if t == "shareproject":
-            self.type = ActivityType.ProjectShare
-            self.target = self.place = create_Partial_Project(data["project_id"],self.actor,ClientSession=cs,session=ss)
-            self.target.title = data["title"]
-        elif t == "loveproject":
-            self.type = ActivityType.ProjectShare
-            self.target = self.place = create_Partial_Project(data["project_id"],self.actor,ClientSession=cs,session=ss)
-            self.target.title = data["title"]
-        elif t == "favoriteproject":
-            self.type = ActivityType.ProjectFavorite
-            self.target = self.place = create_Partial_Project(data["project_id"],self.actor,ClientSession=cs,session=ss)
-            self.target.title = data["project_title"]
-        elif t == "followuser":
-            self.type = ActivityType.UserFollowing
-            self.target = self.place = create_Partial_User(data["followed_username"],data["followed_user_id"],ClientSession=cs,session=ss)
-        elif t == "becomecurator":
-            self.type = ActivityType.StudioBecomeCurator
-            self.target = create_Partial_User(data["username"],ClientSession=cs,session=ss)
-            self.place = create_Partial_Studio(data["gallery_id"],ClientSession=cs,session=ss)
-            self.place.title = data["title"]
-        elif t == "remixproject":
-            self.type = ActivityType.ProjectRemix
-            self.target = create_Partial_Project(data["parent_id"],ClientSession=cs,session=ss)
-            self.target.title = data["title"]
-            self.place = create_Partial_Project(data["project_id"],self.actor,ClientSession=cs,session=ss)
-            self.place.title = data["parent_title"]
-        elif t == "becomeownerstudio":
-            self.type = ActivityType.StudioBecomeManager
-            self.target = create_Partial_User(data["recipient_username"],ClientSession=cs,session=ss)
-            self.place = create_Partial_Studio(data["gallery_id"],ClientSession=cs,session=ss)
-            self.place.title = data["gallery_title"]
-        elif t == "followstudio":
-            self.type = ActivityType.StudioFollow
-            self.target = self.place = create_Partial_Studio(data["gallery_id"],ClientSession=cs,session=ss)
-            self.place.title = data["title"]
-        elif t == "becomehoststudio":
-            self.type = ActivityType.StudioBecomeHost
-            self.target = create_Partial_User(data["recipient_username"],ClientSession=cs,session=ss)
-            self.place = create_Partial_Studio(data["gallery_id"],ClientSession=cs,session=ss)
-            self.place.title = data.get("title",data.get("gallery_title",None))
-        else:
-            warnings.warn(f"unknown activitytype: {t} (feed)")
-
     def _set_dt_from_html(self,text:str) -> None:
         _minute = _hour = _day = _week = _month = 0
         for i in text.replace("ago","").split(","):
@@ -285,6 +235,4 @@ class Activity:
         elif "is now following" in t:
             self.type = ActivityType.UserFollowing
             self.target = self.place = self._load_user(span.next_sibling.next_sibling,cs,ss)
-        else:
-            warnings.warn(f"unknown activitytype: {t} (user)")
         

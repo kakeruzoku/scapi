@@ -6,33 +6,6 @@
 - **[Other]** その他
 
 # 0.x.x
-## 0.3.x
-### 0.3.0
-2024/12/31更新
-- ClientSession関連
-  - **[Add]** BytesResponseを追加してバイナリデータのリクエストに対応
-  - **[Change]** ClientSessionをまとめた
-- フォーラム関連
-  - **[Add]** `ForumStatus` (ユーザーのフォーラムの活動情報クラス) の追加
-  - **[Add]** `ForumPost` の追加
-  - ForumTopic
-    - **[Add]** `ForumTopic.get_posts()` の追加
-  - **[Add]** `ForumPost` (投稿を表す) の追加
-    - **[Add]** `scapi.get_post()` `create_Partial_ForumPost()` の追加`
-- Project
-  - **[Add]** `Project.download()` `love()` `favorite()` `view()` `edit()` `set_thumbnail()` `set_json()` の追加
-- Studio
-  - **[Add]**  `follow()` `set_thumbnail()` `edit()` `open_adding_project()` `open_comment()` `invite()` `accept_invite()` `promote()` `remove_user()` `transfer_ownership()` `leave()` `add_project()` `remove_project()` `projects()` `curators()` `managers()` `host()` `roles()` の追加
-- User
-  - **[Add]**  `toggle_comment()` `edit()` `follow()` の追加
-- Session
-  - **[Add]** `feed()` の追加
-- Activity
-  - **[Add]** `Session.feed()`に対応
-  - **[Add]** `ActivityType`に`ProjectRemix`を追加
-  
-
-
 ## 0.2.x
 ### 0.2.2
 2024/12/27更新

@@ -9,7 +9,7 @@ if TYPE_CHECKING:
   - SessionClosed セッションが閉じてた
   - HTTPFetchError レスポンスが帰って来なかった
   - ResponseError 応答でエラーが起こった
-    - BadResponse {"code":"BadRequest","message":""} など失敗した。
+    - BadResponse {"code":"BadRequest","message":""} が帰ってきた
     - BadRequest 4xx
       - Unauthorized 401 or 403
       - HTTPNotFound 404
@@ -125,10 +125,6 @@ class ForumNotFound(ObjectNotFound):
     フォーラム取得失敗
     """
 class ForumTopicNotFound(ForumNotFound):
-    """
-    フォーラムトピック取得失敗
-    """
-class ForumPostNotFound(ForumNotFound):
     """
     フォーラムトピック取得失敗
     """
