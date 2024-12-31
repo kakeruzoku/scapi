@@ -1,6 +1,6 @@
 import datetime
 import random
-from typing import AsyncGenerator, Generator, TypedDict, TYPE_CHECKING
+from typing import AsyncGenerator, Generator, Literal, TypedDict, TYPE_CHECKING
 
 from ..others import common
 from ..others import error as exception
@@ -9,7 +9,7 @@ from . import base,project,comment,activity
 import bs4
 
 if TYPE_CHECKING:
-    from .session import Session
+    from . import session
     
 
 class User(base._BaseSiteAPI):
@@ -23,7 +23,7 @@ class User(base._BaseSiteAPI):
         self,
         ClientSession:common.ClientSession,
         username:str,
-        scratch_session:"Session|None"=None,
+        scratch_session:"session.Session|None"=None,
         **entries
     ) -> None:
         super().__init__("get",f"https://api.scratch.mit.edu/users/{username}",ClientSession,scratch_session)
@@ -55,7 +55,8 @@ class User(base._BaseSiteAPI):
 
     @property
     def _is_me(self) -> bool:
-        if isinstance(self.Session,Session):
+        from . import session
+        if isinstance(self.Session,session.Session):
             if self.Session.username == self.username:
                 return True
         return False
@@ -80,7 +81,7 @@ class User(base._BaseSiteAPI):
             self._website_data = await self.ClientSession.get(f"https://scratch.mit.edu/users/{self.username}/")
         return self._website_data
     
-    async def does_exist(self,use_cache:bool=True) -> bool|None:
+    async def exist(self,use_cache:bool=True) -> bool|None:
         await self.load_website(not use_cache)
         if self._website_data.status_code in [200]:
             return True
@@ -107,9 +108,8 @@ class User(base._BaseSiteAPI):
         jsons = (await self.ClientSession.get(
             f"https://scratch.mit.edu/site-api/users/all/{self.username}/"
         )).json()
-        _project = project.create_Partial_Project(jsons["featured_project_data"]["id"])
+        _project = project.create_Partial_Project(jsons["featured_project_data"]["id"],self)
         _project.title = jsons["featured_project_data"]["title"]
-        _project.author = self
         return {
             "label":jsons["featured_project_label_name"],
             "title":jsons["featured_project_data"]["title"],
@@ -284,11 +284,52 @@ class User(base._BaseSiteAPI):
         return c
     
 
+    async def toggle_comment(self) -> bool:
+        self._is_me_raise()
+        r = await self.ClientSession.post(f"https://scratch.mit.edu/site-api/comments/user/{self.username}/toggle-comments/")
+        return r.text == "ok"
+    
+    async def edit(
+            self,
+            about_me:str|None=None,
+            wiwo:str|None=None,
+            featured_project_id:int|None=None,
+            featured_label:Literal["Featured","ProjectFeatured","Tutorial","Work In Progress","Remix This!","My Favorite Things","Why I Scratch"]|None=None
+        ):
+        self._is_me_raise()
+        data = {
+            "comments_allowed":True,
+            "id":self.username,
+            "status":self.wiwo if wiwo is None else wiwo,
+            "thumbnail_url":self.get_icon_url().split("https"),
+            "userId":self.id,
+            "username":self.username,
+        }
+        if about_me is not None: data["bio"] = about_me
+        if wiwo is not None: data["status"] = wiwo
+        if featured_project_id is not None: data["featured_project"] = featured_project_id
+        if featured_label is not None: data["featured_project_label_name"] = featured_label
+        print(data)
+        await self.ClientSession.put(
+            f"https://scratch.mit.edu/site-api/users/all/{self.username}/",
+            json = data
+        )
+
+    async def follow(self,follow:bool=True):
+        self.has_session_raise()
+        if follow:
+            await self.ClientSession.put(f"https://scratch.mit.edu/site-api/users/followers/{self.username}/add/?usernames={self.Session.username}")
+        else:
+            await self.ClientSession.put(f"https://scratch.mit.edu/site-api/users/followers/{self.username}/remove/?usernames={self.Session.username}")
+
+
+
+
 async def get_user(username:str,*,ClientSession=None) -> User:
     ClientSession = common.create_ClientSession(ClientSession)
     return await base.get_object(ClientSession,username,User)
 
-def create_Partial_User(username:str,user_id:int|None=None,*,ClientSession:common.ClientSession|None=None,session:"Session|None"=None) -> User:
+def create_Partial_User(username:str,user_id:int|None=None,*,ClientSession:common.ClientSession|None=None,session:"session.Session|None"=None) -> User:
     ClientSession = common.create_ClientSession(ClientSession)
     _user = User(ClientSession,username,session)
     if user_id is not None:
