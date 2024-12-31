@@ -46,7 +46,7 @@ class ClientSession(aiohttp.ClientSession):
     def __init__(self,header:dict) -> None:
         super().__init__()
         self._header = header
-        self._cookie = {}
+        self._cookie = {"scratchcsrftoken": 'a'}
     
     @property
     def header(self) -> dict:

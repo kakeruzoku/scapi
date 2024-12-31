@@ -143,25 +143,26 @@ class Project(base._BaseSiteAPI):
 
     async def load_json(self) -> dict:
         try:
-            self.update()
+            await self.update()
             return (await self.ClientSession.get(
                 f"https://projects.scratch.mit.edu/{self.id}?token={self.project_token}"
             )).json()
         except Exception as e:
             raise exception.ProjectNotFound(Project,e)
         
-    async def download(self,save_path,filename:str|None=None) -> str:
-        warnings.warn("Project.download() is not working (You can download but you cannot open this file)")
+    async def download(self,save_path,filename:str|None=None,log:bool=False) -> str:
         if filename is None:
             filename = f"{self.id}_{datetime.datetime.now().strftime('%Y%m%d-%H%M%S')}.sb3"
         if not filename.endswith(".sb3"):
             filename = filename + ".sb3"
-        zip_directory = os.path.join(save_path,f"_{self.id}_{datetime.datetime.now().strftime('%Y%m%d-%H%M%S')}_download")
+        zip_directory = os.path.join(save_path,f"_{self.id}_{datetime.datetime.now().strftime('%Y%m%d-%H%M%S')}_download").replace("\\","/")
         try:
             os.makedirs(zip_directory)
-        except:
-            pass
+            if log: print(f'Created folder:{zip_directory}')
+        except Exception:
+            raise ValueError(f'Did not create folder:{zip_directory}')
         project_json = await self.load_json()
+        if log: print(f'download:project.json')
         asset_list:list[str] = []
         for i in project_json["targets"]:
             for j in i["costumes"]:
@@ -172,24 +173,36 @@ class Project(base._BaseSiteAPI):
         
         async def assetdownloader(clientsession:common.ClientSession,filepath:str,asset_id:str):
             r = await clientsession.get(f"https://assets.scratch.mit.edu/internalapi/asset/{asset_id}/get/",is_binary=True)
+            if log: print(f'download:{asset_id}')
             async with aiofiles.open(os.path.join(filepath,asset_id),"bw") as f:
                 await f.write(r.text)
-                #print(f"dl:{asset_id}")
+                if log: print(f'wrote:{asset_id}')
 
         async def saveproject(filepath:str,asset_id:str):
             async with aiofiles.open(os.path.join(filepath,asset_id),"w",encoding="utf-8") as f:
                 await f.write(json.dumps(project_json, separators=(',', ':'), ensure_ascii=False))
-                #print(f"dl:{asset_id}")
+                if log: print(f'wrote:project.json')
         
         tasks = [assetdownloader(self.ClientSession,zip_directory,asset_id) for asset_id in asset_list] +\
                 [saveproject(zip_directory,"project.json")]
         await asyncio.gather(*tasks)
         with zipfile.ZipFile(os.path.join(save_path,filename), "a", zipfile.ZIP_DEFLATED) as f:
             for asset_id in asset_list:
-                f.write(os.path.join(zip_directory,asset_id))
-                #print(f"ziped:{asset_id}")
-            f.write(os.path.join(zip_directory,"project.json"))
-
+                f.write(os.path.join(zip_directory,asset_id),asset_id)
+                if log: print(f'ziped:{asset_id}')
+            f.write(os.path.join(zip_directory,"project.json"),"project.json")
+            if log: print(f'ziped:project.json')
+        for asset_id in asset_list:
+            os.remove(os.path.join(zip_directory,asset_id))
+            if log: print(f'removed:{asset_id}')
+        os.remove(os.path.join(zip_directory,"project.json"))
+        if log: print(f'removed:project.json')
+        try:
+            os.rmdir(zip_directory)
+            if log: print(f'removed:{zip_directory}')
+        except:
+            pass
+        print(f"success:"+os.path.join(save_path,filename).replace("\\","/"))
         return os.path.join(save_path,filename).replace("\\","/")
 
 

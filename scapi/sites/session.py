@@ -7,7 +7,7 @@ import warnings
 from ..others import other_api
 from ..others import common
 from ..others import error as exception
-from . import user,project,studio,activity,base
+from . import user,project,studio,activity,base,forum,classroom
 
 
 class SessionStatus:
@@ -124,6 +124,11 @@ class Session(base._BaseSiteAPI):
         _user.join_date = self.status.joined_dt
         return _user
     
+    async def my_classroom(self) -> classroom.Classroom|None:
+        if self.status.classroomId is None:
+            return
+        return await base.get_object(self.ClientSession,self.status.classroomId,classroom.Classroom,self)
+    
     async def create_project(self,title:str|None=None,project_json:dict|None=None,remix_id:int|None=None) -> project.Project:
         if project_json is None:
             project_json = common.empty_project_json.copy()
@@ -180,23 +185,73 @@ class Session(base._BaseSiteAPI):
                 _obj = activity.Activity(self.ClientSession)
                 _obj._update_from_feed(self,j)
                 yield _obj
+
+    def viewed_projects(self, *, limit=40, offset=0) -> AsyncGenerator[activity.Activity, None]:
+        return base.get_object_iterator(
+            self.ClientSession,f"https://api.scratch.mit.edu/users/{self.username}/projects/recentlyviewed",
+            None, project.Project, self.Session, limit=limit, offset=offset
+        )
     
     async def get_project(self,project_id:int) -> project.Project:
         return await base.get_object(self.ClientSession,project_id,project.Project,self)
     
     async def get_user(self,username:str) -> user.User:
-        return  await base.get_object(self.ClientSession,username,user.User,self)
+        return await base.get_object(self.ClientSession,username,user.User,self)
     
     async def get_studio(self,studio_id:int) -> studio.Studio:
-        return  await base.get_object(self.ClientSession,studio_id,studio.Studio,self)
+        return await base.get_object(self.ClientSession,studio_id,studio.Studio,self)
+    
+    async def get_forumtopic(self,topic_id:int) -> forum.ForumTopic:
+        return await base.get_object(self.ClientSession,topic_id,forum.ForumTopic,self)
+    
+    async def get_forumpost(self,post_id:int) -> forum.ForumPost:
+        return await base.get_object(self.ClientSession,post_id,forum.ForumPost,self)
+    
+    def explore_projects(self, *, query:str="*", mode:str="trending", language:str="en", limit:int=40, offset:int=0) -> AsyncGenerator["project.Project",None]:
+        return base.get_object_iterator(
+            self.ClientSession, f"https://api.scratch.mit.edu/explore/projects",
+            None,project.Project,self,limit=limit,offset=offset,
+            add_params={"language":language,"mode":mode,"q":query}
+        )
+
+    def search_projects(self, query:str, *, mode:str="trending", language:str="en", limit:int=40, offset:int=0) -> AsyncGenerator["project.Project",None]:
+        return base.get_object_iterator(
+            self.ClientSession, f"https://api.scratch.mit.edu/search/projects",
+            None,project.Project,self,limit=limit,offset=offset,
+            add_params={"language":language,"mode":mode,"q":query}
+        )
+    
+    def explore_studios(self, *, query:str="*", mode:str="trending", language:str="en", limit:int=40, offset:int=0) -> AsyncGenerator["studio.Studio",None]:
+        return base.get_object_iterator(
+            self.ClientSession, f"https://api.scratch.mit.edu/explore/studios",
+            None,studio.Studio,self,limit=limit,offset=offset,
+            add_params={"language":language,"mode":mode,"q":query}
+        )
+
+    def search_studios(self, query:str, *, mode:str="trending", language:str="en", limit:int=40, offset:int=0) -> AsyncGenerator["studio.Studio",None]:
+        return base.get_object_iterator(
+            self.ClientSession, f"https://api.scratch.mit.edu/search/studios",
+            None,studio.Studio,self,limit=limit,offset=offset,
+            add_params={"language":language,"mode":mode,"q":query}
+        )
+    
+    async def get_classroom(self,classroom_id:int) -> classroom.Classroom:
+        return await base.get_object(self.ClientSession,classroom_id,classroom.Classroom)
+
+    async def get_classroom_by_token(self,classtoken:str) -> classroom.Classroom:
+        r = (await self.ClientSession.get(f"https://api.scratch.mit.edu/classtoken/{classtoken}")).json()
+        _obj = classroom.Classroom(self.ClientSession,r["id"])
+        _obj._update_from_dict(r)
+        return _obj
     
 async def session_login(session_id,*,ClientSession=None) -> Session:
     ClientSession = common.create_ClientSession(ClientSession)
     return await base.get_object(ClientSession,session_id,Session)
 
 
-async def login(username,password) -> Session:
-    ClientSession = common.create_ClientSession()
+async def login(username,password,*,ClientSession=None) -> Session:
+    _created_cs = ClientSession is None
+    if _created_cs: ClientSession = common.create_ClientSession()
     try:
         r = await ClientSession.post(
             "https://scratch.mit.edu/login/",
@@ -208,7 +263,8 @@ async def login(username,password) -> Session:
         )
         return await session_login(
             str(re.search('"(.*)"', r.headers["Set-Cookie"]).group()).replace("\"",""),
-            ClientSession=ClientSession
+            ClientSession=ClientSession if _created_cs else None
         )
     except Exception as e:
+        if _created_cs: await ClientSession.close()
         raise exception.LoginFailure(e)

@@ -1,7 +1,15 @@
-# Created by kakeruzoku / https://github.com/kakeruzoku/scapi
 # Special Thanks: Timmccool / https://github.com/TimMcCool/scratchattach
 
-__version__ = "0.3.0"
+#███████╗ ██████╗ █████╗ ██████╗ ██╗
+#██╔════╝██╔════╝██╔══██╗██╔══██╗██║
+#███████╗██║     ███████║██████╔╝██║
+#╚════██║██║     ██╔══██║██╔═══╝ ██║
+#███████║╚██████╗██║  ██║██║     ██║
+#╚══════╝ ╚═════╝╚═╝  ╚═╝╚═╝     ╚═╝
+# Created by kakeruzoku [kakeruzoku@gmail.com]
+# pip install scapi / https://github.com/kakeruzoku/scapi 
+
+__version__ = "0.3.1"
 
 from .others.common import (
     create_ClientSession,
@@ -66,4 +74,10 @@ from .sites.forum import (
     get_topic_list,
     create_Partial_ForumTopic,
     create_Partial_ForumPost,
+)
+from .sites.classroom import (
+    Classroom,
+    get_classroom,
+    get_classroom_by_token,
+    create_Partial_classroom
 )

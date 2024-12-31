@@ -1,5 +1,5 @@
 from abc import ABC, abstractmethod
-from typing import TYPE_CHECKING, Any, AsyncGenerator, Literal
+from typing import TYPE_CHECKING, Any, AsyncGenerator, Literal, TypeVar
 import random
 
 from ..others import common as common
@@ -20,7 +20,7 @@ class _BaseSiteAPI(ABC):
             update_type:str,update_url:str,
             ClientSession:common.ClientSession,
             Session:"Scratch_Session|None"=None) -> None:
-        self.ClientSession:common.ClientSession = ClientSession
+        self._ClientSession:common.ClientSession = ClientSession
         self.update_type:Literal["get","post","put","delete"] = update_type
         self.update_url:str = update_url
         self.Session:"Scratch_Session|None" = Session
@@ -47,6 +47,10 @@ class _BaseSiteAPI(ABC):
         if isinstance(self.Session,Scratch_Session):
             return True
         return False
+    
+    @property
+    def ClientSession(self) -> common.ClientSession:
+        return self._ClientSession
         
     def has_session_raise(self):
         if not self.has_session:
@@ -64,12 +68,14 @@ class _BaseSiteAPI(ABC):
     @property
     def session_closed(self) -> bool:
         return self.ClientSession.closed
+    
+_T = TypeVar("_T")
 
 async def get_object(
         ClientSession:common.ClientSession|None,
-        id:Any,Class:_BaseSiteAPI.__class__,
+        id:Any,Class:type[_T],
         session:"Scratch_Session|None"=None
-    ) -> _BaseSiteAPI:
+    ) -> _T:
     ClientSession = common.create_ClientSession(ClientSession)
     try:
         dicts = {
@@ -89,14 +95,14 @@ async def get_object(
 async def get_object_iterator(
         ClientSession:common.ClientSession,
         url:str,raw_name:str|None,
-        Class:_BaseSiteAPI.__class__,
+        Class:type[_T],
         session:"Scratch_Session|None"=None,
         *,
         limit:int|None=None,
         offset:int=0,
         max_limit=40,
         add_params:dict={}
-    ) -> AsyncGenerator[_BaseSiteAPI,None]:
+    ) -> AsyncGenerator[_T,None]:
     c = 0
     for i in range(offset,offset+limit,max_limit):
         l = await common.api_iterative(
