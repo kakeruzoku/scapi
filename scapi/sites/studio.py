@@ -13,6 +13,7 @@ from . import project
 if TYPE_CHECKING:
     from .session import Session
     from . import user
+    from ..event.comment import CommentEvent
 
 class Studio(base._BaseSiteAPI):
     raise_class = exception.StudioNotFound
@@ -30,7 +31,7 @@ class Studio(base._BaseSiteAPI):
     ):
         super().__init__("get",f"https://api.scratch.mit.edu/studios/{id}",ClientSession,scratch_session)
 
-        self.id = common.try_int(id)
+        self.id:int = common.try_int(id)
         self.title:str = None
         self.description:str = None
         self.author_id:int = None
@@ -121,6 +122,10 @@ class Studio(base._BaseSiteAPI):
             self.ClientSession,{"place":self,"data":resp,"id":resp["id"]},self.Session
         )
     
+    def comment_event(self,interval=30) -> "CommentEvent":
+        from ..event.comment import CommentEvent
+        return CommentEvent(self,interval)
+    
     async def follow(self,follow:bool) -> None:
         # This API 's response == Session.me.featured_data() wtf??????????
         self.has_session_raise()
@@ -129,29 +134,10 @@ class Studio(base._BaseSiteAPI):
         else:
             self.ClientSession.put(f"https://scratch.mit.edu/site-api/users/bookmarkers/{self.id}/remove/?usernames={self.Session.username}")
 
-    async def set_thumbnail(self,filename:str):
-        self._is_owner_raise(self)
-        with open(filename, "rb") as f:
-            thumbnail = f.read()
-        filename = filename.replace("\\","/").split()
-        if filename.endswith("/"): filename = filename[:-1]
-        filename = filename.split("/")[-1]
-        Extension = filename.split(".")[-1]
-        before = f'------WebKitFormBoundaryhKZwFjoxAyUTMlSh\r\nContent-Disposition: form-data; name="file"; filename="{filename}"\r\nContent-Type: image/{Extension}\r\n\r\n'.encode("utf-8")
-        after = b"\r\n------WebKitFormBoundaryhKZwFjoxAyUTMlSh--\r\n"
-        payload = b"".join([before,thumbnail,after])
-        await self.ClientSession.post(
-            f"https://scratch.mit.edu/site-api/galleries/all/{self.id}/",
-            data=payload,
-            headers={
-                "accept": "*/",
-                "content-type": "multipart/form-data; boundary=----WebKitFormBoundaryhKZwFjoxAyUTMlSh",
-                "Referer": "https://scratch.mit.edu/",
-                "x-csrftoken": "a",
-                "x-requested-with": "XMLHttpRequest",
-            }
-        )
-        return
+    async def set_thumbnail(self,thumbnail:bytes|str,filetype:str="png"):
+        self._is_owner_raise()
+        thumbnail,filename = await common.open_tool(thumbnail,filetype)
+        await common.requests_with_file(thumbnail,filename,f"https://scratch.mit.edu/site-api/galleries/all/{self.id}/",self.ClientSession)
     
     async def edit(self,title:str|None=None,description:str|None=None) -> None:
         data = {}
@@ -212,9 +198,9 @@ class Studio(base._BaseSiteAPI):
             json={"password":password}
         )
 
-    async def leave(self):
+    async def leave(self) -> bool:
         self.has_session_raise()
-        await self.remove_user(self.Session.username)
+        return await self.remove_user(self.Session.username)
 
     async def add_project(self,project_id:int):
         self.has_session_raise()

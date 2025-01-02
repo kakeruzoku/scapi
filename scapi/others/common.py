@@ -1,5 +1,7 @@
 import datetime
-from typing import Literal, overload
+import os
+from typing import Callable, Literal, overload
+import aiofiles
 import aiohttp
 from multidict import CIMultiDictProxy, CIMultiDict
 from . import error as exceptions
@@ -71,7 +73,7 @@ class ClientSession(aiohttp.ClientSession):
             raise exceptions.BadResponse(response.status_code,response)
 
     async def _send_requests(
-        self,obj:"ClientSession.get|ClientSession.post|ClientSession.put|ClientSession.delete",url:str,*,
+        self,obj:"aiohttp.ClientSession.get|aiohttp.ClientSession.post|aiohttp.ClientSession.put|aiohttp.ClientSession.delete",url:str,*,
         data=None,json:dict=None,timeout:float=None,params:dict[str,str]=None,
         header:dict[str,str]=None,cookie:dict[str,str]=None,check:bool=True,is_binary:bool=False
     ):
@@ -255,6 +257,42 @@ def try_int(inp:str|int) -> int:
         return int(inp)
     except Exception:
         raise ValueError
+    
+async def downloader(
+    clientsession:ClientSession,url:str,download_path:str
+):
+    r = await clientsession.get(url,is_binary=True)
+    async with aiofiles.open(download_path,"bw") as f:
+        await f.write(r.text)
+
+async def open_tool(inp:str|bytes,default_filename:str) -> tuple[bytes, str]:
+    if isinstance(inp,str):
+        if inp.endswith("/"): inp = inp[:-1]
+        async with aiofiles.open(inp,"br") as f:
+            return await f.read(), inp.split("/")[-1]
+    elif isinstance(inp,bytes):
+        return inp,default_filename
+    raise TypeError
+
+async def requests_with_file(filedata:bytes,filename:str,url:str,clientsession:ClientSession) -> Response:
+    filename = filename.replace("\\","/")
+    if filename.endswith("/"): filename = filename[:-1]
+    filename = filename.split("/")[-1]
+    Extension = filename.split(".")[-1]
+    before = f'------WebKitFormBoundaryhKZwFjoxAyUTMlSh\r\nContent-Disposition: form-data; name="file"; filename="{filename}"\r\nContent-Type: image/{Extension}\r\n\r\n'.encode("utf-8")
+    after = b"\r\n------WebKitFormBoundaryhKZwFjoxAyUTMlSh--\r\n"
+    payload = b"".join([before,filedata,after])
+    return await clientsession.post(
+        url,
+        data=payload,
+        header=clientsession.header|{
+            "accept": "*/",
+            "content-type": "multipart/form-data; boundary=----WebKitFormBoundaryhKZwFjoxAyUTMlSh",
+            "Referer": "https://scratch.mit.edu/",
+            "x-csrftoken": "a",
+            "x-requested-with": "XMLHttpRequest",
+        }
+    )
 
 empty_project_json = {
     'targets': [

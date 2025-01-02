@@ -25,7 +25,7 @@ class Comment(base._BaseSiteAPI):
     id_name = "data"
 
     def __str__(self):
-        return f"<Comment id:{self.id} content:{self.content} place:{self.place} Session:{self.Session}>"
+        return f"<Comment id:{self.id} content:{self.content} place:{self.place} user:{self.author} Session:{self.Session}>"
 
     def __init__(
         self,
@@ -61,7 +61,7 @@ class Comment(base._BaseSiteAPI):
             raise ValueError
             
         self.parent_id:int|None = None
-        self.commentee_id:None = None
+        self.commentee_id:int|None = None
         self.content:str = None
         self.sent_dt:datetime.datetime = None
         self.author:User = None
@@ -94,7 +94,7 @@ class Comment(base._BaseSiteAPI):
         self.parent_id = data.get("parent_id",self.parent_id)
         self.commentee_id = data.get("commentee_id",self.commentee_id)
         self.content = data.get("content",self.content)
-        self.sent_dt = common.to_dt(data.get("datetime_create"),self.sent_dt)
+        self.sent_dt = common.to_dt(data.get("datetime_created"),self.sent_dt)
         _author:dict = data.get("author",{})
         self.author = User(
             self.ClientSession,_author.get("username")
@@ -147,7 +147,7 @@ class Comment(base._BaseSiteAPI):
 class UserComment(Comment):
     def __init__(self,user,ClientSession:common.ClientSession,scratch_session:"Session|None"=None):
         self._csid:bytes = random.randbytes(32)
-        self.ClientSession:common.ClientSession = ClientSession
+        self._ClientSession:common.ClientSession = ClientSession
         self.update_type = ""
         self.update_url = ""
         self.Session:Session|None = scratch_session
@@ -208,13 +208,13 @@ class UserComment(Comment):
             json={"id":str(self.id)})).status_code == 200
 
 @overload
-def create_Partial_Comment(comment_id:int,place:"Project|Studio",content:str|None=None,*,ClientSession:common.ClientSession|None=None,session:"Session|None"=None) -> Comment: ...
+def create_Partial_Comment(comment_id:int,place:"Project|Studio",content:str|None=None,author:"User|None"=None,*,ClientSession:common.ClientSession|None=None,session:"Session|None"=None) -> Comment: ...
 
 @overload
-def create_Partial_Comment(comment_id:int,place:"User",content:str|None=None,*,ClientSession:common.ClientSession|None=None,session:"Session|None"=None) -> UserComment: ...
+def create_Partial_Comment(comment_id:int,place:"User",content:str|None=None,author:"User|None"=None,*,ClientSession:common.ClientSession|None=None,session:"Session|None"=None) -> UserComment: ...
 
 
-def create_Partial_Comment(comment_id:int,place:"Project|Studio|User",author:"User|None"=None,content:str|None=None,*,ClientSession:common.ClientSession|None=None,session:"Session|None"=None) -> Comment|UserComment:
+def create_Partial_Comment(comment_id:int,place:"Project|Studio|User",content:str|None=None,author:"User|None"=None,*,ClientSession:common.ClientSession|None=None,session:"Session|None"=None) -> Comment|UserComment:
     from .user import User
     from .studio import Studio
     from .project import Project

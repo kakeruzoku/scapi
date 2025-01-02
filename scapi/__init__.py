@@ -81,3 +81,6 @@ from .sites.classroom import (
     get_classroom_by_token,
     create_Partial_classroom
 )
+from .event._base import _BaseEvent
+from .event.comment import CommentEvent
+from .event.message import MessageEvent,SessionMessageEvent
