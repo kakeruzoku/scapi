@@ -9,7 +9,7 @@
 # Created by kakeruzoku [kakeruzoku@gmail.com]
 # pip install scapi / https://github.com/kakeruzoku/scapi 
 
-__version__ = "0.3.1"
+__version__ = "0.4.0"
 
 from .others.common import (
     create_ClientSession,
