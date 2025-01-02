@@ -122,7 +122,7 @@ class Activity:
             elif data["comment_type"] == 2:
                 self.place = create_Partial_Studio(data["comment_obj_id"],ClientSession=cs,session=ss)
                 self.place.title = data["comment_obj_title"]
-            self.target = create_Partial_Comment(data["comment_id"],self.place,data["comment_fragment"],ClientSession=cs,session=ss)
+            self.target = create_Partial_Comment(data["comment_id"],self.place,data["comment_fragment"],self.actor,ClientSession=cs,session=ss)
         elif t == "loveproject":
             self.type = ActivityType.ProjectLove
             self.place = self.target = create_Partial_Project(data["project_id"],session.create_Partial_myself(),ClientSession=cs,session=ss)
@@ -268,13 +268,11 @@ class Activity:
         elif "was promoted to manager of" in t:
             self.type = ActivityType.StudioBecomeManager
             self.place = self._load_studio(span.next_sibling.next_sibling,cs,ss)
-            self.target = user
-            self.actor = None
+            self.target = None
         elif "became a curator of" in t:
             self.type = ActivityType.StudioBecomeCurator
             self.place = self._load_studio(span.next_sibling.next_sibling,cs,ss)
-            self.target = user
-            self.actor = None
+            self.target = None
         elif "is now following the studio" in t:
             self.type = ActivityType.StudioFollow
             self.place = self._load_studio(span.next_sibling.next_sibling,cs,ss)

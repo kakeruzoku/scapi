@@ -19,6 +19,7 @@ if TYPE_CHECKING:
     from .session import Session
     from .user import User
     from .studio import Studio
+    from ..event.comment import CommentEvent
 
 class Project(base._BaseSiteAPI):
     raise_class = exception.ObjectNotFound
@@ -92,6 +93,7 @@ class Project(base._BaseSiteAPI):
 
     @property
     def _is_owner(self) -> bool:
+        from .session import Session
         common.no_data_checker(self.author)
         common.no_data_checker(self.author.username)
         if isinstance(self.Session,Session):
@@ -186,7 +188,7 @@ class Project(base._BaseSiteAPI):
         tasks = [assetdownloader(self.ClientSession,zip_directory,asset_id) for asset_id in asset_list] +\
                 [saveproject(zip_directory,"project.json")]
         await asyncio.gather(*tasks)
-        with zipfile.ZipFile(os.path.join(save_path,filename), "a", zipfile.ZIP_DEFLATED) as f:
+        with zipfile.ZipFile(os.path.join(save_path,filename), "a", zipfile.ZIP_STORED) as f:
             for asset_id in asset_list:
                 f.write(os.path.join(zip_directory,asset_id),asset_id)
                 if log: print(f'ziped:{asset_id}')
@@ -202,7 +204,7 @@ class Project(base._BaseSiteAPI):
             if log: print(f'removed:{zip_directory}')
         except:
             pass
-        print(f"success:"+os.path.join(save_path,filename).replace("\\","/"))
+        if log: print(f"success:"+os.path.join(save_path,filename).replace("\\","/"))
         return os.path.join(save_path,filename).replace("\\","/")
 
 
@@ -251,13 +253,9 @@ class Project(base._BaseSiteAPI):
         r = await self.ClientSession.put(f"https://api.scratch.mit.edu/projects/{self.id}",json=data)
         self._update_from_dict(r.json())
 
-    async def set_thumbnail(self,file:BufferedReader|str):
+    async def set_thumbnail(self,thumbnail:bytes|str):
         self._is_owner_raise()
-        if isinstance(file, BufferedReader):
-            thumbnail = file.read()
-        else:
-            with open(file, "rb") as f:
-                thumbnail = f.read()
+        thumbnail,filename = await common.open_tool(thumbnail,"png")
         await self.ClientSession.post(
             f"https://scratch.mit.edu/internalapi/project/thumbnail/{self.id}/set/",
             data=thumbnail,
@@ -299,7 +297,7 @@ class Project(base._BaseSiteAPI):
             limit=limit,offset=offset,add_params={"cachebust":random.randint(0,9999)}
         )
     
-    async def post_comment(self, content, *, parent_id="", commentee_id="") -> Comment:
+    async def post_comment(self, content:str, *, parent_id="", commentee_id="") -> Comment:
         self.has_session_raise()
         data = {
             "commentee_id": commentee_id,
@@ -314,6 +312,10 @@ class Project(base._BaseSiteAPI):
         return Comment(
             self.ClientSession,{"place":self,"data":resp,"id":resp["id"]},self.Session
         )
+    
+    def comment_event(self,interval=30) -> "CommentEvent":
+        from ..event.comment import CommentEvent
+        return CommentEvent(self,interval)
     
     async def share(self,share:bool):
         if share:

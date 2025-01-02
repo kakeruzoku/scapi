@@ -10,7 +10,8 @@ import bs4
 
 if TYPE_CHECKING:
     from . import session
-    
+    from ..event.comment import CommentEvent
+    from ..event.message import MessageEvent
 
 class User(base._BaseSiteAPI):
     raise_class = exception.UserNotFound
@@ -72,16 +73,17 @@ class User(base._BaseSiteAPI):
     def __le__(self,value) -> bool: return isinstance(value,User) and self.id <= value.id
     def __ge__(self,value) -> bool: return isinstance(value,User) and self.id >= value.id
 
-    def get_icon_url(self,size:int=90) -> str:
+    @property
+    def icon_url(self) -> str:
         common.no_data_checker(self.id)
-        return f"https://uploads.scratch.mit.edu/get_image/user/{self.id}_{size}x{size}.png"
+        return f"https://uploads.scratch.mit.edu/get_image/user/{self.id}_90x90.png"
     
     async def load_website(self,reload:bool=False) -> common.Response:
         if reload or (self._website_data is None):
-            self._website_data = await self.ClientSession.get(f"https://scratch.mit.edu/users/{self.username}/")
+            self._website_data = await self.ClientSession.get(f"https://scratch.mit.edu/users/{self.username}/",check=False)
         return self._website_data
     
-    async def exist(self,use_cache:bool=True) -> bool|None:
+    async def exist(self,use_cache:bool=True) -> bool:
         await self.load_website(not use_cache)
         if self._website_data.status_code in [200]:
             return True
@@ -97,6 +99,10 @@ class User(base._BaseSiteAPI):
         return (await self.ClientSession.get(
             f"https://api.scratch.mit.edu/users/{self.username}/messages/count/?cachebust={random.randint(0,10000)}"
         )).json()["count"]
+    
+    def message_event(self,interval=30) -> "MessageEvent":
+        from ..event.message import MessageEvent
+        return MessageEvent(self,interval)
     
     class user_featured_data(TypedDict):
         label:str
@@ -230,7 +236,8 @@ class User(base._BaseSiteAPI):
                 id = int(_comment.find("div", {"class": "comment"})['data-comment-id'])
                 userdata = _comment.find("a", {"id": "comment-user"})
                 username:str = userdata['data-comment-user']
-                userid = int(userdata.find("img",{"class":"avatar"})["src"].split("user/")[1].split("_")[0])
+                try: userid = int(userdata.find("img",{"class":"avatar"})["src"].split("user/")[1].split("_")[0])
+                except: userid = None
                 content = str(_comment.find("div", {"class": "content"}).text).strip()
                 send_dt = _comment.find("span", {"class": "time"})['title']
 
@@ -246,12 +253,12 @@ class User(base._BaseSiteAPI):
                     r_send_dt = reply.find("span", {"class": "time"})['title']
                     reply_obj = comment.UserComment(self,self.ClientSession,self.Session)
                     reply_obj._update_from_dict({
-                        "id":r_id,"parent_id":id,"commentee_id":None,"content":r_content,"sent_dt":r_send_dt,"author":{"username":r_username,"id":r_userid},"_parent_cache":main,"reply_count":0,"page":i
+                        "id":r_id,"parent_id":id,"commentee_id":None,"content":r_content,"datetime_created":r_send_dt,"author":{"username":r_username,"id":r_userid},"_parent_cache":main,"reply_count":0,"page":i
                     })
                     replies_obj.append(reply_obj)
 
                 main._update_from_dict({
-                    "id":id,"parent_id":None,"commentee_id":None,"content":content,"sent_dt":send_dt,
+                    "id":id,"parent_id":None,"commentee_id":None,"content":content,"datetime_created":send_dt,
                     "author":{"username":username,"id":userid},
                     "_reply_cache":replies_obj,"reply_count":len(replies_obj),"page":i
                 })
@@ -283,6 +290,10 @@ class User(base._BaseSiteAPI):
         })
         return c
     
+    def comment_event(self,interval=30) -> "CommentEvent":
+        from ..event.comment import CommentEvent
+        return CommentEvent(self,interval)
+    
 
     async def toggle_comment(self) -> bool:
         self._is_me_raise()
@@ -290,30 +301,27 @@ class User(base._BaseSiteAPI):
         return r.text == "ok"
     
     async def edit(
-            self,
+            self,*,
             about_me:str|None=None,
             wiwo:str|None=None,
             featured_project_id:int|None=None,
-            featured_label:Literal["Featured","ProjectFeatured","Tutorial","Work In Progress","Remix This!","My Favorite Things","Why I Scratch"]|None=None
+            featured_label:Literal["Featured","ProjectFeatured","Tutorial","Work In Progress","Remix This!","My Favorite Things","Why I Scratch"]|None=None,
         ):
         self._is_me_raise()
-        data = {
-            "comments_allowed":True,
-            "id":self.username,
-            "status":self.wiwo if wiwo is None else wiwo,
-            "thumbnail_url":self.get_icon_url().split("https"),
-            "userId":self.id,
-            "username":self.username,
-        }
+        data = {}
         if about_me is not None: data["bio"] = about_me
         if wiwo is not None: data["status"] = wiwo
         if featured_project_id is not None: data["featured_project"] = featured_project_id
         if featured_label is not None: data["featured_project_label_name"] = featured_label
-        print(data)
-        await self.ClientSession.put(
+        r = await self.ClientSession.put(
             f"https://scratch.mit.edu/site-api/users/all/{self.username}/",
             json = data
         )
+
+    async def change_icon(self,icon:bytes|str,filetype:str="png"):
+        self._is_me_raise()
+        thumbnail,filename = await common.open_tool(icon,filetype)
+        await common.requests_with_file(thumbnail,filename,f"https://scratch.mit.edu/site-api/users/all/{self.username}/",self.ClientSession)
 
     async def follow(self,follow:bool=True):
         self.has_session_raise()

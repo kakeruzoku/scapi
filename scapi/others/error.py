@@ -122,15 +122,11 @@ class CommentNotFound(ObjectNotFound):
     """
     コメント取得失敗
     """
-class ForumNotFound(ObjectNotFound):
-    """
-    フォーラム取得失敗
-    """
-class ForumTopicNotFound(ForumNotFound):
+class ForumTopicNotFound(ObjectNotFound):
     """
     フォーラムトピック取得失敗
     """
-class ForumPostNotFound(ForumNotFound):
+class ForumPostNotFound(ObjectNotFound):
     """
     フォーラムトピック取得失敗
     """
@@ -138,7 +134,10 @@ class ClassroomNotFound(ObjectNotFound):
     """
     クラスない
     """
-
+class AssetNotFound(ObjectNotFound):
+    """
+    アセットない
+    """
 
 class NoDataError(Exception):
     """

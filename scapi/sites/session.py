@@ -1,13 +1,16 @@
 import asyncio
 import datetime
 import re
-from typing import AsyncGenerator
+from typing import TYPE_CHECKING, AsyncGenerator
 import warnings
 
 from ..others import other_api
 from ..others import common
 from ..others import error as exception
-from . import user,project,studio,activity,base,forum,classroom
+from . import user,project,studio,activity,base,forum,classroom,asset
+
+if TYPE_CHECKING:
+    from ..event.message import SessionMessageEvent
 
 
 class SessionStatus:
@@ -171,6 +174,10 @@ class Session(base._BaseSiteAPI):
                 _obj._update_from_message(self,j)
                 yield _obj
 
+    def message_event(self,interval=30) -> "SessionMessageEvent":
+        from ..event.message import SessionMessageEvent
+        return SessionMessageEvent(self,interval)
+
     async def feed(self, *, limit=40, offset=0) -> AsyncGenerator[activity.Activity, None]:
         c = 0
         for i in range(offset,offset+limit,40):
@@ -186,7 +193,13 @@ class Session(base._BaseSiteAPI):
                 _obj._update_from_feed(self,j)
                 yield _obj
 
-    def viewed_projects(self, *, limit=40, offset=0) -> AsyncGenerator[activity.Activity, None]:
+    def backpack(self, *, limit=40, offset=0) -> AsyncGenerator[asset.Backpack, None]:
+        return base.get_object_iterator(
+            self.ClientSession,f"https://backpack.scratch.mit.edu/{self.username}",
+            None, asset.Backpack, self.Session, limit=limit, offset=offset
+        )
+
+    def viewed_projects(self, *, limit=40, offset=0) -> AsyncGenerator[project.Project, None]:
         return base.get_object_iterator(
             self.ClientSession,f"https://api.scratch.mit.edu/users/{self.username}/projects/recentlyviewed",
             None, project.Project, self.Session, limit=limit, offset=offset
