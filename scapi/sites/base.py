@@ -1,6 +1,8 @@
 from abc import ABC, abstractmethod
-from typing import TYPE_CHECKING, Any, AsyncGenerator, Literal, TypeVar
+import asyncio
+from typing import TYPE_CHECKING, Any, AsyncGenerator, Callable, Literal, TypeVar
 import random
+import warnings
 
 from ..others import common as common
 from ..others import error as exception
@@ -104,6 +106,7 @@ async def get_object_iterator(
         add_params:dict={}
     ) -> AsyncGenerator[_T,None]:
     c = 0
+    limit = max_limit if limit is None else limit
     for i in range(offset,offset+limit,max_limit):
         l = await common.api_iterative(
             ClientSession,url,
@@ -139,6 +142,7 @@ async def get_comment_iterator(
         add_params:dict={},
     ) -> AsyncGenerator["Comment",None]:
     from .comment import Comment
+    limit = max_limit if limit is None else limit
     for i in range(offset,offset+limit,max_limit):
         l = await common.api_iterative(
             plece.ClientSession,url,
@@ -162,6 +166,32 @@ async def get_comment_iterator(
                 yield _obj
             except Exception as e:
                 print(e)
+
+_T = TypeVar("_T")
+
+async def _req(func,**d) -> list:
+    try:
+        return [i async for i in func(**d)]
+    except Exception as e:
+        warnings.warn(e)
+        return []
+
+
+async def get_list_data(func:Callable[... ,AsyncGenerator[_T,None]],limit:int=40,offset:int=0,**d) -> list[_T]:
+    tasks = [asyncio.create_task(_req(func,**({"limit":40,"offset":i}|d))) for i in range(offset,limit+offset,40)]
+    r:list[list[_T]] = await asyncio.gather(*tasks)
+    returns:list[_T] = []
+    for i in r:
+        returns = returns + i
+    return returns[:limit]
+
+async def get_page_list_data(func:Callable[... ,AsyncGenerator[_T,None]],start_page:int=1,end_page:int=1,**d) -> list[_T]:
+    tasks = [asyncio.create_task(_req(func,**({"start_page":i,"end_page":i}|d))) for i in range(start_page,end_page+1)]
+    r:list[list[_T]] = await asyncio.gather(*tasks)
+    returns:list[_T] = []
+    for i in r:
+        returns = returns + i
+    return returns
 
 async def get_count(ClientSession:common.ClientSession,url,text_before:str, text_after:str) -> int:
     return common.split_int((await ClientSession.get(url)).text, text_before, text_after)

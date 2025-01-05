@@ -79,7 +79,7 @@ class Classroom(base._BaseSiteAPI):
         base.get_count(self.ClientSession,f"https://scratch.mit.edu/classes/{self.id}/students/","Students (",")")
 
     async def create_student_account(
-        self,username:str,password:str,birth_day:datetime.date,gender:Literal["male","womale"],country:str
+        self,username:str,password:str,birth_day:datetime.date,gender:str,country:str
     ) -> "session.Session":
         if self.classtoken is None: raise exception.NoDataError
         data = {

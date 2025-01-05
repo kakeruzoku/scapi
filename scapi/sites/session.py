@@ -1,10 +1,8 @@
-import asyncio
 import datetime
 import re
 from typing import TYPE_CHECKING, AsyncGenerator
 import warnings
 
-from ..others import other_api
 from ..others import common
 from ..others import error as exception
 from . import user,project,studio,activity,base,forum,classroom,asset
@@ -178,7 +176,7 @@ class Session(base._BaseSiteAPI):
         from ..event.message import SessionMessageEvent
         return SessionMessageEvent(self,interval)
 
-    async def feed(self, *, limit=40, offset=0) -> AsyncGenerator[activity.Activity, None]:
+    async def following_feed(self, *, limit=40, offset=0) -> AsyncGenerator[activity.Activity, None]:
         c = 0
         for i in range(offset,offset+limit,40):
             r = await common.api_iterative(
@@ -192,6 +190,12 @@ class Session(base._BaseSiteAPI):
                 _obj = activity.Activity(self.ClientSession)
                 _obj._update_from_feed(self,j)
                 yield _obj
+
+    def following_loves(self, *, limit=40, offset=0) -> AsyncGenerator[project.Project, None]:
+        return base.get_object_iterator(
+            self.ClientSession,f"https://api.scratch.mit.edu/users/{self.username}/following/users/loves",
+            None, project.Project, self.Session, limit=limit, offset=offset
+        )
 
     def backpack(self, *, limit=40, offset=0) -> AsyncGenerator[asset.Backpack, None]:
         return base.get_object_iterator(

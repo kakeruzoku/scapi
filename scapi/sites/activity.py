@@ -57,7 +57,6 @@ class Activity:
 
     def __init__(
         self,
-        ClientSession:common.ClientSession,
         **entries
     ):
         self.id:int|None = None
@@ -67,9 +66,6 @@ class Activity:
         self.place:"Studio|Project|User|None" = None
         self._raw:"dict|str" = None
         self.datetime:datetime.datetime = None
-
-    def __eq__(self,other):
-        return isinstance(other,Activity) and self.type == other.type and self.datetime == other.datetime
     
     def _update_from_dict(self,obj:base._BaseSiteAPI,data:dict[str,str]) -> tuple[str,common.ClientSession, "Session"]:
         from .user import create_Partial_User

@@ -1,5 +1,4 @@
 import datetime
-from io import BufferedReader
 import random
 from typing import AsyncGenerator, TYPE_CHECKING, TypedDict
 

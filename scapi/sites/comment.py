@@ -203,6 +203,7 @@ class UserComment(Comment):
             json={"id":str(self.id)})).status_code == 200
     
     async def report(self) -> bool:
+        self.has_session_raise()
         return (await self.ClientSession.post(
             f"https://scratch.mit.edu/site-api/comments/user/{self.place.username}/rep/",
             json={"id":str(self.id)})).status_code == 200

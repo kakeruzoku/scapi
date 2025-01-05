@@ -1,10 +1,8 @@
 import asyncio
 import datetime
-from io import BufferedReader, TextIOWrapper
 import json
 import os
 import random
-import shutil
 from typing import AsyncGenerator, TYPE_CHECKING, TypedDict
 import warnings
 import zipfile
@@ -22,7 +20,7 @@ if TYPE_CHECKING:
     from ..event.comment import CommentEvent
 
 class Project(base._BaseSiteAPI):
-    raise_class = exception.ObjectNotFound
+    raise_class = exception.ProjectNotFound
     id_name = "id"
 
     def __str__(self):
@@ -336,9 +334,110 @@ class Project(base._BaseSiteAPI):
     async def visibility(self) -> project_visibility:
         r = (await self.ClientSession.get(f"https://api.scratch.mit.edu/users/{self.Session.username}/projects/{self.id}/visibility")).json()
         return r
+    
+    async def get_remixtree(self) -> "RemixTree":
+        _tree = await get_remixtree(self.id,ClientSession=self.ClientSession,session=self.Session)
+        _tree.project = self
+        return _tree
 
 
+class RemixTree(base._BaseSiteAPI): #no data
+    raise_class = exception.ProjectNotFound
+    id_name = "id"
 
+    def __init__(
+        self,
+        ClientSession:common.ClientSession,
+        id:int,
+        scratch_session:"Session|None"=None,
+        **entries
+    ) -> None:
+        super().__init__("get",f"https://scratch.mit.edu/projects/{id}/remixtree/bare/",ClientSession,scratch_session)
+
+        self.id:int = common.try_int(id)
+        self.is_root:bool = None
+        self.parent:"RemixTree|None" = None
+        self.root:"RemixTree" = False
+        self.project:Project = create_Partial_Project(self.id,ClientSession=self.ClientSession,session=self.Session)
+        self._children:list[int] = []
+        self.children:list["RemixTree"] = []
+        self.moderation_status:str = None
+        self._ctime:int = None #idk what is ctime
+        self.ctime:datetime.datetime = None
+
+    def __str__(self):
+        return f"<RemixTree remix_count:{len(self._children)} status:{self.moderation_status} project:{self.project}> session:{self.Session}"
+
+    async def update(self):
+        warnings.warn("remixtree can't update")
+
+    def _update_from_dict(self, data:dict):
+        from . import user
+        self.project.author = user.create_Partial_User(data.get("username"),ClientSession=self.ClientSession,session=self.Session)
+        self.moderation_status = data.get("moderation_status",self.moderation_status)
+        _ctime = data.get("ctime")
+        if isinstance(_ctime,dict):
+            self._ctime = _ctime.get("$date",self._ctime)
+            self.ctime = common.to_dt_timestamp_1000(self._ctime,self.ctime)
+        self.project.title = data.get("title",self.project.title)
+        self.project.remix_parent = data.get("parent_id",self.project.remix_parent)
+        if isinstance(self.project.remix_parent,str):
+            self.project.remix_parent = common.try_int(self.project.remix_parent)
+        self.project.loves = data.get("love_count",self.project.loves)
+        _mtime = data.get("mtime")
+        if isinstance(_mtime,dict):
+            self.project._modified = _mtime.get("$date",self.project._modified)
+            self.project.modified = common.to_dt_timestamp_1000(self.project._modified,self.project.modified)
+        _datetime_shared = data.get("datetime_shared")
+        if isinstance(_datetime_shared,dict):
+            self.project._shared = _datetime_shared.get("$date",self.project._shared)
+            self.project.shared = common.to_dt_timestamp_1000(self.project._shared,self.project.shared)
+        self.project.favorites = data.get("favorite_count",self.project.favorites)
+        _children = data.get("children",self._children)
+        self._children = []
+        for i in _children:
+            self._children.append(int(i))
+
+    def all_remixtree(self)  -> list["RemixTree"]:
+        if isinstance(self.root,RemixTree):
+            return self.root._all_remixtree()
+
+    def _all_remixtree(self) -> list["RemixTree"]:
+        r:list["RemixTree"] = [self]
+        for i in self.children:
+            r = r + i._all_remixtree()
+        return r
+    
+    def _load_remixtree(self,tree_list:list["RemixTree"]):
+        for rt in tree_list:
+            if rt.id == self.project.remix_parent:
+                rt.parent = rt
+            if rt.id in self._children:
+                self.children.append(rt)
+
+async def get_remixtree(project_id:int,*,ClientSession=None,session=None) -> RemixTree:
+    ClientSession = common.create_ClientSession(ClientSession)
+    r = await ClientSession.get(f"https://scratch.mit.edu/projects/{project_id}/remixtree/bare/")
+    if r.text == "no data":
+        raise exception.RemixTreeNotFound
+    rtl:list[RemixTree] = []
+    j = r.json()
+    root_id = j["root_id"]
+    del j["root_id"]
+    for k,v in j.items():
+        _obj = RemixTree(ClientSession,k,session)
+        _obj._update_from_dict(v)
+        _obj.project.remix_root = int(root_id)
+        rtl.append(_obj)
+        if k == root_id:
+            _root = _obj
+            _root.is_root = True
+        if int(project_id) == _obj.id:
+            _return = _obj
+    for i in rtl:
+        i.root = _root
+        i._load_remixtree(rtl)
+    return _return
 
 async def get_project(project_id:int,*,ClientSession=None) -> Project:
     ClientSession = common.create_ClientSession(ClientSession)

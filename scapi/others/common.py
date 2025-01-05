@@ -1,6 +1,6 @@
 import datetime
 import os
-from typing import Callable, Literal, overload
+from typing import AsyncGenerator, Callable, Literal, overload
 import aiofiles
 import aiohttp
 from multidict import CIMultiDictProxy, CIMultiDict
@@ -16,7 +16,10 @@ headers = {
 }
 
 def create_ClientSession(inp:"ClientSession|None"=None) -> "ClientSession":
-    return inp if isinstance(inp,ClientSession) else ClientSession(header=headers)
+    return inp if isinstance(inp,ClientSession) else ClientSession(header=headers,cookie={"scratchcsrftoken": 'a'})
+
+def create_custom_ClientSession(header:dict={},cookie:dict={}) -> "ClientSession":
+    return ClientSession(header=header,cookie=cookie)
 
 json_resp = dict[str,"json_resp"]|list["json_resp"]|str|float|int|bool|None
 class Response:
@@ -45,10 +48,10 @@ class BytesResponse(Response):
 
 class ClientSession(aiohttp.ClientSession):
 
-    def __init__(self,header:dict) -> None:
+    def __init__(self,header:dict={},cookie:dict={}) -> None:
         super().__init__()
         self._header = header
-        self._cookie = {"scratchcsrftoken": 'a'}
+        self._cookie = cookie
     
     @property
     def header(self) -> dict:
@@ -245,6 +248,12 @@ def split(raw:str, text_before:str, text_after:str) -> str:
 def to_dt(text:str,default:datetime.datetime|None=None) -> datetime.datetime|None:
     try:
         return datetime.datetime.fromisoformat(f'{text.replace("Z","")}+00:00')
+    except Exception:
+        return default
+    
+def to_dt_timestamp_1000(text:int,default:datetime.datetime|None=None) -> datetime.datetime|None:
+    try:
+        return datetime.datetime.fromtimestamp(text/1000,tz=datetime.timezone.utc)
     except Exception:
         return default
     
