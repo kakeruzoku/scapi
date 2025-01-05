@@ -6,6 +6,9 @@ with open('README.md', 'r', encoding='utf-8') as fp:
 with open('scapi/__init__.py', 'r', encoding='utf-8') as fp:
     init = fp.read()
 
+with open('requirements.txt', 'r', encoding='utf-8') as fp:
+    requirements = fp.readlines()
+
 var = init.replace(" ","").split("__version__=\"")[1].split("\"")[0]
 
 setup(
@@ -30,5 +33,5 @@ setup(
     ],
     license="MIT",
     keywords=['scratch api', 'scapi', 'scratch api python', 'scratch python', 'scratch for python', 'scratch', 'scratch bot','scratch tools','scratchapi'],
-    install_requires=["aiohttp","requests","BeautifulSoup4","asyncio"]
+    install_requires=requirements
 )

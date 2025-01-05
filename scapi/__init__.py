@@ -9,10 +9,11 @@
 # Created by kakeruzoku [kakeruzoku@gmail.com]
 # pip install scapi / https://github.com/kakeruzoku/scapi 
 
-__version__ = "0.4.0"
+__version__ = "0.5.0"
 
 from .others.common import (
     create_ClientSession,
+    create_custom_ClientSession,
     Response,
     ClientSession,
     api_iterative as _api_iterative,
@@ -25,10 +26,14 @@ from .others.common import (
 from .others import error as exception
 del exception.TYPE_CHECKING
 from .others.other_api import (
-    get_csrf_token_sync
+    get_csrf_token_sync,
+    check_usernames,
+    check_passwords
 )
 from .sites.base import (
     _BaseSiteAPI,
+    get_list_data,
+    get_page_list_data
 )
 from .sites.comment import (
     CommentData,
@@ -40,7 +45,9 @@ from .sites.project import (
     get_project,
     create_Partial_Project,
     explore_projects,
-    search_projects
+    search_projects,
+    RemixTree,
+    get_remixtree
 )
 from .sites.session import (
     SessionStatus,
@@ -81,6 +88,14 @@ from .sites.classroom import (
     get_classroom_by_token,
     create_Partial_classroom
 )
+from .sites.mainpage import (
+    ScratchNews,
+    get_scratchnews,
+    community_featured,
+    community_featured_response
+)
+
+
 from .event._base import _BaseEvent
 from .event.comment import CommentEvent
 from .event.message import MessageEvent,SessionMessageEvent

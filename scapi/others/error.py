@@ -114,6 +114,10 @@ class ProjectNotFound(ObjectNotFound):
     """
     プロジェクトの取得に失敗
     """
+class RemixTreeNotFound(ObjectNotFound):
+    """
+    プロジェクトの取得に失敗
+    """
 class StudioNotFound(ObjectNotFound):
     """
     スタジオの取得に失敗

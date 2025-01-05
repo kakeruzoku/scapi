@@ -6,6 +6,29 @@
 - **[Other]** その他
 
 # 0.x.x
+## 0.5.x
+### 0.5.0
+2025/01/05更新
+- **[Add]** `check_usernames` `check_passwords`の追加
+- **[Del]** `Activity`での`==`対応
+- **[Add]** async forで取得できるデータを一括で高速に取得できる関数`get_list_data` `get_page_list_data`の追加
+- **[Add]** メインページ関連のAPIの追加、`ScratchNews`クラス
+- **[Add]** `RemixTree`の追加
+- **[Change]** `Session.feed`→`Session.following_feed`
+- **[Fix]** インストールすべきモジュールが全て入れられなかった問題を修正
+- **[Add]** ほかのAPIで`ClientSession`が使えるように`create_custom_ClientSession`を追加
+
+## 0.4.x
+### 0.4.0
+2025/01/03更新
+- **[Add]** イベント機能の追加
+  - CommentEvent,MessageEvent,SessionMessageEventの3つ作成する関数も追加
+- **[Fix]** Activity,User,Studio,Session,Comment,Projectで修正
+- **[Add]** Backpackの追加
+- **[Add]** Userでアイコンを変更できるように
+
+
+
 ## 0.3.x
 ### 0.3.1
 2024/12/31更新
