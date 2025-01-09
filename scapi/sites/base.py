@@ -19,21 +19,21 @@ class _BaseSiteAPI(ABC):
 
     def __init__(
             self,
-            update_type:str,update_url:str,
+            update_type:Literal["get","post","put","delete"],update_url:str,
             ClientSession:common.ClientSession,
             Session:"Scratch_Session|None"=None) -> None:
         self._ClientSession:common.ClientSession = ClientSession
         self.update_type:Literal["get","post","put","delete"] = update_type
         self.update_url:str = update_url
         self.Session:"Scratch_Session|None" = Session
-        self._raw:dict = None
+        self._raw:dict|str|None = None
 
     async def update(self) -> None:
         if self.update_type == "get": func = self.ClientSession.get
         if self.update_type == "post": func = self.ClientSession.post
         if self.update_type == "put": func = self.ClientSession.put
         if self.update_type == "delete": func = self.ClientSession.delete
-        response:dict = (await func(self.update_url,timeout=10)).json()
+        response = (await func(self.update_url,timeout=10)).json()
         if not isinstance(response,dict):
             raise self.raise_class(self.__class__,TypeError)
         self._raw = response.copy()
@@ -62,7 +62,7 @@ class _BaseSiteAPI(ABC):
         if if_close:
             await self.session_close()
         self.Session = session
-        self.ClientSession = session.ClientSession
+        self._ClientSession = session.ClientSession
 
     async def session_close(self) -> None:
         await self.ClientSession.close()
@@ -71,7 +71,7 @@ class _BaseSiteAPI(ABC):
     def session_closed(self) -> bool:
         return self.ClientSession.closed
     
-_T = TypeVar("_T")
+_T = TypeVar("_T",_BaseSiteAPI,Any)
 
 async def get_object(
         ClientSession:common.ClientSession|None,
@@ -117,17 +117,17 @@ async def get_object_iterator(
             return
         if raw_name is None:
             raw_name = Class.id_name
-        for i in l:
+        for j in l:
             c = c + 1
             if c == limit: return
             try:
                 dicts = {
                     "ClientSession":ClientSession,
-                    Class.id_name:i[raw_name],
+                    Class.id_name:j[raw_name],
                     "_session":session
                 }
                 _obj = Class(**dicts)
-                _obj._update_from_dict(i)
+                _obj._update_from_dict(j)
                 yield _obj
             except Exception as e:
                 print(e)
@@ -151,14 +151,14 @@ async def get_comment_iterator(
         )
         if len(l) == 0:
             return
-        for i in l:
+        for j in l:
             try:
                 dicts = {
                     "ClientSession":plece.ClientSession,
                     "data":{
                         "place":plece,
-                        "id":i.get("id"),
-                        "data":i
+                        "id":j.get("id"),
+                        "data":j
                     },
                     "_session":plece.Session
                 }
@@ -167,20 +167,20 @@ async def get_comment_iterator(
             except Exception as e:
                 print(e)
 
-_T = TypeVar("_T")
+_S = TypeVar("_S")
 
 async def _req(func,**d) -> list:
     try:
         return [i async for i in func(**d)]
     except Exception as e:
-        warnings.warn(e)
+        warnings.warn(str(e))
         return []
 
 
-async def get_list_data(func:Callable[... ,AsyncGenerator[_T,None]],limit:int=40,offset:int=0,**d) -> list[_T]:
+async def get_list_data(func:Callable[... ,AsyncGenerator[_S,None]],limit:int=40,offset:int=0,**d) -> list[_S]:
     tasks = [asyncio.create_task(_req(func,**({"limit":40,"offset":i}|d))) for i in range(offset,limit+offset,40)]
-    r:list[list[_T]] = await asyncio.gather(*tasks)
-    returns:list[_T] = []
+    r:list[list[_S]] = await asyncio.gather(*tasks)
+    returns:list[_S] = []
     for i in r:
         returns = returns + i
     return returns[:limit]
@@ -194,4 +194,8 @@ async def get_page_list_data(func:Callable[... ,AsyncGenerator[_T,None]],start_p
     return returns
 
 async def get_count(ClientSession:common.ClientSession,url,text_before:str, text_after:str) -> int:
-    return common.split_int((await ClientSession.get(url)).text, text_before, text_after)
+    resp = await ClientSession.get(url)
+    r = common.split_int(resp.text, text_before, text_after) 
+    if isinstance(r,int):
+        return r
+    raise exception.BadResponse(resp.status_code,resp)

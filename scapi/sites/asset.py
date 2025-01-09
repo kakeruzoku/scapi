@@ -44,6 +44,7 @@ class Backpack(base._BaseSiteAPI):
         self._thumbnail:str=None
 
     async def update(self):
+        self.has_session_raise()
         async for i in self.Session.backpack():
             if i.id == self.id:
                 self.type,self.name,self._body,self._thumbnail = i.type,i.name,i._body,i._thumbnail
@@ -75,5 +76,6 @@ class Backpack(base._BaseSiteAPI):
         await common.downloader(self.ClientSession,self.download_url,path)
 
     async def delete(self) -> None:
+        self.has_session_raise()
         r = await self.ClientSession.delete(f"https://backpack.scratch.mit.edu/{self.Session.username}/{self.id}")
         return r.json().get("ok",False)

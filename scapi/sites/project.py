@@ -130,7 +130,7 @@ class Project(base._BaseSiteAPI):
     async def create_remix(self,title:str|None=None) -> "Project":
         self.has_session_raise()
         try:
-            project_json = self.load_json()
+            project_json = await self.load_json()
         except:
             project_json = common.empty_project_json
         if title is None:
@@ -418,8 +418,8 @@ class RemixTree(base._BaseSiteAPI): #no data
 async def get_remixtree(project_id:int,*,ClientSession=None,session=None) -> RemixTree:
     ClientSession = common.create_ClientSession(ClientSession)
     r = await ClientSession.get(f"https://scratch.mit.edu/projects/{project_id}/remixtree/bare/")
-    if r.text == "no data":
-        raise exception.RemixTreeNotFound
+    if r.text == "no data" or r.text == "not visible":
+        raise exception.RemixTreeNotFound(RemixTree,ValueError)
     rtl:list[RemixTree] = []
     j = r.json()
     root_id = j["root_id"]

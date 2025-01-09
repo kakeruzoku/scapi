@@ -110,7 +110,3 @@ async def community_featured(clientsession:common.ClientSession|None=None,sessio
         s_obj.title = s_dict.get("gallery_title")
         r["design_studio"] = s_obj
     return r
-
-
-    
-

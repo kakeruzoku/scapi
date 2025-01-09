@@ -285,3 +285,21 @@ async def login(username,password,*,ClientSession=None) -> Session:
     except Exception as e:
         if _created_cs: await ClientSession.close()
         raise exception.LoginFailure(e)
+    
+async def send_password_reset_email(clientsession:common.ClientSession,username:str="",email:str="") -> None | bool:
+    if username is None and email is None:
+        raise ValueError
+    r = await clientsession.post(
+        "https://scratch.mit.edu/accounts/password_reset/",
+        data={
+            "username":username,
+            "email":email,
+            "csrfmiddlewaretoken":"a"
+        }
+    )
+    print(r.text,r.status_code)
+    if "t have an account with that" in r.text:
+        return False
+    if "We've e-mailed instructions for resetting your password to the e-mail address you provided, or the email associated with your account. If you don't receive it shortly, be sure to check your spam folder." in r.text:
+        return True
+    return None

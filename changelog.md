@@ -6,6 +6,16 @@
 - **[Other]** その他
 
 # 0.x.x
+## 0.6.x
+### 0.6.0
+2025/01/09更新
+- **[Add]** クラウド変数に対応(ターボワープのみ)
+- **[Change]** `check_usernames` `check_passwords`→`check_username` `check_password` 引数も変更
+- **[Add]** 統計情報の取得API
+- **[Add]** 翻訳 ttsAPIの追加
+- **[Fix]** その他修正いろいろ
+
+
 ## 0.5.x
 ### 0.5.0
 2025/01/05更新
