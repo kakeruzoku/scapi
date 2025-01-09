@@ -9,8 +9,6 @@
 # Created by kakeruzoku [kakeruzoku@gmail.com]
 # pip install scapi / https://github.com/kakeruzoku/scapi 
 
-__version__ = "0.5.0"
-
 from .others.common import (
     create_ClientSession,
     create_custom_ClientSession,
@@ -21,14 +19,20 @@ from .others.common import (
     split,
     to_dt,
     empty_project_json,
-    BIG
+    BIG,
+    __version__
 )
 from .others import error as exception
 del exception.TYPE_CHECKING
 from .others.other_api import (
     get_csrf_token_sync,
-    check_usernames,
-    check_passwords
+    check_username,
+    check_password,
+    total_site_stats,
+    monthly_site_traffic,
+    monthly_activity,
+    translation,
+    tts
 )
 from .sites.base import (
     _BaseSiteAPI,
@@ -53,7 +57,8 @@ from .sites.session import (
     SessionStatus,
     Session,
     session_login,
-    login
+    login,
+    send_password_reset_email
 )
 from .sites.studio import (
     Studio,
@@ -92,9 +97,15 @@ from .sites.mainpage import (
     ScratchNews,
     get_scratchnews,
     community_featured,
-    community_featured_response
+    community_featured_response,
 )
 
+
+from .cloud.cloud import (
+    _BaseCloud,
+    TurboWarpCloud,
+    get_tw_cloud
+)
 
 from .event._base import _BaseEvent
 from .event.comment import CommentEvent

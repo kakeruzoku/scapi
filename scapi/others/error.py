@@ -1,6 +1,6 @@
 from typing import TYPE_CHECKING
 if TYPE_CHECKING:
-    from .common import Response
+    from .common import Response,BytesResponse
     from ..sites.base import _BaseSiteAPI
 
 """
@@ -49,9 +49,9 @@ class ResponseError(HTTPError):
     """
     応答したが、エラーが起きた時に出る
     """
-    def __init__(self, status_code:int, response:"Response"):
+    def __init__(self, status_code:int, response:"Response|BytesResponse"):
         self.status_code:int = status_code
-        self.response:"Response" = response
+        self.response:"Response|BytesResponse" = response
 class BadResponse(ResponseError):
     """
     {"code":"BadRequest","message":""}
@@ -95,7 +95,7 @@ class ObjectFetchError(Exception):
     """
     getしたけどエラー出た
     """
-    def __init__(self,Class:"_BaseSiteAPI.__class__",error):
+    def __init__(self,Class:"type[_BaseSiteAPI]",error):
         self.Class = Class
         self.error = error
 class ObjectNotFound(ObjectFetchError):

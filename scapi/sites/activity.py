@@ -65,7 +65,7 @@ class Activity:
         self.target:"Comment|Studio|Project|User|None" = None
         self.place:"Studio|Project|User|None" = None
         self._raw:"dict|str" = None
-        self.datetime:datetime.datetime = None
+        self.datetime:datetime.datetime|None = None
     
     def _update_from_dict(self,obj:base._BaseSiteAPI,data:dict[str,str]) -> tuple[str,common.ClientSession, "Session"]:
         from .user import create_Partial_User

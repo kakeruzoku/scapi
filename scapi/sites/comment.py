@@ -146,7 +146,6 @@ class Comment(base._BaseSiteAPI):
 
 class UserComment(Comment):
     def __init__(self,user,ClientSession:common.ClientSession,scratch_session:"Session|None"=None):
-        self._csid:bytes = random.randbytes(32)
         self._ClientSession:common.ClientSession = ClientSession
         self.update_type = ""
         self.update_url = ""

@@ -3,7 +3,7 @@ from setuptools import setup
 with open('README.md', 'r', encoding='utf-8') as fp:
     readme = fp.read()
 
-with open('scapi/__init__.py', 'r', encoding='utf-8') as fp:
+with open('scapi/others/common.py', 'r', encoding='utf-8') as fp:
     init = fp.read()
 
 with open('requirements.txt', 'r', encoding='utf-8') as fp:
