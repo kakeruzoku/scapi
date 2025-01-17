@@ -67,9 +67,10 @@ class User(base._BaseSiteAPI):
             raise exception.NoPermission
     
     def __int__(self) -> int: return self.id
-    def __eq__(self,value) -> bool: return isinstance(value,User) and self.id == value.id
+    def __eq__(self,value) -> bool: return isinstance(value,User) and self.username.lower() == value.username.lower()
+    def __ne__(self,value) -> bool: return isinstance(value,User) and self.username.lower() != value.username.lower()
     def __lt__(self,value) -> bool: return isinstance(value,User) and self.id < value.id
-    def __ne__(self,value) -> bool: return isinstance(value,User) and self.id > value.id
+    def __gt__(self,value) -> bool: return isinstance(value,User) and self.id > value.id
     def __le__(self,value) -> bool: return isinstance(value,User) and self.id <= value.id
     def __ge__(self,value) -> bool: return isinstance(value,User) and self.id >= value.id
 
@@ -124,7 +125,7 @@ class User(base._BaseSiteAPI):
         }
     
     async def follower_count(self) -> int:
-        return base.get_count(self.ClientSession,f"https://scratch.mit.edu/users/{self.username}/followers/","Followers (", ")")
+        return await base.get_count(self.ClientSession,f"https://scratch.mit.edu/users/{self.username}/followers/","Followers (", ")")
     
     def followers(self, *, limit=40, offset=0) -> AsyncGenerator["User", None]:
         return base.get_object_iterator(
@@ -133,7 +134,7 @@ class User(base._BaseSiteAPI):
         )
     
     async def following_count(self) -> int:
-        return base.get_count(self.ClientSession,f"https://scratch.mit.edu/users/{self.username}/following/","Following (", ")")
+        return await base.get_count(self.ClientSession,f"https://scratch.mit.edu/users/{self.username}/following/","Following (", ")")
     
     def following(self, *, limit=40, offset=0) -> AsyncGenerator["User", None]:
         return base.get_object_iterator(
@@ -155,7 +156,7 @@ class User(base._BaseSiteAPI):
     
 
     async def project_count(self) -> int:
-        return base.get_count(self.ClientSession,f"https://scratch.mit.edu/users/{self.username}/projects/","Shared Projects (", ")")
+        return await base.get_count(self.ClientSession,f"https://scratch.mit.edu/users/{self.username}/projects/","Shared Projects (", ")")
     
     def projects(self, *, limit=40, offset=0) -> AsyncGenerator[project.Project, None]:
         return base.get_object_iterator(
@@ -164,7 +165,7 @@ class User(base._BaseSiteAPI):
         )
     
     async def favorite_count(self) -> int:
-        return base.get_count(self.ClientSession,f"https://scratch.mit.edu/users/{self.username}/favorites/","Favorites (", ")")
+        return await base.get_count(self.ClientSession,f"https://scratch.mit.edu/users/{self.username}/favorites/","Favorites (", ")")
     
     def favorites(self, *, limit=40, offset=0) -> AsyncGenerator[project.Project, None]:
         return base.get_object_iterator(
@@ -173,7 +174,7 @@ class User(base._BaseSiteAPI):
         )
     
     async def love_count(self) -> int:
-        return base.get_count(self.ClientSession,f"https://scratch.mit.edu/projects/all/{self.username}/loves/","</a>&raquo;\n\n (",")")
+        return await base.get_count(self.ClientSession,f"https://scratch.mit.edu/projects/all/{self.username}/loves/","</a>&raquo;\n\n (",")")
     
     async def loves(self, *, start_page=1, end_page=1) -> AsyncGenerator[project.Project, None]:
         for i in range(start_page,end_page+1):
@@ -288,6 +289,8 @@ class User(base._BaseSiteAPI):
             },
             "_reply_cache":[],"reply_count":0,"page":1
         })
+        if c.id is None:
+            raise exception.NoPermission()
         return c
     
     def comment_event(self,interval=30) -> "CommentEvent":
@@ -295,10 +298,11 @@ class User(base._BaseSiteAPI):
         return CommentEvent(self,interval)
     
 
-    async def toggle_comment(self) -> bool:
+    async def toggle_comment(self):
         self._is_me_raise()
         r = await self.ClientSession.post(f"https://scratch.mit.edu/site-api/comments/user/{self.username}/toggle-comments/")
-        return r.text == "ok"
+        if r.text != "ok":
+            raise exception.BadRequest(r.status_code,r)
     
     async def edit(
             self,*,

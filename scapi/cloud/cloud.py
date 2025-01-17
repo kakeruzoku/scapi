@@ -13,8 +13,12 @@ if TYPE_CHECKING:
     from ..sites.user import User
     from ..sites.studio import Studio
     from ..sites.project import Project
+    from . import cloud_event
 
 class _BaseCloud:
+
+    def __str__(self) -> str:
+        return f"<_BaseCloud id:{self.project_id} connect:{self.is_connect}>"
 
     def __init__(self,clientsession:common.ClientSession|None,project_id:int|str):
 
@@ -34,7 +38,9 @@ class _BaseCloud:
         clientsession = common.create_ClientSession(clientsession)
         self.clientsession:common.ClientSession = clientsession
         self._websocket:aiohttp.ClientWebSocketResponse|None = None
-        self._is_connect:bool = False
+
+        self._event:"cloud_event.CloudEvent|None" = None
+        self.tasks:asyncio.Task|None = None
 
     @property
     def websocket(self) -> aiohttp.ClientWebSocketResponse|None:
@@ -70,30 +76,33 @@ class _BaseCloud:
                         continue
                     if not isinstance(data,dict):
                         continue
+                    asyncio.create_task(self._on_event(self,data.get("method",""),data["name"][2:],data.get("value",None),data))
                     if data.get("method","") != "set":
                         continue
                     self._data[data["name"][2:]] = data["value"]
-                    asyncio.create_task(self._on_set(data["name"][2:],data["value"]))
 
         await self.websocket.close()
 
-    async def _on_set(self,variable:str,value:float|int):
+    async def _on_event(self,_self,method:str,variable:str,value:float|int,other):
         pass
 
-    async def connect(self,timeout:int=10):
-        if self.is_connect:
-            raise Exception
-        else:
-            self._is_connect = True
-            asyncio.create_task(self._run(timeout))
+    async def connect(self,timeout:int=10) -> asyncio.Task:
+        if not self.is_connect:
+            tasks = asyncio.create_task(self._run(timeout))
+            self.tasks = tasks
             async with async_timeout.timeout(timeout):
                 while not self.is_connect:
                     await asyncio.sleep(0.01)
+        return self.tasks
         
 
-    async def close(self):
-        await self.websocket.close()
-        if self._is_close_cs:
+    async def close(self,is_clientsession_close:bool|None=None):
+        if self.is_connect:
+            await self.websocket.close()
+        if is_clientsession_close is None:
+            if self._is_close_cs:
+                await self.clientsession.close()
+        elif is_clientsession_close:
             await self.clientsession.close()
 
     def get_vars(self) -> dict:
@@ -170,8 +179,15 @@ class _BaseCloud:
     async def __aexit__(self, exc_type, exc, tb):
         await self.close()
 
+    def event(self,reconnection_count: int = 10):
+        from . import cloud_event
+        return cloud_event.CloudEvent(self,reconnection_count)
+
 class TurboWarpCloud(_BaseCloud):
     
+    def __str__(self) -> str:
+        return f"<TurboWarpCloud id:{self.project_id} connect:{self.is_connect}>"
+
     def __init__(
             self,
             project_id:int|str,

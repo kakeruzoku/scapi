@@ -87,8 +87,9 @@ class Studio(base._BaseSiteAPI):
 
     def __int__(self) -> int: return self.id
     def __eq__(self,value) -> bool: return isinstance(value,Studio) and self.id == value.id
+    def __ne__(self,value) -> bool: return isinstance(value,Studio) and self.id != value.id
     def __lt__(self,value) -> bool: return isinstance(value,Studio) and self.id < value.id
-    def __ne__(self,value) -> bool: return isinstance(value,Studio) and self.id > value.id
+    def __gt__(self,value) -> bool: return isinstance(value,Studio) and self.id > value.id
     def __le__(self,value) -> bool: return isinstance(value,Studio) and self.id <= value.id
     def __ge__(self,value) -> bool: return isinstance(value,Studio) and self.id >= value.id
 
@@ -146,49 +147,46 @@ class Studio(base._BaseSiteAPI):
         r = await self.ClientSession.put(f"https://api.scratch.mit.edu/projects/{self.id}",json=data)
         self._update_from_dict(r.json())
 
-    async def open_adding_project(self,is_open:bool=True) -> bool:
+    async def open_adding_project(self,is_open:bool=True):
         self.has_session_raise()
         if is_open:
-            r = (await self.ClientSession.put(f"https://scratch.mit.edu/site-api/galleries/{self.id}/mark/open/")).json()
+            r = await self.ClientSession.put(f"https://scratch.mit.edu/site-api/galleries/{self.id}/mark/open/")
         else:
-            r = (await self.ClientSession.put(f"https://scratch.mit.edu/site-api/galleries/{self.id}/mark/closed/")).json()
-        return r.get("success",False)
+            r = await self.ClientSession.put(f"https://scratch.mit.edu/site-api/galleries/{self.id}/mark/closed/")
+        if r.json().get("success",False):
+            return
+        raise exception.BadResponse(r.status_code,r)
         
-    async def open_comment(self,is_open:bool=True,is_update:bool=False) -> bool:
+    async def open_comment(self,is_open:bool=True,is_update:bool=False):
         self._is_owner_raise()
         if is_update: await self.update()
         if self.comments_allowed != is_open:
             r = await self.ClientSession.post(f"https://scratch.mit.edu/site-api/comments/gallery/{self.id}/toggle-comments/")
             if r.text == "ok":
                 self.comments_allowed = is_open
-            return True
-        return False
+                return
+            raise exception.BadResponse(r.status_code,r)
+        raise exception.NoPermission()
 
-    async def invite(self,username:str) -> bool:
+    async def invite(self,username:str):
         self.has_session_raise()
         r = await self.ClientSession.put(f"https://scratch.mit.edu/site-api/users/curators-in/{self.id}/invite_curator/?usernames={username}")
-        return r.json().get("status","error") == "success"
+        if r.json().get("status","error") != "success":
+            raise exception.BadResponse(r.status_code,r)
     
-    async def accept_invite(self) -> bool:
+    async def accept_invite(self):
         self.has_session_raise()
         r = await self.ClientSession.put(f"https://scratch.mit.edu/site-api/users/curators-in/{self.id}/add/?usernames={self.Session.username}")
-        return r.json().get("success",False)
+        if not r.json().get("success",False):
+            raise exception.BadResponse(r.status_code,r)
     
-    async def promote(self,username:str) -> bool:
+    async def promote(self,username:str):
         self.has_session_raise()
-        try:
-            r = await self.ClientSession.put(f"https://scratch.mit.edu/site-api/users/curators-in/{self.id}/promote/?usernames={username}")
-        except exception.HTTPNotFound:
-            return False
-        return True
+        await self.ClientSession.put(f"https://scratch.mit.edu/site-api/users/curators-in/{self.id}/promote/?usernames={username}")
     
-    async def remove_user(self,username:str) -> bool:
+    async def remove_user(self,username:str):
         self.has_session_raise()
-        try:
-            r = await self.ClientSession.put(f"https://scratch.mit.edu/site-api/users/curators-in/{self.id}/remove/?usernames={username}")
-        except exception.HTTPNotFound:
-            return False
-        return True
+        await self.ClientSession.put(f"https://scratch.mit.edu/site-api/users/curators-in/{self.id}/remove/?usernames={username}")
     
     async def transfer_ownership(self,username:str,password:str) -> None:
         self._is_owner_raise()
@@ -197,7 +195,7 @@ class Studio(base._BaseSiteAPI):
             json={"password":password}
         )
 
-    async def leave(self) -> bool:
+    async def leave(self):
         self.has_session_raise()
         return await self.remove_user(self.Session.username)
 

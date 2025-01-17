@@ -19,7 +19,7 @@ class _BaseEvent:
     def __init__(self,interval:float): #option edit
         self.interval = float(interval)
         self._running = False
-        self._event:dict[str,Callable[... , Awaitable[Any]]] = {}
+        self._event:dict[str,Callable[... , Awaitable]] = {}
 
     async def _event_monitoring(self): #Edit required
         self._call_event("on_ready")
@@ -27,20 +27,18 @@ class _BaseEvent:
             await asyncio.sleep(1)
             self._call_event("test")
 
-    async def _setting_response(self,respnse): #option edit
-        pass
-
-    async def _run_event(self,func:Awaitable):
-        await self._setting_response(await func)
-
     def _call_event(self,event_name:str,*arg):
+        if not self._running:
+            return
         _event = self._event.get(event_name,None)
         if _event is None:
             return
-        asyncio.create_task(self._run_event(_event(*arg)))
+        a = _event(*arg)
+        if isinstance(a,Awaitable):
+            asyncio.create_task(a)
 
-    def event(self,func:Callable[[Any], Awaitable[Any]]):
-        self._event[func.__name__] = func
+    def event(self,func:Callable[..., Awaitable],name:str|None=None):
+        self._event[func.__name__ if name is None else name] = func
 
     def run(self,*, is_task=True):
         self._running = True

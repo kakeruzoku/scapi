@@ -97,7 +97,7 @@ class Comment(base._BaseSiteAPI):
         self.sent_dt = common.to_dt(data.get("datetime_created"),self.sent_dt)
         _author:dict = data.get("author",{})
         self.author = User(
-            self.ClientSession,_author.get("username")
+            self.ClientSession,_author.get("username"),self.Session
         )
         self.author._update_from_dict(_author)
         self.reply_count = data.get("reply_count",self.reply_count)

@@ -100,8 +100,9 @@ class ForumTopic(base._BaseSiteAPI):
     def __str__(self) -> str: return f"<ForumTopic id:{self.id} title:{self.title} category:{self.category} Session:{self.Session}>"
     def __int__(self) -> int: return self.id
     def __eq__(self,value) -> bool: return isinstance(value,User) and self.id == value.id
+    def __ne__(self,value) -> bool: return isinstance(value,User) and self.id != value.id
     def __lt__(self,value) -> bool: return isinstance(value,User) and self.id < value.id
-    def __ne__(self,value) -> bool: return isinstance(value,User) and self.id > value.id
+    def __gt__(self,value) -> bool: return isinstance(value,User) and self.id > value.id
     def __le__(self,value) -> bool: return isinstance(value,User) and self.id <= value.id
     def __ge__(self,value) -> bool: return isinstance(value,User) and self.id >= value.id
 
@@ -172,8 +173,9 @@ class ForumPost(base._BaseSiteAPI):
     def __str__(self) -> str: return f"<ForumPost id:{self.id} topic:{self.topic} author:{self.author} content:{self.content} Session:{self.Session}>"
     def __int__(self) -> int: return self.id
     def __eq__(self,value) -> bool: return isinstance(value,User) and self.id == value.id
+    def __ne__(self,value) -> bool: return isinstance(value,User) and self.id != value.id
     def __lt__(self,value) -> bool: return isinstance(value,User) and self.id < value.id
-    def __ne__(self,value) -> bool: return isinstance(value,User) and self.id > value.id
+    def __gt__(self,value) -> bool: return isinstance(value,User) and self.id > value.id
     def __le__(self,value) -> bool: return isinstance(value,User) and self.id <= value.id
     def __ge__(self,value) -> bool: return isinstance(value,User) and self.id >= value.id
 
