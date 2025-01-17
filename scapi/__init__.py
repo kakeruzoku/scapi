@@ -106,6 +106,9 @@ from .cloud.cloud import (
     TurboWarpCloud,
     get_tw_cloud
 )
+from .cloud.cloud_event import (
+    CloudEvent
+)
 
 from .event._base import _BaseEvent
 from .event.comment import CommentEvent

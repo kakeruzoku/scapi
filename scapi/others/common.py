@@ -7,7 +7,7 @@ from multidict import CIMultiDictProxy, CIMultiDict
 from . import error as exceptions
 import json
 
-__version__ = "0.6.0"
+__version__ = "0.6.1"
 
 headers = {
     "user-agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/75.0.3770.142 Safari/537.36",
@@ -234,20 +234,14 @@ async def api_iterative(
     if limit < 0:
         raise ValueError("limit parameter must be >= 0")
     
-    api_data = []
-    for i in range(offset,offset+limit,max_limit):
-        r = await session.get(
-            url,timeout=10,
-            params=dict(limit=str(max_limit),offset=str(i),**add_params)
-        )
-        jsons = r.json()
-        if not isinstance(jsons,list):
-            raise exceptions.HTTPError
-        jsons:list[dict] 
-        api_data.extend(jsons)
-        if len(jsons) < max_limit:
-            break
-    return api_data[:limit]
+    r = await session.get(
+        url,timeout=10,
+        params=dict(limit=str(limit),offset=str(offset),**add_params)
+    )
+    jsons = r.json()
+    if not isinstance(jsons,list):
+        raise exceptions.HTTPError()
+    return jsons
 
 
 

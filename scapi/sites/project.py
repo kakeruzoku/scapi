@@ -115,8 +115,10 @@ class Project(base._BaseSiteAPI):
         return isinstance(value,Project) and value.id == self.id
     
     def __int__(self) -> int: return self.id
+    def __eq__(self,value) -> bool: return isinstance(value,Project) and self.id == value.id
+    def __ne__(self,value) -> bool: return isinstance(value,Project) and self.id != value.id
     def __lt__(self,value) -> bool: return isinstance(value,Project) and self.id < value.id
-    def __ne__(self,value) -> bool: return isinstance(value,Project) and self.id > value.id
+    def __gt__(self,value) -> bool: return isinstance(value,Project) and self.id > value.id
     def __le__(self,value) -> bool: return isinstance(value,Project) and self.id <= value.id
     def __ge__(self,value) -> bool: return isinstance(value,Project) and self.id >= value.id
 
@@ -229,11 +231,7 @@ class Project(base._BaseSiteAPI):
     async def view(self) -> bool:
         common.no_data_checker(self.author)
         common.no_data_checker(self.author.username)
-        try:
-            await self.ClientSession.post(f"https://api.scratch.mit.edu/users/{self.author.username}/projects/{self.id}/views/")
-        except exception.TooManyRequests:
-            return False
-        return True
+        await self.ClientSession.post(f"https://api.scratch.mit.edu/users/{self.author.username}/projects/{self.id}/views/")
     
     async def edit(
             self,
@@ -259,15 +257,17 @@ class Project(base._BaseSiteAPI):
             data=thumbnail,
         )
 
-    async def set_json(self,data:dict|str) -> bool:
+    async def set_json(self,data:dict|str):
         self._is_owner_raise()
         if isinstance(data,str):
             data = json.loads(data)
         r = (await self.ClientSession.put(
             f"https://projects.scratch.mit.edu/{self.id}",
             json=data,
-        )).json()
-        return "status" in r and r["status"] == "ok"
+        ))
+        jsons = r.json()
+        if not ("status" in jsons and jsons["status"] == "ok"):
+            raise exception.BadRequest(r.status_code,r)
         
         
     def studios(self, *, limit=40, offset=0) -> AsyncGenerator["Studio",None]:

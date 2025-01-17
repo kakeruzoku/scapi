@@ -1,9 +1,18 @@
 import asyncio
 import datetime
-from ..sites import user,project,studio,comment
+from enum import Enum
+from typing import TYPE_CHECKING
+from ..sites import user,project,studio,comment,activity
 from . import _base
 
+if TYPE_CHECKING:
+    from ..sites.session import Session
+
 class CommentEvent(_base._BaseEvent):
+
+    def __str__(self) -> str:
+        return f"<CommentEvent place:{self.place} running:{self._running} event:{self._event.keys()}>"
+
     def __init__(self,place:project.Project|studio.Studio|user.User,interval):
         self.place = place
         self.lastest_comment_dt = datetime.datetime.now(tz=datetime.timezone.utc)

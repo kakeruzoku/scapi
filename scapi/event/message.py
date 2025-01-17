@@ -8,6 +8,10 @@ if TYPE_CHECKING:
     from ..sites.session import Session
 
 class MessageEvent(_base._BaseEvent):
+
+    def __str__(self) -> str:
+        return f"<MessageEvent user:{self.user} running:{self._running} event:{self._event.keys()}>"
+
     def __init__(self,users:user.User,interval):
         self.user = users
         self.lastest_count = 0
@@ -26,6 +30,10 @@ class MessageEvent(_base._BaseEvent):
             await asyncio.sleep(self.interval)
 
 class SessionMessageEvent(_base._BaseEvent):
+
+    def __str__(self) -> str:
+        return f"<SessionMessageEvent session:{self.session} running:{self._running} event:{self._event.keys()}>"
+
     def __init__(self,sessions:"Session",interval):
         self.session = sessions
         self.lastest_dt = datetime.datetime.now(tz=datetime.timezone.utc)

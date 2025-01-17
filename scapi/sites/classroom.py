@@ -1,4 +1,5 @@
 import datetime
+import re
 from typing import AsyncGenerator, Literal, TYPE_CHECKING
 
 import bs4
@@ -56,8 +57,8 @@ class Classroom(base._BaseSiteAPI):
                 _obj.title = common.split(str(_title),f"/\">","</a>").strip()
                 yield _obj
     
-    async def studio_count(self):
-        base.get_count(self.ClientSession,f"https://scratch.mit.edu/classes/{self.id}/studios/","Class Studios (",")")
+    async def studio_count(self) -> int:
+        return await base.get_count(self.ClientSession,f"https://scratch.mit.edu/classes/{self.id}/studios/","Class Studios (",")")
 
     async def students(self, *, start_page=1, end_page=1) -> AsyncGenerator[user.User, None]:
         for i in range(start_page,end_page+1):
@@ -75,8 +76,8 @@ class Classroom(base._BaseSiteAPI):
                 _obj.id = common.split_int(_icon["data-original"],"/user/","_")
                 yield _obj
 
-    async def students_count(self):
-        base.get_count(self.ClientSession,f"https://scratch.mit.edu/classes/{self.id}/students/","Students (",")")
+    async def students_count(self) -> int:
+        return await base.get_count(self.ClientSession,f"https://scratch.mit.edu/classes/{self.id}/students/","Students (",")")
 
     async def create_student_account(
         self,username:str,password:str,birth_day:datetime.date,gender:str,country:str
@@ -100,7 +101,9 @@ class Classroom(base._BaseSiteAPI):
         ret = response.json()[0]
         if "username" in ret:
             from . import session
-            return await session.login(username,password)
+            return await session.session_login(
+                str(re.search('"(.*)"', response.headers["Set-Cookie"]).group()).replace("\"","")
+            )
         raise exception.BadRequest(response.status_code,response)
     
 async def get_classroom(classroom_id:int,*,ClientSession=None) -> Classroom:
