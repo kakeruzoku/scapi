@@ -147,3 +147,11 @@ class NoDataError(Exception):
     """
     データ不足
     """
+
+class CloudError(Exception):
+    """
+    通信系
+    """
+
+class CloudConnectionFailed(CloudError):
+    """接続失敗"""
