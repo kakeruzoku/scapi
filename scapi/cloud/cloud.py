@@ -4,7 +4,7 @@ import time
 from typing import TYPE_CHECKING
 import warnings
 import aiohttp
-from ..others import common
+from ..others import common,error as exception
 import async_timeout
 import re
 
@@ -42,6 +42,9 @@ class _BaseCloud:
         self._event:"cloud_event.CloudEvent|None" = None
         self.tasks:asyncio.Task|None = None
 
+        self._instruction:bool = False
+        self._timeout:int = 10
+
     @property
     def websocket(self) -> aiohttp.ClientWebSocketResponse|None:
         return self._websocket
@@ -58,45 +61,63 @@ class _BaseCloud:
         })
 
     async def _run(self,timeout=10):
-        async with self.clientsession.ws_connect(
-            self.url,
-            origin=self.origin,
-            headers=self.header,
-            timeout=timeout
-        ) as ws:
-            await self._handshake(ws)
-            self._websocket = ws
-            async for w in self.websocket:
-                if not isinstance(w.data,str):
-                    continue
-                for i in w.data.split("\n"):
-                    try:
-                        data = json.loads(i)
-                    except Exception:
+        c = 1
+        self._timeout = timeout
+        while True:
+            async with self.clientsession.ws_connect(
+                self.url,
+                origin=self.origin,
+                headers=self.header,
+                timeout=self._timeout
+            ) as ws:
+                await self._handshake(ws)
+                asyncio.create_task(self._on_connect(self))
+                c = 1
+                self._websocket = ws
+                async for w in self.websocket:
+                    if not isinstance(w.data,str):
                         continue
-                    if not isinstance(data,dict):
-                        continue
-                    asyncio.create_task(self._on_event(self,data.get("method",""),data["name"][2:],data.get("value",None),data))
-                    if data.get("method","") != "set":
-                        continue
-                    self._data[data["name"][2:]] = data["value"]
+                    for i in w.data.split("\n"):
+                        try:
+                            data = json.loads(i)
+                        except Exception:
+                            continue
+                        if not isinstance(data,dict):
+                            continue
+                        asyncio.create_task(self._on_event(self,data.get("method",""),data["name"][2:],data.get("value",None),data))
+                        if data.get("method","") != "set":
+                            continue
+                        self._data[data["name"][2:]] = data["value"]
+            if self._instruction:
+                asyncio.create_task(self._on_disconnect(self,c))
+                await asyncio.sleep(c)
+                if c == 1: c = 3
+                c = c + 2
+            else:
+                break
 
         await self.websocket.close()
 
     async def _on_event(self,_self,method:str,variable:str,value:float|int,other):
         pass
 
+    async def _on_connect(self,_self):
+        print(f"Cloud Connected:{self.url}")
+
+    async def _on_disconnect(self,_self,interval:int):
+        print(f"Cloud Disconnected:{self.url} Reconnect after {interval} seconds.")
+
     async def connect(self,timeout:int=10) -> asyncio.Task:
+        self._instruction = True
         if not self.is_connect:
             tasks = asyncio.create_task(self._run(timeout))
             self.tasks = tasks
-            async with async_timeout.timeout(timeout):
-                while not self.is_connect:
-                    await asyncio.sleep(0.01)
+            await self._wait_connect()
         return self.tasks
         
 
     async def close(self,is_clientsession_close:bool|None=None):
+        self._instruction = False
         if self.is_connect:
             await self.websocket.close()
         if is_clientsession_close is None:
@@ -107,6 +128,9 @@ class _BaseCloud:
 
     def get_vars(self) -> dict:
         return self._data.copy()
+    
+    def get_var(self,variable:str) -> int|float|None:
+        return self._data.get(variable)
 
     def _check_var(self,value):
         value = str(value)
@@ -123,8 +147,15 @@ class _BaseCloud:
         self._last_set_time = self._last_set_time + (self._ratelimit * n)
         await asyncio.sleep(need_waiting_time)
 
+    async def _wait_connect(self):
+        if not self._instruction:
+            raise exception.CloudConnectionFailed()
+        async with async_timeout.timeout(self._timeout):
+            while not self.is_connect:
+                await asyncio.sleep(0)
+
     async def set_var(self,variable:str,value:str|float|int):
-        if not self.is_connect: raise
+        await self._wait_connect()
         if not variable.startswith("☁ "):
             variable = "☁ " + variable
         if not self._check_var(value):
@@ -144,7 +175,7 @@ class _BaseCloud:
             self._last_set_time = now
 
     async def set_vars(self,data:dict[str,str|float|int]):
-        if not self.is_connect: raise
+        await self._wait_connect()
         packets:str = ""
         c = 0
         for k,v in data.items():
@@ -181,7 +212,7 @@ class _BaseCloud:
 
     def event(self,reconnection_count: int = 10):
         from . import cloud_event
-        return cloud_event.CloudEvent(self,reconnection_count)
+        return cloud_event.CloudEvent(self)
 
 class TurboWarpCloud(_BaseCloud):
     

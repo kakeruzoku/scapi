@@ -209,6 +209,7 @@ class User(base._BaseSiteAPI):
 
     
     async def get_comment_by_id(self,id:int,start:int=1) -> comment.UserComment:
+        id = int(id)
         async for i in self.get_comments(start_page=start,end_page=67):
             if id == i.id:
                 return i
@@ -218,7 +219,7 @@ class User(base._BaseSiteAPI):
         raise exception.CommentNotFound(comment.UserComment,ValueError)
 
     
-    async def get_comments(self, *, start_page=1, end_page=1) -> AsyncGenerator[comment.UserComment, None]:
+    async def get_comments(self, *, start_page:int=1, end_page:int=1) -> AsyncGenerator[comment.UserComment, None]:
         # From Scratchattach
         # 404 - NotFound "Comment" (ex:page>67)
         # 503 - NotFound "User"
