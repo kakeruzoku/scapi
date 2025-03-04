@@ -25,7 +25,7 @@ class _BaseSiteAPI(ABC):
         self._ClientSession:common.ClientSession = ClientSession
         self.update_type:Literal["get","post","put","delete"] = update_type
         self.update_url:str = update_url
-        self.Session:"Scratch_Session|None" = Session
+        self._Session:"Scratch_Session|None" = Session
         self._raw:dict|str|None = None
 
     async def update(self) -> None:
@@ -53,23 +53,36 @@ class _BaseSiteAPI(ABC):
     @property
     def ClientSession(self) -> common.ClientSession:
         return self._ClientSession
+    
+    @property
+    def Session(self) -> "Scratch_Session|None":
+        return self._Session
         
     def has_session_raise(self):
         if not self.has_session:
             raise exception.NoSession()
         
-    async def link_session(self,session:"Scratch_Session",if_close:bool=False) -> None:
+    async def link_session(self,session:"Scratch_Session",if_close:bool=False) -> "Scratch_Session|None":
         if if_close:
             await self.session_close()
-        self.Session = session
+        old_session = self.Session
+        self._Session = session
         self._ClientSession = session.ClientSession
-
+        return old_session
+    
     async def session_close(self) -> None:
         await self.ClientSession.close()
 
     @property
     def session_closed(self) -> bool:
         return self.ClientSession.closed
+    
+    async def __aenter__(self):
+        return self
+    
+    async def __aexit__(self, exc_type, exc, tb):
+        await self.session_close()
+        return
     
 _T = TypeVar("_T",_BaseSiteAPI,Any)
 
@@ -78,6 +91,7 @@ async def get_object(
         id:Any,Class:type[_T],
         session:"Scratch_Session|None"=None
     ) -> _T:
+    if ClientSession is None: if_close = True
     ClientSession = common.create_ClientSession(ClientSession)
     try:
         dicts = {
@@ -89,8 +103,10 @@ async def get_object(
         await _object.update()
         return _object
     except (KeyError, exception.BadRequest) as e:
+        if if_close: await ClientSession.close()
         raise Class.raise_class(Class,e)
     except Exception as e:
+        if if_close: await ClientSession.close()
         raise exception.ObjectFetchError(Class,e)
 
 

@@ -84,8 +84,9 @@ class Comment(base._BaseSiteAPI):
         
     def __int__(self) -> int: return self.id
     def __eq__(self,value) -> bool: return isinstance(value,Comment) and self.id == value.id
+    def __ne__(self,value) -> bool: return isinstance(value,Comment) and self.id != value.id
     def __lt__(self,value) -> bool: return isinstance(value,Comment) and self.id < value.id
-    def __ne__(self,value) -> bool: return isinstance(value,Comment) and self.id > value.id
+    def __gt__(self,value) -> bool: return isinstance(value,Comment) and self.id > value.id
     def __le__(self,value) -> bool: return isinstance(value,Comment) and self.id <= value.id
     def __ge__(self,value) -> bool: return isinstance(value,Comment) and self.id >= value.id
 
@@ -102,13 +103,6 @@ class Comment(base._BaseSiteAPI):
         self.author._update_from_dict(_author)
         self.reply_count = data.get("reply_count",self.reply_count)
 
-    def __int__(self) -> int: return self.id
-    def __eq__(self,value) -> bool: return isinstance(value,Comment) and self.id == value.id
-    def __lt__(self,value) -> bool: return isinstance(value,Comment) and self.id < value.id
-    def __ne__(self,value) -> bool: return isinstance(value,Comment) and self.id > value.id
-    def __le__(self,value) -> bool: return isinstance(value,Comment) and self.id <= value.id
-    def __ge__(self,value) -> bool: return isinstance(value,Comment) and self.id >= value.id
-
     async def get_parent_comment(self,use_cache:bool=True) -> "Comment|None":
         if (self._parent_cache is not None) and (use_cache):
             return self._parent_cache
@@ -124,10 +118,10 @@ class Comment(base._BaseSiteAPI):
             limit=limit,offset=offset,add_params={"cachebust":random.randint(0,9999)}
         )
 
-    async def reply(self, content, *, commentee_id=None) -> "Comment":
+    async def reply(self, content, *, commentee_id:"int|User|None"=None) -> "Comment":
         return await self.place.post_comment(
-            content,commentee_id=self.author.id if commentee_id is None else commentee_id,
-            parent_id=self.id if self.parent_id is None else self.parent_id
+            content,commentee=self.author.id if commentee_id is None else commentee_id,
+            parent=self.id if self.parent_id is None else self.parent_id
         )
 
     async def delete(self) -> bool:
@@ -168,7 +162,6 @@ class UserComment(Comment):
         self.page:int = 1
         
     async def update(self):
-        warnings.warn(f"The update will take some time.")
         r = await self.place.get_comment_by_id(self.id,self.page)
         self.parent_id = r.parent_id
         self.commentee_id = r.commentee_id
@@ -192,8 +185,8 @@ class UserComment(Comment):
 
     async def reply(self, content, *, commentee_id=None) -> "UserComment":
         return await self.place.post_comment(
-            content,commentee_id=self.author.id if commentee_id is None else commentee_id,
-            parent_id=self.id if self.parent_id is None else self.parent_id
+            content,commentee=self.author.id if commentee_id is None else commentee_id,
+            parent=self.id if self.parent_id is None else self.parent_id
         )
 
     async def delete(self) -> bool:

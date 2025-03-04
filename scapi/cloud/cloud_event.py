@@ -8,6 +8,7 @@ async def _on_event(self:"cloud._BaseCloud",method:str,variable:str,value:float|
 
 async def _on_connect(self:"cloud._BaseCloud"):
     self._event._call_event(f"on_connect")
+    self._event._call_event(f"on_ready")
 
 async def _on_disconnect(self:"cloud._BaseCloud"):
     self._event._call_event(f"on_disconnect")
@@ -32,7 +33,7 @@ class CloudEvent(_base._BaseEvent):
         await self.cloud.close()
 
     def stop(self):
-        super().stop()
-        asyncio.create_task(self.cloud.close(False))
+        asyncio.create_task(self.cloud.close())
+        return super().stop()
 
 

@@ -25,7 +25,6 @@ from .others.common import (
 from .others import error as exception
 del exception.TYPE_CHECKING
 from .others.other_api import (
-    get_csrf_token_sync,
     check_username,
     check_password,
     total_site_stats,

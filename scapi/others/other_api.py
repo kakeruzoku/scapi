@@ -1,13 +1,8 @@
 from typing import Literal, TypedDict
-import requests as sync_req
 from . import common
 import asyncio
 import urllib.parse
 
-def get_csrf_token_sync() -> str:
-    return sync_req.get(
-        "https://scratch.mit.edu/csrf_token/"
-    ).headers["set-cookie"].split(";")[3][len(" Path=/, scratchcsrftoken="):]
 async def check_username(username:str,clientsession:common.ClientSession) -> str:
     r = await clientsession.get(f"https://api.scratch.mit.edu/accounts/checkusername/{username}")
     return r.json().get("msg","")
@@ -82,5 +77,5 @@ async def translation(language:str,text:str,clientsession:common.ClientSession) 
 
 async def tts(language:str,text:str,type:Literal["male","female"],clientsession:common.ClientSession) -> bytes:
     text = urllib.parse.quote(text,safe="")
-    r = await clientsession.get(f"https://synthesis-service.scratch.mit.edu/synth?locale={language}&gender={type}&text={text}",is_binary=True)
-    return r.text
+    r = await clientsession.get(f"https://synthesis-service.scratch.mit.edu/synth?locale={language}&gender={type}&text={text}")
+    return r.data

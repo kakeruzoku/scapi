@@ -119,7 +119,7 @@ class ForumTopic(base._BaseSiteAPI):
         self.last_page = 1 if len(_raw_pages) == 0 else int(_raw_pages[-1].text)
         self.category = ForumCategoryType.value_of(common.split_int(str(soup.find_all("a",{"href":"/discuss/"})[1].next_element.next_element.next_element),"/discuss/","/"))
         
-    async def get_posts(self,start_page=1,end_page=1) -> AsyncGenerator["ForumPost", None]:
+    async def get_posts(self,start_page:int=1,end_page:int=1) -> AsyncGenerator["ForumPost", None]:
         for page in range(start_page,end_page+1):
             r = await self.ClientSession.get(f"https://scratch.mit.edu/discuss/topic/{self.id}/",params={"page":page})
             soup = bs4.BeautifulSoup(r.text, "html.parser")
@@ -128,6 +128,7 @@ class ForumTopic(base._BaseSiteAPI):
                 return
             for _raw in _raw_list:
                 _obj = ForumPost(self.ClientSession,int(_raw["id"][1:]),self.Session)
+                _obj.topic = self
                 _obj._update_from_str(soup)
                 yield _obj
 
@@ -191,13 +192,13 @@ class ForumPost(base._BaseSiteAPI):
         self.page = 1 if _raw_page is None else int(_raw_page.text)
         id = common.split_int(soup.find("img",{"title":"[RSS Feed]"}).parent["href"],"topic/","/")
         self.topic = ForumTopic(self.ClientSession,id,self.Session) if self.topic is None else self.topic
-        self.topic._update_from_str(data)
+        self.topic._update_from_str(soup)
 
         _raw_post = soup.find("div",{"id":f"p{self.id}"})
         self.content = _raw_post.find("div",{"class":"post_body_html"}).text
 
         _head = _raw_post.find("div",{"class":"box-head"})
-        self.number = _head.find("span").text[1:]
+        self.number = common.try_int(_head.find("span").text[1:])
         self.time = _head.find("a").text
         
         _left = _raw_post.find("div",{"class":"postleft"}).next_element.next_element
@@ -249,12 +250,12 @@ async def get_topic_list(category:ForumCategoryType,start_page=1,end_page=1,*,Cl
             yield _obj
 
 
-def create_Partial_ForumTopic(Topic_id:int,*,ClientSession:common.ClientSession|None=None,session:"Session|None"=None) -> ForumTopic:
+def create_Partial_ForumTopic(topic_id:int,*,ClientSession:common.ClientSession|None=None,session:"Session|None"=None) -> ForumTopic:
     ClientSession = common.create_ClientSession(ClientSession)
-    return ForumTopic(ClientSession,Topic_id,session)
+    return ForumTopic(ClientSession,topic_id,session)
 
-def create_Partial_ForumPost(Post_id:int,Topic:ForumTopic|None,*,ClientSession:common.ClientSession|None=None,session:"Session|None"=None) -> ForumPost:
+def create_Partial_ForumPost(post_id:int,topic:ForumTopic|None=None,*,ClientSession:common.ClientSession|None=None,session:"Session|None"=None) -> ForumPost:
     ClientSession = common.create_ClientSession(ClientSession)
-    _post = ForumPost(ClientSession,Post_id,session)
-    _post.topic = Topic
+    _post = ForumPost(ClientSession,post_id,session)
+    _post.topic = topic
     return _post

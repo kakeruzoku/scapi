@@ -127,6 +127,12 @@ class Activity:
             self.type = ActivityType.ProjectFavorite
             self.place = self.target = create_Partial_Project(data["project_id"],session.create_Partial_myself(),ClientSession=cs,session=ss)
             self.place.title = data["project_title"]
+        elif t == "remixproject":
+            self.type = ActivityType.ProjectRemix
+            self.place = create_Partial_Project(data["parent_id"],session.create_Partial_myself(),ClientSession=cs,session=ss)
+            self.place.title = data["parent_title"]
+            self.target = create_Partial_Project(data["project_id"],session.create_Partial_myself(),ClientSession=cs,session=ss)
+            self.place.title = data["title"]
         else:
             warnings.warn(f"unknown activitytype: {t} (message)")
         
@@ -191,9 +197,9 @@ class Activity:
             self.place.title = data["title"]
         elif t == "remixproject":
             self.type = ActivityType.ProjectRemix
-            self.target = create_Partial_Project(data["parent_id"],ClientSession=cs,session=ss)
+            self.target = create_Partial_Project(data["project_id"],ClientSession=cs,session=ss)
             self.target.title = data["title"]
-            self.place = create_Partial_Project(data["project_id"],self.actor,ClientSession=cs,session=ss)
+            self.place = create_Partial_Project(data["parent_id"],self.actor,ClientSession=cs,session=ss)
             self.place.title = data["parent_title"]
         elif t == "becomeownerstudio":
             self.type = ActivityType.StudioBecomeManager

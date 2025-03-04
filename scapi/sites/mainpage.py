@@ -16,6 +16,9 @@ class ScratchNews(base._BaseSiteAPI):
     raise_class = exception.ObjectNotFound
     id_name = "id"
 
+    def __str__(self):
+        return f"<ScratchNews id:{self.id} title:{self.title} url:{self.url}>"
+    
     def __init__(
         self,
         ClientSession:common.ClientSession,

@@ -72,7 +72,7 @@ class Backpack(base._BaseSiteAPI):
     def thumbnail_url(self) -> str:
         return "https://backpack.scratch.mit.edu/" + self._thumbnail
     
-    async def download(self,path) -> None:
+    async def download(self,path:str) -> None:
         await common.downloader(self.ClientSession,self.download_url,path)
 
     async def delete(self) -> None:

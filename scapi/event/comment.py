@@ -21,12 +21,15 @@ class CommentEvent(_base._BaseEvent):
     async def _event_monitoring(self):
         self._call_event("on_ready")
         while self._running:
-            comment_list = [i async for i in self.place.get_comments()]
-            comment_list.reverse()
-            temp_lastest_dt = self.lastest_comment_dt
-            for i in comment_list:
-                if i.sent_dt > self.lastest_comment_dt:
-                    temp_lastest_dt = i.sent_dt
-                    self._call_event("on_comment",i)
-                self.lastest_comment_dt = temp_lastest_dt
+            try:
+                comment_list = [i async for i in self.place.get_comments()]
+                comment_list.reverse()
+                temp_lastest_dt = self.lastest_comment_dt
+                for i in comment_list:
+                    if i.sent_dt > self.lastest_comment_dt:
+                        temp_lastest_dt = i.sent_dt
+                        self._call_event("on_comment",i)
+                    self.lastest_comment_dt = temp_lastest_dt
+            except Exception as e:
+                self._call_event("on_error",e)
             await asyncio.sleep(self.interval)

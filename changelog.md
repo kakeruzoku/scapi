@@ -4,6 +4,33 @@
 - **[Fix]** 修正
 - **[Add]** 追加
 - **[Other]** その他
+# 1.x.x
+## 1.0.x
+### 1.0.0
+- **[Change]** 必要なパッケージを変更
+- cloud
+  - **[Del]** 使用されていないいくつかの属性を削除
+  - **[Change]** headerをproperty化
+  - **[Add]** 接続失敗時に`TimeoutError`を送出するように
+  - **[Add]** `set_var`/`set_vers`でクラウドに接続されていない場合は接続されるまで待つように
+- event
+  - **[Add]** `wait_on_ready()`,`task`の追加
+  - **[Change]** `try except`文で例外で終了しないように変更
+- **[Del]** `BytesResponse`を削除して`Response`と統合
+- **[Add]** 例外`CommentFailure`の追加
+- **[Del]** `get_csrf_token_sync`の削除
+- sites
+  - **[Add]** `_BaseSiteAPI`で`async with ... as ...`文に対応
+  - **[Add]** IDを指定する引数でオブジェクトの入力に対応
+  - **[Fix]** 一部のActivityを修正
+  - **[Change]** コメントでの引数`parent_id`,`commentee_id`を`parent`,`commentee`に変更
+  - **[Add]** Project.downloadでアセットをダウンロードするかを追加/一部の問題を修正
+  - **[Change]** `RemixTree`でデータの保存方法を変更し、メモリの使用量を削減
+  - **[Fix]** Studio.Activityでデータがうまく取得できない問題を修正
+  - **[Add]** Userでwebサイトから所属クラス情報を取得できるように(あと軽量化)
+  - **[Fix]** その他微弱な修正や型ヒントの追加
+- web
+  - **[Add]** 新たにwebディレクトリを作成 wiki等の掲載を行います [こちら](https://scapi.kakeru.f5.si )から閲覧できます
 
 # 0.x.x
 ## 0.6.x
