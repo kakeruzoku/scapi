@@ -1,6 +1,4 @@
 aiohttp
-requests
 BeautifulSoup4
 asyncio
 aiofiles
-async_timeout

@@ -7,7 +7,7 @@ from multidict import CIMultiDictProxy, CIMultiDict
 from . import error as exceptions
 import json
 
-__version__ = "0.6.2"
+__version__ = "1.0.0"
 
 headers = {
     "user-agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/75.0.3770.142 Safari/537.36",
@@ -32,25 +32,18 @@ class Response:
     def __str__(self) -> str:
         return f"<Response [{self.status_code}] {self.text}>"
 
-    def __init__(self,status:int,text:str,headers:CIMultiDictProxy[str]) -> None:
+    def __init__(self,status:int,text:bytes,headers:CIMultiDictProxy[str],encodeing:str) -> None:
         self.status_code:int = status
-        self.text:str = text
+        self.data:bytes = text
         self.headers:CIMultiDict[str] = headers.copy()
-    
+        self._encodeing:str = encodeing
+
+    @property
+    def text(self) -> str:
+        return self.data.decode(encoding=self._encodeing)
+
     def json(self) -> json_resp:
         return json.loads(self.text)
-    
-class BytesResponse:
-    def __str__(self) -> str:
-        return f"<BytesResponse [{self.status_code}] {len(self.text)}bytes> "
-    
-    def __init__(self,status:int,data:bytes,headers:CIMultiDictProxy[str]) -> None:
-        self.status_code:int = status
-        self.text:bytes = data
-        self.headers:CIMultiDict[str] = headers.copy()
-
-    def json(self) -> None:
-        return None
 
 class ClientSession(aiohttp.ClientSession):
 
@@ -77,7 +70,7 @@ class ClientSession(aiohttp.ClientSession):
         self._proxy = url
         self._proxy_auth = auth
     
-    async def _check(self,response:Response|BytesResponse) -> None:
+    async def _check(self,response:Response) -> None:
         if response.status_code in [403,401]:
             raise exceptions.Unauthorized(response.status_code,response)
         if response.status_code in [429]:
@@ -95,122 +88,65 @@ class ClientSession(aiohttp.ClientSession):
     async def _send_requests(
         self,obj:Callable[...,aiohttp.ClientResponse],url:str,*,
         data:Any=None,json:dict|None=None,timeout:float|None=None,params:dict[str,str]|None=None,
-        header:dict[str,str]|None=None,cookie:dict[str,str]|None=None,check:bool=True,is_binary:bool=False
-    ) -> BytesResponse | Response:
+        header:dict[str,str]|None=None,cookie:dict[str,str]|None=None,check:bool=True,**d
+    ) -> Response:
         if self.closed: raise exceptions.SessionClosed
         if header is None: header = self._header.copy()
         if cookie is None: cookie = self._cookie.copy()
         try:
             async with obj(
                 url,data=data,json=json,timeout=timeout,params=params,headers=header,cookies=cookie,
-                proxy=self._proxy,proxy_auth=self._proxy_auth
+                proxy=self._proxy,proxy_auth=self._proxy_auth,**d
             ) as response:
-                if is_binary: r = BytesResponse(response.status,await response.read(),response.headers)
-                else: r = Response(response.status,await response.text(),response.headers)
+                r = Response(response.status,await response.read(),response.headers,response.get_encoding())
                 response.close()
         except Exception as e:
             raise exceptions.HTTPFetchError(e)
         if check: await self._check(r)
         return r
 
-    @overload
     async def get(
         self,url:str,*,
         data:Any=None,json:dict|None=None,timeout:float|None=None,params:dict[str,str]|None=None,
-        header:dict[str,str]|None=None,cookie:dict[str,str]|None=None,check:bool=True,is_binary:Literal[False]=False
-    ) -> Response: ...
-    
-    @overload
-    async def get(
-        self,url:str,*,
-        data:Any=None,json:dict|None=None,timeout:float|None=None,params:dict[str,str]|None=None,
-        header:dict[str,str]|None=None,cookie:dict[str,str]|None=None,check:bool=True,is_binary:Literal[True]
-    ) -> BytesResponse: ...
-
-    async def get(
-        self,url:str,*,
-        data:Any=None,json:dict|None=None,timeout:float|None=None,params:dict[str,str]|None=None,
-        header:dict[str,str]|None=None,cookie:dict[str,str]|None=None,check:bool=True,is_binary:bool=False
-    ) -> Response|BytesResponse:
+        header:dict[str,str]|None=None,cookie:dict[str,str]|None=None,check:bool=True,**d
+    ) -> Response:
         return await self._send_requests(
             super().get,url=url,
             data=data,json=json,timeout=timeout,params=params,
-            header=header,cookie=cookie,check=check,is_binary=is_binary
+            header=header,cookie=cookie,check=check,**d
         )
     
-    @overload
     async def post(
         self,url:str,*,
         data:Any=None,json:dict|None=None,timeout:float|None=None,params:dict[str,str]|None=None,
-        header:dict[str,str]|None=None,cookie:dict[str,str]|None=None,check:bool=True,is_binary:Literal[False]=False
-    ) -> Response: ...
-    
-    @overload
-    async def post(
-        self,url:str,*,
-        data:Any=None,json:dict|None=None,timeout:float|None=None,params:dict[str,str]|None=None,
-        header:dict[str,str]|None=None,cookie:dict[str,str]|None=None,check:bool=True,is_binary:Literal[True]
-    ) -> BytesResponse: ...
-
-    async def post(
-        self,url:str,*,
-        data:Any=None,json:dict|None=None,timeout:float|None=None,params:dict[str,str]|None=None,
-        header:dict[str,str]|None=None,cookie:dict[str,str]|None=None,check:bool=True,is_binary:bool=False
-    ) -> Response|BytesResponse:
+        header:dict[str,str]|None=None,cookie:dict[str,str]|None=None,check:bool=True,**d
+    ) -> Response:
         return await self._send_requests(
             super().post,url=url,
             data=data,json=json,timeout=timeout,params=params,
-            header=header,cookie=cookie,check=check,is_binary=is_binary
+            header=header,cookie=cookie,check=check,**d
         )
-    
-    @overload
-    async def put(
-        self,url:str,*,
-        data:Any=None,json:dict|None=None,timeout:float|None=None,params:dict[str,str]|None=None,
-        header:dict[str,str]|None=None,cookie:dict[str,str]|None=None,check:bool=True,is_binary:Literal[False]=False
-    ) -> Response: ...
-    
-    @overload
-    async def put(
-        self,url:str,*,
-        data:Any=None,json:dict|None=None,timeout:float|None=None,params:dict[str,str]|None=None,
-        header:dict[str,str]|None=None,cookie:dict[str,str]|None=None,check:bool=True,is_binary:Literal[True]
-    ) -> BytesResponse: ...
 
     async def put(
         self,url:str,*,
         data:Any=None,json:dict|None=None,timeout:float|None=None,params:dict[str,str]|None=None,
-        header:dict[str,str]|None=None,cookie:dict[str,str]|None=None,check:bool=True,is_binary:bool=False
-    ) -> Response|BytesResponse:
+        header:dict[str,str]|None=None,cookie:dict[str,str]|None=None,check:bool=True,**d
+    ) -> Response:
         return await self._send_requests(
             super().put,url=url,
             data=data,json=json,timeout=timeout,params=params,
-            header=header,cookie=cookie,check=check,is_binary=is_binary
+            header=header,cookie=cookie,check=check,**d
         )
-    
-    @overload
-    async def delete(
-        self,url:str,*,
-        data:Any=None,json:dict|None=None,timeout:float|None=None,params:dict[str,str]|None=None,
-        header:dict[str,str]|None=None,cookie:dict[str,str]|None=None,check:bool=True,is_binary:Literal[False]=False
-    ) -> Response: ...
-    
-    @overload
-    async def delete(
-        self,url:str,*,
-        data:Any=None,json:dict|None=None,timeout:float|None=None,params:dict[str,str]|None=None,
-        header:dict[str,str]|None=None,cookie:dict[str,str]|None=None,check:bool=True,is_binary:Literal[True]
-    ) -> BytesResponse: ...
 
     async def delete(
         self,url:str,*,
         data:Any=None,json:dict|None=None,timeout:float|None=None,params:dict[str,str]|None=None,
-        header:dict[str,str]|None=None,cookie:dict[str,str]|None=None,check:bool=True,is_binary:bool=False
-    ) -> Response|BytesResponse:
+        header:dict[str,str]|None=None,cookie:dict[str,str]|None=None,check:bool=True,**d
+    ) -> Response:
         return await self._send_requests(
             super().delete,url=url,
             data=data,json=json,timeout=timeout,params=params,
-            header=header,cookie=cookie,check=check,is_binary=is_binary
+            header=header,cookie=cookie,check=check,**d
         )
 
 
@@ -282,7 +218,7 @@ def try_int(inp:str|int) -> int:
 async def downloader(
     clientsession:ClientSession,url:str,download_path:str
 ):
-    r = await clientsession.get(url,is_binary=True)
+    r = await clientsession.get(url)
     async with aiofiles.open(download_path,"bw") as f:
         await f.write(r.text)
 
@@ -314,6 +250,14 @@ async def requests_with_file(filedata:bytes,filename:str,url:str,clientsession:C
             "x-requested-with": "XMLHttpRequest",
         }
     )
+
+def get_id(obj:Any,name:str="id") -> int|str:
+    if isinstance(obj,(int,str)):
+        return obj
+    r = getattr(obj,name)
+    if r is None:
+        raise exceptions.NoDataError()
+    return r
 
 empty_project_json = {
     'targets': [
@@ -361,3 +305,6 @@ empty_project_json = {
 }
 
 BIG = 99999999
+
+async def do_nothing(*l,**d):
+    return

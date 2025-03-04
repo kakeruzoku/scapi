@@ -1,5 +1,6 @@
 import datetime
 import random
+import json
 from typing import AsyncGenerator, Generator, Literal, TypedDict, TYPE_CHECKING
 
 from ..others import common
@@ -9,7 +10,7 @@ from . import base,project,comment,activity
 import bs4
 
 if TYPE_CHECKING:
-    from . import session
+    from . import session,classroom
     from ..event.comment import CommentEvent
     from ..event.message import MessageEvent
 
@@ -40,7 +41,7 @@ class User(base._BaseSiteAPI):
         self.country:str = None
         self.scratchteam:bool = None
 
-        self._website_data:common.Response|None = None
+        self._website_data:dict = {}
 
     def _update_from_dict(self, data:dict) -> None:
         self.id = data.get("id",self.id)
@@ -79,22 +80,39 @@ class User(base._BaseSiteAPI):
         common.no_data_checker(self.id)
         return f"https://uploads.scratch.mit.edu/get_image/user/{self.id}_90x90.png"
     
-    async def load_website(self,reload:bool=False) -> common.Response:
-        if reload or (self._website_data is None):
-            self._website_data = await self.ClientSession.get(f"https://scratch.mit.edu/users/{self.username}/",check=False)
-        return self._website_data
+    async def load_website(self,reload:bool=False):
+        if reload or (self._website_data == {}):
+            _website_data = await self.ClientSession.get(f"https://scratch.mit.edu/users/{self.username}/",check=False)
+            self._website_data = {"exist":_website_data.status_code == 200}
+            if _website_data.status_code != 200:
+                return
+            soup = bs4.BeautifulSoup(_website_data.text,"html.parser")
+            header_text = soup.find("div",{"class":"header-text"}) #class and scratcher
+            header_data = header_text.find_all("span",{"class","group"})
+            if len(header_data) == 2: #student acc
+                self._website_data["classroom"] = common.split_int(header_data[0].find("a")["href"],"/classes/","/"),
+                header_data.pop(0)
+            self._website_data["is_scratcher"] = "Scratcher" in header_data[0].next_element.strip()
+
+        return
     
     async def exist(self,use_cache:bool=True) -> bool:
         await self.load_website(not use_cache)
-        if self._website_data.status_code in [200]:
-            return True
-        elif self._website_data.status_code in [404]:
-            return False
+        return self._website_data.get("exist")
         
-    async def is_new_scratcher(self,use_cache:bool=True) -> bool:
+    async def is_new_scratcher(self,use_cache:bool=True) -> bool|None:
         await self.load_website(not use_cache)
-        text = self._website_data.text
-        return "new scratcher" in text[text.rindex('<span class="group">'):][:70].lower()
+        return self._website_data.get("is_scratcher")
+    
+    async def classroom_id(self,use_cache:bool=True) -> int|None:
+        await self.load_website(not use_cache)
+        return self._website_data.get("classroom")
+    
+    async def classroom(self,use_cache:bool=True) -> "classroom.Classroom|None":
+        from . import classroom
+        id = await self.classroom_id(use_cache)
+        if id is None: return
+        return await base.get_object(self.ClientSession,id,classroom.Classroom,self.Session)
     
     async def message_count(self) -> int:
         return (await self.ClientSession.get(
@@ -111,10 +129,12 @@ class User(base._BaseSiteAPI):
         id:int
         object:project.Project
     
-    async def featured_data(self) -> user_featured_data:
+    async def featured_data(self) -> user_featured_data|None:
         jsons = (await self.ClientSession.get(
             f"https://scratch.mit.edu/site-api/users/all/{self.username}/"
         )).json()
+        if jsons["featured_project_data"] is None:
+            return
         _project = project.create_Partial_Project(jsons["featured_project_data"]["id"],self)
         _project.title = jsons["featured_project_data"]["title"]
         return {
@@ -142,13 +162,15 @@ class User(base._BaseSiteAPI):
             None,User,self.Session,limit=limit,offset=offset
         )
     
-    async def is_following(self,username:str) -> bool:
+    async def is_following(self,username:"str|User") -> bool:
+        username = common.get_id(username,"username")
         async for i in self.following(limit=common.BIG):
             if i.username.lower() == username.lower():
                 return True
         return False
     
-    async def is_followed(self,username:str) -> bool:
+    async def is_followed(self,username:"str|User") -> bool:
+        username = common.get_id(username,"username")
         async for i in self.followers(limit=common.BIG):
             if i.username.lower() == username.lower():
                 return True
@@ -267,21 +289,27 @@ class User(base._BaseSiteAPI):
                 yield main
         return
     
-    async def post_comment(self, content, *, parent_id="", commentee_id="") -> comment.UserComment:
+    async def post_comment(self, content, parent:int|comment.Comment|None=None, commentee:"int|User|None"=None) -> comment.UserComment:
         self.has_session_raise()
+        parent = common.get_id(parent)
+        commentee = common.get_id(commentee)
         data = {
-            "commentee_id": commentee_id,
+            "commentee_id": "" if commentee is None else commentee,
             "content": str(content),
-            "parent_id": parent_id,
+            "parent_id": "" if parent is None else parent,
         }
         text = (await self.ClientSession.post(
             f"https://scratch.mit.edu/site-api/comments/user/{self.username}/add/",json=data
         )).text
+        if text.strip().startswith('<script id="error-data" type="application/json">'):#エラー
+            data:dict = json.loads(common.split(text,'type="application/json">',"</script>"))
+            raise exception.CommentFailure(data.get("error"))
+
         c = comment.UserComment(self,self.ClientSession,self.Session)
         c._update_from_dict({
             "id":common.split_int(text,"data-comment-id=\"","\">"),
-            "parent_id":None if parent_id == "" else parent_id,
-            "commentee_id":None if commentee_id == "" else commentee_id,
+            "parent_id":None if parent == "" else parent,
+            "commentee_id":None if commentee == "" else commentee,
             "datetime_create":common.split(text,"<span class=\"time\" title=\"","\">"),
             "content":content,
             "author":{
@@ -323,7 +351,7 @@ class User(base._BaseSiteAPI):
             json = data
         )
 
-    async def change_icon(self,icon:bytes|str,filetype:str="png"):
+    async def change_icon(self,icon:bytes|str,filetype:str="icon.png"):
         self._is_me_raise()
         thumbnail,filename = await common.open_tool(icon,filetype)
         await common.requests_with_file(thumbnail,filename,f"https://scratch.mit.edu/site-api/users/all/{self.username}/",self.ClientSession)

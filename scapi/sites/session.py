@@ -67,6 +67,9 @@ class Session(base._BaseSiteAPI):
 
     def __str__(self):
         return f"<Session Username:{self.username}>"
+    
+    def __eq__(self, other:"Session"):
+        return isinstance(other,Session) and self.session_id == other.session_id
 
 
     def __init__(
@@ -86,13 +89,13 @@ class Session(base._BaseSiteAPI):
         }
         self.status:SessionStatus = None
         self.session_id:str = session_id
-        self.xtoken:str|None = ""
-        self.is_email_verified:bool|None = None
-        self.email:str|None = None
-        self.new_scratcher:bool|None = None
+        self.xtoken:str = ""
+        self.is_email_verified:bool = None
+        self.email:str = None
+        self.scratcher:bool = None
         self.mute_status:dict|None = None
-        self.username:str|None = None
-        self.banned:bool|None = None
+        self.username:str = None
+        self.banned:bool = None
 
     def _update_from_dict(self,data):
         self.status = SessionStatus(data)
@@ -130,11 +133,9 @@ class Session(base._BaseSiteAPI):
             return
         return await base.get_object(self.ClientSession,self.status.classroomId,classroom.Classroom,self)
     
-    async def create_project(self,title:str|None=None,project_json:dict|None=None,remix_id:int|None=None) -> project.Project:
+    async def create_project(self,title:str="Untitled",project_json:dict|None=None,remix_id:int|None=None) -> project.Project:
         if project_json is None:
             project_json = common.empty_project_json.copy()
-        if title is None:
-            title = "Untitled"
         
         if remix_id is None:
             params = {
@@ -261,8 +262,10 @@ class Session(base._BaseSiteAPI):
         _obj._update_from_dict(r)
         return _obj
     
+    async def link_session(self, *l, **d):
+        raise TypeError()
+    
 async def session_login(session_id,*,ClientSession=None) -> Session:
-    ClientSession = common.create_ClientSession(ClientSession)
     return await base.get_object(ClientSession,session_id,Session)
 
 

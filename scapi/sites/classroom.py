@@ -76,7 +76,7 @@ class Classroom(base._BaseSiteAPI):
                 _obj.id = common.split_int(_icon["data-original"],"/user/","_")
                 yield _obj
 
-    async def students_count(self) -> int:
+    async def student_count(self) -> int:
         return await base.get_count(self.ClientSession,f"https://scratch.mit.edu/classes/{self.id}/students/","Students (",")")
 
     async def create_student_account(

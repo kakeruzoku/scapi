@@ -1,5 +1,6 @@
 import asyncio
 from typing import Any, Awaitable, Callable
+from ..others import common
 
 """
 event = _BaseEvent()
@@ -18,7 +19,9 @@ event.run(False)
 class _BaseEvent:
     def __init__(self,interval:float): #option edit
         self.interval = float(interval)
+        self.task:asyncio.Task|None = None
         self._running = False
+        self._on_ready = False
         self._event:dict[str,Callable[... , Awaitable]] = {}
 
     async def _event_monitoring(self): #Edit required
@@ -30,6 +33,11 @@ class _BaseEvent:
     def _call_event(self,event_name:str,*arg):
         if not self._running:
             return
+        if event_name == "on_ready":
+            if self._on_ready:
+                return
+            else:
+                self._on_ready = True
         _event = self._event.get(event_name,None)
         if _event is None:
             return
@@ -37,16 +45,25 @@ class _BaseEvent:
         if isinstance(a,Awaitable):
             asyncio.create_task(a)
 
-    def event(self,func:Callable[..., Awaitable],name:str|None=None):
-        self._event[func.__name__ if name is None else name] = func
+    def event(self,f:Callable[..., Awaitable],name:str|None=None):
+        self._event[f.__name__ if name is None else name] = f
 
-    def run(self,*, is_task=True):
-        self._running = True
-        if is_task:
-            return asyncio.create_task(self._event_monitoring()) #イベントを開始。
-        else:
-            asyncio.run(self._event_monitoring())
+    def run(self) -> asyncio.Task:
+        if not self._running:
+            self._running = True
+            self._on_ready = False
+            self.task = asyncio.create_task(self._event_monitoring()) #イベントを開始。
+        return self.task
+        
 
-    def stop(self):
+    async def wait_on_ready(self) -> bool:
+        while self._running and (not self._on_ready):
+            await asyncio.sleep(0)
+        return self._running
+
+
+    def stop(self) -> Awaitable:
         self._running = False
+        self._on_ready = False
+        return self.task or common.do_nothing()
 

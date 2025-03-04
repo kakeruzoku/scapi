@@ -143,16 +143,17 @@ class Project(base._BaseSiteAPI):
 
         return await self.Session.create_project(title,project_json,self.id)
 
-    async def load_json(self) -> dict:
+    async def load_json(self,update:bool=True) -> dict:
         try:
-            await self.update()
+            if update or self.project_token is None:
+                await self.update()
             return (await self.ClientSession.get(
                 f"https://projects.scratch.mit.edu/{self.id}?token={self.project_token}"
             )).json()
         except Exception as e:
             raise exception.ProjectNotFound(Project,e)
         
-    async def download(self,save_path,filename:str|None=None,log:bool=False) -> str:
+    async def download(self,save_path,filename:str|None=None,download_asset:bool=True,log:bool=False) -> str:
         if filename is None:
             filename = f"{self.id}_{datetime.datetime.now().strftime('%Y%m%d-%H%M%S')}.sb3"
         if not filename.endswith(".sb3"):
@@ -166,18 +167,19 @@ class Project(base._BaseSiteAPI):
         project_json = await self.load_json()
         if log: print(f'download:project.json')
         asset_list:list[str] = []
-        for i in project_json["targets"]:
-            for j in i["costumes"]:
-                asset_list.append(j['md5ext'])
-            for j in i["sounds"]:
-                asset_list.append(j['md5ext'])
+        if download_asset:
+            for i in project_json["targets"]:
+                for j in i["costumes"]:
+                    asset_list.append(j['md5ext'])
+                for j in i["sounds"]:
+                    asset_list.append(j['md5ext'])
         asset_list = list(set(asset_list))
         
         async def assetdownloader(clientsession:common.ClientSession,filepath:str,asset_id:str):
-            r = await clientsession.get(f"https://assets.scratch.mit.edu/internalapi/asset/{asset_id}/get/",is_binary=True)
+            r = await clientsession.get(f"https://assets.scratch.mit.edu/internalapi/asset/{asset_id}/get/")
             if log: print(f'download:{asset_id}')
             async with aiofiles.open(os.path.join(filepath,asset_id),"bw") as f:
-                await f.write(r.text)
+                await f.write(r.data)
                 if log: print(f'wrote:{asset_id}')
 
         async def saveproject(filepath:str,asset_id:str):
@@ -231,7 +233,11 @@ class Project(base._BaseSiteAPI):
     async def view(self) -> bool:
         common.no_data_checker(self.author)
         common.no_data_checker(self.author.username)
-        await self.ClientSession.post(f"https://api.scratch.mit.edu/users/{self.author.username}/projects/{self.id}/views/")
+        try:
+            await self.ClientSession.post(f"https://api.scratch.mit.edu/users/{self.author.username}/projects/{self.id}/views/")
+        except exception.TooManyRequests:
+            return False
+        return True
     
     async def edit(
             self,
@@ -295,18 +301,20 @@ class Project(base._BaseSiteAPI):
             limit=limit,offset=offset,add_params={"cachebust":random.randint(0,9999)}
         )
     
-    async def post_comment(self, content:str, *, parent_id="", commentee_id="") -> Comment:
+    async def post_comment(self, content:str, parent:int|Comment|None=None, commentee:"int|User|None"=None) -> Comment:
         self.has_session_raise()
         data = {
-            "commentee_id": commentee_id,
+            "commentee_id": "" if commentee is None else common.get_id(commentee),
             "content": str(content),
-            "parent_id": parent_id,
+            "parent_id": "" if parent is None else common.get_id(parent),
         }
         header = self.ClientSession._header|{"referer":self.url}
         resp = (await self.ClientSession.post(
             f"https://api.scratch.mit.edu/proxy/comments/project/{self.id}/",
             header=header,json=data
         )).json()
+        if "rejected" in resp:
+            raise exception.CommentFailure(resp["rejected"])
         return Comment(
             self.ClientSession,{"place":self,"data":resp,"id":resp["id"]},self.Session
         )
@@ -315,7 +323,7 @@ class Project(base._BaseSiteAPI):
         from ..event.comment import CommentEvent
         return CommentEvent(self,interval)
     
-    async def share(self,share:bool):
+    async def share(self,share:bool=True):
         if share:
             await self.ClientSession.put(f"https://api.scratch.mit.edu/proxy/projects/{self.id}/share/",)
         else:
@@ -355,15 +363,15 @@ class RemixTree(base._BaseSiteAPI): #no data
         super().__init__("get",f"https://scratch.mit.edu/projects/{id}/remixtree/bare/",ClientSession,scratch_session)
 
         self.id:int = common.try_int(id)
-        self.is_root:bool = None
-        self.parent:"RemixTree|None" = None
-        self.root:"RemixTree" = False
+        self.is_root:bool = False
+        self._parent:int|None = None
+        self._root:int = None
         self.project:Project = create_Partial_Project(self.id,ClientSession=self.ClientSession,session=self.Session)
         self._children:list[int] = []
-        self.children:list["RemixTree"] = []
         self.moderation_status:str = None
         self._ctime:int = None #idk what is ctime
         self.ctime:datetime.datetime = None
+        self._all_remixtree:dict[int,"RemixTree"] = None
 
     def __str__(self):
         return f"<RemixTree remix_count:{len(self._children)} status:{self.moderation_status} project:{self.project}> session:{self.Session}"
@@ -375,19 +383,24 @@ class RemixTree(base._BaseSiteAPI): #no data
         from . import user
         self.project.author = user.create_Partial_User(data.get("username"),ClientSession=self.ClientSession,session=self.Session)
         self.moderation_status = data.get("moderation_status",self.moderation_status)
+
         _ctime = data.get("ctime")
         if isinstance(_ctime,dict):
             self._ctime = _ctime.get("$date",self._ctime)
             self.ctime = common.to_dt_timestamp_1000(self._ctime,self.ctime)
+        
         self.project.title = data.get("title",self.project.title)
         self.project.remix_parent = data.get("parent_id",self.project.remix_parent)
         if isinstance(self.project.remix_parent,str):
             self.project.remix_parent = common.try_int(self.project.remix_parent)
+        self._parent = self.project.remix_parent
+        
         self.project.loves = data.get("love_count",self.project.loves)
         _mtime = data.get("mtime")
         if isinstance(_mtime,dict):
             self.project._modified = _mtime.get("$date",self.project._modified)
             self.project.modified = common.to_dt_timestamp_1000(self.project._modified,self.project.modified)
+        
         _datetime_shared = data.get("datetime_shared")
         if isinstance(_datetime_shared,dict):
             self.project._shared = _datetime_shared.get("$date",self.project._shared)
@@ -398,29 +411,35 @@ class RemixTree(base._BaseSiteAPI): #no data
         for i in _children:
             self._children.append(int(i))
 
-    def all_remixtree(self)  -> list["RemixTree"]:
-        if isinstance(self.root,RemixTree):
-            return self.root._all_remixtree()
-
-    def _all_remixtree(self) -> list["RemixTree"]:
-        r:list["RemixTree"] = [self]
-        for i in self.children:
-            r = r + i._all_remixtree()
+    @property
+    def parent(self) -> "RemixTree|None":
+        if self._parent is None:
+            return None
+        return self._all_remixtree.get(self._parent)
+    
+    @property
+    def children(self) -> list["RemixTree"]:
+        r = []
+        for id in self._children:
+            rt = self._all_remixtree.get(id)
+            if rt is None: continue
+            r.append(rt)
         return r
     
-    def _load_remixtree(self,tree_list:list["RemixTree"]):
-        for rt in tree_list:
-            if rt.id == self.project.remix_parent:
-                rt.parent = rt
-            if rt.id in self._children:
-                self.children.append(rt)
+    @property
+    def root(self) -> "RemixTree":
+        return self._all_remixtree.get(self._root)
+
+    @property
+    def all_remixtree(self)  -> dict["RemixTree"]:
+        return self._all_remixtree.copy()
 
 async def get_remixtree(project_id:int,*,ClientSession=None,session=None) -> RemixTree:
     ClientSession = common.create_ClientSession(ClientSession)
     r = await ClientSession.get(f"https://scratch.mit.edu/projects/{project_id}/remixtree/bare/")
     if r.text == "no data" or r.text == "not visible":
         raise exception.RemixTreeNotFound(RemixTree,ValueError)
-    rtl:list[RemixTree] = []
+    rtl:dict[int,RemixTree] = {}
     j = r.json()
     root_id = j["root_id"]
     del j["root_id"]
@@ -428,19 +447,18 @@ async def get_remixtree(project_id:int,*,ClientSession=None,session=None) -> Rem
         _obj = RemixTree(ClientSession,k,session)
         _obj._update_from_dict(v)
         _obj.project.remix_root = int(root_id)
-        rtl.append(_obj)
+        rtl[_obj.id] = _obj
         if k == root_id:
             _root = _obj
             _root.is_root = True
         if int(project_id) == _obj.id:
             _return = _obj
-    for i in rtl:
-        i.root = _root
-        i._load_remixtree(rtl)
+    for i in rtl.values():
+        i._root = _root.id
+        i._all_remixtree = rtl
     return _return
 
 async def get_project(project_id:int,*,ClientSession=None) -> Project:
-    ClientSession = common.create_ClientSession(ClientSession)
     return await base.get_object(ClientSession,project_id,Project)
 
 def create_Partial_Project(project_id:int,author:"User|None"=None,*,ClientSession:common.ClientSession|None=None,session:"Session|None"=None) -> Project:

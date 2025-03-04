@@ -46,6 +46,7 @@ class Studio(base._BaseSiteAPI):
         self.follower_count:int = None
         self.manager_count:int = None
         self.project_count:int = None
+        self.comment_count:int = None
 
     def _update_from_dict(self, data:dict):
         self.title = data.get("title",self.title)
@@ -65,6 +66,7 @@ class Studio(base._BaseSiteAPI):
         self.follower_count = _stats.get("followers",self.follower_count)
         self.manager_count = _stats.get("managers",self.manager_count)
         self.project_count = _stats.get("projects",self.project_count)
+        self.comment_count = _stats.get("comments",self.comment_count)
 
     @property
     def image_url(self) -> str:
@@ -104,12 +106,12 @@ class Studio(base._BaseSiteAPI):
             limit=limit,offset=offset,add_params={"cachebust":random.randint(0,9999)}
         )
     
-    async def post_comment(self, content, *, parent_id="", commentee_id="") -> Comment:
+    async def post_comment(self, content:str, parent:int|Comment|None=None, commentee:"int|user.User|None"=None) -> Comment:
         self.has_session_raise()
         data = {
-            "commentee_id": commentee_id,
+            "commentee_id": "" if commentee is None else common.get_id(commentee),
             "content": str(content),
-            "parent_id": parent_id,
+            "parent_id": "" if parent is None else common.get_id(parent),
         }
         header = self.ClientSession._header|{
             "referer":self.url
@@ -118,6 +120,8 @@ class Studio(base._BaseSiteAPI):
             f"https://api.scratch.mit.edu/proxy/comments/studio/{self.id}/",
             header=header,json=data
         )).json()
+        if "rejected" in resp:
+            raise exception.CommentFailure(resp["rejected"])
         return Comment(
             self.ClientSession,{"place":self,"data":resp,"id":resp["id"]},self.Session
         )
@@ -134,9 +138,9 @@ class Studio(base._BaseSiteAPI):
         else:
             self.ClientSession.put(f"https://scratch.mit.edu/site-api/users/bookmarkers/{self.id}/remove/?usernames={self.Session.username}")
 
-    async def set_thumbnail(self,thumbnail:bytes|str,filetype:str="png"):
+    async def set_thumbnail(self,thumbnail:bytes|str,filename:str="image.png"):
         self._is_owner_raise()
-        thumbnail,filename = await common.open_tool(thumbnail,filetype)
+        thumbnail,filename = await common.open_tool(thumbnail,filename)
         await common.requests_with_file(thumbnail,filename,f"https://scratch.mit.edu/site-api/galleries/all/{self.id}/",self.ClientSession)
     
     async def edit(self,title:str|None=None,description:str|None=None) -> None:
@@ -166,11 +170,11 @@ class Studio(base._BaseSiteAPI):
                 self.comments_allowed = is_open
                 return
             raise exception.BadResponse(r.status_code,r)
-        raise exception.NoPermission()
+        return
 
-    async def invite(self,username:str):
+    async def invite(self,username:"str|user.User"):
         self.has_session_raise()
-        r = await self.ClientSession.put(f"https://scratch.mit.edu/site-api/users/curators-in/{self.id}/invite_curator/?usernames={username}")
+        r = await self.ClientSession.put(f"https://scratch.mit.edu/site-api/users/curators-in/{self.id}/invite_curator/?usernames={common.get_id(username,"username")}")
         if r.json().get("status","error") != "success":
             raise exception.BadResponse(r.status_code,r)
     
@@ -180,18 +184,18 @@ class Studio(base._BaseSiteAPI):
         if not r.json().get("success",False):
             raise exception.BadResponse(r.status_code,r)
     
-    async def promote(self,username:str):
+    async def promote(self,username:"str|user.User"): #404
         self.has_session_raise()
-        await self.ClientSession.put(f"https://scratch.mit.edu/site-api/users/curators-in/{self.id}/promote/?usernames={username}")
+        await self.ClientSession.put(f"https://scratch.mit.edu/site-api/users/curators-in/{self.id}/promote/?usernames={common.get_id(username,"username")}")
     
-    async def remove_user(self,username:str):
+    async def remove_user(self,username:"str|user.User"): #404
         self.has_session_raise()
-        await self.ClientSession.put(f"https://scratch.mit.edu/site-api/users/curators-in/{self.id}/remove/?usernames={username}")
+        await self.ClientSession.put(f"https://scratch.mit.edu/site-api/users/curators-in/{self.id}/remove/?usernames={common.get_id(username,"username")}")
     
-    async def transfer_ownership(self,username:str,password:str) -> None:
+    async def transfer_ownership(self,username:"str|user.User",password:str) -> None:
         self._is_owner_raise()
         await self.ClientSession.put(
-            f"https://api.scratch.mit.edu/studios/{self.id}/transfer/{username}",
+            f"https://api.scratch.mit.edu/studios/{self.id}/transfer/{common.get_id(username,"username")}",
             json={"password":password}
         )
 
@@ -199,13 +203,13 @@ class Studio(base._BaseSiteAPI):
         self.has_session_raise()
         return await self.remove_user(self.Session.username)
 
-    async def add_project(self,project_id:int):
+    async def add_project(self,project_id:int|project.Project):
         self.has_session_raise()
-        self.ClientSession.post(f"https://api.scratch.mit.edu/studios/{self.id}/project/{project_id}")
+        self.ClientSession.post(f"https://api.scratch.mit.edu/studios/{self.id}/project/{common.get_id(project_id)}")
 
-    async def remove_project(self,project_id:int):
+    async def remove_project(self,project_id:int|project.Project):
         self.has_session_raise()
-        self.ClientSession.delete(f"https://api.scratch.mit.edu/studios/{self.id}/project/{project_id}")
+        self.ClientSession.delete(f"https://api.scratch.mit.edu/studios/{self.id}/project/{common.get_id(project_id)}")
     
     def projects(self, *, limit=40, offset=0) -> AsyncGenerator[project.Project, None]:
         return base.get_object_iterator(
@@ -233,10 +237,10 @@ class Studio(base._BaseSiteAPI):
     async def host(self) -> "user.User":
         return [i async for i in self.managers(limit=10)][0]
     
-    async def activity(self, *, limit=40, offset=0) -> AsyncGenerator[activity.Activity, None]:
+    async def activity(self, *, limit=40, datelimit:datetime.datetime|None=None) -> AsyncGenerator[activity.Activity, None]:
         c = 0
-        dt = str(datetime.datetime.now(datetime.timezone.utc))
-        for _ in range(offset,offset+limit,40):
+        dt = str(datetime.datetime.now(datetime.timezone.utc) if datelimit is None else datelimit.astimezone(datetime.timezone.utc))
+        for _ in range(0,limit,40):
             r = await common.api_iterative(
                 self.ClientSession,f"https://api.scratch.mit.edu/studios/{self.id}/activity",limit=40,
                 add_params={"dateLimit":dt.replace("+00:00","Z")}

@@ -1,6 +1,7 @@
+from enum import Enum
 from typing import TYPE_CHECKING
 if TYPE_CHECKING:
-    from .common import Response,BytesResponse
+    from .common import Response
     from ..sites.base import _BaseSiteAPI
 
 """
@@ -49,9 +50,9 @@ class ResponseError(HTTPError):
     """
     応答したが、エラーが起きた時に出る
     """
-    def __init__(self, status_code:int, response:"Response|BytesResponse"):
+    def __init__(self, status_code:int, response:"Response"):
         self.status_code:int = status_code
-        self.response:"Response|BytesResponse" = response
+        self.response:"Response" = response
 class BadResponse(ResponseError):
     """
     {"code":"BadRequest","message":""}
@@ -90,6 +91,15 @@ class LoginFailure(Exception):
     """
     ログイン失敗
     """
+
+
+class CommentFailure(Exception):
+    """
+    コメント失敗
+    """
+    def __init__(self,type:str):
+        self.type = type
+
 
 class ObjectFetchError(Exception):
     """
