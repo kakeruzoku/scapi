@@ -371,6 +371,7 @@ class RemixTree(base._BaseSiteAPI): #no data
         self.moderation_status:str = None
         self._ctime:int = None #idk what is ctime
         self.ctime:datetime.datetime = None
+        self.is_published:bool = None
         self._all_remixtree:dict[int,"RemixTree"] = None
 
     def __str__(self):
@@ -408,6 +409,7 @@ class RemixTree(base._BaseSiteAPI): #no data
         self.project.favorites = data.get("favorite_count",self.project.favorites)
         _children = data.get("children",self._children)
         self._children = []
+        self.is_published = data.get("is_published")
         for i in _children:
             self._children.append(int(i))
 
@@ -431,7 +433,7 @@ class RemixTree(base._BaseSiteAPI): #no data
         return self._all_remixtree.get(self._root)
 
     @property
-    def all_remixtree(self)  -> dict["RemixTree"]:
+    def all_remixtree(self)  -> dict[int,"RemixTree"]:
         return self._all_remixtree.copy()
 
 async def get_remixtree(project_id:int,*,ClientSession=None,session=None) -> RemixTree:

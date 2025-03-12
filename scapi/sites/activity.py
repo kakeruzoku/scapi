@@ -14,6 +14,7 @@ if TYPE_CHECKING:
     from .studio import Studio
     from .project import Project
     from .user import User
+    from ..cloud import cloud,server
 
 class ActivityType(Enum):
     #[message/User/Studio/feed]
@@ -287,4 +288,41 @@ class Activity:
             self.target = self.place = self._load_user(span.next_sibling.next_sibling,cs,ss)
         else:
             warnings.warn(f"unknown activitytype: {t} (user)")
-        
+
+class CloudActivity(base._BaseSiteAPI):
+
+    def __str__(self):
+        return f"<CloudActivity id:{self.project_id} user:{self.username} variable:{self.variable} value:{self.value}>"
+
+    def __init__(
+        self,
+        ClientSession:common.ClientSession,
+        data:common.json_resp,
+        scratch_session:"Session|None"=None,
+        **entries
+    ):
+        super().__init__(None,None,ClientSession,scratch_session)
+
+        self.method:str = data.get("method") or data.get("verb").replace("_var","")
+        self.variable:str = data.get("name")
+        self.value:str = data.get("value")
+        self.username:str|None = data.get("user")
+        self.project_id:int = data.get("project_id")
+
+        self.cloud:"cloud._BaseCloud|server.CloudServerConnection|None" = data.get("cloud")
+
+    async def update(self):
+        pass
+
+    def _update_from_dict(self, data):
+        pass
+
+    async def get_user(self) -> "User":
+        common.no_data_checker(self.username)
+        from .user import User
+        return await base.get_object(self.ClientSession,self.username,User,self.Session)
+    
+    async def get_project(self) -> "Project":
+        common.no_data_checker(self.project_id)
+        from .project import Project
+        return await base.get_object(self.ClientSession,self.project_id,Project,self.Session)
