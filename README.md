@@ -12,4 +12,4 @@
 # インストール
 `pip install -U scapi`
 
-Wikiは[こちら](https://github.com/kakeruzoku/scapi/wiki )
+Wikiは[こちら](https://scapi.kakeru.f5.si )

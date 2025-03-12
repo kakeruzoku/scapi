@@ -1,6 +1,7 @@
 import datetime
 import random
 import json
+import re
 from typing import AsyncGenerator, Generator, Literal, TypedDict, TYPE_CHECKING
 
 from ..others import common
@@ -99,10 +100,10 @@ class User(base._BaseSiteAPI):
     async def exist(self,use_cache:bool=True) -> bool:
         await self.load_website(not use_cache)
         return self._website_data.get("exist")
-        
+    
     async def is_new_scratcher(self,use_cache:bool=True) -> bool|None:
         await self.load_website(not use_cache)
-        return self._website_data.get("is_scratcher")
+        return not self._website_data.get("is_scratcher")
     
     async def classroom_id(self,use_cache:bool=True) -> int|None:
         await self.load_website(not use_cache)
@@ -377,3 +378,5 @@ def create_Partial_User(username:str,user_id:int|None=None,*,ClientSession:commo
         _user.id = common.try_int(user_id)
     return _user
 
+def is_allowed_username(username:str) -> bool:
+    return re.fullmatch(r"[a-zA-Z0-9-_]{3,20}",username) is not None

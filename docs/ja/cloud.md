@@ -49,16 +49,20 @@
 **入力**
 - **is_clientsession_close** (`bool|None`) ClientSessionをcloseするか Noneの場合、自動です。
 
-> **get_vars()** `-> dict[int|float]`
+> **get_vars()** `-> dict[str]`
 
 クラウド変数の値を取得する。
 
-> **get_var(self,variable)** -> `int|float|None`
+- **`1.1.0`で更新** クラウドデータは`str`で保存されるようになりました。
+
+> **get_var(self,variable)** -> `str|None`
 
 **入力**
 - **variable** (`str`) 変数名
 
 入力した変数名に入っている値を返します。
+
+- **`1.1.0`で更新** クラウドデータは`str`で保存されるようになりました。
 
 > **set_var(self,variable,value,_wait=20)**
 
@@ -79,13 +83,13 @@
 
 ## TurboWarpCloud
 
-ターボワープのクラウド変数を表します。追加の情報はありません。
+ターボワープのクラウド変数を表します。`_BaseCloud`を継承していて、追加の情報はありません。
 
 # クラウドイベント
 
-ここから下のクラスは`_BaseEvent`を継承しています。
-
 ## CloudEvent
+
+`_BaseEvent`を継承しています。
 
 > **cloud** `-> _BaseCloud`
 
@@ -101,15 +105,110 @@
 
 クラウド変数に接続した
 
-> on_disconnect()
-
-クラウド変数変数から(予期せず)接続されたり、接続に失敗した
-
-> on_set(variable,value) 
+> on_disconnect(interval)
 
 **出力**
-- **variable** (`str`) 変更された変数名
-- **value** (`float|int`) 変更された値
+- **interval** (`int`) 再接続する待機時間
+
+クラウド変数変数から(予期せず)切断されたり、接続に失敗した
+
+> on_set(cloud_activity) 
+
+**出力**
+- **cloud_activity** (`CloudActivity`)
 
 値が変更された時
 
+- **`1.1.0`で更新** データが`CloudActivity`でまとまって出力されるようになりました。
+
+# クラウドサーバー
+
+クラウドサーバーをホスティングできます。
+
+## CloudServer
+
+> scapi.**CloudServer(host,port,policy=None,ClientSession=None)**
+
+**入力**
+- **host** (`str`) ホスト先IP
+- **port** (`int`) 使用したいポート
+- **policy** (`CloudServerPolicy|None`) サーバーのポリシー(設定)
+
+クラウドサーバーを表すクラス。 `_BaseEvent`を継承しています。
+
+> **host** `-> str`
+
+> **port** `-> int`
+
+> **policy** `-> CloudServerPolicy`
+
+> **server** `-> websockets.Server`
+
+> property **connection** `-> list[CloudServerConnection]`
+
+クラウドサーバーに接続しているセッションのリスト
+
+> **set_var(project_id,variable,value)** `-> bool`
+
+**入力**
+- **project_id** (`int`) 変更先のプロジェクトID
+- **variable** (`str`) 変数名
+- **value** (`str`) 変数の値
+
+変数を更新します。成功した場合`True`が返されます。
+
+> **get_vars(project_id)** `-> dict[str,str]`
+
+**入力**
+- **project_id** (`int`) プロジェクトID
+
+> **get_var(project_id,variable)** `-> str|None`
+
+**入力**
+- **project_id** (`int`) プロジェクトID
+- **variable** (`str`) 変数名
+
+## CloudServerPolicy
+
+> scapi.**CloudServerPolicy(max_length=None,max_var=None,save_all=True,retention_period=(0,None),project_list=None,rate_limit=None,transmission_interval=0.1)**
+
+**入力**
+- **max_length** (`int|None`) 変数と値の最大文字数
+- **max_var** (`int|None`) 1プロジェクトあたりの最大変数数
+- **save_all** (`bool`) 変数の最大数を越してもできるだけ保存する。
+- **retention_period** (`tuple[int|None,int|None]`) 変数の保存ポリシー。(0,0)で一切データがが保存されないモードになります。
+  - 1つめ ... 変数のデータを100%残す時間(s)
+  - 2つめ ... 変数のデータを100%抹消する時間(s) (優先順位高)
+- **project_list** (`list[int]|None`) 接続を許可するプロジェクトIDのリスト
+- **rate_limit** (`float|None`) 変数の更新をするレート制限。1つの変数の更新ごとに適用されます。
+- **transmission_interval** (`float`) クライアントにデータの更新を送信する間隔。
+
+サーバーの設定を示すクラス
+
+## CloudServerConnection
+
+クライアントの接続を表すクラス。
+
+> **id** `-> str`
+
+Scapi側が勝手に生成したID。識別に使われます。
+
+> **websocket** `-> websockets.ServerConnection`
+
+> **project_id** `-> int`
+
+> **username** `-> str`
+
+> **server** `-> CloudServer`
+
+> **count** `-> int`
+
+変数を更新した回数
+
+> **last_update** `-> float`
+
+変数を最終更新した時間。(time.time()の値)
+
+> **connected** `-> datetime.datetime`
+
+クライアントが接続した時間。

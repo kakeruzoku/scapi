@@ -28,6 +28,11 @@
   - [ActivityType](#activitytype)
 - [クラス](#クラス)
   - [Classroom](#classroom)
+- [アセット](#アセット)
+  - [Backpack](#backpack)
+- [トップページ](#トップページ)
+  - [ScratchNews](#scratchnews)
+- [その他](#その他)
 
 # 共通事項
 
@@ -1183,6 +1188,26 @@ Userにある情報:username,id
 
 アクティビティの種類を表すクラス。(`_BaseSiteAPI`を継承していません！)
 
+## CloudActivity
+
+クラウド変数の変更を示すクラス
+
+> **method** `-> str`
+
+> **variable** `-> str`
+
+> **value** `-> str`
+
+> **username** `-> str|None`
+
+> **project_id** `-> int`
+
+> **cloud** `-> _BaseCloud|CloudServerConnection|None`
+
+> await **get_user()** `-> User`
+
+> await **get_project()** `-> Project`
+
 # クラス
 
 > await scapi.**get_classroom(class_id,*,ClientSession=None)** `-> Classroom`
@@ -1343,3 +1368,10 @@ Google翻訳を使います。
 - **language** (`str`) 言語コード(`ja`,`en`など)
 - **text** (`str`) しゃべりたい内容
 - **type** (`Literal["male","female"]`) 喋る人
+
+> scapi.**is_allowed_username(username)** `-> str`
+
+**入力**
+- **username** (`str`)
+
+ユーザー名がScratchで有効か確認する。

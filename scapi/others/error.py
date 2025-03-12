@@ -165,3 +165,8 @@ class CloudError(Exception):
 
 class CloudConnectionFailed(CloudError):
     """接続失敗"""
+
+class _cscc(CloudError):
+    def __init__(self,code:int,reason:str):
+        self.code:int = code
+        self.reason:str = reason

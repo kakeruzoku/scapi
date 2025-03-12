@@ -69,11 +69,13 @@ from .sites.studio import (
 from .sites.user import (
     User,
     get_user,
-    create_Partial_User
+    create_Partial_User,
+    is_allowed_username
 )
 from .sites.activity import (
     Activity,
-    ActivityType
+    ActivityType,
+    CloudActivity
 )
 from .sites.forum import (
     ForumTopic,
@@ -107,6 +109,11 @@ from .cloud.cloud import (
 )
 from .cloud.cloud_event import (
     CloudEvent
+)
+from .cloud.server import (
+    CloudServerConnection,
+    CloudServerPolicy,
+    CloudServer
 )
 
 from .event._base import _BaseEvent

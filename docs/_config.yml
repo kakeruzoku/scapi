@@ -5,7 +5,8 @@ title: Scapi
 description: Asynchronous Scratch API Module [Python]
 
 header_pages:
-  - about.md
+  - index.md
+  - en.md
 
 plugins:
   - jekyll-feed

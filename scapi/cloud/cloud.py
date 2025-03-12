@@ -29,7 +29,7 @@ class _BaseCloud:
         self.max_length:int = 256
         self._ratelimit:float = 0.1
 
-        self._data:dict[str,float|int] = {}
+        self._data:dict[str,str] = {}
 
         self._is_close_cs = not isinstance(clientsession,common.ClientSession)
         clientsession = common.create_ClientSession(clientsession)
@@ -79,7 +79,7 @@ class _BaseCloud:
                         continue
                     for i in w.data.split("\n"):
                         try:
-                            data = json.loads(i)
+                            data = json.loads(i,parse_constant=str,parse_float=str,parse_int=str)
                         except Exception:
                             continue
                         if not isinstance(data,dict):
@@ -98,7 +98,7 @@ class _BaseCloud:
 
         await self.websocket.close()
 
-    async def _on_event(self,_self,method:str,variable:str,value:float|int,other):
+    async def _on_event(self,_self,method:str,variable:str,value:str,other):
         pass
 
     async def _on_connect(self,_self):
@@ -131,10 +131,10 @@ class _BaseCloud:
         elif is_clientsession_close:
             await self.clientsession.close()
 
-    def get_vars(self) -> dict[int|float]:
+    def get_vars(self) -> dict[str]:
         return self._data.copy()
     
-    def get_var(self,variable:str) -> int|float|None:
+    def get_var(self,variable:str) -> str|None:
         return self._data.get(variable)
 
     def _check_var(self,value):
@@ -159,7 +159,8 @@ class _BaseCloud:
             while not self.is_connect:
                 await asyncio.sleep(0)
 
-    async def set_var(self,variable:str,value:str|float|int,_wait:int=20):
+    async def set_var(self,variable:str,value:str,_wait:int=20):
+        value = str(value)
         await self._wait_connect(_wait)
         if not variable.startswith("☁ "):
             variable = "☁ " + variable
