@@ -3,6 +3,16 @@
 Scapiの更新履歴です。1.0.0以前の更新履歴は[こちら](https://github.com/kakeruzoku/scapi/blob/main/changelog.md )
 
 # 1.x.x
+## 1.1.1
+### 更新/修正
+- クラウド
+  - `timeout`が正しく設定されていなかった問題を修正。(`_BaseCloud.timeout`の追加)
+  - 型ヒントの修正
+- API
+  - セッション情報が正しく他のクラスに引き継げていなかった問題を修正
+  - `UserComment`の作成時にエラーが発生する問題を修正
+  - `Studio`の一部の関数が実行されない問題を修正
+
 ## 1.1.0
 ### 破壊的変更
 - クラウド

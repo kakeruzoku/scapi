@@ -64,17 +64,18 @@ class _BaseCloud:
     async def _run(self,timeout=10):
         c = 1
         self._timeout = timeout
+        self.timeout = aiohttp.ClientWSTimeout(ws_receive=None, ws_close=None)
         while True:
             async with self.clientsession.ws_connect(
                 self.url,
                 headers=self.header,
-                timeout=self._timeout
+                timeout=self.timeout
             ) as ws:
                 await self._handshake(ws)
                 asyncio.create_task(self._on_connect(self))
                 c = 1
                 self._websocket = ws
-                async for w in self.websocket:
+                async for w in self._websocket:
                     if not isinstance(w.data,str):
                         continue
                     for i in w.data.split("\n"):
@@ -96,15 +97,15 @@ class _BaseCloud:
             else:
                 break
 
-        await self.websocket.close()
+        await self._websocket.close()
 
-    async def _on_event(self,_self,method:str,variable:str,value:str,other):
+    async def _on_event(self,_self:"_BaseCloud",method:str,variable:str,value:str,other):
         pass
 
-    async def _on_connect(self,_self):
+    async def _on_connect(self,_self:"_BaseCloud"):
         print(f"Cloud Connected:{self.url}")
 
-    async def _on_disconnect(self,_self,interval:int):
+    async def _on_disconnect(self,_self:"_BaseCloud",interval:int):
         print(f"Cloud Disconnected:{self.url} Reconnect after {interval} seconds.")
 
     async def connect(self,timeout:int=10) -> asyncio.Task:
@@ -117,7 +118,7 @@ class _BaseCloud:
             except TimeoutError:
                 self.tasks.cancel()
                 await self.websocket.close()
-                raise TimeoutError()
+                raise
         return self.tasks
         
 
@@ -131,7 +132,7 @@ class _BaseCloud:
         elif is_clientsession_close:
             await self.clientsession.close()
 
-    def get_vars(self) -> dict[str]:
+    def get_vars(self) -> dict[str,str]:
         return self._data.copy()
     
     def get_var(self,variable:str) -> str|None:
@@ -141,7 +142,7 @@ class _BaseCloud:
         value = str(value)
         if len(value) > self.max_length:
             return False
-        return re.fullmatch("\-?[1234567890]+(\.[1234567890]+)?",value) is not None
+        return re.fullmatch(r"\-?[1234567890]+(\.[1234567890]+)?",value) is not None
     
     async def _wait(self,n:int=1):
         if self._ratelimit == 0:

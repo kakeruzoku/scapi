@@ -7,7 +7,7 @@ from multidict import CIMultiDictProxy, CIMultiDict
 from . import error as exceptions
 import json
 
-__version__ = "1.1.0"
+__version__ = "1.1.1"
 
 headers = {
     "user-agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/75.0.3770.142 Safari/537.36",
@@ -220,7 +220,7 @@ async def downloader(
 ):
     r = await clientsession.get(url)
     async with aiofiles.open(download_path,"bw") as f:
-        await f.write(r.text)
+        await f.write(r.data)
 
 async def open_tool(inp:str|bytes,default_filename:str) -> tuple[bytes, str]:
     if isinstance(inp,str):

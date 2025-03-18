@@ -164,16 +164,16 @@ class User(base._BaseSiteAPI):
         )
     
     async def is_following(self,username:"str|User") -> bool:
-        username = common.get_id(username,"username")
+        _username = str(common.get_id(username,"username"))
         async for i in self.following(limit=common.BIG):
-            if i.username.lower() == username.lower():
+            if i.username.lower() == _username.lower():
                 return True
         return False
     
     async def is_followed(self,username:"str|User") -> bool:
-        username = common.get_id(username,"username")
+        _username = str(common.get_id(username,"username"))
         async for i in self.followers(limit=common.BIG):
-            if i.username.lower() == username.lower():
+            if i.username.lower() == _username.lower():
                 return True
         return False
     
@@ -224,7 +224,7 @@ class User(base._BaseSiteAPI):
         r = await self.ClientSession.get(f"https://scratch.mit.edu/messages/ajax/user-activity/?user={self.username}&max={limit}")
         souplist = bs4.BeautifulSoup(r.text, 'html.parser').find_all("li")
         for i in souplist:
-            _obj = activity.Activity(self.ClientSession)
+            _obj = activity.Activity()
             _obj._update_from_user(self,i)
             yield _obj
         return

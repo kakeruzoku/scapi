@@ -130,6 +130,7 @@ class Comment(base._BaseSiteAPI):
             return (await self.ClientSession.delete(f"https://api.scratch.mit.edu/proxy/comments/project/{self.place.id}/comment/{self.id}",data="{}")).status_code == 200
         elif self.type == "Studio":
             return (await self.ClientSession.delete(f"https://api.scratch.mit.edu/proxy/comments/studio/{self.place.id}/comment/{self.id}",data="{}")).status_code == 200
+        raise TypeError()
 
     async def report(self) -> bool:
         self.has_session_raise()
@@ -137,14 +138,15 @@ class Comment(base._BaseSiteAPI):
             return (await self.ClientSession.post(f"https://api.scratch.mit.edu/proxy/project/{self.place.id}/comment/{self.id}/report",json={"reportId":None})).status_code == 200
         elif self.type == "Studio":
             return (await self.ClientSession.post(f"https://api.scratch.mit.edu/proxy/studio/{self.place.id}/comment/{self.id}/report",json={"reportId":None})).status_code == 200
+        raise TypeError()
 
 class UserComment(Comment):
     def __init__(self,user,ClientSession:common.ClientSession,scratch_session:"Session|None"=None):
         self._ClientSession:common.ClientSession = ClientSession
         self.update_type = ""
         self.update_url = ""
-        self.Session:Session|None = scratch_session
-        self._raw:dict = None
+        self._Session:Session|None = scratch_session
+        self._raw = None
 
         self.place:User = user
         self.id:int = None
