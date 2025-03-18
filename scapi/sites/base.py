@@ -140,7 +140,7 @@ async def get_object_iterator(
                 dicts = {
                     "ClientSession":ClientSession,
                     Class.id_name:j[raw_name],
-                    "_session":session
+                    "scratch_session":session
                 }
                 _obj = Class(**dicts)
                 _obj._update_from_dict(j)

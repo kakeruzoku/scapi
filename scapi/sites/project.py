@@ -110,9 +110,6 @@ class Project(base._BaseSiteAPI):
     def _is_owner_raise(self) -> None:
         if not self._is_owner:
             raise exception.NoPermission
-        
-    def __eq__(self, value:object) -> bool:
-        return isinstance(value,Project) and value.id == self.id
     
     def __int__(self) -> int: return self.id
     def __eq__(self,value) -> bool: return isinstance(value,Project) and self.id == value.id
@@ -143,7 +140,7 @@ class Project(base._BaseSiteAPI):
 
         return await self.Session.create_project(title,project_json,self.id)
 
-    async def load_json(self,update:bool=True) -> dict:
+    async def load_json(self,update:bool=True) -> common.json_resp:
         try:
             if update or self.project_token is None:
                 await self.update()

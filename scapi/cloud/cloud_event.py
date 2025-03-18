@@ -4,23 +4,23 @@ from . import cloud
 from ..event import _base
 from ..sites import activity
 
-async def _on_event(self:"cloud._BaseCloud",method:str,variable:str,value:str,other:dict={}):
-    cloud_activity = activity.CloudActivity(self.clientsession,{
+async def _on_event(_self:"cloud._BaseCloud",method:str,variable:str,value:str,other:dict={}):
+    cloud_activity = activity.CloudActivity(_self.clientsession,{
         "method":method,
         "name":variable,
         "value":value,
-        "project_id":self.project_id,
-        "cloud":self,
-        "connection":self
+        "project_id":_self.project_id,
+        "cloud":_self,
+        "connection":_self
     })
-    self._event._call_event(f"on_{method}",cloud_activity)
+    _self._event._call_event(f"on_{method}",cloud_activity)
 
-async def _on_connect(self:"cloud._BaseCloud"):
-    self._event._call_event(f"on_connect")
-    self._event._call_event(f"on_ready")
+async def _on_connect(_self:"cloud._BaseCloud"):
+    _self._event._call_event(f"on_connect")
+    _self._event._call_event(f"on_ready")
 
-async def _on_disconnect(self:"cloud._BaseCloud",interval:int):
-    self._event._call_event(f"on_disconnect",interval)
+async def _on_disconnect(_self:"cloud._BaseCloud",interval:int):
+    _self._event._call_event(f"on_disconnect",interval)
 
 
 class CloudEvent(_base._BaseEvent):

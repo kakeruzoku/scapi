@@ -205,11 +205,11 @@ class Studio(base._BaseSiteAPI):
 
     async def add_project(self,project_id:int|project.Project):
         self.has_session_raise()
-        self.ClientSession.post(f"https://api.scratch.mit.edu/studios/{self.id}/project/{common.get_id(project_id)}")
+        await self.ClientSession.post(f"https://api.scratch.mit.edu/studios/{self.id}/project/{common.get_id(project_id)}")
 
     async def remove_project(self,project_id:int|project.Project):
         self.has_session_raise()
-        self.ClientSession.delete(f"https://api.scratch.mit.edu/studios/{self.id}/project/{common.get_id(project_id)}")
+        await self.ClientSession.delete(f"https://api.scratch.mit.edu/studios/{self.id}/project/{common.get_id(project_id)}")
     
     def projects(self, *, limit=40, offset=0) -> AsyncGenerator[project.Project, None]:
         return base.get_object_iterator(

@@ -30,7 +30,7 @@ class CloudServerConnection:
     def __init__(
         self,
         websocket:websockets.ServerConnection,server:"CloudServer",
-        project_id:int,username:str
+        project_id:int|None,username:str|None
     ):
         self.id:str = "".join(random.choices(string.ascii_letters + string.digits,k=10))
         self.websocket:websockets.ServerConnection = websocket
@@ -40,7 +40,7 @@ class CloudServerConnection:
 
         self.count:int = 0
         self.last_update:float = time.time()
-        self.connected:datetime = datetime.datetime.fromtimestamp(self.last_update)
+        self.connected:datetime.datetime = datetime.datetime.fromtimestamp(self.last_update)
         self.closed:bool = False
 
     async def kick(self,code:int=4005,reason:str=""):

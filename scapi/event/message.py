@@ -51,6 +51,8 @@ class SessionMessageEvent(_base._BaseEvent):
                 comment_list.reverse()
                 temp_lastest_dt = self.lastest_dt
                 for i in comment_list:
+                    if i.datetime is None:
+                        continue
                     if i.datetime > self.lastest_dt:
                         temp_lastest_dt = i.datetime
                         self._call_event("on_activity",i)
