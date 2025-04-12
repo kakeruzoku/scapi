@@ -40,6 +40,18 @@ class Classroom(base._BaseSiteAPI):
         self.educator = user.User(self.ClientSession,_author.get("username",None),self.Session)
         self.educator._update_from_dict(_author)
 
+    @property
+    def _is_owner(self) -> bool:
+        from .session import Session
+        if isinstance(self.Session,Session):
+            if self.Session.username == self.educator.username:
+                return True
+        return False
+    
+    def _is_owner_raise(self) -> None:
+        if not self._is_owner:
+            raise exception.NoPermission
+
     async def studios(self, *, start_page=1, end_page=1) -> AsyncGenerator[studio.Studio, None]:
         for i in range(start_page,end_page+1):
             r = await self.ClientSession.get(f"https://scratch.mit.edu/classes/{self.id}/studios/?page={i}",check=False)
@@ -51,6 +63,7 @@ class Classroom(base._BaseSiteAPI):
                 return
             for _project in projects:
                 id = common.split_int(str(_project),"a href=\"/studios/","/")
+                if id is None: continue
                 _title = _project.find("span",{"class":"title"})
                 _obj = studio.Studio(self.ClientSession,id,self.Session)
                 _obj.author_id = self.educator.id
@@ -104,10 +117,9 @@ class Classroom(base._BaseSiteAPI):
             return await session.session_login(
                 str(re.search('"(.*)"', response.headers["Set-Cookie"]).group()).replace("\"","")
             )
-        raise exception.BadRequest(response.status_code,response)
+        raise exception.BadRequest(response)
     
 async def get_classroom(classroom_id:int,*,ClientSession=None) -> Classroom:
-    ClientSession = common.create_ClientSession(ClientSession)
     return await base.get_object(ClientSession,classroom_id,Classroom)
 
 async def get_classroom_by_token(class_token:str,*,ClientSession=None) -> Classroom:
@@ -119,7 +131,7 @@ async def get_classroom_by_token(class_token:str,*,ClientSession=None) -> Classr
     return _obj
 
 def create_Partial_classroom(class_id:int,class_token:str|None=None,*,ClientSession:common.ClientSession|None=None,session:"session.Session|None"=None) -> Classroom:
-    ClientSession = common.create_ClientSession(ClientSession)
+    ClientSession = common.create_ClientSession(ClientSession,session)
     _obj = Classroom(ClientSession,class_id,session)
     _obj.classtoken = class_token
     return _obj

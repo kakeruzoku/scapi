@@ -32,7 +32,7 @@ setup(
         "Operating System :: Microsoft :: Windows",
     ],
     license="MIT",
-    keywords=['scratch api', 'scapi', 'scratch api python', 'scratch python', 'scratch for python', 'scratch', 'scratch bot','scratch tools','scratchapi'],
+    keywords=['scratch api', 'scapi', 'scratch api python', 'scratch python', 'scratch for python', 'scratch', 'scratch bot','scratch tools','scratchapi','scratch cloud server','scratch cloud'],
     install_requires=requirements,
     include_dirs=["scapi", "scapi.*"],
 )

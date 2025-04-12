@@ -64,18 +64,20 @@
 
 - **`1.1.0`で更新** クラウドデータは`str`で保存されるようになりました。
 
-> **set_var(self,variable,value,_wait=20)**
+> **set_var(self,variable,value,_wait=None)**
 
 **入力**
 - **variable** (`str`) 変更したい変数名 先頭に`☁ `がない場合は追加されます。
 - **value** (`str|float|int`) 値
-- **_wait** (`int`) 最大待機時間(秒)。接続が確立される前に時間が過ぎると`TimeoutError`が送出されます。
+- **_wait** (`int|None`) 最大待機時間(秒)。接続が確立される前に時間が過ぎると`TimeoutError`が送出されます。
 
-> **set_vars(self,data:,_wait:int=20)**
+> **set_vars(self,data:,_wait:int=None)**
 
 **入力**
 - **data** (`dict[str,str|float|int]`) 変更したい変数名と値のペア 先頭に`☁ `がない場合は追加されます。
-- **_wait** (`int`) 最大待機時間(秒)。接続が確立される前に時間が過ぎると`TimeoutError`が送出されます。
+- **_wait** (`int|None`) 最大待機時間(秒)。接続が確立される前に時間が過ぎると`TimeoutError`が送出されます。
+
+- **`1.2.0`で更新** `_wait`はNoneが指定できるようになり、その場合、timeout値が使用されます。
 
 > **event** `-> CloudEvent`
 
@@ -127,18 +129,20 @@
 
 ## CloudServer
 
-> scapi.**CloudServer(host,port,policy=None,ClientSession=None)**
+> scapi.**CloudServer(host=None,port=None,policy=None,ClientSession=None)**
 
 **入力**
-- **host** (`str`) ホスト先IP
-- **port** (`int`) 使用したいポート
+- **host** (`str|None`) ホスト先IP
+- **port** (`int|None`) 使用したいポート
 - **policy** (`CloudServerPolicy|None`) サーバーのポリシー(設定)
 
 クラウドサーバーを表すクラス。 `_BaseEvent`を継承しています。
 
-> **host** `-> str`
+> **host** `-> str|None`
 
-> **port** `-> int`
+> **port** `-> int|None`
+
+- **`1.2.0`で更新** Noneも指定できるように変更
 
 > **policy** `-> CloudServerPolicy`
 
@@ -212,3 +216,7 @@ Scapi側が勝手に生成したID。識別に使われます。
 > **connected** `-> datetime.datetime`
 
 クライアントが接続した時間。
+
+# 例外
+- `CloudError` クラウド変数に関連したエラー(基本下のクラスの例外がでる)
+  - `CloudConnectionFailed` クラウド変数への接続に失敗した(またはタイムアウトした)

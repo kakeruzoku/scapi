@@ -1,4 +1,5 @@
 import datetime
+import json
 import random
 from typing import AsyncGenerator, TYPE_CHECKING, TypedDict
 
@@ -6,7 +7,7 @@ from typing import AsyncGenerator, TYPE_CHECKING, TypedDict
 from ..others import common as common
 from ..others import error as exception
 from . import base,activity
-from .comment import Comment
+from .comment import Comment,UserComment
 from . import project
 
 if TYPE_CHECKING:
@@ -78,6 +79,7 @@ class Studio(base._BaseSiteAPI):
     
     @property
     def _is_owner(self) -> bool:
+        from .session import Session
         if isinstance(self.Session,Session):
             if self.Session.status.id == self.author_id:
                 return True
@@ -106,7 +108,7 @@ class Studio(base._BaseSiteAPI):
             limit=limit,offset=offset,add_params={"cachebust":random.randint(0,9999)}
         )
     
-    async def post_comment(self, content:str, parent:int|Comment|None=None, commentee:"int|user.User|None"=None) -> Comment:
+    async def post_comment(self, content:str, parent:int|Comment|None=None, commentee:"int|user.User|None"=None, is_old:bool=False) -> Comment:
         self.has_session_raise()
         data = {
             "commentee_id": "" if commentee is None else common.get_id(commentee),
@@ -116,15 +118,43 @@ class Studio(base._BaseSiteAPI):
         header = self.ClientSession._header|{
             "referer":self.url
         }
-        resp = (await self.ClientSession.post(
-            f"https://api.scratch.mit.edu/proxy/comments/studio/{self.id}/",
-            header=header,json=data
-        )).json()
-        if "rejected" in resp:
-            raise exception.CommentFailure(resp["rejected"])
-        return Comment(
-            self.ClientSession,{"place":self,"data":resp,"id":resp["id"]},self.Session
-        )
+        if is_old:
+            text = (await self.ClientSession.post(
+                f"https://scratch.mit.edu/site-api/comments/gallery/{self.id}/add/",json=data
+            )).text
+            if text.strip().startswith('<script id="error-data" type="application/json">'):#エラー
+                data:dict = json.loads(common.split(text,'type="application/json">',"</script>"))
+                raise exception.CommentFailure(data.get("error"))
+
+            c = Comment(
+                self.ClientSession,
+                {"place":self,"id":common.split_int(text,"data-comment-id=\"","\">")},
+                self.Session
+            )
+            c._update_from_dict({
+                "parent_id":None if parent == "" else parent,
+                "commentee_id":None if commentee == "" else commentee,
+                "datetime_create":common.split(text,"<span class=\"time\" title=\"","\">"),
+                "content":content,
+                "author":{
+                    "username":common.split(text,"data-comment-user=\"","\">"),
+                    "id":common.split_int(text,"src=\"//cdn2.scratch.mit.edu/get_image/user/","_")
+                },
+                "reply_count":0,"page":1
+            })
+            if c.id is None:
+                raise exception.NoPermission()
+            return c
+        else:
+            resp = (await self.ClientSession.post(
+                f"https://api.scratch.mit.edu/proxy/comments/studio/{self.id}/",
+                header=header,json=data
+            )).json()
+            if "rejected" in resp:
+                raise exception.CommentFailure(resp["rejected"])
+            return Comment(
+                self.ClientSession,{"place":self,"data":resp,"id":resp["id"]},self.Session
+            )
     
     def comment_event(self,interval=30) -> "CommentEvent":
         from ..event.comment import CommentEvent
@@ -159,7 +189,7 @@ class Studio(base._BaseSiteAPI):
             r = await self.ClientSession.put(f"https://scratch.mit.edu/site-api/galleries/{self.id}/mark/closed/")
         if r.json().get("success",False):
             return
-        raise exception.BadResponse(r.status_code,r)
+        raise exception.BadResponse(r)
         
     async def open_comment(self,is_open:bool=True,is_update:bool=False):
         self._is_owner_raise()
@@ -169,20 +199,20 @@ class Studio(base._BaseSiteAPI):
             if r.text == "ok":
                 self.comments_allowed = is_open
                 return
-            raise exception.BadResponse(r.status_code,r)
+            raise exception.BadResponse(r)
         return
 
     async def invite(self,username:"str|user.User"):
         self.has_session_raise()
         r = await self.ClientSession.put(f"https://scratch.mit.edu/site-api/users/curators-in/{self.id}/invite_curator/?usernames={common.get_id(username,"username")}")
         if r.json().get("status","error") != "success":
-            raise exception.BadResponse(r.status_code,r)
+            raise exception.BadResponse(r)
     
     async def accept_invite(self):
         self.has_session_raise()
         r = await self.ClientSession.put(f"https://scratch.mit.edu/site-api/users/curators-in/{self.id}/add/?usernames={self.Session.username}")
         if not r.json().get("success",False):
-            raise exception.BadResponse(r.status_code,r)
+            raise exception.BadResponse(r)
     
     async def promote(self,username:"str|user.User"): #404
         self.has_session_raise()
@@ -249,7 +279,7 @@ class Studio(base._BaseSiteAPI):
             for j in r:
                 c = c + 1
                 if c == limit: return
-                _obj = activity.Activity(self.ClientSession)
+                _obj = activity.Activity()
                 _obj._update_from_studio(self,j)
                 dt = str(_obj.datetime - datetime.timedelta(seconds=1))
                 yield _obj
@@ -269,23 +299,20 @@ class Studio(base._BaseSiteAPI):
 
     
 async def get_studio(studio_id:int,*,ClientSession=None) -> Studio:
-    ClientSession = common.create_ClientSession(ClientSession)
     return await base.get_object(ClientSession,studio_id,Studio)
 
 def create_Partial_Studio(studio_id:int,*,ClientSession:common.ClientSession|None=None,session:"Session|None"=None) -> Studio:
     ClientSession = common.create_ClientSession(ClientSession)
     return Studio(ClientSession,studio_id,session)
 
-def explore_studios(*, query:str="*", mode:str="trending", language:str="en", limit:int=40, offset:int=0,ClientSession:common.ClientSession=None) -> AsyncGenerator["Studio",None]:
-    ClientSession = common.create_ClientSession(ClientSession)
+def explore_studios(*, query:str="*", mode:str="trending", language:str="en", limit:int=40, offset:int=0,ClientSession:common.ClientSession|None=None) -> AsyncGenerator["Studio",None]:
     return base.get_object_iterator(
         ClientSession, f"https://api.scratch.mit.edu/explore/studios",
         None,Studio,limit=limit,offset=offset,
         add_params={"language":language,"mode":mode,"q":query}
     )
 
-def search_studios(query:str, *, mode:str="trending", language:str="en", limit:int=40, offset:int=0,ClientSession:common.ClientSession=None) -> AsyncGenerator["Studio",None]:
-    ClientSession = common.create_ClientSession(ClientSession)
+def search_studios(query:str, *, mode:str="trending", language:str="en", limit:int=40, offset:int=0,ClientSession:common.ClientSession|None=None) -> AsyncGenerator["Studio",None]:
     return base.get_object_iterator(
         ClientSession, f"https://api.scratch.mit.edu/search/studios",
         None,Studio,limit=limit,offset=offset,

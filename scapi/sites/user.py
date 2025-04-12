@@ -253,7 +253,7 @@ class User(base._BaseSiteAPI):
             if r.status_code == 404:
                 return
             if r.status_code == 503:
-                raise exception.UserNotFound(User,exception.ServerError(503,r))
+                raise exception.UserNotFound(User,exception.ServerError(r))
             soup = bs4.BeautifulSoup(r.text, "html.parser")
             comments:bs4.element.ResultSet[bs4.element.Tag] = soup.find_all("li", {"class": "top-level-reply"})
 
@@ -290,7 +290,7 @@ class User(base._BaseSiteAPI):
                 yield main
         return
     
-    async def post_comment(self, content, parent:int|comment.Comment|None=None, commentee:"int|User|None"=None) -> comment.UserComment:
+    async def post_comment(self, content, parent:int|comment.Comment|None=None, commentee:"int|User|None"=None,is_old:bool=True) -> comment.UserComment:
         self.has_session_raise()
         parent = common.get_id(parent)
         commentee = common.get_id(commentee)
@@ -332,7 +332,7 @@ class User(base._BaseSiteAPI):
         self._is_me_raise()
         r = await self.ClientSession.post(f"https://scratch.mit.edu/site-api/comments/user/{self.username}/toggle-comments/")
         if r.text != "ok":
-            raise exception.BadRequest(r.status_code,r)
+            raise exception.BadRequest(r)
     
     async def edit(
             self,*,
@@ -356,6 +356,9 @@ class User(base._BaseSiteAPI):
         self._is_me_raise()
         thumbnail,filename = await common.open_tool(icon,filetype)
         await common.requests_with_file(thumbnail,filename,f"https://scratch.mit.edu/site-api/users/all/{self.username}/",self.ClientSession)
+
+    async def set_icon(self,icon:bytes|str,filetype:str="icon.png"):
+        await self.change_icon(icon,filetype)
 
     async def follow(self,follow:bool=True):
         self.has_session_raise()

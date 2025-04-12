@@ -78,6 +78,7 @@ class Session(base._BaseSiteAPI):
         session_id:str,
         **entries
     ):
+        self._ClientSession = ClientSession
         super().__init__("post","https://scratch.mit.edu/session",ClientSession,self)
 
         self.ClientSession._cookie = {
@@ -157,7 +158,14 @@ class Session(base._BaseSiteAPI):
                 self.ClientSession,int(response.json()['content-name']),
                 project.Project,self.Session
             )
-        raise exception.ResponseError(response.status_code,response)
+        raise exception.ResponseError(response)
+    
+    async def create_studio(self) -> studio.Studio:
+        response = await self.ClientSession.post("https://scratch.mit.edu/studios/create/")
+        id = common.split_int(response.json().get("redirect"),"/studios/","/")
+        if id is None:
+            raise exception.BadResponse(response)
+        return await studio.get_studio(id)
     
     async def message(self, *, limit=40, offset=0) -> AsyncGenerator[activity.Activity, None]:
         c = 0
@@ -169,7 +177,7 @@ class Session(base._BaseSiteAPI):
             for j in r:
                 c = c + 1
                 if c == limit: return
-                _obj = activity.Activity(self.ClientSession)
+                _obj = activity.Activity()
                 _obj._update_from_message(self,j)
                 yield _obj
 
@@ -188,7 +196,7 @@ class Session(base._BaseSiteAPI):
             for j in r:
                 c = c + 1
                 if c == limit: return
-                _obj = activity.Activity(self.ClientSession)
+                _obj = activity.Activity()
                 _obj._update_from_feed(self,j)
                 yield _obj
 
@@ -300,7 +308,6 @@ async def send_password_reset_email(clientsession:common.ClientSession,username:
             "csrfmiddlewaretoken":"a"
         }
     )
-    print(r.text,r.status_code)
     if "t have an account with that" in r.text:
         return False
     if "We've e-mailed instructions for resetting your password to the e-mail address you provided, or the email associated with your account. If you don't receive it shortly, be sure to check your spam folder." in r.text:

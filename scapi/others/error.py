@@ -35,136 +35,82 @@ if TYPE_CHECKING:
 
 # http
 class HTTPError(Exception):
-    """
-    通信でエラーが起きた時に出る
-    """
-class SessionClosed(Exception):
-    """
-    クライアントセッションが閉じてたときにでる
-    """
+    "`ClientSession`内でのエラー 基本的に下の例外が出てくる"
+class SessionClosed(HTTPError):
+    "セッションを既に閉じている場合に、リクエストをしようとした"
 class HTTPFetchError(HTTPError):
-    """
-    通信で失敗(レスポンスが返ってこなかったなど)したときに出る
-    """
+    "リクエストの受信→処理 の間にエラーが起こった"
 class ResponseError(HTTPError):
-    """
-    応答したが、エラーが起きた時に出る
-    """
-    def __init__(self, status_code:int, response:"Response"):
-        self.status_code:int = status_code
+    "レスポンスの内容が失敗だった"
+    def __init__(self, response:"Response"):
+        self.status_code:int = response.status_code
         self.response:"Response" = response
 class BadResponse(ResponseError):
-    """
-    {"code":"BadRequest","message":""}
-    """
+    "本体の内容が失敗を示している"
 class BadRequest(ResponseError):
-    """
-    400番台が出た時に出す。
-    """
+    "4xx"
 class Unauthorized(BadRequest):
-    """
-    認証失敗(401/403)
-    """
+    "401/403"
 class HTTPNotFound(BadRequest):
-    """
-    404
-    """
+    "404"
 class TooManyRequests(BadRequest):
-    """
-    429
-    """
+    "429"
 class ServerError(ResponseError):
-    """
-    500が出た時
-    """
+    "5xx"
+class AccountBrocked(ResponseError):
+    "アカウントブロック画面にリダイレクトした"
+class IPBanned(ResponseError):
+    "IPBAN画面にリダイレクトした"
 
 class NoSession(Exception):
-    """
-    セッションが必要な操作をセッションなしで実行しようとした。
-    """
+    "セッションが必要な操作をセッションなしで実行しようとした。"
 class NoPermission(NoSession):
-    """
-    権限がない状態で実行しようとした。
-    """
+    "権限がない状態で実行しようとした。"
 
 class LoginFailure(Exception):
-    """
-    ログイン失敗
-    """
-
+    "ログイン失敗"
 
 class CommentFailure(Exception):
-    """
-    コメント失敗
-    """
     def __init__(self,type:str):
         self.type = type
 
 
 class ObjectFetchError(Exception):
-    """
-    getしたけどエラー出た
-    """
+    "エラー"
     def __init__(self,Class:"type[_BaseSiteAPI]",error):
         self.Class = Class
         self.error = error
 class ObjectNotFound(ObjectFetchError):
-    """
-    getしたけどなかったてきなやつ
-    """
+    "404"
 class SessionNotFound(ObjectNotFound):
-    """
-    セッションでのログインに失敗
-    """
+    pass
 class UserNotFound(ObjectNotFound):
-    """
-    ユーザーの取得に失敗
-    """
+    pass
 class ProjectNotFound(ObjectNotFound):
-    """
-    プロジェクトの取得に失敗
-    """
+    pass
 class RemixTreeNotFound(ObjectNotFound):
-    """
-    プロジェクトの取得に失敗
-    """
+    pass
 class StudioNotFound(ObjectNotFound):
-    """
-    スタジオの取得に失敗
-    """
+    pass
 class CommentNotFound(ObjectNotFound):
-    """
-    コメント取得失敗
-    """
+    pass
 class ForumTopicNotFound(ObjectNotFound):
-    """
-    フォーラムトピック取得失敗
-    """
+    pass
 class ForumPostNotFound(ObjectNotFound):
-    """
-    フォーラムトピック取得失敗
-    """
+    pass
 class ClassroomNotFound(ObjectNotFound):
-    """
-    クラスない
-    """
+    pass
 class AssetNotFound(ObjectNotFound):
-    """
-    アセットない
-    """
+    pass
 
 class NoDataError(Exception):
-    """
-    データ不足
-    """
+    "データ不足"
 
 class CloudError(Exception):
-    """
-    通信系
-    """
+    "通信系"
 
 class CloudConnectionFailed(CloudError):
-    """接続失敗"""
+    "接続失敗"
 
 class _cscc(CloudError):
     def __init__(self,code:int,reason:str):

@@ -79,4 +79,4 @@ class Backpack(base._BaseSiteAPI):
         self.has_session_raise()
         r = await self.ClientSession.delete(f"https://backpack.scratch.mit.edu/{self.Session.username}/{self.id}")
         if not r.json().get("ok",False):
-            raise exception.BadResponse(r.status_code,r)
+            raise exception.BadResponse(r)

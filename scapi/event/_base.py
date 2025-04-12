@@ -58,7 +58,7 @@ class _BaseEvent:
 
     async def wait_on_ready(self) -> bool:
         while self._running and (not self._on_ready):
-            await asyncio.sleep(0)
+            await asyncio.sleep(0.1)
         return self._running
 
 

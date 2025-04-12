@@ -213,16 +213,16 @@ def create_Partial_Comment(comment_id:int,place:"Project|Studio|User",content:st
     from .user import User
     from .studio import Studio
     from .project import Project
-    ClientSession = common.create_ClientSession(ClientSession)
+    ClientSession = common.create_ClientSession(ClientSession,session)
     if isinstance(place, (Project,Studio)):
-        _comment = Comment(ClientSession,{"place":place,"id":comment_id},session)
+        _comment = Comment(ClientSession,{"place":place,"id":comment_id,"data":None},session)
     elif isinstance(place, User):
         _comment = UserComment(place,ClientSession,session)
     else:
         raise ValueError
     _comment.id = comment_id
-    _comment.author = author
-    _comment.content = content
+    _comment.author = author or _comment.author
+    _comment.content = content or _comment.content
     return _comment
 
 
