@@ -1,13 +1,21 @@
 import datetime
 import os
-from typing import Any, AsyncGenerator, Awaitable, Callable, Literal, overload
+from typing import Any, AsyncGenerator, Awaitable, Callable, Literal, overload, TYPE_CHECKING, TypeVar
 import aiofiles
 import aiohttp
 from multidict import CIMultiDictProxy, CIMultiDict
 from . import error as exceptions
 import json
+import io
+import random
+import string
 
-__version__ = "1.1.1"
+_T = TypeVar("_T")
+
+if TYPE_CHECKING:
+    from ..sites import session
+
+__version__ = "1.2.0"
 
 headers = {
     "user-agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/75.0.3770.142 Safari/537.36",
@@ -16,13 +24,15 @@ headers = {
     "referer": "https://scratch.mit.edu",
 }
 
-def create_ClientSession(inp:"ClientSession|None"=None,*,proxy=None) -> "ClientSession":
-    if isinstance(inp,ClientSession):
-        if proxy is None:
-            return inp
+def create_ClientSession(inp:"ClientSession|None"=None,Session:"session.Session|None"=None) -> "ClientSession":
+
+    if inp is not None:
+        return inp
+    elif Session is not None:
+        return Session.ClientSession
 
 
-    return inp if isinstance(inp,ClientSession) else ClientSession(header=headers,cookie={"scratchcsrftoken": 'a'})
+    return ClientSession(header=headers,cookie={"scratchcsrftoken": 'a'})
 
 def create_custom_ClientSession(header:dict={},cookie:dict={}) -> "ClientSession":
     return ClientSession(header=header,cookie=cookie)
@@ -30,13 +40,15 @@ def create_custom_ClientSession(header:dict={},cookie:dict={}) -> "ClientSession
 json_resp = dict[str,"json_resp"]|list["json_resp"]|str|float|int|bool|None
 class Response:
     def __str__(self) -> str:
-        return f"<Response [{self.status_code}] {self.text}>"
+        return f"<Response [{self.status_code}] {len(self.data)}>"
 
-    def __init__(self,status:int,text:bytes,headers:CIMultiDictProxy[str],encodeing:str) -> None:
-        self.status_code:int = status
+    def __init__(self,response:aiohttp.ClientResponse,text:bytes) -> None:
+        self._response:aiohttp.ClientResponse = response
+        self.status_code:int = response.status
         self.data:bytes = text
-        self.headers:CIMultiDict[str] = headers.copy()
-        self._encodeing:str = encodeing
+        self.headers:CIMultiDict[str] = response.headers.copy()
+        self._encodeing:str = response.get_encoding()
+        self.url:str = str(response.url)
 
     @property
     def text(self) -> str:
@@ -71,19 +83,25 @@ class ClientSession(aiohttp.ClientSession):
         self._proxy_auth = auth
     
     async def _check(self,response:Response) -> None:
+        if response.url.startswith("https://scratch.mit.edu/ip_ban_appeal"):
+            raise exceptions.IPBanned(response)
+        if response.url.startswith("https://scratch.mit.edu/accounts/banned-response"):
+            raise exceptions.AccountBrocked(response)
         if response.status_code in [403,401]:
-            raise exceptions.Unauthorized(response.status_code,response)
+            raise exceptions.Unauthorized(response)
         if response.status_code in [429]:
-            raise exceptions.TooManyRequests(response.status_code,response)
+            raise exceptions.TooManyRequests(response)
         if response.status_code in [404]:
-            raise exceptions.HTTPNotFound(response.status_code,response)
+            raise exceptions.HTTPNotFound(response)
         if response.status_code // 100 == 4:
-            raise exceptions.BadRequest(response.status_code,response)
+            raise exceptions.BadRequest(response)
         if response.status_code // 100 == 5:
-            raise exceptions.ServerError(response.status_code,response)
-        if isinstance(response,Response):
-            if response.text == '{"code":"BadRequest","message":""}':
-                raise exceptions.BadResponse(response.status_code,response)
+            raise exceptions.ServerError(response)
+        try:
+            if response.text.startswith('{"code":"BadRequest"'):
+                raise exceptions.BadResponse(response)
+        except UnicodeDecodeError:
+            pass
 
     async def _send_requests(
         self,obj:Callable[...,aiohttp.ClientResponse],url:str,*,
@@ -98,7 +116,7 @@ class ClientSession(aiohttp.ClientSession):
                 url,data=data,json=json,timeout=timeout,params=params,headers=header,cookies=cookie,
                 proxy=self._proxy,proxy_auth=self._proxy_auth,**d
             ) as response:
-                r = Response(response.status,await response.read(),response.headers,response.get_encoding())
+                r = Response(response,await response.read())
                 response.close()
         except Exception as e:
             raise exceptions.HTTPFetchError(e)
@@ -176,7 +194,7 @@ async def api_iterative(
     )
     jsons = r.json()
     if not isinstance(jsons,list):
-        raise exceptions.HTTPError()
+        raise exceptions.BadResponse(r)
     return jsons
 
 
@@ -193,13 +211,14 @@ def split(raw:str, text_before:str, text_after:str) -> str:
     except Exception:
         return ""
     
-def to_dt(text:str,default:datetime.datetime|None=None) -> datetime.datetime|None:
+    
+def to_dt(text:str,default:_T=None) -> datetime.datetime|_T:
     try:
         return datetime.datetime.fromisoformat(f'{text.replace("Z","")}+00:00')
     except Exception:
         return default
     
-def to_dt_timestamp_1000(text:int,default:datetime.datetime|None=None) -> datetime.datetime|None:
+def to_dt_timestamp_1000(text:int,default:_T=None) -> datetime.datetime|_T:
     try:
         return datetime.datetime.fromtimestamp(text/1000,tz=datetime.timezone.utc)
     except Exception:
@@ -232,26 +251,30 @@ async def open_tool(inp:str|bytes,default_filename:str) -> tuple[bytes, str]:
     raise TypeError
 
 async def requests_with_file(filedata:bytes,filename:str,url:str,clientsession:ClientSession) -> Response:
+    random_code = "".join(random.choices(string.ascii_letters,k=20))
+
     filename = filename.replace("\\","/")
     if filename.endswith("/"): filename = filename[:-1]
     filename = filename.split("/")[-1]
     Extension = filename.split(".")[-1]
-    before = f'------WebKitFormBoundaryhKZwFjoxAyUTMlSh\r\nContent-Disposition: form-data; name="file"; filename="{filename}"\r\nContent-Type: image/{Extension}\r\n\r\n'.encode("utf-8")
-    after = b"\r\n------WebKitFormBoundaryhKZwFjoxAyUTMlSh--\r\n"
+    before = f'------WebKitFormBoundary{random_code}\r\nContent-Disposition: form-data; name="file"; filename="{filename}"\r\nContent-Type: image/{Extension}\r\n\r\n'.encode("utf-8")
+    after = f"\r\n------WebKitFormBoundary{random_code}--\r\n".encode("utf-8")
     payload = b"".join([before,filedata,after])
     return await clientsession.post(
         url,
         data=payload,
         header=clientsession.header|{
             "accept": "*/",
-            "content-type": "multipart/form-data; boundary=----WebKitFormBoundaryhKZwFjoxAyUTMlSh",
+            "content-type": f"multipart/form-data; boundary=----WebKitFormBoundary{random_code}",
             "Referer": "https://scratch.mit.edu/",
             "x-csrftoken": "a",
             "x-requested-with": "XMLHttpRequest",
         }
     )
 
-def get_id(obj:Any,name:str="id") -> int|str:
+def get_id(obj:Any,name:str="id") -> int|str|None:
+    if obj is None:
+        return None
     if isinstance(obj,(int,str)):
         return obj
     r = getattr(obj,name)

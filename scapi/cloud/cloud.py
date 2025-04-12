@@ -1,17 +1,13 @@
 import asyncio
 import json
 import time
-from typing import TYPE_CHECKING
+from typing import TYPE_CHECKING, Any
 import warnings
 import aiohttp
 from ..others import common,error as exception
 import re
 
 if TYPE_CHECKING:
-    from ..sites.session import Session
-    from ..sites.user import User
-    from ..sites.studio import Studio
-    from ..sites.project import Project
     from . import cloud_event
 
 class _BaseCloud:
@@ -158,11 +154,11 @@ class _BaseCloud:
             raise exception.CloudConnectionFailed()
         async with asyncio.timeout(_wait):
             while not self.is_connect:
-                await asyncio.sleep(0)
+                await asyncio.sleep(0.1)
 
-    async def set_var(self,variable:str,value:str,_wait:int=20):
+    async def set_var(self,variable:str,value:str,_wait:int|None=None):
         value = str(value)
-        await self._wait_connect(_wait)
+        await self._wait_connect(_wait or self._timeout)
         if not variable.startswith("☁ "):
             variable = "☁ " + variable
         if not self._check_var(value):
@@ -181,8 +177,8 @@ class _BaseCloud:
         if self._last_set_time < now:
             self._last_set_time = now
 
-    async def set_vars(self,data:dict[str,str|float|int],_wait:int=20):
-        await self._wait_connect(_wait)
+    async def set_vars(self,data:dict[str,str|float|int],_wait:int|None=None):
+        await self._wait_connect(_wait or self._timeout)
         packets:str = ""
         c = 0
         for k,v in data.items():

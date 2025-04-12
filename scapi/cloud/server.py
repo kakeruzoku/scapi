@@ -143,8 +143,8 @@ class CloudServerPolicy:
         self.max_var:int|None = max_var
 
         # 最終更新からの変数の有効期限(秒) 
-        # 1つめ 100%保存する機関 None...2つめの値になる
-        # 2つめ 完全に抹消する期間 None...永久
+        # 1つめ 100%保存する期間 (None...2つめの値になる)
+        # 2つめ 完全に抹消する期間 (None...永久)
         # どちらも0の場合、保存されません。
         self.retention_period = retention_period
         
@@ -172,16 +172,16 @@ class CloudServerPolicy:
 class CloudServer(_base._BaseEvent):
     def __init__(
         self,
-        host:str,
-        port:int,
+        host:str|None=None,
+        port:int|None=None,
         policy:CloudServerPolicy|None=None,
         ClientSession:common.ClientSession|None=None,
     ):
         super().__init__(0)
 
         self.ClientSession:common.ClientSession = common.create_ClientSession(ClientSession)
-        self.host:str = host
-        self.port:int = port
+        self.host:str|None = host
+        self.port:int|None = port
 
         self.policy:CloudServerPolicy = policy or CloudServerPolicy()
         self._connection:dict[str,CloudServerConnection] = {}
@@ -245,7 +245,6 @@ class CloudServer(_base._BaseEvent):
                     for k,v in list(v1.items()):
                         if v[0] < t:
                             v1.pop(k,None)
-                            #print(f"del {k1} {k}")
 
         
         self._call_event("on_close")
@@ -272,7 +271,6 @@ class CloudServer(_base._BaseEvent):
             return False
         elif not self._check_var(value):
             return False
-        #print(len(list(self._clouddata.get(id,[]))))
         if not self.policy._is_save:
             self._send_set_event(id,variable,value,clientid)
             return True
@@ -280,7 +278,7 @@ class CloudServer(_base._BaseEvent):
             self._clouddata[id] = {}
         elif self.policy.max_var is None: #上限ない
             pass
-        elif len(self._clouddata[id]) < self.policy.max_var: #最大に達してない]
+        elif len(self._clouddata[id]) < self.policy.max_var: #最大に達してない
             pass
         elif self.policy._rp_short is None: #削除なし(longはバックグラウンドで確認)
             return False
@@ -292,7 +290,6 @@ class CloudServer(_base._BaseEvent):
             for i in var_data:
                 if i[0] < t: #保存時間こしてたら削除
                     self._clouddata[id].pop(i[1],None)
-                    #print(f"del {id} {i[1]}")
                 if len(self._clouddata[id]) < self.policy.max_var:
                     break
 

@@ -37,7 +37,7 @@ class ScratchNews(base._BaseSiteAPI):
         self.title:str = None
         self.content:str = None
 
-    async def update():
+    async def update(self):
         warnings.warn("ScratchNews can't update")
 
     async def _update_from_dict(self, data:dict):
@@ -50,7 +50,6 @@ class ScratchNews(base._BaseSiteAPI):
         self.content = data.get("copy",self.content)
 
 def get_scratchnews(limit=40, offset=0, clientsession:common.ClientSession|None=None) -> AsyncGenerator[ScratchNews,None]:
-        clientsession = common.create_ClientSession(clientsession)
         return base.get_object_iterator(
             clientsession,"api.scratch.mit.edu/news",None,ScratchNews,None,
             limit=limit,offset=offset
@@ -67,7 +66,7 @@ class community_featured_response(TypedDict):
 
 
 async def community_featured(clientsession:common.ClientSession|None=None,session:"session.Session|None"=None) -> community_featured_response:
-    clientsession = common.create_ClientSession(clientsession)
+    clientsession = common.create_ClientSession(clientsession,session)
     resp:dict[str,list[dict]] = (await clientsession.get("https://api.scratch.mit.edu/proxy/featured")).json()
     r:community_featured_response = {}
     cfp = []

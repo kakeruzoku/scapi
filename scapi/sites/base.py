@@ -19,20 +19,21 @@ class _BaseSiteAPI(ABC):
 
     def __init__(
             self,
-            update_type:Literal["get","post","put","delete"],update_url:str,
+            update_type:Literal["get","post","put","delete",""],update_url:str,
             ClientSession:common.ClientSession,
             Session:"Scratch_Session|None"=None) -> None:
-        self._ClientSession:common.ClientSession = ClientSession
-        self.update_type:Literal["get","post","put","delete"] = update_type
+        self._ClientSession:common.ClientSession = Session.ClientSession if Session else ClientSession
+        self.update_type:Literal["get","post","put","delete",""] = update_type
         self.update_url:str = update_url
         self._Session:"Scratch_Session|None" = Session
         self._raw:dict|str|None = None
 
     async def update(self) -> None:
         if self.update_type == "get": func = self.ClientSession.get
-        if self.update_type == "post": func = self.ClientSession.post
-        if self.update_type == "put": func = self.ClientSession.put
-        if self.update_type == "delete": func = self.ClientSession.delete
+        elif self.update_type == "post": func = self.ClientSession.post
+        elif self.update_type == "put": func = self.ClientSession.put
+        elif self.update_type == "delete": func = self.ClientSession.delete
+        else: raise ValueError()
         response = (await func(self.update_url,timeout=10)).json()
         if not isinstance(response,dict):
             raise self.raise_class(self.__class__,TypeError)
@@ -91,8 +92,8 @@ async def get_object(
         id:Any,Class:type[_T],
         session:"Scratch_Session|None"=None
     ) -> _T:
-    if ClientSession is None: if_close = True
-    ClientSession = common.create_ClientSession(ClientSession)
+    if_close = ClientSession is None
+    ClientSession = common.create_ClientSession(ClientSession,session)
     try:
         dicts = {
             "ClientSession":ClientSession,
@@ -106,12 +107,14 @@ async def get_object(
         if if_close: await ClientSession.close()
         raise Class.raise_class(Class,e)
     except Exception as e:
+        import traceback
+        traceback.print_exc()
         if if_close: await ClientSession.close()
         raise exception.ObjectFetchError(Class,e)
 
 
 async def get_object_iterator(
-        ClientSession:common.ClientSession,
+        ClientSession:common.ClientSession|None,
         url:str,raw_name:str|None,
         Class:type[_T],
         session:"Scratch_Session|None"=None,
@@ -121,6 +124,7 @@ async def get_object_iterator(
         max_limit=40,
         add_params:dict={}
     ) -> AsyncGenerator[_T,None]:
+    ClientSession = common.create_ClientSession(ClientSession,session)
     c = 0
     limit = max_limit if limit is None else limit
     for i in range(offset,offset+limit,max_limit):
@@ -176,7 +180,7 @@ async def get_comment_iterator(
                         "id":j.get("id"),
                         "data":j
                     },
-                    "_session":plece.Session
+                    "scratch_session":plece.Session
                 }
                 _obj = Comment(**dicts)
                 yield _obj
@@ -214,4 +218,4 @@ async def get_count(ClientSession:common.ClientSession,url,text_before:str, text
     r = common.split_int(resp.text, text_before, text_after) 
     if isinstance(r,int):
         return r
-    raise exception.BadResponse(resp.status_code,resp)
+    raise exception.BadResponse(resp)

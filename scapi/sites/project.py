@@ -11,7 +11,7 @@ import aiofiles
 from ..others import common
 from ..others import error as exception
 from . import base
-from .comment import Comment
+from .comment import Comment,UserComment
 
 if TYPE_CHECKING:
     from .session import Session
@@ -270,7 +270,7 @@ class Project(base._BaseSiteAPI):
         ))
         jsons = r.json()
         if not ("status" in jsons and jsons["status"] == "ok"):
-            raise exception.BadRequest(r.status_code,r)
+            raise exception.BadRequest(r)
         
         
     def studios(self, *, limit=40, offset=0) -> AsyncGenerator["Studio",None]:
@@ -298,7 +298,7 @@ class Project(base._BaseSiteAPI):
             limit=limit,offset=offset,add_params={"cachebust":random.randint(0,9999)}
         )
     
-    async def post_comment(self, content:str, parent:int|Comment|None=None, commentee:"int|User|None"=None) -> Comment:
+    async def post_comment(self, content:str, parent:int|Comment|None=None, commentee:"int|User|None"=None, is_old:bool=False) -> Comment:
         self.has_session_raise()
         data = {
             "commentee_id": "" if commentee is None else common.get_id(commentee),
@@ -306,15 +306,43 @@ class Project(base._BaseSiteAPI):
             "parent_id": "" if parent is None else common.get_id(parent),
         }
         header = self.ClientSession._header|{"referer":self.url}
-        resp = (await self.ClientSession.post(
-            f"https://api.scratch.mit.edu/proxy/comments/project/{self.id}/",
-            header=header,json=data
-        )).json()
-        if "rejected" in resp:
-            raise exception.CommentFailure(resp["rejected"])
-        return Comment(
-            self.ClientSession,{"place":self,"data":resp,"id":resp["id"]},self.Session
-        )
+        if is_old:
+            text = (await self.ClientSession.post(
+                f"https://scratch.mit.edu/site-api/comments/project/{self.id}/add/",json=data
+            )).text
+            if text.strip().startswith('<script id="error-data" type="application/json">'):#エラー
+                data:dict = json.loads(common.split(text,'type="application/json">',"</script>"))
+                raise exception.CommentFailure(data.get("error"))
+
+            c = Comment(
+                self.ClientSession,
+                {"place":self,"id":common.split_int(text,"data-comment-id=\"","\">")},
+                self.Session
+            )
+            c._update_from_dict({
+                "parent_id":None if parent == "" else parent,
+                "commentee_id":None if commentee == "" else commentee,
+                "datetime_create":common.split(text,"<span class=\"time\" title=\"","\">"),
+                "content":content,
+                "author":{
+                    "username":common.split(text,"data-comment-user=\"","\">"),
+                    "id":common.split_int(text,"src=\"//cdn2.scratch.mit.edu/get_image/user/","_")
+                },
+                "_reply_cache":[],"reply_count":0,
+            })
+            if c.id is None:
+                raise exception.NoPermission()
+            return c
+        else:
+            resp = (await self.ClientSession.post(
+                f"https://api.scratch.mit.edu/proxy/comments/project/{self.id}/",
+                header=header,json=data
+            )).json()
+            if "rejected" in resp:
+                raise exception.CommentFailure(resp["rejected"])
+            return Comment(
+                self.ClientSession,{"place":self,"data":resp,"id":resp["id"]},self.Session
+            )
     
     def comment_event(self,interval=30) -> "CommentEvent":
         from ..event.comment import CommentEvent
@@ -433,8 +461,8 @@ class RemixTree(base._BaseSiteAPI): #no data
     def all_remixtree(self)  -> dict[int,"RemixTree"]:
         return self._all_remixtree.copy()
 
-async def get_remixtree(project_id:int,*,ClientSession=None,session=None) -> RemixTree:
-    ClientSession = common.create_ClientSession(ClientSession)
+async def get_remixtree(project_id:int,*,ClientSession:common.ClientSession|None=None,session:"Session|None"=None) -> RemixTree:
+    ClientSession = common.create_ClientSession(ClientSession,session)
     r = await ClientSession.get(f"https://scratch.mit.edu/projects/{project_id}/remixtree/bare/")
     if r.text == "no data" or r.text == "not visible":
         raise exception.RemixTreeNotFound(RemixTree,ValueError)
@@ -461,23 +489,21 @@ async def get_project(project_id:int,*,ClientSession=None) -> Project:
     return await base.get_object(ClientSession,project_id,Project)
 
 def create_Partial_Project(project_id:int,author:"User|None"=None,*,ClientSession:common.ClientSession|None=None,session:"Session|None"=None) -> Project:
-    ClientSession = common.create_ClientSession(ClientSession)
+    ClientSession = common.create_ClientSession(ClientSession,session)
     _project = Project(ClientSession,project_id,session)
     if author is not None:
         _project.author = author
     return _project
 
 
-def explore_projects(*, query:str="*", mode:str="trending", language:str="en", limit:int=40, offset:int=0,ClientSession:common.ClientSession=None) -> AsyncGenerator["Project",None]:
-    ClientSession = common.create_ClientSession(ClientSession)
+def explore_projects(*, query:str="*", mode:str="trending", language:str="en", limit:int=40, offset:int=0,ClientSession:common.ClientSession|None=None) -> AsyncGenerator["Project",None]:
     return base.get_object_iterator(
         ClientSession, f"https://api.scratch.mit.edu/explore/projects",
         None,Project,limit=limit,offset=offset,
         add_params={"language":language,"mode":mode,"q":query}
     )
 
-def search_projects(query:str, *, mode:str="trending", language:str="en", limit:int=40, offset:int=0,ClientSession:common.ClientSession=None) -> AsyncGenerator["Project",None]:
-    ClientSession = common.create_ClientSession(ClientSession)
+def search_projects(query:str, *, mode:str="trending", language:str="en", limit:int=40, offset:int=0,ClientSession:common.ClientSession|None=None) -> AsyncGenerator["Project",None]:
     return base.get_object_iterator(
         ClientSession, f"https://api.scratch.mit.edu/search/projects",
         None,Project,limit=limit,offset=offset,

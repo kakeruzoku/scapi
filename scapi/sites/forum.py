@@ -213,11 +213,9 @@ class ForumPost(base._BaseSiteAPI):
 
 
 async def get_topic(topic_id:int,*,ClientSession=None) -> ForumTopic:
-    ClientSession = common.create_ClientSession(ClientSession)
     return await base.get_object(ClientSession,topic_id,ForumTopic)
 
 async def get_post(post_id:int,*,ClientSession=None) -> ForumPost:
-    ClientSession = common.create_ClientSession(ClientSession)
     return await base.get_object(ClientSession,post_id,ForumPost)
 
 async def get_topic_list(category:ForumCategoryType,start_page=1,end_page=1,*,ClientSession=None) -> AsyncGenerator[ForumTopic, None]:
@@ -251,11 +249,11 @@ async def get_topic_list(category:ForumCategoryType,start_page=1,end_page=1,*,Cl
 
 
 def create_Partial_ForumTopic(topic_id:int,*,ClientSession:common.ClientSession|None=None,session:"Session|None"=None) -> ForumTopic:
-    ClientSession = common.create_ClientSession(ClientSession)
+    ClientSession = common.create_ClientSession(ClientSession,session)
     return ForumTopic(ClientSession,topic_id,session)
 
 def create_Partial_ForumPost(post_id:int,topic:ForumTopic|None=None,*,ClientSession:common.ClientSession|None=None,session:"Session|None"=None) -> ForumPost:
-    ClientSession = common.create_ClientSession(ClientSession)
+    ClientSession = common.create_ClientSession(ClientSession,session)
     _post = ForumPost(ClientSession,post_id,session)
     _post.topic = topic
     return _post

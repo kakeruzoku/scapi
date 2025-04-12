@@ -4,6 +4,8 @@
 
 # 目次
 - [ベースAPI](#ベースapi)
+  - [ClientSession](#clientsession)
+  - [Response](#response)
   - [_BaseSiteAPI](#_basesiteapi)
 - [アカウント](#アカウント)
   - [Session](#session)
@@ -33,6 +35,7 @@
 - [トップページ](#トップページ)
   - [ScratchNews](#scratchnews)
 - [その他](#その他)
+- [例外](#例外)
 
 # 共通事項
 
@@ -46,8 +49,69 @@
 - **end_page** (`int`) 取得したい最後のページ数。
 
 # ベースAPI
+
+> scapi.**create_ClientSession(inp=None,Session=None)** `-> ClientSession`
+
+**入力**
+- **inp** (`ClientSession`) 
+- **Session** (`Session`) 古いScratchのセッションを自動的に閉じるか
+
+Scratch通信用のClientSessionを作成します。
+
+## ClientSession
+サイトと通信するためのクラス。(`asyncio.ClientSession`を継承)
+
+> async with ... as ...
+
+withから抜けるときに **close()** を実行します。
+
+> property **header** `-> dict`
+
+ヘッダーのコピー。
+
+> property **cookie** `-> dict`
+
+クッキーのコピー。
+
+> property **proxy** `-> tuple[str|None,aiohttp.BasicAuth|None]`
+
+設定されているプロキシ。
+
+> **set_proxy(url=None,auth=None)**
+
+**入力**
+- **url** (`str|None`) プロキシURL
+- **auth** (`aiohttp.BasicAuth|None`) 認証情報
+
+プロキシを更新する
+
+## Response
+`ClientSession`でのレスポンスを表す
+
+> **_response** `-> aasyncio.ClientResponse`
+
+> **status_code** `-> int`
+
+> **data** `-> bytes`
+
+> property **text** `-> str`
+
+bytesをstrに変換する
+
+> **json()** `-> Any`
+
+jsonを読み込む
+
+> **headers** `-> dict`
+
+レスポンスヘッダーのコピー
+
+> **url** `-> str`
+
+(リダイレクト済みの) URL
+
 ## _BaseSiteAPI
-サイトと通信するためのAPI。このページにあるクラスほぼすべてが継承しています。
+Scratchのなにかしらのオブジェクトを表す。このページにあるクラスほぼすべてが継承しています。
 
 > async with ... as ...
 
@@ -159,6 +223,10 @@ Userにある情報:username,id,_join_date,join_date
 - **title** (`str`) 使用したいタイトル
 - **project_json** (`dict|None`) 送信したいプロジェクトデータ。Noneで初期プロジェクトです。
 - **remix_id** (`int|None`) リミックスしたい場合、そのプロジェクトID。
+
+> await **create_studio()**
+
+スタジオを作成する
 
 > async for **message(limit=40, offset=0)** `-> Activity`
 
@@ -520,12 +588,13 @@ Scratchのプロジェクトページを表すクラス。
 
 > async for **get_comments(limit=40, offset=0)** `-> Comment`
 
-> await **post_comment(content,parent_id=None,commentee_id=None)** `-> Comment`
+> await **post_comment(content,parent_id=None,commentee_id=None,is_old=False)** `-> Comment`
 
 **入力**
 - **content** (`str`) 投稿したいコメントの文章
 - **parent_id** (`int|Comment|None`) 返信する場合は、返信先のコメントID
 - **commentee_id** (`int|User|None`) メンションしたいユーザーのID
+- **is_old** (`bool`) 2.0時代のAPIを使用して投稿するか
 
 コメントを送信します。送信されたコメントオブジェクトを返します。
 
@@ -689,12 +758,13 @@ STによるプロジェクトの評価を返す
 
 > async for **get_comments(limit=40, offset=0)** `-> Comment`
 
-> await **post_comment(content,parent_id=None,commentee_id=None)** `-> Comment`
+> await **post_comment(content,parent_id=None,commentee_id=None,is_old=False)** `-> Comment`
 
 **入力**
 - **content** (`str`) 投稿したいコメントの文章
 - **parent_id** (`int|Comment|None`) 返信する場合は、返信先のコメントID
 - **commentee_id** (`int|User|None`) メンションしたいユーザーのID
+- **is_old** (`bool`) 2.0時代のAPIを使用して投稿するか
 
 コメントを送信します。送信されたコメントオブジェクトを返します。
 
@@ -934,6 +1004,7 @@ Project(key:`object`)に含まれる情報:id,title
 - **content** (`str`) 投稿したいコメントの文章
 - **parent_id** (`int|Comment|None`) 返信する場合は、返信先のコメントID
 - **commentee_id** (`int|User|None`) メンションしたいユーザーのID
+- **is_old** (`bool`) 2.0時代のAPIを使用して投稿するか (ユーザーページでは無視されます)
 
 コメントを送信します。送信されたコメントオブジェクトを返します。
 
@@ -1375,3 +1446,32 @@ Google翻訳を使います。
 - **username** (`str`)
 
 ユーザー名がScratchで有効か確認する。
+
+# 例外
+`scapi.exceptions`からアクセスできます。
+
+- `HTTPError` `ClientSession`内でのエラー。基本的に下の例外が出てくる
+  - `SessionClosed` セッションを既に閉じている場合に、リクエストをしようとした
+  - `HTTPFetchError` リクエストの受信→処理 の間にエラーが起こった
+  - `ResponseError` レスポンスがエラーである \*
+    - `IPBanned` IPBAN画面にリダイレクトした
+    - `AccountBrocked` アカウントブロック画面にリダイレクトした
+    - `BadRequest` 4xx
+      - `Unauthorized` 401 or 403
+      - `TooManyRequests` 429
+      - `HTTPNotFound` 404
+    - `ServerError` 5xx
+    - `BadResponse` なにかに失敗した
+
+- `NoSession` アカウントにログインしていない状態でログインしが必要なリクエストを**しようとした**
+  - `NoPermission` 権限がない状態で権限が必要なリクエストを**しようとした**
+
+- `CommentFailure` コメントがブロックされた
+
+- `LoginFailure` ログインに失敗した
+
+- `ObjectFetchError` オブジェクトを取得しようとして、なんらかのエラーが発生した。
+  - `ObjectNotFound` オブジェクトが存在しない
+    - `*****NotFound` クラスごとに例外クラスがある(無駄だから削除するかも)
+
+- `NoDataError` リクエストに必要な情報を持っていない
