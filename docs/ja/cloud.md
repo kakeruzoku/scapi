@@ -83,6 +83,25 @@
 
 このクラウド変数からクラウドイベントを作成します。
 
+## ScratchCloud
+
+- **`1.3.0`で追加**
+
+Scratchでのクラウド変数を表します。`_BaseCloud`を継承しています。
+
+> **Session** `-> Session`
+
+接続に使用するScratchアカウント。
+
+> async for **get_logs(,limit=40,offset=0)** `-> CloudActivity`
+
+ログAPIからログを読み込みます。
+
+> **log_event(interval=1)** `-> CloudLogEvent`
+
+**入力**
+- **interval** (`float`) 更新間隔
+
 ## TurboWarpCloud
 
 ターボワープのクラウド変数を表します。`_BaseCloud`を継承していて、追加の情報はありません。
@@ -122,6 +141,30 @@
 値が変更された時
 
 - **`1.1.0`で更新** データが`CloudActivity`でまとまって出力されるようになりました。
+
+
+## CloudLogEvent
+
+- **`1.3.0`で追加**
+
+Scratchのクラウド変数ログAPIを使用したイベント。`_BaseEvent`を継承しています。
+
+> **project_id** `-> int`
+
+> **ClientSession** `-> ClientSession`
+
+> **lastest_dt** `-> datetime.datetime`
+
+> **Session** `-> Session`
+
+### event
+
+> on_ready()
+
+> on_set(cloud_activity) 
+
+**出力**
+- **cloud_activity** (`CloudActivity`)
 
 # クラウドサーバー
 

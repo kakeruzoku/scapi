@@ -86,7 +86,7 @@ class Studio(base._BaseSiteAPI):
         return False
     
     def _is_owner_raise(self) -> None:
-        if not self._is_owner:
+        if self.chack and not self._is_owner:
             raise exception.NoPermission
 
     def __int__(self) -> int: return self.id
@@ -103,9 +103,10 @@ class Studio(base._BaseSiteAPI):
         )
 
     def get_comments(self, *, limit=40, offset=0) -> AsyncGenerator[Comment, None]:
-        return base.get_comment_iterator(
-            self,f"https://api.scratch.mit.edu/studios/{self.id}/comments",
-            limit=limit,offset=offset,add_params={"cachebust":random.randint(0,9999)}
+        return base.get_object_iterator(
+            self.ClientSession,f"https://api.scratch.mit.edu/studios/{self.id}/comments",None,Comment,
+            limit=limit,offset=offset,add_params={"cachebust":random.randint(0,9999)},
+            custom_func=base._comment_iterator_func, others={"plece":self}
         )
     
     async def post_comment(self, content:str, parent:int|Comment|None=None, commentee:"int|user.User|None"=None, is_old:bool=False) -> Comment:
@@ -277,12 +278,12 @@ class Studio(base._BaseSiteAPI):
             )
             if len(r) == 0: return
             for j in r:
-                c = c + 1
-                if c == limit: return
                 _obj = activity.Activity()
                 _obj._update_from_studio(self,j)
                 dt = str(_obj.datetime - datetime.timedelta(seconds=1))
                 yield _obj
+                c = c + 1
+                if c == limit: return
 
     class studio_roles(TypedDict):
         manager:bool

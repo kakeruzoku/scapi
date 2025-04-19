@@ -24,7 +24,7 @@ class MessageEvent(_base._BaseEvent):
             try:
                 now_count = await self.user.message_count()
                 if now_count is None:
-                    raise error.BadResponse(None)
+                    pass
                 else:
                     if self.lastest_count != now_count:
                         self._call_event("on_change",self.lastest_count,now_count)

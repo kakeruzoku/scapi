@@ -8,9 +8,10 @@ import warnings
 import zipfile
 import aiofiles
 
+
 from ..others import common
 from ..others import error as exception
-from . import base
+from . import base,activity
 from .comment import Comment,UserComment
 
 if TYPE_CHECKING:
@@ -18,6 +19,7 @@ if TYPE_CHECKING:
     from .user import User
     from .studio import Studio
     from ..event.comment import CommentEvent
+    from ..cloud import cloud,cloud_event
 
 class Project(base._BaseSiteAPI):
     raise_class = exception.ProjectNotFound
@@ -108,7 +110,7 @@ class Project(base._BaseSiteAPI):
         return f"https://scratch.mit.edu/projects/{self.id}/"
     
     def _is_owner_raise(self) -> None:
-        if not self._is_owner:
+        if self.chack and not self._is_owner:
             raise exception.NoPermission
     
     def __int__(self) -> int: return self.id
@@ -293,9 +295,10 @@ class Project(base._BaseSiteAPI):
     def get_comments(self, *, limit=40, offset=0) -> AsyncGenerator[Comment, None]:
         common.no_data_checker(self.author)
         common.no_data_checker(self.author.username)
-        return base.get_comment_iterator(
-            self,f"https://api.scratch.mit.edu/users/{self.author.username}/projects/{self.id}/comments",
-            limit=limit,offset=offset,add_params={"cachebust":random.randint(0,9999)}
+        return base.get_object_iterator(
+            self.ClientSession,f"https://api.scratch.mit.edu/users/{self.author.username}/projects/{self.id}/comments",None,Comment,
+            limit=limit,offset=offset,add_params={"cachebust":random.randint(0,9999)},
+            custom_func=base._comment_iterator_func, others={"plece":self}
         )
     
     async def post_comment(self, content:str, parent:int|Comment|None=None, commentee:"int|User|None"=None, is_old:bool=False) -> Comment:
@@ -349,6 +352,7 @@ class Project(base._BaseSiteAPI):
         return CommentEvent(self,interval)
     
     async def share(self,share:bool=True):
+        self._is_owner_raise()
         if share:
             await self.ClientSession.put(f"https://api.scratch.mit.edu/proxy/projects/{self.id}/share/",)
         else:
@@ -365,6 +369,7 @@ class Project(base._BaseSiteAPI):
         message:str
 
     async def visibility(self) -> project_visibility:
+        self._is_owner_raise()
         r = (await self.ClientSession.get(f"https://api.scratch.mit.edu/users/{self.Session.username}/projects/{self.id}/visibility")).json()
         return r
     
@@ -372,6 +377,24 @@ class Project(base._BaseSiteAPI):
         _tree = await get_remixtree(self.id,ClientSession=self.ClientSession,session=self.Session)
         _tree.project = self
         return _tree
+    
+    def get_cloud(self) -> "cloud.ScratchCloud":
+        self.has_session_raise()
+        return self.Session.get_cloud(self.id)
+    
+    def get_cloud_logs(self, *, limit:int=100, offset:int=0) -> AsyncGenerator[activity.CloudActivity, None]:
+        return base.get_object_iterator(
+            self.ClientSession,f"https://clouddata.scratch.mit.edu/logs",
+            None,activity.CloudActivity,self.Session,
+            limit=limit,offset=offset,max_limit=100,add_params={"projectid":self.id},
+            custom_func=base._cloud_activity_iterator_func,others={"project_id":self.id}
+        )
+    
+    def cloud_log_event(self,interval:float=1) -> "cloud_event.CloudLogEvent":
+        from ..cloud import cloud_event
+        obj = cloud_event.CloudLogEvent(self.id,self.ClientSession,interval)
+        obj.Session = self.Session
+        return obj
 
 
 class RemixTree(base._BaseSiteAPI): #no data

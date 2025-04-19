@@ -1,5 +1,5 @@
 import asyncio
-from typing import Any, Awaitable, Callable
+from typing import Any, Awaitable, Callable,Coroutine
 from ..others import common
 
 """
@@ -22,12 +22,12 @@ class _BaseEvent:
         self.task:asyncio.Task|None = None
         self._running = False
         self._on_ready = False
-        self._event:dict[str,Callable[... , Awaitable]] = {}
+        self._event:dict[str,Callable[... , Coroutine]] = {}
 
     async def _event_monitoring(self): #Edit required
         self._call_event("on_ready")
         while self._running:
-            await asyncio.sleep(1)
+            await asyncio.sleep(self.interval)
             self._call_event("test")
 
     def _call_event(self,event_name:str,*arg):
@@ -45,7 +45,7 @@ class _BaseEvent:
         if isinstance(a,Awaitable):
             asyncio.create_task(a)
 
-    def event(self,f:Callable[..., Awaitable],name:str|None=None):
+    def event(self,f:Callable[..., Coroutine],name:str|None=None):
         self._event[f.__name__ if name is None else name] = f
 
     def run(self) -> asyncio.Task:

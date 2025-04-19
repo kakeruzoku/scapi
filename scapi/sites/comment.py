@@ -79,7 +79,7 @@ class Comment(base._BaseSiteAPI):
         return False
     
     def _is_me_raise(self) -> None:
-        if not self._is_me:
+        if self.chack and not self._is_me:
             raise exception.NoPermission
         
     def __int__(self) -> int: return self.id
@@ -113,9 +113,10 @@ class Comment(base._BaseSiteAPI):
         
     
     def get_replies(self, *, limit=40, offset=0) -> AsyncGenerator["Comment",None]:
-        return base.get_comment_iterator(
-            self.place,f"{self.update_url}/replies/",
-            limit=limit,offset=offset,add_params={"cachebust":random.randint(0,9999)}
+        return base.get_object_iterator(
+            self.ClientSession,f"{self.update_url}/replies/",None,Comment,
+            limit=limit,offset=offset,add_params={"cachebust":random.randint(0,9999)},
+            custom_func=base._comment_iterator_func, others={"plece":self}
         )
 
     async def reply(self, content, *, commentee_id:"int|User|None"=None) -> "Comment":

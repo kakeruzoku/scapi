@@ -65,7 +65,7 @@ class User(base._BaseSiteAPI):
         return False
     
     def _is_me_raise(self):
-        if not self._is_me:
+        if self.chack and not self._is_me:
             raise exception.NoPermission
     
     def __int__(self) -> int: return self.id

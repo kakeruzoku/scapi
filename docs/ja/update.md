@@ -3,6 +3,17 @@
 Scapiの更新履歴です。1.0.0以前の更新履歴は[こちら](https://github.com/kakeruzoku/scapi/blob/main/changelog.md )
 
 # 1.x.x
+## 1.3.0
+### 新機能
+- Scratchのクラウド変数接続サポート
+  - `ScratchCloud`の追加
+  - `CloudLogEvent`の追加
+  - `Session`や`Project`に`get_cloud`などの一部関数の追加
+- 権限チェックを行うかの設定`_BaseSiteAPI.check`を追加
+### 更新/修正
+- `limit`で指定した数とは違う量のオブジェクトを返していた問題を修正
+- `CloudActivity`に`datetime`が追加
+
 ## 1.2.0
 ### 新機能
 - エラー`IPBANError`の追加

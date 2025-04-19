@@ -1,14 +1,16 @@
 import asyncio
 import json
 import time
-from typing import TYPE_CHECKING, Any
+from typing import TYPE_CHECKING, Any, AsyncGenerator
 import warnings
 import aiohttp
 from ..others import common,error as exception
+from ..sites import activity,base
 import re
 
 if TYPE_CHECKING:
     from . import cloud_event
+    from ..sites import project,session
 
 class _BaseCloud:
 
@@ -28,8 +30,7 @@ class _BaseCloud:
         self._data:dict[str,str] = {}
 
         self._is_close_cs = not isinstance(clientsession,common.ClientSession)
-        clientsession = common.create_ClientSession(clientsession)
-        self.clientsession:common.ClientSession = clientsession
+        self.clientsession:common.ClientSession = common.create_ClientSession(clientsession)
         self._websocket:aiohttp.ClientWebSocketResponse|None = None
 
         self._event:"cloud_event.CloudEvent|None" = None
@@ -51,11 +52,11 @@ class _BaseCloud:
         return self._header
 
     async def _handshake(self,ws:aiohttp.ClientWebSocketResponse):
-        await ws.send_json({
+        await ws.send_str(json.dumps({
             "method":"handshake",
             "user":self.username,
             "project_id":str(self.project_id)
-        })
+        })+"\n")
 
     async def _run(self,timeout=10):
         c = 1
@@ -216,6 +217,39 @@ class _BaseCloud:
     def event(self) -> "cloud_event.CloudEvent":
         from . import cloud_event
         return cloud_event.CloudEvent(self)
+
+class ScratchCloud(_BaseCloud):
+    def __str__(self) -> str:
+        return f"<ScratchCloud id:{self.project_id} user:{self.username} connect:{self.is_connect}>"
+
+    def __init__(
+            self,
+            project_id:int|str,
+            session:"session.Session"
+        ):
+
+        super().__init__(session.ClientSession,project_id)
+        self.url = "wss://clouddata.scratch.mit.edu"
+        self.Session = session
+        self._header = {}
+        self._header["Cookie"] = "scratchsessionsid=\"" + self.Session.session_id + "\";"
+        self._header["Origin"] = "https://scratch.mit.edu"
+        self.username = self.Session.username
+
+    def get_logs(self,limit:int=100,offset:int=0) -> AsyncGenerator[activity.CloudActivity, None]:
+        return base.get_object_iterator(
+            self.clientsession,f"https://clouddata.scratch.mit.edu/logs",
+            None,activity.CloudActivity,self.Session,
+            limit=limit,offset=offset,max_limit=100,add_params={"projectid":self.project_id},
+            custom_func=base._cloud_activity_iterator_func,others={"project_id":self.project_id}
+        )
+    
+    def log_event(self,interval:float=1) -> "cloud_event.CloudLogEvent":
+        from . import cloud_event
+        obj = cloud_event.CloudLogEvent(self.project_id,self.clientsession,interval)
+        obj.Session = self.Session
+        return obj
+
 
 class TurboWarpCloud(_BaseCloud):
     

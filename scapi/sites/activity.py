@@ -1,7 +1,7 @@
 import datetime
 from enum import Enum
 import re
-from typing import TYPE_CHECKING
+from typing import TYPE_CHECKING, Any
 import warnings
 
 import bs4
@@ -290,6 +290,7 @@ class Activity:
             warnings.warn(f"unknown activitytype: {t} (user)")
 
 class CloudActivity(base._BaseSiteAPI):
+    id_name = "data"
 
     def __str__(self):
         return f"<CloudActivity id:{self.project_id} user:{self.username} variable:{self.variable} value:{self.value}>"
@@ -297,17 +298,18 @@ class CloudActivity(base._BaseSiteAPI):
     def __init__(
         self,
         ClientSession:common.ClientSession,
-        data:common.json_resp,
+        data:dict[str,Any],
         scratch_session:"Session|None"=None,
         **entries
     ):
         super().__init__(None,None,ClientSession,scratch_session)
 
-        self.method:str = data.get("method") or data.get("verb").replace("_var","")
+        self.method:str = data.get("method") or data.get("verb","").replace("_var","")
         self.variable:str = data.get("name")
         self.value:str = data.get("value")
         self.username:str|None = data.get("user")
         self.project_id:int = data.get("project_id")
+        self.datetime:datetime.datetime = common.to_dt_timestamp_1000(data.get("timestamp")) or data.get("datetime")
 
         self.cloud:"cloud._BaseCloud|server.CloudServerConnection|None" = data.get("cloud")
 

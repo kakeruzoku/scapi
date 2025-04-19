@@ -105,10 +105,12 @@ from .sites.mainpage import (
 from .cloud.cloud import (
     _BaseCloud,
     TurboWarpCloud,
-    get_tw_cloud
+    get_tw_cloud,
+    ScratchCloud
 )
 from .cloud.cloud_event import (
-    CloudEvent
+    CloudEvent,
+    CloudLogEvent,
 )
 from .cloud.server import (
     CloudServerConnection,
