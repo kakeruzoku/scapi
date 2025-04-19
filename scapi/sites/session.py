@@ -3,6 +3,8 @@ import re
 from typing import TYPE_CHECKING, AsyncGenerator
 import warnings
 
+from scapi.cloud.cloud import ScratchCloud
+
 from ..others import common
 from ..others import error as exception
 from . import user,project,studio,activity,base,forum,classroom,asset
@@ -217,6 +219,10 @@ class Session(base._BaseSiteAPI):
             self.ClientSession,f"https://api.scratch.mit.edu/users/{self.username}/projects/recentlyviewed",
             None, project.Project, self.Session, limit=limit, offset=offset
         )
+    
+    def get_cloud(self,project_id:int) -> "ScratchCloud":
+        from ..cloud import cloud
+        return cloud.ScratchCloud(project_id,self)
     
     async def get_project(self,project_id:int) -> project.Project:
         return await base.get_object(self.ClientSession,project_id,project.Project,self)

@@ -49,7 +49,7 @@ class Classroom(base._BaseSiteAPI):
         return False
     
     def _is_owner_raise(self) -> None:
-        if not self._is_owner:
+        if self.chack and not self._is_owner:
             raise exception.NoPermission
 
     async def studios(self, *, start_page=1, end_page=1) -> AsyncGenerator[studio.Studio, None]:

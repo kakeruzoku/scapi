@@ -27,6 +27,7 @@ class _BaseSiteAPI(ABC):
         self.update_url:str = update_url
         self._Session:"Scratch_Session|None" = Session
         self._raw:dict|str|None = None
+        self.chack:bool = True
 
     async def update(self) -> None:
         if self.update_type == "get": func = self.ClientSession.get
@@ -60,7 +61,7 @@ class _BaseSiteAPI(ABC):
         return self._Session
         
     def has_session_raise(self):
-        if not self.has_session:
+        if self.chack and not self.has_session:
             raise exception.NoSession()
         
     async def link_session(self,session:"Scratch_Session",if_close:bool=False) -> "Scratch_Session|None":
@@ -122,11 +123,13 @@ async def get_object_iterator(
         limit:int|None=None,
         offset:int=0,
         max_limit=40,
-        add_params:dict={}
+        add_params:dict={},
+        custom_func:Callable[[dict,dict],dict[str,Any]]|None=None,
+        others:dict={}
     ) -> AsyncGenerator[_T,None]:
     ClientSession = common.create_ClientSession(ClientSession,session)
     c = 0
-    limit = max_limit if limit is None else limit
+    limit = limit or max_limit
     for i in range(offset,offset+limit,max_limit):
         l = await common.api_iterative(
             ClientSession,url,
@@ -138,54 +141,38 @@ async def get_object_iterator(
         if raw_name is None:
             raw_name = Class.id_name
         for j in l:
-            c = c + 1
-            if c == limit: return
             try:
-                dicts = {
-                    "ClientSession":ClientSession,
-                    Class.id_name:j[raw_name],
-                    "scratch_session":session
-                }
+                if custom_func is None:
+                    dicts = {
+                        "ClientSession":ClientSession,
+                        Class.id_name:j[raw_name],
+                        "scratch_session":session
+                    }
+                else:
+                    dicts = {
+                        "ClientSession":ClientSession,
+                        "scratch_session":session
+                    }|custom_func(j,others)
                 _obj = Class(**dicts)
                 _obj._update_from_dict(j)
                 yield _obj
             except Exception as e:
                 print(e)
+            c = c + 1
+            if c >= limit: return
 
+def _comment_iterator_func(data:dict,others:dict):
+    return {
+        "data":{
+            "place":others.get("plece"),
+            "id":data.get("id"),
+            "data":data
+        }
+    }
 
-async def get_comment_iterator(
-        plece:"Studio|Project",url:str,
-        *,
-        limit:int|None=None,
-        offset:int=0,
-        max_limit=40,
-        add_params:dict={},
-    ) -> AsyncGenerator["Comment",None]:
-    from .comment import Comment
-    limit = max_limit if limit is None else limit
-    for i in range(offset,offset+limit,max_limit):
-        l = await common.api_iterative(
-            plece.ClientSession,url,
-            limit=max_limit,offset=i,max_limit=max_limit,
-            add_params=add_params
-        )
-        if len(l) == 0:
-            return
-        for j in l:
-            try:
-                dicts = {
-                    "ClientSession":plece.ClientSession,
-                    "data":{
-                        "place":plece,
-                        "id":j.get("id"),
-                        "data":j
-                    },
-                    "scratch_session":plece.Session
-                }
-                _obj = Comment(**dicts)
-                yield _obj
-            except Exception as e:
-                print(e)
+def _cloud_activity_iterator_func(data:dict,others:dict):
+    data["project_id"] = others.get("project_id")
+    return {"data":data}
 
 _S = TypeVar("_S")
 

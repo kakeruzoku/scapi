@@ -312,7 +312,8 @@ class CloudServer(_base._BaseEvent):
             "user":conn and conn.username,
             "project_id":conn and conn.project_id,
             "cloud":self,
-            "connection":conn
+            "connection":conn,
+            "datetime":datetime.datetime.now(tz=datetime.timezone.utc)
         }
         cloud_activity = activity.CloudActivity(self.ClientSession,data)
         self._call_event("on_set",cloud_activity)
