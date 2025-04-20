@@ -57,7 +57,7 @@ class CloudLogEvent(_base._BaseEvent):
         super().__init__(interval)
         self.project_id:int = project_id
         self.ClientSession:common.ClientSession = common.create_ClientSession(ClientSession)
-        self.lastest_dt:datetime.datetime = None
+        self.lastest_dt:datetime.datetime = datetime.datetime(2000, 1, 1)
         self.Session:"session.Session|None" = None
 
     async def _event_monitoring(self):
