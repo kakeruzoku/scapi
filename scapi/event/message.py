@@ -40,7 +40,7 @@ class SessionMessageEvent(_base._BaseEvent):
 
     def __init__(self,sessions:"Session",interval):
         self.session:"Session" = sessions
-        self.lastest_dt:datetime.datetime = None
+        self.lastest_dt:datetime.datetime = datetime.datetime(2000,1,1,tzinfo=datetime.timezone.utc)
         super().__init__(interval)
 
     async def _event_monitoring(self):

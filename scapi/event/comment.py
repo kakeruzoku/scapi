@@ -15,7 +15,7 @@ class CommentEvent(_base._BaseEvent):
 
     def __init__(self,place:project.Project|studio.Studio|user.User,interval):
         self.place = place
-        self.lastest_comment_dt:datetime.datetime = None
+        self.lastest_comment_dt:datetime.datetime = datetime.datetime(2000,1,1,tzinfo=datetime.timezone.utc)
         super().__init__(interval)
 
     async def _event_monitoring(self):
