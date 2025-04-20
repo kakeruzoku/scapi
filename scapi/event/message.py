@@ -40,10 +40,13 @@ class SessionMessageEvent(_base._BaseEvent):
 
     def __init__(self,sessions:"Session",interval):
         self.session:"Session" = sessions
-        self.lastest_dt:datetime.datetime = datetime.datetime.now(tz=datetime.timezone.utc)
+        self.lastest_dt:datetime.datetime = datetime.datetime(2000,1,1,tzinfo=datetime.timezone.utc)
         super().__init__(interval)
 
     async def _event_monitoring(self):
+        messages = [message async for message in self.session.message()]
+        if messages:
+            self.lastest_dt = messages[0].datetime
         self._call_event("on_ready")
         while self._running:
             try:

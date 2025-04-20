@@ -3,6 +3,11 @@
 Scapiの更新履歴です。1.0.0以前の更新履歴は[こちら](https://github.com/kakeruzoku/scapi/blob/main/changelog.md )
 
 # 1.x.x
+## 1.3.1
+### 更新/修正
+- [PR29](https://github.com/kakeruzoku/scapi/pull/29 ) イベントで、時間のずれによる問題を解消
+- cookieに必要ない情報を削除
+
 ## 1.3.0
 ### 新機能
 - Scratchのクラウド変数接続サポート

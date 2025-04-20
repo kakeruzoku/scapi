@@ -87,8 +87,6 @@ class Session(base._BaseSiteAPI):
             "scratchsessionsid" : session_id,
             "scratchcsrftoken" : "a",
             "scratchlanguage" : "en",
-            "accept": "application/json",
-            "Content-Type": "application/json",
         }
         self.status:SessionStatus = None
         self.session_id:str = session_id
