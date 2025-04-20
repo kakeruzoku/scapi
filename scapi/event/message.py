@@ -39,8 +39,8 @@ class SessionMessageEvent(_base._BaseEvent):
         return f"<SessionMessageEvent session:{self.session} running:{self._running} event:{self._event.keys()}>"
 
     def __init__(self,sessions:"Session",interval):
-        self.session: "Session" = sessions
-        self.lastest_dt: datetime.datetime = 0
+        self.session:"Session" = sessions
+        self.lastest_dt:datetime.datetime = 0
         super().__init__(interval)
 
     async def _event_monitoring(self):
