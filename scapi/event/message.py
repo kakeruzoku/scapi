@@ -38,12 +38,15 @@ class SessionMessageEvent(_base._BaseEvent):
     def __str__(self) -> str:
         return f"<SessionMessageEvent session:{self.session} running:{self._running} event:{self._event.keys()}>"
 
-    def __init__(self,sessions:"Session",interval):
-        self.session:"Session" = sessions
-        self.lastest_dt:datetime.datetime = datetime.datetime.now(tz=datetime.timezone.utc)
+    def __init__(self, sessions: "Session", interval):
+        self.session: "Session" = sessions
+        self.lastest_dt: datetime.datetime = 0
         super().__init__(interval)
 
     async def _event_monitoring(self):
+        messages = [message async for message in self.session.message()]
+        if messages:
+            self.lastest_dt = messages[0].datetime
         self._call_event("on_ready")
         while self._running:
             try:
@@ -55,8 +58,8 @@ class SessionMessageEvent(_base._BaseEvent):
                         continue
                     if i.datetime > self.lastest_dt:
                         temp_lastest_dt = i.datetime
-                        self._call_event("on_activity",i)
+                        self._call_event("on_activity", i)
                 self.lastest_dt = temp_lastest_dt
             except Exception as e:
-                self._call_event("on_error",e)
+                self._call_event("on_error", e)
             await asyncio.sleep(self.interval)

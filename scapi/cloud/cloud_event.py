@@ -57,10 +57,13 @@ class CloudLogEvent(_base._BaseEvent):
         super().__init__(interval)
         self.project_id:int = project_id
         self.ClientSession:common.ClientSession = common.create_ClientSession(ClientSession)
-        self.lastest_dt = datetime.datetime.now(tz=datetime.timezone.utc)
+        self.lastest_dt:datetime.datetime = 0
         self.Session:"session.Session|None" = None
 
     async def _event_monitoring(self):
+        logs = [log async for log in self._get_logs(limit=1)]
+        if logs:  # ログが存在する場合のみ処理
+            self.lastest_dt = logs[0].datetime
         self._call_event("on_ready")
         while self._running:
             try:
