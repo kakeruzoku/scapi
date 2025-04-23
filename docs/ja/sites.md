@@ -85,6 +85,14 @@ withから抜けるときに **close()** を実行します。
 
 プロキシを更新する
 
+> **protect** `-> bool`
+
+Scratch以外のサイトとの通信時にCookieやheaderの初期値を未ログイン状態にするか
+
+通常`True`になりますが、カスタムで作成した場合は`False`になります。
+
+**`1.4.0`で追加**
+
 ## Response
 `ClientSession`でのレスポンスを表す
 
@@ -119,7 +127,7 @@ withから抜けるときに **session_close()** を実行します。
 
 > **check** `-> bool`
 
-- **`1.3.0`で追加**
+**`1.3.0`で追加**
 
 Scapi内での権限チェックを行うか。`False`の場合、権限がないことがわかってもリクエストを行います。(他ユーザーのプロジェクトの`edit()`など)
 
@@ -243,6 +251,14 @@ Userにある情報:username,id,_join_date,join_date
 **入力**
 - **interval** (`int`) 更新する時間
 
+> await **message_count()** `-> int`
+
+**`1.4.0`で追加**
+
+> await **clear_message()**
+
+**`1.4.0`で追加**
+
 > async for **following_feed(limit=40, offset=0)** `-> Activity`
 
 最新の情報欄を取得する。
@@ -261,7 +277,7 @@ Userにある情報:username,id,_join_date,join_date
 
 > **get_cloud(project_id:)** `-> ScratchCloud`
 
-- **`1.3.0`で追加**
+**`1.3.0`で追加**
 
 **入力**
 - **project_id** (`int`) 取得したいプロジェクトのID
@@ -633,17 +649,17 @@ Scratchのプロジェクトページを表すクラス。
 
 > **get_cloud** `-> ScratchCloud`
 
-- **`1.3.0`で追加**
+**`1.3.0`で追加**
 
 Scratchクラウドを表すクラスを返します。(詳細は /cloud まで)
 
 > async for **get_cloud_logs(limit=100, offset=0)** `-> CloudActivity`
 
-- **`1.3.0`で追加**
+**`1.3.0`で追加**
 
 > **cloud_log_event(interval=1)** `-> CloudLogEvent`
 
-- **`1.3.0`で追加**
+**`1.3.0`で追加**
 
 ## RemixTree
 リミックスツリーの中のプロジェクトを表すクラス。update()による更新は現在できません。プロジェクトによっては大きくメモリを消費する可能性があります。
@@ -1061,6 +1077,26 @@ Project(key:`object`)に含まれる情報:id,title
 **入力**
 - **follow** (`bool`) 変更先の状態。
 
+> await **get_ocular_status** `-> OcularStatus`
+
+**`1.4.0`で追加**
+
+## OcularStatus
+
+Ocularでのステータスを表す。
+
+アカウント情報がないユーザーは、データが`None`になります。
+
+> **id** `-> int|None`
+
+> **username** `-> str`
+
+> **status** `-> str|None`
+
+> **color** `-> int|None`
+
+> **updated** `-> datetime.datetime|None`
+
 # コメント
 
 > **create_Partial_Comment(comment_id,place,content=None,author=None,ClientSession=None,session=None)** `-> Comment|UserComment`
@@ -1237,6 +1273,32 @@ Userにある情報:username,id
 
 `New Scratcher`,`Scratcher`,`Scratch Team`のどれか
 
+## OcularReactions
+
+フォーラムの投稿のリアクションを見る
+
+**`1.4.0`で追加**
+
+> **id** `-> int`
+
+> **thumbs_up** `-> list[str]`
+
+リアクションをしたユーザーのリスト
+
+> **thumbs_down** `-> list[str]`
+
+> **smile** `-> list[str]`
+
+> **tada** `-> list[str]`
+
+> **confused** `-> list[str]`
+
+> **heart** `-> list[str]`
+
+> **rocket** `-> list[str]`
+
+> **eyes** `-> list[str]`
+
 # アクティビティ
 
 > async for Session.**message(limit=40, offset=0)** `-> Activity`
@@ -1300,7 +1362,7 @@ Userにある情報:username,id
 
 > **datetime** `-> datetime`
 
-- **`1.3.0`で追加**
+**`1.3.0`で追加**
 
 > **cloud** `-> _BaseCloud|CloudServerConnection|None`
 

@@ -9,13 +9,14 @@ import json
 import io
 import random
 import string
+import urllib.parse
 
 _T = TypeVar("_T")
 
 if TYPE_CHECKING:
     from ..sites import session
 
-__version__ = "1.3.1"
+__version__ = "1.4.0"
 
 headers = {
     "user-agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/75.0.3770.142 Safari/537.36",
@@ -32,7 +33,7 @@ def create_ClientSession(inp:"ClientSession|None"=None,Session:"session.Session|
         return Session.ClientSession
 
 
-    return ClientSession(header=headers,cookie={"scratchcsrftoken": 'a'})
+    return ClientSession(header=headers,cookie={"scratchcsrftoken": 'a'},protect=True)
 
 def create_custom_ClientSession(header:dict={},cookie:dict={}) -> "ClientSession":
     return ClientSession(header=header,cookie=cookie)
@@ -59,12 +60,13 @@ class Response:
 
 class ClientSession(aiohttp.ClientSession):
 
-    def __init__(self,header:dict={},cookie:dict={}) -> None:
+    def __init__(self,header:dict={},cookie:dict={},protect:bool=False) -> None:
         super().__init__()
         self._header = header
         self._cookie = cookie
         self._proxy = None
         self._proxy_auth = None
+        self.protect = protect
     
     @property
     def header(self) -> dict:
@@ -109,8 +111,12 @@ class ClientSession(aiohttp.ClientSession):
         header:dict[str,str]|None=None,cookie:dict[str,str]|None=None,check:bool=True,**d
     ) -> Response:
         if self.closed: raise exceptions.SessionClosed
-        if header is None: header = self._header.copy()
-        if cookie is None: cookie = self._cookie.copy()
+        is_scratch = split(url,"//","/").lower().endswith("scratch.mit.edu")
+        if self.protect and (not is_scratch):
+            if header is None: header = headers
+        else:
+            if header is None: header = self._header.copy()
+            if cookie is None: cookie = self._cookie.copy()
         try:
             async with obj(
                 url,data=data,json=json,timeout=timeout,params=params,headers=header,cookies=cookie,

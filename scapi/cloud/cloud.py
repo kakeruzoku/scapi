@@ -72,6 +72,7 @@ class _BaseCloud:
                 asyncio.create_task(self._on_connect(self))
                 c = 1
                 self._websocket = ws
+                is_sync = True
                 async for w in self._websocket:
                     if not isinstance(w.data,str):
                         continue
@@ -82,10 +83,14 @@ class _BaseCloud:
                             continue
                         if not isinstance(data,dict):
                             continue
-                        asyncio.create_task(self._on_event(self,data.get("method",""),data["name"][2:],data.get("value",None),data))
-                        if data.get("method","") != "set":
-                            continue
-                        self._data[data["name"][2:]] = data["value"]
+                        method = data.get("method","")
+                        if method == "set":
+                            self._data[data["name"][2:]] = data["value"]
+                            if not is_sync:
+                                asyncio.create_task(self._on_event(
+                                    self,"set",data["name"][2:],data.get("value",None),data
+                                ))
+                    is_sync = False
             if self._instruction:
                 asyncio.create_task(self._on_disconnect(self,c))
                 await asyncio.sleep(c)
@@ -157,55 +162,79 @@ class _BaseCloud:
             while not self.is_connect:
                 await asyncio.sleep(0.1)
 
-    async def set_var(self,variable:str,value:str,_wait:int|None=None):
-        value = str(value)
-        await self._wait_connect(_wait or self._timeout)
-        if not variable.startswith("☁ "):
-            variable = "☁ " + variable
-        if not self._check_var(value):
-            raise ValueError
-        await self._wait()
+    async def _send(self,*packets:dict,_wait:int|None,project_id:int|None=None):
+        if len(packets) == 0: return
+        _packet = ""
+        for p in packets:
+            data = {"user":self.username,"project_id":str(project_id or self.project_id)}|p
+            _packet = _packet + json.dumps(data,ensure_ascii=False) + "\n"
 
-        packet = {
-            "method": "set",
-            "name": variable,
-            "value": str(value),
-            "user": self.username,
-            "project_id": str(self.project_id),
-        }
-        await self.websocket.send_str(json.dumps(packet,ensure_ascii=False))
+        await self._wait_connect(_wait or self._timeout)
+        await self._wait(len(packets))
+        await self._websocket.send_str(_packet)
         now = time.time()
         if self._last_set_time < now:
             self._last_set_time = now
 
-    async def set_vars(self,data:dict[str,str|float|int],_wait:int|None=None):
+    async def set_var(self,variable:str,value:str,project_id:int|None=None,*,_wait:int|None=None):
+        value = str(value)
+        if not variable.startswith("☁ "):
+            variable = "☁ " + variable
+        if not self._check_var(value):
+            raise ValueError
+        await self._send(
+            {"method": "set","name": variable,"value": str(value)},
+            _wait=_wait, project_id=project_id
+        )
+        self._data[variable[2:]] = value
+
+    async def set_vars(self,data:dict[str,str|float|int],*,project_id:int|None=None,_wait:int|None=None):
         await self._wait_connect(_wait or self._timeout)
-        packets:str = ""
-        c = 0
+        packets:list[dict] = []
         for k,v in data.items():
             if not k.startswith("☁ "):
                 k = "☁ " + k
             if not self._check_var(v):
                 warnings.warn(f"{v} won't set ({k})")
                 continue
-            packet = {
-                "method": "set",
-                "name": k,
-                "value": str(v),
-                "user": self.username,
-                "project_id": str(self.project_id),
-            }
-            c = c + 1
-            packets = packets + json.dumps(packet) + "\n"
+            packets.append({"method": "set","name": k,"value": str(v)})
+        await self._send(*packets,_wait=_wait, project_id=project_id)
+        for i in packets:
+            self._data[i["name"][2:]] = i["value"]
+
+    async def create_var(self,variable:str,value:str="0",*,project_id:int|None=None,_wait:int|None=None):
+        value = str(value)
+        if not variable.startswith("☁ "):
+            variable = "☁ " + variable
+        if not self._check_var(value):
+            raise ValueError
         
-        if c == 0:
-            return
-        
-        await self._wait(c)
-        await self.websocket.send_str(packets)
-        now = time.time()
-        if self._last_set_time < now:
-            self._last_set_time = now
+        await self._send(
+            {"method": "create","name": variable,"value": value},
+            _wait=_wait, project_id=project_id
+        )
+        self._data[variable[2:]] = value
+
+    async def rename_var(self,old:str,new:str,*,project_id:int|None=None,_wait:int|None=None):
+        if not old.startswith("☁ "): old = "☁ " + old
+        if not new.startswith("☁ "): new = "☁ " + new
+
+        await self._send(
+            {"method": "rename","name": old,"new_name": new},
+            _wait=_wait, project_id=project_id
+        )
+        old_data = self._data.get(old[2:])
+        if old_data is not None:
+            self._data[new[2:]] = old_data
+
+    async def delete_var(self,variable:str,*,project_id:int|None=None,_wait:int|None=None):
+        if not variable.startswith("☁ "):
+            variable = "☁ " + variable
+        await self._send(
+            {"method": "delete","name": variable},
+            _wait=_wait, project_id=project_id
+        )
+        self._data.pop(variable,None)
 
     async def __aenter__(self) -> "_BaseCloud":
         await self.connect()

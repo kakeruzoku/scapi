@@ -211,6 +211,49 @@ class ForumPost(base._BaseSiteAPI):
             re.findall(r'\d+', _left_2.next_element.next_element.next_element.next_element.strip())[0]
         )
 
+    async def get_ocular_reactions(self) -> "OcularReactions":
+        return await base.get_object(self.ClientSession,self.id,OcularReactions,self.Session)
+
+class OcularReactions(base._BaseSiteAPI):
+    id_name = "id"
+
+    def __str__(self):
+        return f"<OcularReactions id:{self.id} 👍:{len(self.thumbs_up)} 👎:{len(self.thumbs_down)} 😄:{len(self.smile)} 🎉:{len(self.tada)} 😕:{len(self.confused)} ❤️:{len(self.heart)} 🚀:{len(self.rocket)} 👀:{len(self.eyes)}>"
+
+    def __init__(
+        self,
+        ClientSession:common.ClientSession,
+        id:int,
+        scratch_session:"Session|None"=None,
+        **entries
+    ):
+        super().__init__("get",f"https://my-ocular.jeffalo.net/api/reactions/{id}",ClientSession,scratch_session)
+
+        self.id = common.try_int(id)
+
+        self.thumbs_up:list[str] = None
+        self.thumbs_down:list[str] = None
+        self.smile:list[str] = None
+        self.tada:list[str] = None
+        self.confused:list[str] = None
+        self.heart:list[str] = None
+        self.rocket:list[str] = None
+        self.eyes:list[str] = None
+
+    def _update_from_dict(self, data:dict):
+        def get_list(data):
+            return [i.get("user") for i in data.get("reactions")]
+        
+        self.thumbs_up = get_list(data[0])
+        self.thumbs_down = get_list(data[1])
+        self.smile = get_list(data[2])
+        self.tada = get_list(data[3])
+        self.confused = get_list(data[4])
+        self.heart = get_list(data[5])
+        self.rocket = get_list(data[6])
+        self.eyes = get_list(data[7])
+
+
 
 async def get_topic(topic_id:int,*,ClientSession=None) -> ForumTopic:
     return await base.get_object(ClientSession,topic_id,ForumTopic)

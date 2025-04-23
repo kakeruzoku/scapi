@@ -184,6 +184,13 @@ class Session(base._BaseSiteAPI):
     def message_event(self,interval=30) -> "SessionMessageEvent":
         from ..event.message import SessionMessageEvent
         return SessionMessageEvent(self,interval)
+    
+    async def message_count(self) -> int:
+        r = await self.ClientSession.get("https://scratch.mit.edu/messages/ajax/get-message-count/")
+        return r.json().get("msg_count")
+    
+    async def clear_message(self):
+        await self.ClientSession.post("https://scratch.mit.edu/site-api/messages/messages-clear/")
 
     async def following_feed(self, *, limit=40, offset=0) -> AsyncGenerator[activity.Activity, None]:
         c = 0
