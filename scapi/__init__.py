@@ -68,6 +68,7 @@ from .sites.studio import (
 )
 from .sites.user import (
     User,
+    OcularStatus,
     get_user,
     create_Partial_User,
     is_allowed_username
@@ -82,6 +83,7 @@ from .sites.forum import (
     ForumCategoryType,
     ForumPost,
     ForumStatus,
+    OcularReactions,
     get_post,
     get_topic,
     get_topic_list,

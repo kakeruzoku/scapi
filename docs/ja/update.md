@@ -3,6 +3,17 @@
 Scapiの更新履歴です。1.0.0以前の更新履歴は[こちら](https://github.com/kakeruzoku/scapi/blob/main/changelog.md )
 
 # 1.x.x
+## 1.4.0
+### 新機能
+- クラウド変数
+  - `create` `rename` `delete`メソッド送信機能の追加
+  - パケットごとにプロジェクトIDを指定できるように
+- Scratch以外のサイトにsessionID等を送信しないようにする機能の追加(`ClientSession.protect`)
+### 更新/修正
+- `CloudActivity`で`set`メソッド以外にも対応
+- `Activity`に`UserJoin`を追加
+- メッセージ既読機能の追加
+
 ## 1.3.1
 ### 更新/修正
 - [PR29](https://github.com/kakeruzoku/scapi/pull/29 ) イベントで、時間のずれによる問題を解消
@@ -15,9 +26,13 @@ Scapiの更新履歴です。1.0.0以前の更新履歴は[こちら](https://gi
   - `CloudLogEvent`の追加
   - `Session`や`Project`に`get_cloud`などの一部関数の追加
 - 権限チェックを行うかの設定`_BaseSiteAPI.check`を追加
+- ocularAPI
+  - `OcularReactions`の追加
+  - `OcularStatus`の追加
 ### 更新/修正
 - `limit`で指定した数とは違う量のオブジェクトを返していた問題を修正
 - `CloudActivity`に`datetime`が追加
+
 
 ## 1.2.0
 ### 新機能

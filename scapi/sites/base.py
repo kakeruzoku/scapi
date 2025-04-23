@@ -36,7 +36,7 @@ class _BaseSiteAPI(ABC):
         elif self.update_type == "delete": func = self.ClientSession.delete
         else: raise ValueError()
         response = (await func(self.update_url,timeout=10)).json()
-        if not isinstance(response,dict):
+        if not isinstance(response,(dict,list)):
             raise self.raise_class(self.__class__,TypeError)
         self._raw = response.copy()
         return self._update_from_dict(response)

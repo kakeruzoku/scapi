@@ -43,12 +43,13 @@ class ActivityType(Enum):
 
     #User Activity
     UserFollowing=15 #[o o x o]
+    UserJoin=16 #[o o x x]
 
     #Forum
-    ForumPost=16 #[o x x x]
+    ForumPost=17 #[o x x x]
 
     #Comment
-    Comment=17 #[o x x x]
+    Comment=18 #[o x x x]
 
 class Activity:
     id_name = "data"
@@ -65,7 +66,7 @@ class Activity:
         self.actor:"User|None" = None
         self.target:"Comment|Studio|Project|User|None" = None
         self.place:"Studio|Project|User|None" = None
-        self._raw:"dict|str" = None
+        self._raw:"dict|str" = {}
         self.datetime:datetime.datetime|None = None
     
     def _update_from_dict(self,obj:base._BaseSiteAPI,data:dict[str,str]) -> tuple[str,common.ClientSession, "Session"]:
@@ -134,6 +135,9 @@ class Activity:
             self.place.title = data["parent_title"]
             self.target = create_Partial_Project(data["project_id"],session.create_Partial_myself(),ClientSession=cs,session=ss)
             self.place.title = data["title"]
+        elif t == "userjoin":
+            self.type = ActivityType.UserJoin
+            self.place = self.target = None
         else:
             warnings.warn(f"unknown activitytype: {t} (message)")
         
@@ -286,6 +290,9 @@ class Activity:
         elif "is now following" in t:
             self.type = ActivityType.UserFollowing
             self.target = self.place = self._load_user(span.next_sibling.next_sibling,cs,ss)
+        elif "joined Scratch" in t:
+            self.type = ActivityType.UserJoin
+            self.place = self.target = None
         else:
             warnings.warn(f"unknown activitytype: {t} (user)")
 
@@ -293,7 +300,7 @@ class CloudActivity(base._BaseSiteAPI):
     id_name = "data"
 
     def __str__(self):
-        return f"<CloudActivity id:{self.project_id} user:{self.username} variable:{self.variable} value:{self.value}>"
+        return f"<CloudActivity method:{self.method} id:{self.project_id} user:{self.username} variable:{self.variable} value:{self.value}>"
 
     def __init__(
         self,
@@ -305,8 +312,9 @@ class CloudActivity(base._BaseSiteAPI):
         super().__init__(None,None,ClientSession,scratch_session)
 
         self.method:str = data.get("method") or data.get("verb","").replace("_var","")
-        self.variable:str = data.get("name")
-        self.value:str = data.get("value")
+        self.variable:str = str(data.get("name")).removeprefix("☁ ")
+        if data.get("value") is None: self.value:str = None
+        else: self.value:str = str(data.get("value")).removeprefix("☁ ")
         self.username:str|None = data.get("user")
         self.project_id:int = data.get("project_id")
         self.datetime:datetime.datetime = common.to_dt_timestamp_1000(data.get("timestamp")) or data.get("datetime")

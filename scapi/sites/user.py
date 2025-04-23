@@ -367,8 +367,45 @@ class User(base._BaseSiteAPI):
         else:
             await self.ClientSession.put(f"https://scratch.mit.edu/site-api/users/followers/{self.username}/remove/?usernames={self.Session.username}")
 
+    async def get_ocular_status(self) -> "OcularStatus":
+        return await base.get_object(self.ClientSession,self.username,OcularStatus,self.Session)
 
 
+class OcularStatus(base._BaseSiteAPI):
+    id_name = "username"
+
+    def __str__(self):
+        return f"<OcularStatus username:{self.username} status:{self.status} color:{self._color}>"
+
+    def __init__(
+        self,
+        ClientSession:common.ClientSession,
+        username:str,
+        scratch_session:"session.Session|None"=None,
+        **entries
+    ) -> None:
+        super().__init__("get",f"https://my-ocular.jeffalo.net/api/user/{username}",ClientSession,scratch_session)
+
+        self.id:int|None = None
+        self.username:str = username
+        self.status:str|None = None
+        self.color:int|None = None
+        self._color:str|None = None
+        self.updated:datetime.datetime|None = None
+        self._user:User|None = None
+
+    def _update_from_dict(self, data:dict) -> None:
+        if data.get("error"): return
+
+        self.id = data.get("_id")
+        self.status = data.get("status")
+        self._color = data.get("color")
+        if isinstance(self._color,str) and self._color.startswith("#"):
+            self.color = int(self._color[1:],16)
+        self.updated = common.to_dt(data.get("meta",{}).get("updated"),self.updated)
+
+    async def get_user(self) -> User:
+        return await base.get_object(self.ClientSession,self.username,User,self.Session)
 
 async def get_user(username:str,*,ClientSession=None) -> User:
     ClientSession = common.create_ClientSession(ClientSession)
