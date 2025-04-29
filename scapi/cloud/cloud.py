@@ -180,8 +180,6 @@ class _BaseCloud:
         value = str(value)
         if not variable.startswith("☁ "):
             variable = "☁ " + variable
-        if not self._check_var(value):
-            raise ValueError
         await self._send(
             {"method": "set","name": variable,"value": str(value)},
             _wait=_wait, project_id=project_id
@@ -194,9 +192,6 @@ class _BaseCloud:
         for k,v in data.items():
             if not k.startswith("☁ "):
                 k = "☁ " + k
-            if not self._check_var(v):
-                warnings.warn(f"{v} won't set ({k})")
-                continue
             packets.append({"method": "set","name": k,"value": str(v)})
         await self._send(*packets,_wait=_wait, project_id=project_id)
         for i in packets:

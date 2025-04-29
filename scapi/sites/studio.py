@@ -48,6 +48,7 @@ class Studio(base._BaseSiteAPI):
         self.manager_count:int = None
         self.project_count:int = None
         self.comment_count:int = None
+        self.curator_count:int|None = None
 
     def _update_from_dict(self, data:dict):
         self.title = data.get("title",self.title)
@@ -58,16 +59,29 @@ class Studio(base._BaseSiteAPI):
         self.comments_allowed = data.get("comments_allowed",self.comments_allowed)
 
         _history:dict = data.get("history",{})
-        self._created = _history.get("created",self._created)
-        self.created = common.to_dt(self._created)
-        self._modified = _history.get("modified",self._modified)
-        self.modified = common.to_dt(self._modified)
+        self._add_datetime("created",_history.get("created"))
+        self._add_datetime("modified",_history.get("modified"))
 
         _stats:dict = data.get("stats",{})
         self.follower_count = _stats.get("followers",self.follower_count)
         self.manager_count = _stats.get("managers",self.manager_count)
         self.project_count = _stats.get("projects",self.project_count)
         self.comment_count = _stats.get("comments",self.comment_count)
+
+    def _update_from_mystuff(self, data:dict):
+        from . import user
+        fields:dict = data.get("fields")
+        self.curator_count = fields.get("curators_count",self.curator_count)
+        self.project_count = fields.get("projecters_count",self.project_count)
+        self.title = fields.get("title",self.title)
+        self._add_datetime("created",fields.get("datetime_created"))
+        self.comment_count = fields.get("commenters_count",self.comment_count)
+        self._add_datetime("modified",fields.get("datetime_modified"))
+
+        _author:dict = fields.get("owner")
+        self.author = user.User(self.ClientSession,_author.get("username",self.Session.username),self.Session)
+        self.author.id = _author.get("pk",self.Session.status.id)
+        self.author.scratchteam = _author.get("admin",self.Session.status.admin)
 
     @property
     def image_url(self) -> str:

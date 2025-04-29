@@ -17,6 +17,7 @@
   - [Studio](#studio)
 - [ユーザー](#ユーザー)
   - [User](#user)
+  - [OcularStatus](#ocularstatus)
 - [コメント](#コメント)
   - [Comment](#comment)
   - [UserComment](#usercomment)
@@ -25,9 +26,11 @@
   - [ForumTopic](#forumtopic)
   - [ForumPost](#forumpost)
   - [ForumStatus](#forumstatus)
+  - [OcularReactions](#ocularreactions)
 - [アクティビティ](#アクティビティ)
   - [Activity](#activity)
   - [ActivityType](#activitytype)
+  - [CloudActivity](#cloudactivity)
 - [クラス](#クラス)
   - [Classroom](#classroom)
 - [アセット](#アセット)
@@ -217,6 +220,37 @@ Scratchのセッションを表すクラス。
 
 ログアウトして、ClientSessionを閉じます。
 
+> await **change_password(old_password,new_password)**
+
+**入力**
+- **old_password** (`str`) 現在使用しているパスワード
+- **new_password** (`str`) 新しいパスワード
+
+**`1.5.0`で追加**
+
+> await **change_country(country)**
+
+**入力**
+- **country** (`str`) 変更先の地域
+
+**`1.5.0`で追加**
+
+> await **change_email(password,email)**
+
+**入力**
+- **password** (`str`) 現在使用しているパスワード
+- **email** (`str`) 変更先のメールアドレス
+
+**`1.5.0`で追加**
+
+> await **delete_account(password,delete_project)**
+
+**入力**
+- **password** (`str`) 現在使用しているパスワード
+- **delete_project** (`bool`) プロジェクトを非共有にするか
+
+**`1.5.0`で追加**
+
 > await **me()** `-> User`
 
 ログインしているアカウントのユーザークラスを取得します。
@@ -224,6 +258,8 @@ Scratchのセッションを表すクラス。
 > **create_Partial_myself()** `-> User`
 
 ログインしているアカウントの部分的なユーザークラスを作成します。
+
+**`1.5.0`で変更** アカウントのユーザークラスに対してキャッシュを作成するようになりました。
 
 Userにある情報:username,id,_join_date,join_date
 
@@ -274,6 +310,41 @@ Userにある情報:username,id,_join_date,join_date
 > async for **viewed_projects(limit=40, offset=0)** `-> Project`
 
 閲覧したプロジェクトの履歴を取得する。
+
+> async for **get_mystuff_project(start_page=1,end_page=1,type="all",sorted="",descending=True)**
+
+**入力**
+- **type** (`str`) 取得するデータの種類。`all` `shared` `notshared` `trashed`が使えます。
+- **sort** (`str`) ソートする内容。 `view_count` `love_count` `remixers_count` `title`が使えます。
+- **descending** (`bool`) ソートの向き
+
+**`1.5.0`で追加**
+
+> async for **get_mystuff_studio(start_page=1,end_page=1,type="all",sorted="",descending=True)**
+
+**入力**
+- **type** (`str`) 取得するデータの種類。`all` `owned` `curated`が使えます。
+- **sort** (`str`) ソートする内容。 `projecters_count` `title`が使えます。
+- **descending** (`bool`) ソートの向き
+
+**`1.5.0`で追加**
+
+> await **upload_asset(data,file_ext="")**
+
+**入力**
+- **data** (`bytes|str`) 画像のバイナリデータか画像のファイルパス
+- **ile_ext** (`str`) (bytesで入れた場合、)ファイルの拡張子
+
+ファイルをアップロードする
+
+**`1.5.0`で追加**
+
+> await **empty_trash(password)**
+
+**入力**
+- **password** アカウントのパスワード
+
+**`1.5.0`で追加**
 
 > **get_cloud(project_id:)** `-> ScratchCloud`
 
@@ -529,6 +600,12 @@ Scratchのプロジェクトページを表すクラス。
 
 > **remix_root** `-> int`
 
+> **comment_count** `-> int|None`
+
+「私の作品」からでのみ取得できる情報。
+
+**`1.5.0`で追加**
+
 > property **_is_owner** `-> bool`
 
 プロジェクトの作者か
@@ -591,6 +668,17 @@ Scratchのプロジェクトページを表すクラス。
 - **notes** (`str|None`) プロジェクトのメモとクレジット欄
 
 プロジェクトページを更新します。`None`は変更せずにそのままになります。
+
+> await **old_edit(title=None,share=None,trash=None)**
+
+**入力**
+- **title** (`str|None`) プロジェクト名
+- **share** (`bool|None`) 共有するか
+- **trash** (`bool|None`) ゴミ箱に入れるかどうか
+
+2.0時代のAPIを使用してプロジェクト情報を更新します。`None`は変更せずにそのままになります。
+
+**`1.5.0`で追加**
 
 > await **set_thumbnail(thumbnail)**
 
@@ -785,6 +873,12 @@ STによるプロジェクトの評価を返す
 > **comment_count** `-> int`
 
 100まで
+
+> **curator_count** `-> int|None`
+
+キュレーターの数? 「私の作品」からでのみ取得できます。
+
+**`1.5.0`で追加**
 
 > property **image_url** `-> str`
 

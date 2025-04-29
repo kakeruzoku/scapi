@@ -86,6 +86,11 @@ class _BaseSiteAPI(ABC):
         await self.session_close()
         return
     
+    def _add_datetime(self, name:str, data:str|None):
+        if data is None: return
+        setattr(self,f"_{name}",data or getattr(self,f"_{name}"))
+        setattr(self,name,common.to_dt(data) or getattr(self,name))
+    
 _T = TypeVar("_T",_BaseSiteAPI,Any)
 
 async def get_object(
@@ -122,24 +127,30 @@ async def get_object_iterator(
         *,
         limit:int|None=None,
         offset:int=0,
-        max_limit=40,
+        max_limit:int=40,
+        is_page:bool=False,
         add_params:dict={},
         custom_func:Callable[[dict,dict],dict[str,Any]]|None=None,
+        update_func_name:str|None=None,
         others:dict={}
     ) -> AsyncGenerator[_T,None]:
     ClientSession = common.create_ClientSession(ClientSession,session)
     c = 0
     limit = limit or max_limit
+    if raw_name is None:
+        raw_name = Class.id_name
+    print(list(range(offset,offset+limit,max_limit)))
     for i in range(offset,offset+limit,max_limit):
-        l = await common.api_iterative(
-            ClientSession,url,
-            limit=max_limit,offset=i,max_limit=max_limit,
-            add_params=add_params
-        )
+        try:
+            l = await common.api_iterative(
+                ClientSession,url,
+                limit=max_limit,offset=i,max_limit=max_limit,
+                add_params=add_params,is_page=is_page
+            )
+        except Exception:
+            return
         if len(l) == 0:
             return
-        if raw_name is None:
-            raw_name = Class.id_name
         for j in l:
             try:
                 if custom_func is None:
@@ -154,12 +165,15 @@ async def get_object_iterator(
                         "scratch_session":session
                     }|custom_func(j,others)
                 _obj = Class(**dicts)
-                _obj._update_from_dict(j)
+                if update_func_name:
+                    getattr(_obj,update_func_name,lambda d: None)(j)
+                else:
+                    _obj._update_from_dict(j)
                 yield _obj
             except Exception as e:
                 print(e)
             c = c + 1
-            if c >= limit: return
+            if c >= limit and not is_page: return
 
 def _comment_iterator_func(data:dict,others:dict):
     return {
