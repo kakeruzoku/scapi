@@ -23,6 +23,6 @@ ScapiはScratch APIを非同期に実行できるPythonモジュールです。
 - [イベント](https://scapi.kakeru.f5.si/ja/event)
 
 # Scapiの作成に参加したいですか?
-[GitHub](https://github.com/kakeruzoku/scapi )でissuesやpull requestsをいつでもお待ちしています！
+[GitHub](https://github.com/kakeruzoku/scapi )でissuesやpull requestsをいつでもお待ちしています！ (devにぷるりくおくってね！)
 
 更新履歴は[こちら](https://scapi.kakeru.f5.si/ja/update )

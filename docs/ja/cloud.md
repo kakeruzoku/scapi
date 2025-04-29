@@ -76,6 +76,8 @@
 
 **`1.4.0`で更新** 引数`project_id`を追加しました。
 
+**`1.5.0`で更新** 値が有効かどうか確認しなくなりました
+
 > **set_vars(self,data,*,project_id=None,_wait:int=None)**
 
 **入力**
@@ -86,6 +88,8 @@
 **`1.2.0`で更新** `_wait`はNoneが指定できるようになり、その場合、timeout値が使用されます。
 
 **`1.4.0`で更新** 引数`project_id`を追加しました。
+
+**`1.5.0`で更新** 値が有効かどうか確認しなくなりました
 
 > **create_var(variable,value=0,*,project_id=None,_wait=None)**
 

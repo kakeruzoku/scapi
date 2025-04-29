@@ -42,8 +42,7 @@ class ScratchNews(base._BaseSiteAPI):
 
     async def _update_from_dict(self, data:dict):
         self.id = data.get("id",self.id)
-        self._timestamp = data.get("stamp",self._timestamp)
-        self.timestamp = common.to_dt(self._timestamp,self.timestamp)
+        self._add_datetime("timestamp",data.get("stamp"))
         self.title = data.get("headline",self.title)
         self.url = data.get("url",self.url)
         self.image_url = data.get("image",self.image_url)

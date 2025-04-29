@@ -48,8 +48,7 @@ class User(base._BaseSiteAPI):
         self.id = data.get("id",self.id)
         self.username = data.get("username",self.username)
         self.scratchteam = data.get("scratchteam",self.scratchteam)
-        self._join_date = data.get("history",{}).get("joined",None)
-        self.join_date = common.to_dt(self._join_date,self.join_date)
+        self._add_datetime("join_date",data.get("history",{}).get("joined",None))
 
         _profile:dict = data.get("profile",{})
         self.about_me = _profile.get("bio",self.about_me)

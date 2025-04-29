@@ -61,6 +61,8 @@ class Project(base._BaseSiteAPI):
         self.remix_parent:int|None = None
         self.remix_root:int|None = None
 
+        self.comment_count:int|None = None
+
     def _update_from_dict(self, data:dict) -> None:
         from .user import User
         _author:dict = data.get("author",{})
@@ -74,12 +76,9 @@ class Project(base._BaseSiteAPI):
         self.project_token:str = data.get("project_token")
 
         _history:dict = data.get("history",{})
-        self._created = _history.get("created",self._created)
-        self.created = common.to_dt(self._created)
-        self._modified = _history.get("modified",self._modified)
-        self.modified = common.to_dt(self._modified)
-        self._shared = _history.get("shared",self._shared)
-        self.shared = common.to_dt(self._shared)
+        self._add_datetime("created",_history.get("created"))
+        self._add_datetime("modified",_history.get("modified"))
+        self._add_datetime("shared",_history.get("shared"))
 
         _remix:dict = data.get("remix",{})
         self.remix_parent = _remix.get("parent",self.remix_parent)
@@ -90,6 +89,28 @@ class Project(base._BaseSiteAPI):
         self.loves = _stats.get("loves",self.loves)
         self.remix_count = _stats.get("remixes",self.remix_count)
         self.views = _stats.get("views",self.views)
+
+        self.comment_count = _stats.get("comments",self.comment_count) #only mystuff
+
+    def _update_from_mystuff(self, data:dict):
+        fields:dict = data.get("fields")
+        from . import user
+        self.views = fields.get("view_count",self.views)
+        self.favorites = fields.get("favorite_count",self.favorites)
+        self.remix_count = fields.get("remixers_count",self.remix_count)
+        _author:dict = fields.get("creator",{})
+        self.author = user.User(self.ClientSession,_author.get("username",self.Session.username),self.Session)
+        self.author.id = _author.get("pk",self.Session.status.id)
+        self.author.scratchteam = _author.get("admin",self.Session.status.admin)
+
+        self.title = fields.get("title",self.title)
+
+        self._add_datetime("created",fields.get("datetime_created"))
+        self._add_datetime("modified",fields.get("datetime_modified"))
+        self._add_datetime("shared",fields.get("datetime_shared"))
+
+        self.loves = fields.get("love_count",self.loves)
+        self.comment_count = fields.get("commenters_count",self.comment_count)
 
     @property
     def _is_owner(self) -> bool:
@@ -253,6 +274,20 @@ class Project(base._BaseSiteAPI):
         self._is_owner_raise()
         r = await self.ClientSession.put(f"https://api.scratch.mit.edu/projects/{self.id}",json=data)
         self._update_from_dict(r.json())
+
+    async def old_edit(
+            self,
+            title:str|None=None,
+            share:bool|None=None,
+            trash:bool|None=None,
+        ):
+        data = {}
+        if share is not None: data["isPublished"] = share
+        if title is not None: data["title"] = title
+        if trash is not None: data["visibility"] = "trshbyusr" if trash else "visible"
+        self._is_owner_raise()
+        await self.ClientSession.put(f"https://scratch.mit.edu/site-api/projects/all/{self.id}/",json=data)
+        self.title = title or self.title
 
     async def set_thumbnail(self,thumbnail:bytes|str):
         self._is_owner_raise()

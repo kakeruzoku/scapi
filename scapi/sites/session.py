@@ -1,7 +1,9 @@
 import datetime
 import re
-from typing import TYPE_CHECKING, AsyncGenerator
+from typing import TYPE_CHECKING, AsyncGenerator,Literal
 import warnings
+import hashlib
+import json
 
 from scapi.cloud.cloud import ScratchCloud
 
@@ -98,6 +100,8 @@ class Session(base._BaseSiteAPI):
         self.username:str = None
         self.banned:bool = None
 
+        self._user:user.User|None = None
+
     def _update_from_dict(self,data):
         self.status = SessionStatus(data)
         self.xtoken = self.status.token
@@ -119,15 +123,57 @@ class Session(base._BaseSiteAPI):
             json={"csrfmiddlewaretoken":"a"}
         )
         await self.ClientSession.close()
+
+    async def change_password(self,old_password:str,new_password:str):
+        data = json.dumps({
+            "csrfmiddlewaretoken": "a",
+            "old_password": old_password,
+            "new_password1": new_password,
+            "new_password2": new_password
+        })
+        r = await self.ClientSession.post(
+            f"https://scratch.mit.edu/accounts/password_change/",
+            data=data
+        )
+        if r.url == f"https://scratch.mit.edu/accounts/password_change/":
+            raise exception.BadResponse(r)
+        
+    async def change_country(self,country:str):
+        await self.ClientSession.post(
+            f"https://scratch.mit.edu/accounts/settings/",
+            data={"country": country}
+        )
+    
+    async def change_email(self,password:str,email:str):
+        await self.ClientSession.post(
+            "https://scratch.mit.edu/accounts/email_change/",
+            data={
+                "email_address": email,
+                "password": password
+            }
+        )
+
+    async def delete_account(self,password:str,delete_project:bool):
+        r = await self.ClientSession.post(
+            "https://scratch.mit.edu/accounts/settings/delete_account/",
+            data={
+                "delete_state": "delbyusrwproj" if delete_project else "delbyusr",
+                "password": password
+            }
+        )
+        d = r.json()
+        if not d.get("success"):
+            raise exception.BadResponse(r)
     
     async def me(self) -> user.User:
-        return await base.get_object(self.ClientSession,self.username,user.User,self)
+        self._user = await base.get_object(self.ClientSession,self.username,user.User,self)
+        return self._user
     
     def create_Partial_myself(self) -> user.User:
-        _user = user.create_Partial_User(self.username,self.status.id,ClientSession=self.ClientSession,session=self)
-        _user._join_date = self.status.dateJoined
-        _user.join_date = self.status.joined_dt
-        return _user
+        self._user = self._user or user.create_Partial_User(self.username,self.status.id,ClientSession=self.ClientSession,session=self)
+        self._user._join_date = self.status.dateJoined
+        self._user.join_date = self.status.joined_dt
+        return self._user
     
     async def my_classroom(self) -> classroom.Classroom|None:
         if self.status.classroomId is None:
@@ -225,6 +271,56 @@ class Session(base._BaseSiteAPI):
             None, project.Project, self.Session, limit=limit, offset=offset
         )
     
+
+    # type: all shared notshared trashed
+    # sorted: view_count love_count remixers_count title
+    def get_mystuff_project(
+            self, start_page:int=1, end_page:int=1, type:str="all", sort:str="", descending:bool=True
+        ) -> AsyncGenerator[project.Project, None]:
+        add_params = {"descsort":sort} if descending else {"ascsort":sort}
+        return base.get_object_iterator(
+            self.ClientSession,f"https://scratch.mit.edu/site-api/projects/{type}/",
+            "pk",project.Project, self,
+            limit=end_page-start_page+1 ,offset=start_page, max_limit=1, is_page=True,
+            add_params=add_params,update_func_name="_update_from_mystuff"
+        )
+    
+    # type: all owned curated
+    # sorted: projecters_count title
+    def get_mystuff_studio(
+            self, start_page:int=1, end_page:int=1, type:str="all", sort:str="", descending:bool=True
+        ) -> AsyncGenerator[studio.Studio, None]:
+        add_params = {"descsort":sort} if descending else {"ascsort":sort}
+        return base.get_object_iterator(
+            self.ClientSession,f"https://scratch.mit.edu/site-api/galleries/{type}/",
+            "pk",studio.Studio, self,
+            limit=end_page-start_page+1 ,offset=start_page, max_limit=1, is_page=True,
+            add_params=add_params,update_func_name="_update_from_mystuff"
+        )
+    
+    async def upload_asset(self,data:str|bytes,file_ext:str="") -> str:
+        data, file_ext = await common.open_tool(data,file_ext)
+        file_ext = file_ext.split(".")[-1]
+        asset_id = hashlib.md5(data).hexdigest()
+
+        await self.ClientSession.post(
+            f"https://assets.scratch.mit.edu/{asset_id}.{file_ext}",
+            data=data,
+        )
+
+        return f"{asset_id}.{file_ext}"
+    
+    async def empty_trash(self,password:str):
+        data = {
+            "password":password,
+            "csrfmiddlewaretoken":"a",
+        }
+        await self.ClientSession.post(
+            "https://scratch.mit.edu/site-api/projects/trashed/empty/",
+            json=data
+        )
+
+    
     def get_cloud(self,project_id:int) -> "ScratchCloud":
         from ..cloud import cloud
         return cloud.ScratchCloud(project_id,self)
@@ -284,11 +380,11 @@ class Session(base._BaseSiteAPI):
     async def link_session(self, *l, **d):
         raise TypeError()
     
-async def session_login(session_id,*,ClientSession=None) -> Session:
+async def session_login(session_id:str,*,ClientSession=None) -> Session:
     return await base.get_object(ClientSession,session_id,Session)
 
 
-async def login(username,password,*,ClientSession=None) -> Session:
+async def login(username:str,password:str,*,ClientSession=None) -> Session:
     _created_cs = ClientSession is None
     if _created_cs: ClientSession = common.create_ClientSession()
     try:

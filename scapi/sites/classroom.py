@@ -34,8 +34,7 @@ class Classroom(base._BaseSiteAPI):
         
     def _update_from_dict(self, data:dict):
         self.title = data.get("title",self.title)
-        self._created = data.get("date_start",self._created)
-        self.created = common.to_dt(self._created,self.created)
+        self._add_datetime("created",data.get("date_start"))
         _author:dict = data.get("educator",{})
         self.educator = user.User(self.ClientSession,_author.get("username",None),self.Session)
         self.educator._update_from_dict(_author)

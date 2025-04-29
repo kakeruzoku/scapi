@@ -16,7 +16,7 @@ _T = TypeVar("_T")
 if TYPE_CHECKING:
     from ..sites import session
 
-__version__ = "1.4.0"
+__version__ = "1.5.0"
 
 headers = {
     "user-agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/75.0.3770.142 Safari/537.36",
@@ -182,6 +182,7 @@ async def api_iterative(
         limit:int|None=None,
         offset:int=0,
         max_limit=40,
+        is_page:bool=False,
         add_params:dict[str,str]={}
     ) -> list[dict]:
     """
@@ -193,10 +194,14 @@ async def api_iterative(
         limit = max_limit
     if limit < 0:
         raise ValueError("limit parameter must be >= 0")
-    
+    if is_page:
+        params = {"page":str(offset)}
+    else:
+        params = {"limit":str(limit),"offset":str(offset)}
+
     r = await session.get(
         url,timeout=10,
-        params=dict(limit=str(limit),offset=str(offset),**add_params)
+        params=params|add_params
     )
     jsons = r.json()
     if not isinstance(jsons,list):
