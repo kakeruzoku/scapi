@@ -51,6 +51,8 @@ class CloudWebsocketEvent(_base._BaseEvent):
     def stop(self):
         asyncio.create_task(self.cloud.close())
         return super().stop()
+    
+CloudEvent = CloudWebsocketEvent
 
 class CloudLogEvent(_base._BaseEvent):
     def __init__(self,project_id:int,ClientSession:common.ClientSession|None=None,interval:float=1):

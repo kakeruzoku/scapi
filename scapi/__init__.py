@@ -112,6 +112,7 @@ from .cloud.cloud import (
 )
 from .cloud.cloud_event import (
     CloudWebsocketEvent,
+    CloudEvent,
     CloudLogEvent,
 )
 from .cloud.server import (

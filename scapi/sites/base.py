@@ -139,7 +139,6 @@ async def get_object_iterator(
     limit = limit or max_limit
     if raw_name is None:
         raw_name = Class.id_name
-    print(list(range(offset,offset+limit,max_limit)))
     for i in range(offset,offset+limit,max_limit):
         try:
             l = await common.api_iterative(
