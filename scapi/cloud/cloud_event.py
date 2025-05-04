@@ -30,9 +30,9 @@ async def _on_disconnect(_self:"cloud._BaseCloud",interval:int):
     _self._event._call_event(f"on_disconnect",interval)
 
 
-class CloudEvent(_base._BaseEvent):
+class CloudWebsocketEvent(_base._BaseEvent):
     def __str__(self) -> str:
-        return f"<CloudEvent cloud:{self.cloud} running:{self._running} event:{self._event.keys()}>"
+        return f"<CloudWebsocketEvent cloud:{self.cloud} running:{self._running} event:{self._event.keys()}>"
 
     def __init__(self,cloud_obj:cloud._BaseCloud):
         super().__init__(0)

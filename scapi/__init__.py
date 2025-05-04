@@ -111,7 +111,7 @@ from .cloud.cloud import (
     ScratchCloud
 )
 from .cloud.cloud_event import (
-    CloudEvent,
+    CloudWebsocketEvent,
     CloudLogEvent,
 )
 from .cloud.server import (

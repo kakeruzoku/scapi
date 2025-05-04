@@ -1,7 +1,7 @@
 import asyncio
 import json
 import time
-from typing import TYPE_CHECKING, Any, AsyncGenerator
+from typing import TYPE_CHECKING, Any, AsyncGenerator, Literal
 import warnings
 import aiohttp
 from ..others import common,error as exception
@@ -33,7 +33,7 @@ class _BaseCloud:
         self.clientsession:common.ClientSession = common.create_ClientSession(clientsession)
         self._websocket:aiohttp.ClientWebSocketResponse|None = None
 
-        self._event:"cloud_event.CloudEvent|None" = None
+        self._event:"cloud_event.CloudWebsocketEvent|cloud_event.CloudLogEvent|None" = None
         self.tasks:asyncio.Task|None = None
 
         self._instruction:bool = False
@@ -238,9 +238,9 @@ class _BaseCloud:
     async def __aexit__(self, exc_type, exc, tb):
         await self.close()
 
-    def event(self) -> "cloud_event.CloudEvent":
+    def _websocket_event(self) -> "cloud_event.CloudWebsocketEvent":
         from . import cloud_event
-        return cloud_event.CloudEvent(self)
+        return cloud_event.CloudWebsocketEvent(self)
 
 class ScratchCloud(_BaseCloud):
     def __str__(self) -> str:
@@ -268,11 +268,34 @@ class ScratchCloud(_BaseCloud):
             custom_func=base._cloud_activity_iterator_func,others={"project_id":self.project_id}
         )
     
-    def log_event(self,interval:float=1) -> "cloud_event.CloudLogEvent":
+    def _log_event(self,interval:float=1) -> "cloud_event.CloudLogEvent":
         from . import cloud_event
         obj = cloud_event.CloudLogEvent(self.project_id,self.clientsession,interval)
         obj.Session = self.Session
         return obj
+    
+    def is_log_active(self) -> bool:
+        try:
+            self.get_logs(limit=1)
+            is_log_active = True
+        except:
+            print("Failed to get logs")
+            is_log_active = False
+        return is_log_active
+
+    def event(self, mode: Literal["auto", "log", "websocket"] = "auto", log_interval: float = 1) -> "cloud_event.CloudWebsocketEvent | cloud_event.CloudLogEvent":
+        if mode == "log":
+            event = self._log_event(log_interval)
+        elif mode == "websocket":
+            event = self._websocket_event()
+        elif mode == "auto":
+            if self.is_log_active():
+                event = self._log_event(log_interval)
+            else:
+                event = self._websocket_event()
+        else:
+            raise ValueError("Unsupported mode specified. Use 'auto', 'log', or 'websocket'.")
+        return event
 
 
 class TurboWarpCloud(_BaseCloud):
