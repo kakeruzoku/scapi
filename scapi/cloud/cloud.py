@@ -33,7 +33,7 @@ class _BaseCloud:
         self.clientsession:common.ClientSession = common.create_ClientSession(clientsession)
         self._websocket:aiohttp.ClientWebSocketResponse|None = None
 
-        self._event:"cloud_event.CloudEvent|None" = None
+        self._event:"cloud_event.CloudWebsocketEvent|cloud_event.CloudLogEvent|None" = None
         self.tasks:asyncio.Task|None = None
 
         self._instruction:bool = False
@@ -238,9 +238,9 @@ class _BaseCloud:
     async def __aexit__(self, exc_type, exc, tb):
         await self.close()
 
-    def event(self) -> "cloud_event.CloudEvent":
+    def event(self) -> "cloud_event.CloudWebsocketEvent":
         from . import cloud_event
-        return cloud_event.CloudEvent(self)
+        return cloud_event.CloudWebsocketEvent(self)
 
 class ScratchCloud(_BaseCloud):
     def __str__(self) -> str:
@@ -273,7 +273,19 @@ class ScratchCloud(_BaseCloud):
         obj = cloud_event.CloudLogEvent(self.project_id,self.clientsession,interval)
         obj.Session = self.Session
         return obj
+    
+    async def is_log_active(self) -> bool:
+        try:
+            [i async for i in self.get_logs(limit=1)]
+            return True
+        except Exception:
+           return False
 
+    async def auto_event(self, log_interval: float = 1) -> "cloud_event.CloudWebsocketEvent | cloud_event.CloudLogEvent":
+        if await self.is_log_active():
+            return self.log_event(log_interval)
+        else:
+            return self.event()
 
 class TurboWarpCloud(_BaseCloud):
     

@@ -3,6 +3,15 @@
 Scapiの更新履歴です。1.0.0以前の更新履歴は[こちら](https://github.com/kakeruzoku/scapi/blob/main/changelog.md )
 
 # 1.x.x
+## 1.6.0
+### 新機能
+- `ScratchCloud.auto_event()` `CloudWebsocketEvent`と`CloudLogEvent`を自動的に選択します。
+
+### 更新/修正
+- デバック時に使用していた関するの削除忘れを修正
+- `CloudEvent`が`CloudWebsocketEvent`に変更。(引き続き`CloudEvent`も使用できます。)
+
+
 ## 1.5.0
 ### 新機能
 - 私の作品欄のAPIを追加
