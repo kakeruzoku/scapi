@@ -9,12 +9,8 @@ from ..others import error as exception
 
 if TYPE_CHECKING:
     from .session import Session as Scratch_Session
-    from .comment import Comment
-    from .studio import Studio
-    from .project import Project
 
 class _BaseSiteAPI(ABC):
-    raise_class = exception.ObjectNotFound
     id_name = ""
 
     def __init__(
@@ -27,7 +23,7 @@ class _BaseSiteAPI(ABC):
         self.update_url:str = update_url
         self._Session:"Scratch_Session|None" = Session
         self._raw:dict|str|None = None
-        self.chack:bool = True
+        self.check:bool = True
 
     async def update(self) -> None:
         if self.update_type == "get": func = self.ClientSession.get
@@ -35,9 +31,9 @@ class _BaseSiteAPI(ABC):
         elif self.update_type == "put": func = self.ClientSession.put
         elif self.update_type == "delete": func = self.ClientSession.delete
         else: raise ValueError()
-        response = (await func(self.update_url,timeout=10)).json()
+        response = (await func(self.update_url)).json()
         if not isinstance(response,(dict,list)):
-            raise self.raise_class(self.__class__,TypeError)
+            raise exception.ObjectNotFound(self.__class__,TypeError)
         self._raw = response.copy()
         return self._update_from_dict(response)
     
@@ -61,7 +57,7 @@ class _BaseSiteAPI(ABC):
         return self._Session
         
     def has_session_raise(self):
-        if self.chack and not self.has_session:
+        if self.check and not self.has_session:
             raise exception.NoSession()
         
     async def link_session(self,session:"Scratch_Session",if_close:bool=False) -> "Scratch_Session|None":
@@ -96,28 +92,45 @@ _T = TypeVar("_T",_BaseSiteAPI,Any)
 async def get_object(
         ClientSession:common.ClientSession|None,
         id:Any,Class:type[_T],
-        session:"Scratch_Session|None"=None
+        session:"Scratch_Session|None"=None,
+        custom_func:Callable[[Any,dict],dict[str,Any]]|None=None,
+        update_func_name:str|None=None,
+        others:dict={}
     ) -> _T:
     if_close = ClientSession is None
     ClientSession = common.create_ClientSession(ClientSession,session)
     try:
-        dicts = {
-            "ClientSession":ClientSession,
-            Class.id_name:id,
-            "scratch_session":session
-        }
+        if custom_func is None:
+            dicts = {
+                "ClientSession":ClientSession,
+                Class.id_name:id,
+                "scratch_session":session
+            }
+        else:
+            dicts = {
+                "ClientSession":ClientSession,
+                "scratch_session":session
+            }|custom_func(id,others)
         _object = Class(**dicts)
-        await _object.update()
+        if update_func_name:
+            await getattr(_object,update_func_name)()
+        else:
+            await _object.update()
         return _object
     except (KeyError, exception.BadRequest) as e:
         if if_close: await ClientSession.close()
-        raise Class.raise_class(Class,e)
+        raise exception.ObjectNotFound(Class,e)
     except Exception as e:
         import traceback
         traceback.print_exc()
         if if_close: await ClientSession.close()
         raise exception.ObjectFetchError(Class,e)
 
+def _comment_get_func(id,others:dict):
+    return {
+        "id":id,
+        "place":others.get("place"),
+    }
 
 async def get_object_iterator(
         ClientSession:common.ClientSession|None,
@@ -176,11 +189,8 @@ async def get_object_iterator(
 
 def _comment_iterator_func(data:dict,others:dict):
     return {
-        "data":{
-            "place":others.get("plece"),
-            "id":data.get("id"),
-            "data":data
-        }
+        "id":data.get("id"),
+        "place":data.get("place"),
     }
 
 def _cloud_activity_iterator_func(data:dict,others:dict):

@@ -2,228 +2,304 @@ import datetime
 import random
 from typing import AsyncGenerator, Literal, TypedDict, TYPE_CHECKING, overload
 import warnings
+import json
+import bs4
 
 from ..others import  common
 from ..others import error as exception
 from . import base
 
 if TYPE_CHECKING:
-    from .session import Session
-    from .user import User
-    from .studio import Studio
-    from .project import Project
+    from . import session,user,studio,project
 
-class CommentData(TypedDict):
-    place:"Project|Studio"
-    id:int
-    data:dict|None
-
-_FALSE:bool = False
 
 class Comment(base._BaseSiteAPI):
-    raise_class = exception.CommentNotFound
-    id_name = "data"
-
-    def __str__(self):
-        return f"<Comment id:{self.id} content:{self.content} place:{self.place} user:{self.author} Session:{self.Session}>"
+    id_name = "id"
 
     def __init__(
-        self,
-        ClientSession:common.ClientSession,
-        data:CommentData,
-        scratch_session:"Session|None"=None,
-        **entries
-    ) -> None:
-        from .user import User
-        from .studio import Studio
-        from .project import Project
-        
-        self.place:Project|Studio = data.get("place")
-        self.id:int = data.get("id")
-        self.type:Literal["Project"]|Literal["Studio"] = None
+            self,
+            ClientSession:common.ClientSession,
+            id:int,
+            place:"project.Project|studio.Studio|user.User",
+            scratch_session:"session.Session|None"=None,
+            **entries
+        ):
+        from . import session,user,studio,project
 
-        if isinstance(self.place,Project):
+        self.id = id
+        self.place:"project.Project|studio.Studio|user.User" = place
+        self.type:Literal["Project","Studio","User"]
+        if isinstance(self.place,project.Project):
             self.type = "Project"
-            if (self.place.author is None) or _FALSE:
-                super().__init__("get",f"",ClientSession,scratch_session)
-            else:
-                super().__init__("get",
-                    f"https://api.scratch.mit.edu/users/{self.place.author.username}/projects/{self.place.id}/comments/{self.id}",
-                    ClientSession,scratch_session
-                )
-        elif isinstance(self.place,Studio):
+        elif isinstance(self.place,studio.Studio):
             self.type = "Studio"
-            super().__init__("get",
-                f"https://api.scratch.mit.edu/studios/{self.place.id}/comments/{self.id}",
-                ClientSession,scratch_session
-            )
+        elif isinstance(self.place,user.User):
+            self.type = "User"
         else:
-            raise ValueError
-            
+            raise TypeError()
+        
+        super().__init__("get","",ClientSession,scratch_session)
+
         self.parent_id:int|None = None
         self.commentee_id:int|None = None
         self.content:str = None
-        self.sent_dt:datetime.datetime = None
-        self.author:User = None
+        self._sent:str = None
+        self.sent:datetime.datetime = None
+        self.author:"user.User" = None
         self.reply_count:int = None
 
         self._parent_cache:"Comment|None" = None
-        if data.get("data",None) is not None:
-            self._update_from_dict(data.get("data"))
+        self._reply_cache:"list[Comment]|None" = None
 
     @property
-    def _is_me(self) -> bool:
-        if isinstance(self.Session,Session):
-            if self.Session.username == self.author.username:
-                return True
+    @common.deprecated("Comment","sent_dt","sent")
+    def sent_dt(self) -> datetime.datetime:
+        return self.sent
+
+    async def _update_comment_old_api(self):
+        r = await self.place.get_comment_by_id(self.id,True)
+        self.parent_id = r.parent_id
+        self.commentee_id = r.commentee_id
+        self.content = r.content
+        self.sent = r.sent
+        self.author = r.author
+        self.reply_count = r.reply_count
+        self._parent_cache = r._parent_cache
+        self._reply_cache = r._reply_cache
+        
+    async def update(self,is_old:bool|None=None) -> bool: #is_old
+        # bool→指定 None→できるだけNew
+        if self.type == "Project": #3.0は作者情報が必須
+            author_username:str|None = self.place.author and self.place.author.username
+            if is_old is None:
+                is_old = author_username is None
+
+            if is_old:
+                return await self._update_comment_old_api()
+            else:
+                if author_username is None: raise exception.NoDataError()
+                self.update_url = f"https://api.scratch.mit.edu/users/{author_username}/projects/{self.place.id}/comments/{self.id}"
+                await super().update()
+        elif self.type == "Studio": #基本3.0
+            if is_old == True:
+                return await self._update_comment_old_api()
+            else:
+                self.update_url = f"https://api.scratch.mit.edu/studios/{self.place.id}/comments/{self.id}"
+                await super().update()
+        elif self.type == "User": #2.0APIのみ
+            if is_old == True: raise ValueError()
+            return await self._update_comment_old_api()
+        else:
+            raise TypeError()
         return False
     
-    def _is_me_raise(self) -> None:
-        if self.chack and not self._is_me:
-            raise exception.NoPermission
-        
-    def __int__(self) -> int: return self.id
-    def __eq__(self,value) -> bool: return isinstance(value,Comment) and self.id == value.id
-    def __ne__(self,value) -> bool: return isinstance(value,Comment) and self.id != value.id
-    def __lt__(self,value) -> bool: return isinstance(value,Comment) and self.id < value.id
-    def __gt__(self,value) -> bool: return isinstance(value,Comment) and self.id > value.id
-    def __le__(self,value) -> bool: return isinstance(value,Comment) and self.id <= value.id
-    def __ge__(self,value) -> bool: return isinstance(value,Comment) and self.id >= value.id
-
     def _update_from_dict(self, data:dict) -> None:
         from .user import User
         self.parent_id = data.get("parent_id",self.parent_id)
         self.commentee_id = data.get("commentee_id",self.commentee_id)
         self.content = data.get("content",self.content)
-        self.sent_dt = common.to_dt(data.get("datetime_created"),self.sent_dt)
+        self._add_datetime("sent",data.get("datetime_created"))
         _author:dict = data.get("author",{})
-        self.author = User(
-            self.ClientSession,_author.get("username"),self.Session
-        )
+        self.author = User(self.ClientSession,_author.get("username"),self.Session)
         self.author._update_from_dict(_author)
         self.reply_count = data.get("reply_count",self.reply_count)
 
-    async def get_parent_comment(self,use_cache:bool=True) -> "Comment|None":
-        if (self._parent_cache is not None) and (use_cache):
-            return self._parent_cache
-        if self.parent_id is None:
-            return None
-        self._parent_cache = await self.place.get_comment_by_id(self.parent_id)
-        return self._parent_cache
+        #User Comment Only
+        self._reply_cache = data.get("_reply_cache",self._reply_cache)
+        self._parent_cache = data.get("_parent_cache",self._parent_cache)
+
+    async def reply(self, content, *, commentee:"user.User|int|None"=None,is_old:bool|None=None):
+        if is_old is None:
+            is_old = self.type == "User"
+        return await self.place.post_comment(content,self,commentee,is_old)
+
+    async def get_replies(self, *, limit=40, offset=0):
+        if self.type == "Project":
+            if ((self.place.author and self.place.author.username) is None):
+                return self._get_replies(limit,offset)
+            return base.get_object_iterator(
+                self.ClientSession,
+                f"https://api.scratch.mit.edu/users/{self.place.author.username}/projects/{self.place.id}/comments/{self.id}/replies/",
+                None,Comment,limit=limit,offset=offset,add_params={"cachebust":random.randint(0,9999)},
+                custom_func=base._comment_iterator_func, others={"plece":self}
+            )
+        elif self.type == "User":
+            return self._get_replies(limit,offset)
+        elif self.type == "Studio":
+            return base.get_object_iterator(
+                self.ClientSession,
+                f"https://api.scratch.mit.edu/studios/{self.place.id}/comments/{self.id}/replies/",
+                None,Comment,limit=limit,offset=offset,add_params={"cachebust":random.randint(0,9999)},
+                custom_func=base._comment_iterator_func, others={"plece":self}
+            )
+
+
+    async def _get_replies(self, limit:int, offset:int) -> AsyncGenerator["Comment",None]:
+        common.no_data_checker(self._reply_cache)
+        for c in self._reply_cache[offset:limit+offset]:
+            yield c
+
+    async def delete(self,is_old:bool|None) -> bool:
+        self.has_session_raise()
+        if is_old is None:
+            is_old = self.type == "User"
+        if is_old:
+            data = {"id":str(self.id)}
+            if self.type == "Project":
+                url = f"https://scratch.mit.edu/site-api/comments/project/{self.place.id}/del/"
+            elif self.type == "Studio":
+                url = f"https://scratch.mit.edu/site-api/comments/gallery/{self.place.id}/del/"
+            elif self.type == "User":
+                url = f"https://scratch.mit.edu/site-api/comments/user/{self.place.username}/del/"
+            else:
+                raise ValueError()
+            r = await self.ClientSession.post(url,json=data)
+        else:
+            data = {"reportId":None}
+            if self.type == "Project":
+                url = f"https://api.scratch.mit.edu/proxy/comments/project/{self.place.id}/comment/{self.id}"
+            elif self.type == "Studio":
+                url = f"https://api.scratch.mit.edu/proxy/comments/studio/{self.place.id}/comment/{self.id}"
+            else:
+                raise ValueError()
+            r = await self.ClientSession.delete(url,json=data)
+        
+        return r.status_code == 200
+    
+    async def report(self,is_old:bool|None):
+        self.has_session_raise()
+        if is_old is None:
+            is_old = self.type == "User"
+        if is_old:
+            data = {"id":str(self.id)}
+            if self.type == "Project":
+                url = f"https://scratch.mit.edu/site-api/comments/project/{self.place.id}/rep/"
+            elif self.type == "Studio":
+                url = f"https://scratch.mit.edu/site-api/comments/gallery/{self.place.id}/rep/"
+            elif self.type == "User":
+                url = f"https://scratch.mit.edu/site-api/comments/user/{self.place.username}/rep/"
+            else:
+                raise ValueError()
+        else:
+            data = {"reportId":None}
+            if self.type == "Project":
+                url = f"https://api.scratch.mit.edu/proxy/project/{self.place.id}/comment/{self.id}/report"
+            elif self.type == "Studio":
+                url = f"https://api.scratch.mit.edu/proxy/studio/{self.place.id}/comment/{self.id}/report"
+            else:
+                raise ValueError()
+        r = await self.ClientSession.post(url,json=data)
+        return r.status_code == 200
+        
+
         
     
-    def get_replies(self, *, limit=40, offset=0) -> AsyncGenerator["Comment",None]:
-        return base.get_object_iterator(
-            self.ClientSession,f"{self.update_url}/replies/",None,Comment,
-            limit=limit,offset=offset,add_params={"cachebust":random.randint(0,9999)},
-            custom_func=base._comment_iterator_func, others={"plece":self}
-        )
-
-    async def reply(self, content, *, commentee_id:"int|User|None"=None) -> "Comment":
-        return await self.place.post_comment(
-            content,commentee=self.author.id if commentee_id is None else commentee_id,
-            parent=self.id if self.parent_id is None else self.parent_id
-        )
-
-    async def delete(self) -> bool:
-        self.has_session_raise()
-        if self.type == "Project":
-            return (await self.ClientSession.delete(f"https://api.scratch.mit.edu/proxy/comments/project/{self.place.id}/comment/{self.id}",data="{}")).status_code == 200
-        elif self.type == "Studio":
-            return (await self.ClientSession.delete(f"https://api.scratch.mit.edu/proxy/comments/studio/{self.place.id}/comment/{self.id}",data="{}")).status_code == 200
-        raise TypeError()
-
-    async def report(self) -> bool:
-        self.has_session_raise()
-        if self.type == "Project":
-            return (await self.ClientSession.post(f"https://api.scratch.mit.edu/proxy/project/{self.place.id}/comment/{self.id}/report",json={"reportId":None})).status_code == 200
-        elif self.type == "Studio":
-            return (await self.ClientSession.post(f"https://api.scratch.mit.edu/proxy/studio/{self.place.id}/comment/{self.id}/report",json={"reportId":None})).status_code == 200
-        raise TypeError()
-
-class UserComment(Comment):
-    def __init__(self,user,ClientSession:common.ClientSession,scratch_session:"Session|None"=None):
-        self._ClientSession:common.ClientSession = ClientSession
-        self.update_type = ""
-        self.update_url = ""
-        self._Session:Session|None = scratch_session
-        self._raw = None
-
-        self.place:User = user
-        self.id:int = None
-        self.type:Literal["User"] = "User"
-
-        self.parent_id:int|None = None
-        self.commentee_id:int|None = None
-        self.content:str = None
-        self.sent_dt:datetime.datetime = None
-        self.author:User = None
-        self.reply_count:int = None
-
-        self._parent_cache:"UserComment|None" = None
-        self._reply_cache:"list[UserComment]" = None
-        self.page:int = 1
-        
-    async def update(self):
-        r = await self.place.get_comment_by_id(self.id,self.page)
-        self.parent_id = r.parent_id
-        self.commentee_id = r.commentee_id
-        self.content = r.content
-        self.sent_dt = r.sent_dt
-        self.author = r.author
-        self.reply_count = r.reply_count
-        self._parent_cache = r._parent_cache
-        self._reply_cache = r._reply_cache
-
-    def _update_from_dict(self, data:dict) -> None:
-        super()._update_from_dict(data)
-        self._reply_cache = data.get("_reply_cache",[])
-        self.id = data.get("id")
-        self._parent_cache = data.get("_parent_cache",None)
-        self.page = data.get("page",self.page)
-
-    async def get_replies(self, *, limit=40, offset=0) -> AsyncGenerator["UserComment",None]:
-        for i in self._reply_cache[offset:offset+limit]:
-            yield i
-
-    async def reply(self, content, *, commentee_id=None) -> "UserComment":
-        return await self.place.post_comment(
-            content,commentee=self.author.id if commentee_id is None else commentee_id,
-            parent=self.id if self.parent_id is None else self.parent_id
-        )
-
-    async def delete(self) -> bool:
-        return (await self.ClientSession.post(
-            f"https://scratch.mit.edu/site-api/comments/user/{self.place.username}/del/",
-            json={"id":str(self.id)})).status_code == 200
+async def _post_comment(
+        obj:"project.Project|studio.Studio|user.User",
+        url:str,
+        is_old:bool,
+        content:str,
+        commentee_id:int,
+        parent_id:int
+    ) -> Comment:
+    obj.has_session_raise()
+    header = obj.ClientSession._header if is_old else obj.ClientSession._header|{"referer":obj.url}
+    text = (await obj.ClientSession.post(url,json={
+        "commentee_id": commentee_id or "",
+        "content": str(content),
+        "parent_id": parent_id or "",
+    },header=header)).text
+    if is_old:
+        if text.strip().startswith('<script id="error-data" type="application/json">'):#エラー
+            data:dict = json.loads(common.split(text,'type="application/json">',"</script>"))
+            raise exception.CommentFailure(data.get("error"))
     
-    async def report(self) -> bool:
-        self.has_session_raise()
-        return (await self.ClientSession.post(
-            f"https://scratch.mit.edu/site-api/comments/user/{self.place.username}/rep/",
-            json={"id":str(self.id)})).status_code == 200
+        c = Comment(obj.ClientSession,common.split_int(text,"data-comment-id=\"","\">"),obj,obj.Session)
 
-@overload
-def create_Partial_Comment(comment_id:int,place:"Project|Studio",content:str|None=None,author:"User|None"=None,*,ClientSession:common.ClientSession|None=None,session:"Session|None"=None) -> Comment: ...
+        c._update_from_dict({
+            "parent_id":parent_id,
+            "commentee_id":commentee_id,
+            "datetime_create":common.split(text,"<span class=\"time\" title=\"","\">"),
+            "content":content,
+            "author":{
+                "username":common.split(text,"data-comment-user=\"","\">"),
+                "id":common.split_int(text,"src=\"//cdn2.scratch.mit.edu/get_image/user/","_")
+            },
+            "reply_count":0,"page":1,"_reply_cache":[]
+        })
 
-@overload
-def create_Partial_Comment(comment_id:int,place:"User",content:str|None=None,author:"User|None"=None,*,ClientSession:common.ClientSession|None=None,session:"Session|None"=None) -> UserComment: ...
-
-
-def create_Partial_Comment(comment_id:int,place:"Project|Studio|User",content:str|None=None,author:"User|None"=None,*,ClientSession:common.ClientSession|None=None,session:"Session|None"=None) -> Comment|UserComment:
-    from .user import User
-    from .studio import Studio
-    from .project import Project
-    ClientSession = common.create_ClientSession(ClientSession,session)
-    if isinstance(place, (Project,Studio)):
-        _comment = Comment(ClientSession,{"place":place,"id":comment_id,"data":None},session)
-    elif isinstance(place, User):
-        _comment = UserComment(place,ClientSession,session)
+        if c.id is None:
+            raise exception.NoPermission()
     else:
-        raise ValueError
+        resp = json.loads(text)
+        if "rejected" in resp:
+            raise exception.CommentFailure(resp["rejected"])
+        
+        c = Comment(obj.ClientSession,resp["id"],obj,obj.Session)
+        c._update_from_dict(resp)
+    return c
+
+async def _get_comment_old_api_by_id(
+        obj:"project.Project|studio.Studio|user.User",url:str,id:int
+    ):
+    id = int(id)
+    async for i in _get_comments_old_api(obj,url,start_page=1,end_page=67):
+        if id == i.id:
+            return i
+        for r in i._reply_cache or []:
+            if id == r.id:
+                return r
+    raise exception.ObjectNotFound(Comment,ValueError)
+
+async def _get_comments_old_api(
+        obj:"project.Project|studio.Studio|user.User",url:str, *, start_page:int=1, end_page:int=1
+    ) -> AsyncGenerator[Comment, None]:
+    if end_page > 67:
+        end_page = 67
+    for i in range(start_page,end_page+1):
+        r = await obj.ClientSession.get(url,check=False,params={"page":i})
+        if r.status_code == 404: return
+        if r.status_code == 503: raise exception.ObjectNotFound(obj.__class__,exception.ServerError(r))
+        soup = bs4.BeautifulSoup(r.text, "html.parser")
+        _comments:bs4.element.ResultSet[bs4.element.Tag] = soup.find_all("li", {"class": "top-level-reply"})
+
+        for _comment in _comments:
+            id = int(_comment.find("div", {"class": "comment"})['data-comment-id'])
+            username:str = _comment.find("a", {"id": "comment-user"})['data-comment-user']
+            userid = int(_comment.find("a",{"class":"reply"})["data-commentee-id"])
+
+            content = str(_comment.find("div", {"class": "content"}).text).strip()
+            send_dt = _comment.find("span", {"class": "time"})['title']
+
+            main = Comment(obj.ClientSession,id,obj,obj.Session)
+            replies:bs4.element.ResultSet[bs4.element.Tag] = _comment.find_all("li", {"class": "reply"})
+            replies_obj:list[Comment] = []
+            for reply in replies:
+                r_id = int(reply.find("div", {"class": "comment"})['data-comment-id'])
+                r_username:str = reply.find("a", {"id": "comment-user"})['data-comment-user']
+
+                r_userid = int(reply.find("a",{"class":"reply"})["data-commentee-id"])
+                r_content = str(reply.find("div", {"class": "content"}).text).strip()
+                r_send_dt = reply.find("span", {"class": "time"})['title']
+                reply_obj = Comment(obj.ClientSession,id,obj,obj.Session)
+                reply_obj._update_from_dict({
+                    "id":r_id,"parent_id":id,"commentee_id":None,"content":r_content,"datetime_created":r_send_dt,"author":{"username":r_username,"id":r_userid},"_parent_cache":main,"reply_count":0
+                })
+                replies_obj.append(reply_obj)
+
+            main._update_from_dict({
+                "id":id,"parent_id":None,"commentee_id":None,"content":content,"datetime_created":send_dt,
+                "author":{"username":username,"id":userid},
+                "_reply_cache":replies_obj,"reply_count":len(replies_obj)
+            })
+            yield main
+
+
+
+def create_Partial_Comment(comment_id:int,place:"project.Project|studio.Studio|user.User",content:str|None=None,author:"user.User|None"=None,*,ClientSession:common.ClientSession|None=None,session:"session.Session|None"=None) -> Comment:
+    ClientSession = common.create_ClientSession(ClientSession,session)
+    _comment = Comment(ClientSession,comment_id,place,session)
     _comment.id = comment_id
     _comment.author = author or _comment.author
     _comment.content = content or _comment.content
     return _comment
-
-

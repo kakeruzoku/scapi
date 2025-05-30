@@ -16,7 +16,7 @@ _T = TypeVar("_T")
 if TYPE_CHECKING:
     from ..sites import session
 
-__version__ = "1.6.0"
+__version__ = "2.0.0"
 
 headers = {
     "user-agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/75.0.3770.142 Safari/537.36",
@@ -89,6 +89,8 @@ class ClientSession(aiohttp.ClientSession):
             raise exceptions.IPBanned(response)
         if response.url.startswith("https://scratch.mit.edu/accounts/banned-response"):
             raise exceptions.AccountBrocked(response)
+        if response.url.startswith("https://scratch.mit.edu/accounts/login/"):
+            raise exceptions.Unauthorized(response)
         if response.status_code in [403,401]:
             raise exceptions.Unauthorized(response)
         if response.status_code in [429]:
@@ -123,6 +125,7 @@ class ClientSession(aiohttp.ClientSession):
                 proxy=self._proxy,proxy_auth=self._proxy_auth,**d
             ) as response:
                 r = Response(response,await response.read())
+                #print("\n".join([str(r),str(data or json),r.url,r.text[:2000],str(r)]))
                 response.close()
         except Exception as e:
             raise exceptions.HTTPFetchError(e)
@@ -254,9 +257,8 @@ async def downloader(
 
 async def open_tool(inp:str|bytes,default_filename:str) -> tuple[bytes, str]:
     if isinstance(inp,str):
-        if inp.endswith("/"): inp = inp[:-1]
         async with aiofiles.open(inp,"br") as f:
-            return await f.read(), inp.split("/")[-1]
+            return await f.read(), os.path.basename(inp)
     elif isinstance(inp,bytes):
         return inp,default_filename
     raise TypeError
@@ -342,3 +344,12 @@ BIG = 99999999
 
 async def do_nothing(*l,**d):
     return
+
+def deprecated(class_name:str,old:str,new:str) -> Callable[[_T], _T]:
+    def inner(f:_T) -> _T:
+        def deprecated_func(*l,**d):
+            print(f"Function {old} in class {class_name} is deprecated."
+                  f"\nUse the new {new} function")
+            return f()
+        return deprecated_func
+    return inner

@@ -20,16 +20,7 @@ if TYPE_CHECKING:
   - NoPermission 権限なし
 - LoginFailure ログイン失敗
 - ObjectFetchError get_objectでエラー
-  - ObjectNotFound get_objectでなかったとき
-    - SessionNotFound Sessionがなかった時
-    - UserNotFound ユーザーない
-    - ProjectNotFound プロジェクトない
-    - StudioNotFound スタジオない
-    - CommentNotFound コメントない
-    - ForumNotFound フォーラム関連
-      - ForumTopicNotFound とぴっくない
-      - ForumPostNotFound
-    - ClassroomNotFound
+  - ObjectNotFound なにかを取得しようとしてなかったとき
 - NoDataError Partial系のデータで、データが存在しないとき
 """
 
@@ -77,31 +68,11 @@ class CommentFailure(Exception):
 
 class ObjectFetchError(Exception):
     "エラー"
-    def __init__(self,Class:"type[_BaseSiteAPI]",error):
+    def __init__(self,Class:"type[_BaseSiteAPI]",error=None):
         self.Class = Class
         self.error = error
 class ObjectNotFound(ObjectFetchError):
     "404"
-class SessionNotFound(ObjectNotFound):
-    pass
-class UserNotFound(ObjectNotFound):
-    pass
-class ProjectNotFound(ObjectNotFound):
-    pass
-class RemixTreeNotFound(ObjectNotFound):
-    pass
-class StudioNotFound(ObjectNotFound):
-    pass
-class CommentNotFound(ObjectNotFound):
-    pass
-class ForumTopicNotFound(ObjectNotFound):
-    pass
-class ForumPostNotFound(ObjectNotFound):
-    pass
-class ClassroomNotFound(ObjectNotFound):
-    pass
-class AssetNotFound(ObjectNotFound):
-    pass
 
 class NoDataError(Exception):
     "データ不足"

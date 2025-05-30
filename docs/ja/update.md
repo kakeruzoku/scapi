@@ -1,6 +1,37 @@
 # 更新履歴
 
 Scapiの更新履歴です。1.0.0以前の更新履歴は[こちら](https://github.com/kakeruzoku/scapi/blob/main/changelog.md )
+# 2.x.x
+## 2.0.0
+### 破壊的変更
+- `*****NotFound`が削除され、`ObjectNotFound`に統一されました。
+- Comment
+  - `UserComment`が削除され、`User`に統一されました。
+  - `sent_dt`は`sent`に変更されました。
+
+### 新機能
+- 教師アカウント関連のAPIの追加
+  - `Classroom`
+    - クラスの作成
+    - クラスの編集機能の追加
+    - クラススタジオの作成
+    - 教師アカウント向けのクラス/アクティビティ/生徒/スタジオの取得
+    - 生徒のパスワードの編集
+  - `Activity`でクラスでの(教師向けの)アクティビティに対応
+  - `User`
+    - パスワードを変更(またはリセット)可能
+- スタジオ・ユーザー・プロジェクトでの報告機能の追加
+- Scratcher招待関連のAPIの追加
+- 非推奨機能の通知
+
+### 更新/修正
+- Session
+  - SessionIDでのログインが失敗する問題を修正
+  - Sessionの更新時に新しくstatusクラスが作成されないように(`update`で更新されるように)修正
+  - スタジオ作成時に`Studio`クラスに`Session`が入らない問題を修正
+  - `get_mystuff_project` `get_mystuff_studio` をそれぞれ `get_mystuff_projects` `get_mystuff_studios`に変更
+- 権限チェックを行うかの設定`_BaseSiteAPI.check`が`chack`になっていた問題を修正
+- そのた微弱な(利用上の変更のない)修正
 
 # 1.x.x
 ## 1.6.0

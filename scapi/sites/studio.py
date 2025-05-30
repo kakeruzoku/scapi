@@ -1,13 +1,13 @@
 import datetime
 import json
 import random
-from typing import AsyncGenerator, TYPE_CHECKING, TypedDict
+from typing import AsyncGenerator, TYPE_CHECKING, Literal, TypedDict
+import aiohttp
 
 
 from ..others import common as common
 from ..others import error as exception
-from . import base,activity
-from .comment import Comment,UserComment
+from . import base,activity,comment
 from . import project
 
 if TYPE_CHECKING:
@@ -16,7 +16,6 @@ if TYPE_CHECKING:
     from ..event.comment import CommentEvent
 
 class Studio(base._BaseSiteAPI):
-    raise_class = exception.StudioNotFound
     id_name = "id"
 
     def __str__(self):
@@ -68,9 +67,8 @@ class Studio(base._BaseSiteAPI):
         self.project_count = _stats.get("projects",self.project_count)
         self.comment_count = _stats.get("comments",self.comment_count)
 
-    def _update_from_mystuff(self, data:dict):
+    def _update_from_old_dict(self, fields:dict):
         from . import user
-        fields:dict = data.get("fields")
         self.curator_count = fields.get("curators_count",self.curator_count)
         self.project_count = fields.get("projecters_count",self.project_count)
         self.title = fields.get("title",self.title)
@@ -82,6 +80,9 @@ class Studio(base._BaseSiteAPI):
         self.author = user.User(self.ClientSession,_author.get("username",self.Session.username),self.Session)
         self.author.id = _author.get("pk",self.Session.status.id)
         self.author.scratchteam = _author.get("admin",self.Session.status.admin)
+    
+    def _update_from_mystuff(self, data:dict):
+        self._update_from_old_dict(data.get("fields"))
 
     @property
     def image_url(self) -> str:
@@ -100,7 +101,7 @@ class Studio(base._BaseSiteAPI):
         return False
     
     def _is_owner_raise(self) -> None:
-        if self.chack and not self._is_owner:
+        if self.check and not self._is_owner:
             raise exception.NoPermission
 
     def __int__(self) -> int: return self.id
@@ -111,65 +112,39 @@ class Studio(base._BaseSiteAPI):
     def __le__(self,value) -> bool: return isinstance(value,Studio) and self.id <= value.id
     def __ge__(self,value) -> bool: return isinstance(value,Studio) and self.id >= value.id
 
-    async def get_comment_by_id(self,id:int) -> Comment:
-        return await base.get_object(
-            self.ClientSession,{"place":self,"id":id,"data":None},Comment,self.Session
-        )
-
-    def get_comments(self, *, limit=40, offset=0) -> AsyncGenerator[Comment, None]:
-        return base.get_object_iterator(
-            self.ClientSession,f"https://api.scratch.mit.edu/studios/{self.id}/comments",None,Comment,
-            limit=limit,offset=offset,add_params={"cachebust":random.randint(0,9999)},
-            custom_func=base._comment_iterator_func, others={"plece":self}
-        )
     
-    async def post_comment(self, content:str, parent:int|Comment|None=None, commentee:"int|user.User|None"=None, is_old:bool=False) -> Comment:
-        self.has_session_raise()
-        data = {
-            "commentee_id": "" if commentee is None else common.get_id(commentee),
-            "content": str(content),
-            "parent_id": "" if parent is None else common.get_id(parent),
-        }
-        header = self.ClientSession._header|{
-            "referer":self.url
-        }
-        if is_old:
-            text = (await self.ClientSession.post(
-                f"https://scratch.mit.edu/site-api/comments/gallery/{self.id}/add/",json=data
-            )).text
-            if text.strip().startswith('<script id="error-data" type="application/json">'):#エラー
-                data:dict = json.loads(common.split(text,'type="application/json">',"</script>"))
-                raise exception.CommentFailure(data.get("error"))
+    async def get_comment_by_id(self,id:int,is_old:bool|None=None) -> comment.Comment:
+        is_old = bool(is_old)
 
-            c = Comment(
-                self.ClientSession,
-                {"place":self,"id":common.split_int(text,"data-comment-id=\"","\">")},
-                self.Session
-            )
-            c._update_from_dict({
-                "parent_id":None if parent == "" else parent,
-                "commentee_id":None if commentee == "" else commentee,
-                "datetime_create":common.split(text,"<span class=\"time\" title=\"","\">"),
-                "content":content,
-                "author":{
-                    "username":common.split(text,"data-comment-user=\"","\">"),
-                    "id":common.split_int(text,"src=\"//cdn2.scratch.mit.edu/get_image/user/","_")
-                },
-                "reply_count":0,"page":1
-            })
-            if c.id is None:
-                raise exception.NoPermission()
-            return c
+        if is_old:
+            return await comment._get_comment_old_api_by_id(self,f"https://scratch.mit.edu/site-api/comments/gallery/{self.id}",id)
         else:
-            resp = (await self.ClientSession.post(
-                f"https://api.scratch.mit.edu/proxy/comments/studio/{self.id}/",
-                header=header,json=data
-            )).json()
-            if "rejected" in resp:
-                raise exception.CommentFailure(resp["rejected"])
-            return Comment(
-                self.ClientSession,{"place":self,"data":resp,"id":resp["id"]},self.Session
+            return await base.get_object(
+                self.ClientSession,id,comment.Comment,self.Session,base._comment_get_func,others={"plece":self}
             )
+    
+    def get_comments(self, *, limit:int=40, offset:int=0, start_page:int=1, end_page:int=1, is_old:bool|None=None) -> AsyncGenerator[comment.Comment, None]:
+        is_old = bool(is_old)
+
+        if is_old:
+            return comment._get_comments_old_api(self,f"https://scratch.mit.edu/site-api/comments/gallery/{self.id}",start_page=start_page,end_page=end_page)
+        else:
+            return base.get_object_iterator(
+                self.ClientSession,f"https://api.scratch.mit.edu/studios/{self.id}/comments",None,comment.Comment,
+                limit=limit,offset=offset,add_params={"cachebust":random.randint(0,9999)},
+                custom_func=base._comment_iterator_func, others={"plece":self}
+            )
+    
+    async def post_comment(self, content:str, parent:int|comment.Comment|None=None, commentee:"int|user.User|None"=None, is_old:bool|None=None) -> comment.Comment:
+        self.has_session_raise()
+
+        if is_old is None: is_old = False
+        if is_old: url = f"https://scratch.mit.edu/site-api/comments/gallery/{self.id}/add/"
+        else: url = f"https://api.scratch.mit.edu/proxy/comments/studio/{self.id}/"
+
+        return await comment._post_comment(
+            self,url,is_old,content,common.get_id(commentee),common.get_id(parent)
+        )
     
     def comment_event(self,interval=30) -> "CommentEvent":
         from ..event.comment import CommentEvent
@@ -186,14 +161,22 @@ class Studio(base._BaseSiteAPI):
     async def set_thumbnail(self,thumbnail:bytes|str,filename:str="image.png"):
         self._is_owner_raise()
         thumbnail,filename = await common.open_tool(thumbnail,filename)
-        await common.requests_with_file(thumbnail,filename,f"https://scratch.mit.edu/site-api/galleries/all/{self.id}/",self.ClientSession)
+        form = aiohttp.FormData()
+        form.add_field("file",thumbnail,filename=filename)
+        await self.ClientSession.post(f"https://scratch.mit.edu/site-api/galleries/all/{self.id}/",data=form)
     
-    async def edit(self,title:str|None=None,description:str|None=None) -> None:
+    async def edit(
+            self,
+            title:str|None=None,
+            description:str|None=None,
+            trash:bool|None=None
+        ) -> None:
         data = {}
         self._is_owner_raise()
         if description is not None: data["description"] = description + "\n"
         if title is not None: data["title"] = title
-        r = await self.ClientSession.put(f"https://api.scratch.mit.edu/projects/{self.id}",json=data)
+        if trash: data["visibility"] = "delbyusr"
+        r = await self.ClientSession.put(f"https://scratch.mit.edu/site-api/galleries/all/{self.id}",json=data)
         self._update_from_dict(r.json())
 
     async def open_adding_project(self,is_open:bool=True):
@@ -311,6 +294,17 @@ class Studio(base._BaseSiteAPI):
             f"https://api.scratch.mit.edu/studios/{self.id}/users/{self.Session.username}",
         )).json()
     
+    async def report(self,type:Literal["title","description","thumbnail"]):
+        self.has_session_raise()
+        r = await self.ClientSession.post(
+            f"https://scratch.mit.edu/site-api/galleries/all/{self.id}/report/",
+            data=f"selected_field={type}"
+        )
+        if len(r.text) == 0:
+            raise exception.BadResponse(r)
+        if not r.json().get("success"):
+            raise exception.BadResponse(r)
+        return
 
     
 async def get_studio(studio_id:int,*,ClientSession=None) -> Studio:
