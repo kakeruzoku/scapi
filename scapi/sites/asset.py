@@ -10,10 +10,6 @@ from ..others import common,error as exception
 
 if TYPE_CHECKING:
     from .session import Session
-    from .comment import Comment
-    from .studio import Studio
-    from .project import Project
-    from .user import User
 
 class Backpacktype(Enum):
     unknown=0
@@ -25,7 +21,6 @@ class Backpacktype(Enum):
 
 
 class Backpack(base._BaseSiteAPI):
-    raise_class = exception.AssetNotFound
     id_name = "id"
 
     def __init__(
@@ -49,7 +44,7 @@ class Backpack(base._BaseSiteAPI):
             if i.id == self.id:
                 self.type,self.name,self._body,self._thumbnail = i.type,i.name,i._body,i._thumbnail
                 return
-        raise exception.AssetNotFound
+        raise exception.ObjectNotFound(Backpack)
     
     def _update_from_dict(self, data:dict):
         self.id = data.get("id",self.id)

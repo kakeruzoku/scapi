@@ -21,7 +21,7 @@ class CommentEvent(_base._BaseEvent):
     async def _event_monitoring(self):
         comments = [comment async for comment in self.place.get_comments()]
         if comments:  # コメントが存在する場合のみ処理
-            self.lastest_comment_dt = comments[0].sent_dt
+            self.lastest_comment_dt = comments[0].sent
         self._call_event("on_ready")
         while self._running:
             try:

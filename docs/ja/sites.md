@@ -20,12 +20,10 @@
   - [OcularStatus](#ocularstatus)
 - [コメント](#コメント)
   - [Comment](#comment)
-  - [UserComment](#usercomment)
 - [フォーラム](#フォーラム)
   - [ForumCategoryType](#forumcategorytype)
   - [ForumTopic](#forumtopic)
   - [ForumPost](#forumpost)
-  - [ForumStatus](#forumstatus)
   - [OcularReactions](#ocularreactions)
 - [アクティビティ](#アクティビティ)
   - [Activity](#activity)
@@ -278,6 +276,17 @@ Userにある情報:username,id,_join_date,join_date
 
 スタジオを作成する
 
+> await **create_class(title,about_class="",wiwo="")**
+
+**入力**
+- **title** (`str`)
+- **about_class** (`str`)
+- **wiwo** (`str`)
+
+教師アカウントの場合、クラスを作成する。
+
+**`2.0.0`で追加**
+
 > async for **message(limit=40, offset=0)** `-> Activity`
 
 メッセージを取得します。
@@ -295,6 +304,18 @@ Userにある情報:username,id,_join_date,join_date
 
 **`1.4.0`で追加**
 
+> await **check_scratcher_invite()** `-> dict|None`
+
+Scratcherへの招待情報を見る。
+
+**`2.0.0`で追加**
+
+> await **become_scratcher()**
+
+Scratcher招待がある場合、Scratcherになる。
+
+**`2.0.0`で追加**
+
 > async for **following_feed(limit=40, offset=0)** `-> Activity`
 
 最新の情報欄を取得する。
@@ -311,7 +332,7 @@ Userにある情報:username,id,_join_date,join_date
 
 閲覧したプロジェクトの履歴を取得する。
 
-> async for **get_mystuff_project(start_page=1,end_page=1,type="all",sorted="",descending=True)**
+> async for **get_mystuff_projects(start_page=1,end_page=1,type="all",sorted="",descending=True)**
 
 **入力**
 - **type** (`str`) 取得するデータの種類。`all` `shared` `notshared` `trashed`が使えます。
@@ -320,7 +341,9 @@ Userにある情報:username,id,_join_date,join_date
 
 **`1.5.0`で追加**
 
-> async for **get_mystuff_studio(start_page=1,end_page=1,type="all",sorted="",descending=True)**
+**`2.0.0`で更新** 名前が`get_mystuff_project`から変更されました。(非推奨ですが、`get_mystuff_project`も利用可能です。)
+
+> async for **get_mystuff_studios(start_page=1,end_page=1,type="all",sorted="",descending=True)**
 
 **入力**
 - **type** (`str`) 取得するデータの種類。`all` `owned` `curated`が使えます。
@@ -328,6 +351,36 @@ Userにある情報:username,id,_join_date,join_date
 - **descending** (`bool`) ソートの向き
 
 **`1.5.0`で追加**
+
+**`2.0.0`で更新** 名前が`get_mystuff_studio`から変更されました。(非推奨ですが、`get_mystuff_studio`も利用可能です。)
+
+> async for **get_mystuff_classes(start_page=1,end_page=1,type="all",sorted="",descending=True)**
+
+**入力**
+- **type** (`str`) 取得するデータの種類。`all` `closed`が使えます。
+- **sort** (`str`) ソートする内容。 `studnet_count` `title`が使えます。
+- **descending** (`bool`) ソートの向き
+
+**`2.0.0`で追加**
+
+> await **get_mystuff_class(id)**
+
+**入力**
+- **id** (`int`) 取得したいクラスのID
+
+**`2.0.0`で追加**
+
+> await **get_mystuff_students(start_page=1,end_page=1)**
+
+**`2.0.0`で追加**
+
+
+> await **check_educator_password(password)**
+
+**入力**
+- **password** (`str`) 判定したいパスワード
+
+教師アカウントの場合、アカウントのパスワードかどうか確認する。
 
 > await **upload_asset(data,file_ext="")**
 
@@ -447,9 +500,11 @@ Userにある情報:username,id,_join_date,join_date
 
 > **educator_invitee** `-> bool`
 
+承認前の教師アカウント
+
 > **invited_scratcher** `-> bool `
 
-> **mute_status** `-> dict `
+> **mute_status** `-> dict`
 
 コメントのミュートのステータス?
 
@@ -698,20 +753,28 @@ Scratchのプロジェクトページを表すクラス。
 
 プロジェクトが入っているスタジオのリスト。
 
-> await **get_comment_by_id(id)** `-> Comment`
+> await **get_comment_by_id(id,is_old=None)** `-> Comment`
 
 **入力**
 - **id** (`int`) 取得したいコメントのID
+- **is_old** (`bool|None`) 古いAPIを使うかどうか。`None`で自動的に選択されます。
 
-> async for **get_comments(limit=40, offset=0)** `-> Comment`
+**`2.0.0`で更新** 古いAPIも利用できるようになりました。
 
-> await **post_comment(content,parent_id=None,commentee_id=None,is_old=False)** `-> Comment`
+> async for **get_comments(limit=40, offset=0, start_page=1, end_page=1, is_old=None)** `-> Comment`
+
+**入力**
+- **is_old** (`bool|None`) 古いAPIを使うかどうか。`None`で自動的に選択されます。
+
+**`2.0.0`で更新** 古いAPIも利用できるようになりました。
+
+> await **post_comment(content,parent=None,commentee=None,is_old=None)** `-> Comment`
 
 **入力**
 - **content** (`str`) 投稿したいコメントの文章
-- **parent_id** (`int|Comment|None`) 返信する場合は、返信先のコメントID
-- **commentee_id** (`int|User|None`) メンションしたいユーザーのID
-- **is_old** (`bool`) 2.0時代のAPIを使用して投稿するか
+- **parent** (`int|Comment|None`) 返信する場合は、返信先のコメントID
+- **commentee** (`int|User|None`) メンションしたいユーザーのID
+- **is_old** (`bool|None`) 古いAPIを使うかどうか。`None`で自動的に選択されます。
 
 コメントを送信します。送信されたコメントオブジェクトを返します。
 
@@ -730,6 +793,38 @@ Scratchのプロジェクトページを表すクラス。
 > await **visibility()** `-> dict`
 
 プロジェクトのステータスを取得します。(プロジェクトの作者のみ可能)
+
+> await **report(category,message)**
+
+**入力**
+- **category** (`int`) 報告の種類
+- **message** (`str`) メッセージ本文
+
+報告の種類は以下を確認してください。
+```
+0 他のプロジェクトの完全なコピー
+1 クレジットせずに画像や音楽を流用している
+2 過度に暴力的だったり恐怖心をあおる
+3 不適切な表現が含まれる
+4 不適切な音楽が使用されている
+5 個人的な連絡先情報が公開されている
+6 その他
+7 ???
+8 不適切な画像
+9 このプロジェクトはミスリードしているか、コミュニティーをだましています
+10 これは顔写真を公開するプロジェクトだったり、だれかの写真を見せようとしています
+11 このプロジェクトをリミックスすることが禁止されています
+12 このプロジェクトの作者の安全が心配です
+13 その他
+14 怖い画像
+15 ジャンプスケア
+16 暴力的な出来事
+17 現実的な武器の使用
+18 他のScratcherに対する脅迫やいじめ
+19 Scratcherやグループに対して意地悪だったり失礼である
+```
+
+**`2.0.0`で追加**
 
 > await **get_remixtree()** `-> RemixTree`
 
@@ -886,20 +981,28 @@ STによるプロジェクトの評価を返す
 
 > property **_is_owner** `-> bool`
 
-> await **get_comment_by_id(id)** `-> Comment`
+> await **get_comment_by_id(id,is_old=None)** `-> Comment`
 
 **入力**
 - **id** (`int`) 取得したいコメントのID
+- **is_old** (`bool|None`) 古いAPIを使うかどうか。`None`で自動的に選択されます。
 
-> async for **get_comments(limit=40, offset=0)** `-> Comment`
+**`2.0.0`で更新** 古いAPIも利用できるようになりました。
 
-> await **post_comment(content,parent_id=None,commentee_id=None,is_old=False)** `-> Comment`
+> async for **get_comments(limit=40, offset=0, start_page=1, end_page=1, is_old=None)** `-> Comment`
+
+**入力**
+- **is_old** (`bool|None`) 古いAPIを使うかどうか。`None`で自動的に選択されます。
+
+**`2.0.0`で更新** 古いAPIも利用できるようになりました。
+
+> await **post_comment(content,parent=None,commentee=None,is_old=None)** `-> Comment`
 
 **入力**
 - **content** (`str`) 投稿したいコメントの文章
-- **parent_id** (`int|Comment|None`) 返信する場合は、返信先のコメントID
-- **commentee_id** (`int|User|None`) メンションしたいユーザーのID
-- **is_old** (`bool`) 2.0時代のAPIを使用して投稿するか
+- **parent** (`int|Comment|None`) 返信する場合は、返信先のコメントID
+- **commentee** (`int|User|None`) メンションしたいユーザーのID
+- **is_old** (`bool|None`) 古いAPIを使うかどうか。`None`で自動的に選択されます。
 
 コメントを送信します。送信されたコメントオブジェクトを返します。
 
@@ -919,13 +1022,16 @@ STによるプロジェクトの評価を返す
 - **thumbnail** (`bytes|str`) 画像のバイナリデータか画像のファイルパス
 - **filename** (`str`) (bytesで入れた場合、)拡張子を含んだファイル名
 
-> await **edit(title=None,description=None)**
+> await **edit(title=None,description=None,trash=None)**
 
 **入力**
 - **title** (`str|None`) タイトル
 - **description** (`str|None`) 説明
+- **trash** (`bool|None`) 削除するか
 
 スタジオを更新します。`None`は変更せずにそのままになります。
+
+**`2.0.0`で更新** スタジオを削除するか選択できるようになりました。
 
 > await **open_adding_project(is_open=True)**
 
@@ -998,6 +1104,14 @@ STによるプロジェクトの評価を返す
 > await **roles()** `-> dict[str,bool]`
 
 あなたのスタジオでの役割を確認する。
+
+> await **report(type)**
+
+**入力**
+- **type** (`str`) `title`,`description`,`thumbnail`から選択できます。
+
+**`2.0.0`で追加**
+
 # ユーザー
 
 
@@ -1044,7 +1158,27 @@ STによるプロジェクトの評価を返す
 
 > **scratchteam** `-> bool`
 
+ここから下は一部方法でのみ取得できます。(**`2.0.0`で追加**)
+
+> **educator_can_unban** `-> bool|None`
+
+> **force_password_reset** `-> bool|None`
+
+> **banned** `-> bool|None`
+
+> **email** `-> str|None`
+
+> **forum_status** `-> str|None`
+
+> **forum_post_count** `-> int|None`
+
+(ここまで)
+
 > property **icon_url** `-> str`
+
+> property **url** `-> str`
+
+**`2.0.0`で追加**
 
 > await **load_website(reload:bool=False)**
 
@@ -1125,21 +1259,28 @@ Project(key:`object`)に含まれる情報:id,title
 
 1年前までのユーザーのアクティビティを取得します。
 
-> await **get_comment_by_id(id,start=1)** `-> UserComment`
+> await **get_comment_by_id(id,is_old=None)** `-> Comment`
 
 **入力**
 - **id** (`int`) 取得したいコメントのID
-- **start** (`int`) 検索を開始したい最初のページ
+- **is_old** (`bool|None`) 古いAPIを使うかどうか。`None`で自動的に選択されます。
 
-> async for **get_comments(start_page=1, end_page=1)** `-> UserComment`
+**`2.0.0`で更新** 古いAPIも利用できるようになりました。
 
-> await **post_comment(content,parent_id=None,commentee_id=None)** `-> UserComment`
+> async for **get_comments(limit=40, offset=0, start_page=1, end_page=1, is_old=None)** `-> Comment`
+
+**入力**
+- **is_old** (`bool|None`) 古いAPIを使うかどうか。`None`で自動的に選択されます。
+
+**`2.0.0`で更新** 古いAPIも利用できるようになりました。
+
+> await **post_comment(content,parent=None,commentee=None,is_old=None)** `-> Comment`
 
 **入力**
 - **content** (`str`) 投稿したいコメントの文章
-- **parent_id** (`int|Comment|None`) 返信する場合は、返信先のコメントID
-- **commentee_id** (`int|User|None`) メンションしたいユーザーのID
-- **is_old** (`bool`) 2.0時代のAPIを使用して投稿するか (ユーザーページでは無視されます)
+- **parent** (`int|Comment|None`) 返信する場合は、返信先のコメントID
+- **commentee** (`int|User|None`) メンションしたいユーザーのID
+- **is_old** (`bool|None`) 古いAPIを使うかどうか。`None`で自動的に選択されます。
 
 コメントを送信します。送信されたコメントオブジェクトを返します。
 
@@ -1175,6 +1316,20 @@ Project(key:`object`)に含まれる情報:id,title
 
 **`1.4.0`で追加**
 
+> await **reset_student_password(password=None)**
+
+**入力**
+- **password** (`str|None`) 新しいパスワード。`None`の場合、教師アカウント名に設定され、次回ログイン時に入力させる画面を表示させます。
+
+生徒の場合、パスワードをリセットまたは変更する。
+
+> await **report(type)**
+
+**入力**
+- **type** (`str`) `title`,`description`,`thumbnail` `working_on`から選択できます。
+
+**`2.0.0`で追加**
+
 ## OcularStatus
 
 Ocularでのステータスを表す。
@@ -1193,7 +1348,7 @@ Ocularでのステータスを表す。
 
 # コメント
 
-> **create_Partial_Comment(comment_id,place,content=None,author=None,ClientSession=None,session=None)** `-> Comment|UserComment`
+> **create_Partial_Comment(comment_id,place,content=None,author=None,ClientSession=None,session=None)** `-> Comment`
 
 **入力**
 - **comment_id** (`int`)
@@ -1204,6 +1359,10 @@ Ocularでのステータスを表す。
 ## Comment
 
 通常のコメントを表します。
+
+ユーザーページの場合、古いAPIしか利用できないことに注意してください。
+
+**`2.0.0`で更新** `UserComment`と結合しました。
 
 > **id** `-> int`
 
@@ -1217,11 +1376,20 @@ Ocularでのステータスを表す。
 
 > **content** `-> str`
 
-> **send_dt** `-> datetime.datetime`
+> **send** `-> datetime.datetime`
+
+**`2.0.0`で変更** `sent_dt`から`sent`に変更されました。(`sent_dt`は非推奨)
 
 > **author** `-> User`
 
 > **reply_count** `-> int`
+
+> await **update(is_old:bool|None)**
+
+**入力**
+- **is_old** (`bool|None`) 古いAPIを使うか。`None`の場合、できるだけ新しいAPIを使用しようとします。
+
+**`2.0.0`で更新** 古いAPIも利用できるようになりました
 
 > await **get_parent_comment(use_cache=True)** `-> Comment|None`
 
@@ -1230,23 +1398,31 @@ Ocularでのステータスを表す。
 
 > async for **get_replies(limit=40, offset=0)** `-> Comment`
 
+新APIが利用できない場合はキャッシュからアクセスしようとします。(キャッシュは2.0APIでのみ保持されます。)
+
 > await **reply(content,commentee_id=None)**
-
-> await **delete()** `-> bool`
-
-> await **report()** `-> bool`
-
-## UserComment
-
-ユーザーページでのコメントを表します。`Comment`を継承しています。
-
-> **page** `-> int`
-
-コメントのページ数。update()時の効率化に使用されます。
 
 **入力**
 - **content** (`str`) 投稿したいコメントの文章
 - **commentee_id** (`int|User|None`) メンションしたいユーザー(ID) (Noneでコメントを投稿した人)
+
+> await **delete(is_old:bool|None)** `-> bool`
+
+**入力**
+- **is_old** (`bool|None`) 古いAPIを使うか
+
+**`2.0.0`で更新**
+
+> await **report()** `-> bool`
+
+**入力**
+- **is_old** (`bool|None`) 古いAPIを使うか
+
+**`2.0.0`で更新** 古いAPIも利用できるようになりました
+
+## ~~UserComment~~
+
+**`2.0.0`で削除** `Comment`にまとめられました。
 
 # フォーラム
 
@@ -1345,7 +1521,9 @@ Userにある情報:username,id
 
 > **number** `-> int`
 
-> **author_status** `-> ForumStatus`
+> ~~**author_status**~~
+
+**`2.0.0`で削除**
 
 > **content** `-> str`
 
@@ -1353,19 +1531,9 @@ Userにある情報:username,id
 
 > property **url** `-> str`
 
-## ForumStatus
+## ~~ForumStatus~~
 
-ユーザーのステータスを表します。(`_BaseSiteAPI`を継承していません！)
-
-> **user** `-> User`
-
-Userにある情報:username,id
-
-> **type** `-> str`
-
-> **post_count** `-> int`
-
-`New Scratcher`,`Scratcher`,`Scratch Team`のどれか
+**`2.0.0`で削除** `User`にまとめられました。
 
 ## OcularReactions
 
@@ -1417,6 +1585,8 @@ Userにある情報:username,id
 ## Activity
 
 何かしらの活動を表します。
+
+現在、メッセージ/フィード/スタジオの活動/ユーザーの活動/クラスの活動 に対応しています。
 
 > **id** `-> int`
 
@@ -1509,13 +1679,77 @@ Userにある情報:username,id
 
 > **educator** `-> User`
 
+> **about_class** `-> str`
+
+**`2.0.0`で追加**
+
+> **wiwo** `-> str`
+
+**`2.0.0`で追加**
+
+> **_studio_count** `-> int|None`
+
+**`2.0.0`で追加**
+
+> **_student_count** `-> int|None`
+
+**`2.0.0`で追加**
+
+> **commenter_count** `-> int|None`
+
+**`2.0.0`で追加**
+
 > await **studio_count()** `-> int`
 
-> async for **studios(start_page=1, end_page=1)** `-> Studio`
+> async for **studios(start_page=1, end_page=1, is_website=None)** `-> Studio`
+
+**入力**
+- **is_website** (`bool|None`) `False`は教師アカウントでのみ使用できます。`None`では、自動的に判断されます。
+
+**`2.0.0`で追加** 教師アカウント用APIを追加
 
 > await **student_count()** `-> int`
 
-> async for **students(start_page=1, end_page=1)** `-> User`
+> async for **students(start_page=1, end_page=1,is_website=None)** `-> User`
+
+**入力**
+- **is_website** (`bool|None`) `False`は教師アカウントでのみ使用できます。`None`では、自動的に判断されます。
+
+**`2.0.0`で追加** 教師アカウント用APIを追加
+
+> await **edit(title,about_class,wiwo)**
+
+**入力**
+- **title** (`str|None`)
+- **about_class** (`str|None`)
+- **wiwo** (`str|None`)
+
+**`2.0.0`で追加**
+
+> await **set_icon(icon,filename="icon.png")**
+
+**入力**
+- **icon** (`bytes|str`) 画像のバイナリデータか画像のファイルパス
+- **filename** (`str`) (bytesで入れた場合、)拡張子を含んだファイル名
+
+**`2.0.0`で追加**
+
+> async for **get_privete_activity(start_page=1, end_page=1, type="all", sort="", descending=True)** `-> Activity`
+
+**入力**
+- **type** (`str`) 取得するデータの種類。`all` ユーザー名 が使えます。
+- **sort** (`str`) ソートする内容。 `username` が使えます。
+- **descending** (`bool`) ソートの向き
+
+**`2.0.0`で追加**
+
+> await **create_class_studio(title,description)**
+
+**入力**
+- **title** (`str`)
+- **description** (`str`)
+
+**`2.0.0`で追加**
 
 > await **create_student_account(username,password,birth_day,gender,country)**
 
@@ -1657,6 +1891,5 @@ Google翻訳を使います。
 
 - `ObjectFetchError` オブジェクトを取得しようとして、なんらかのエラーが発生した。
   - `ObjectNotFound` オブジェクトが存在しない
-    - `*****NotFound` クラスごとに例外クラスがある(無駄だから削除するかも)
 
 - `NoDataError` リクエストに必要な情報を持っていない

@@ -2,7 +2,8 @@ import datetime
 import random
 import json
 import re
-from typing import AsyncGenerator, Generator, Literal, TypedDict, TYPE_CHECKING
+from typing import AsyncGenerator, Generator, Literal, TypedDict, TYPE_CHECKING, overload
+import aiohttp
 
 from ..others import common
 from ..others import error as exception
@@ -16,7 +17,6 @@ if TYPE_CHECKING:
     from ..event.message import MessageEvent
 
 class User(base._BaseSiteAPI):
-    raise_class = exception.UserNotFound
     id_name = "username"
 
     def __str__(self):
@@ -44,6 +44,16 @@ class User(base._BaseSiteAPI):
 
         self._website_data:dict = {}
 
+        #教師アカウント向け
+        self.educator_can_unban:bool|None = None
+        self.force_password_reset:bool|None = None
+        self.banned:bool|None = None
+        self.email:str|None = None
+
+        #フォーラム向け
+        self.forum_status:str|None = None
+        self.forum_post_count:int|None = None
+
     def _update_from_dict(self, data:dict) -> None:
         self.id = data.get("id",self.id)
         self.username = data.get("username",self.username)
@@ -55,6 +65,18 @@ class User(base._BaseSiteAPI):
         self.wiwo = _profile.get("status",self.wiwo)
         self.country = _profile.get("country",self.country)
 
+    def _update_from_student_dict(self,data:dict):
+        fields:dict = data.get("fields",{})
+        self.educator_can_unban = fields.get("educator_can_unban",self.educator_can_unban)
+        self.force_password_reset = fields.get("force_password_reset",self.force_password_reset)
+        self.banned = fields.get("is_banned",self.banned)
+
+        user:dict = fields.get("user",{})
+        self.id = user.get("pk",self.id)
+        self.scratchteam = user.get("admin",self.scratchteam)
+        self.username = user.get("username",self.username)
+        self.email = user.get("email",self.email) #reset student acc api only
+
     @property
     def _is_me(self) -> bool:
         from . import session
@@ -64,7 +86,7 @@ class User(base._BaseSiteAPI):
         return False
     
     def _is_me_raise(self):
-        if self.chack and not self._is_me:
+        if self.check and not self._is_me:
             raise exception.NoPermission
     
     def __int__(self) -> int: return self.id
@@ -79,6 +101,10 @@ class User(base._BaseSiteAPI):
     def icon_url(self) -> str:
         common.no_data_checker(self.id)
         return f"https://uploads.scratch.mit.edu/get_image/user/{self.id}_90x90.png"
+
+    @property
+    def url(self) -> str:
+        return f"https://scratch.mit.edu/users/{self.id}/"
     
     async def load_website(self,reload:bool=False):
         if reload or (self._website_data == {}):
@@ -230,97 +256,23 @@ class User(base._BaseSiteAPI):
 
 
     
-    async def get_comment_by_id(self,id:int,start:int=1) -> comment.UserComment:
-        id = int(id)
-        async for i in self.get_comments(start_page=start,end_page=67):
-            if id == i.id:
-                return i
-            for r in i._reply_cache:
-                if id == r.id:
-                    return r
-        raise exception.CommentNotFound(comment.UserComment,ValueError)
+    async def get_comment_by_id(self,id:int,is_old:bool|None=None) -> comment.Comment:
+        if is_old == False: raise ValueError()
+        return await comment._get_comment_old_api_by_id(self,f"https://scratch.mit.edu/site-api/comments/user/{self.username}",id)
 
     
-    async def get_comments(self, *, start_page:int=1, end_page:int=1) -> AsyncGenerator[comment.UserComment, None]:
-        # From Scratchattach
-        # 404 - NotFound "Comment" (ex:page>67)
-        # 503 - NotFound "User"
-        if end_page > 67:
-            end_page = 67
-        for i in range(start_page,end_page+1):
-            r = await self.ClientSession.get(f"https://scratch.mit.edu/site-api/comments/user/{self.username}/?page={i}",check=False)
-            if r.status_code == 404:
-                return
-            if r.status_code == 503:
-                raise exception.UserNotFound(User,exception.ServerError(r))
-            soup = bs4.BeautifulSoup(r.text, "html.parser")
-            comments:bs4.element.ResultSet[bs4.element.Tag] = soup.find_all("li", {"class": "top-level-reply"})
-
-            for _comment in comments:
-                id = int(_comment.find("div", {"class": "comment"})['data-comment-id'])
-                userdata = _comment.find("a", {"id": "comment-user"})
-                username:str = userdata['data-comment-user']
-                try: userid = int(userdata.find("img",{"class":"avatar"})["src"].split("user/")[1].split("_")[0])
-                except: userid = None
-                content = str(_comment.find("div", {"class": "content"}).text).strip()
-                send_dt = _comment.find("span", {"class": "time"})['title']
-
-                main = comment.UserComment(self,self.ClientSession,self.Session)
-                replies:bs4.element.ResultSet[bs4.element.Tag] = _comment.find_all("li", {"class": "reply"})
-                replies_obj:list[comment.UserComment] = []
-                for reply in replies:
-                    r_id = int(reply.find("div", {"class": "comment"})['data-comment-id'])
-                    r_userdata = reply.find("a", {"id": "comment-user"})
-                    r_username:str = r_userdata['data-comment-user']
-                    r_userid = int(r_userdata.find("img",{"class":"avatar"})["src"].split("user/")[1].split("_")[0])
-                    r_content = str(reply.find("div", {"class": "content"}).text).strip()
-                    r_send_dt = reply.find("span", {"class": "time"})['title']
-                    reply_obj = comment.UserComment(self,self.ClientSession,self.Session)
-                    reply_obj._update_from_dict({
-                        "id":r_id,"parent_id":id,"commentee_id":None,"content":r_content,"datetime_created":r_send_dt,"author":{"username":r_username,"id":r_userid},"_parent_cache":main,"reply_count":0,"page":i
-                    })
-                    replies_obj.append(reply_obj)
-
-                main._update_from_dict({
-                    "id":id,"parent_id":None,"commentee_id":None,"content":content,"datetime_created":send_dt,
-                    "author":{"username":username,"id":userid},
-                    "_reply_cache":replies_obj,"reply_count":len(replies_obj),"page":i
-                })
-                yield main
-        return
+    def get_comments(self, *, limit:int=40, offset:int=0, start_page:int=1, end_page:int=1, is_old:bool|None=None) -> AsyncGenerator[comment.Comment, None]:
+        if is_old == False: raise ValueError()
+        return comment._get_comments_old_api(self,f"https://scratch.mit.edu/site-api/comments/user/{self.username}",start_page=start_page,end_page=end_page)
     
-    async def post_comment(self, content, parent:int|comment.Comment|None=None, commentee:"int|User|None"=None,is_old:bool=True) -> comment.UserComment:
+    async def post_comment(self, content:str, parent:int|comment.Comment|None=None, commentee:"int|User|None"=None, is_old:bool|None=None) -> comment.Comment:
+        if is_old == False: raise ValueError()
         self.has_session_raise()
-        parent = common.get_id(parent)
-        commentee = common.get_id(commentee)
-        data = {
-            "commentee_id": "" if commentee is None else commentee,
-            "content": str(content),
-            "parent_id": "" if parent is None else parent,
-        }
-        text = (await self.ClientSession.post(
-            f"https://scratch.mit.edu/site-api/comments/user/{self.username}/add/",json=data
-        )).text
-        if text.strip().startswith('<script id="error-data" type="application/json">'):#エラー
-            data:dict = json.loads(common.split(text,'type="application/json">',"</script>"))
-            raise exception.CommentFailure(data.get("error"))
 
-        c = comment.UserComment(self,self.ClientSession,self.Session)
-        c._update_from_dict({
-            "id":common.split_int(text,"data-comment-id=\"","\">"),
-            "parent_id":None if parent == "" else parent,
-            "commentee_id":None if commentee == "" else commentee,
-            "datetime_create":common.split(text,"<span class=\"time\" title=\"","\">"),
-            "content":content,
-            "author":{
-                "username":common.split(text,"data-comment-user=\"","\">"),
-                "id":common.split_int(text,"src=\"//cdn2.scratch.mit.edu/get_image/user/","_")
-            },
-            "_reply_cache":[],"reply_count":0,"page":1
-        })
-        if c.id is None:
-            raise exception.NoPermission()
-        return c
+        return await comment._post_comment(
+            self,f"https://scratch.mit.edu/site-api/comments/user/{self.username}/add/",
+            True,content,common.get_id(commentee),common.get_id(parent)
+        )
     
     def comment_event(self,interval=30) -> "CommentEvent":
         from ..event.comment import CommentEvent
@@ -340,7 +292,7 @@ class User(base._BaseSiteAPI):
             featured_project_id:int|None=None,
             featured_label:Literal["Featured","ProjectFeatured","Tutorial","Work In Progress","Remix This!","My Favorite Things","Why I Scratch"]|None=None,
         ):
-        self._is_me_raise()
+        (self.Session and self.Session.status.educator) or self._is_me_raise() #教師は生徒の設定を編集できる
         data = {}
         if about_me is not None: data["bio"] = about_me
         if wiwo is not None: data["status"] = wiwo
@@ -354,7 +306,9 @@ class User(base._BaseSiteAPI):
     async def change_icon(self,icon:bytes|str,filetype:str="icon.png"):
         self._is_me_raise()
         thumbnail,filename = await common.open_tool(icon,filetype)
-        await common.requests_with_file(thumbnail,filename,f"https://scratch.mit.edu/site-api/users/all/{self.username}/",self.ClientSession)
+        form = aiohttp.FormData()
+        form.add_field("file",thumbnail,filename=filename)
+        await self.ClientSession.post(f"https://scratch.mit.edu/site-api/users/all/{self.username}/",data=form)
 
     async def set_icon(self,icon:bytes|str,filetype:str="icon.png"):
         await self.change_icon(icon,filetype)
@@ -368,6 +322,39 @@ class User(base._BaseSiteAPI):
 
     async def get_ocular_status(self) -> "OcularStatus":
         return await base.get_object(self.ClientSession,self.username,OcularStatus,self.Session)
+    
+    async def reset_student_password(self,password:str|None=None):
+        if not (self.Session and self.Session.status.educator) and self.check:
+            raise exception.NoPermission()
+        if password is None:
+            r = await self.ClientSession.post(
+                f"https://scratch.mit.edu/site-api/classrooms/reset_student_password/{self.username}/"
+            )
+            data = r.json()
+            self.id = data.get("pk",self.id)
+            self.scratchteam = data.get("admin",self.scratchteam)
+            self.email = data.get("email",self.email)
+        else:
+            await self.ClientSession.post(
+                f"https://scratch.mit.edu/classes/student_password_change/{self.username}/",
+                data=aiohttp.FormData({
+                    "csrfmiddlewaretoken":"a",
+                    "new_password1":password,
+                    "new_password2":password
+                })
+            )
+
+    async def report(self,category:int,type:Literal["username","icon","description","working_on"]):
+        self.has_session_raise()
+        r = await self.ClientSession.post(
+            f"https://scratch.mit.edu/site-api/users/all/{self.username}/report/",
+            data=f"selected_field={type}"
+        )
+        if len(r.text) == 0:
+            raise exception.BadResponse(r)
+        if not r.json().get("success"):
+            raise exception.BadResponse(r)
+        return
 
 
 class OcularStatus(base._BaseSiteAPI):
@@ -411,7 +398,7 @@ async def get_user(username:str,*,ClientSession=None) -> User:
     return await base.get_object(ClientSession,username,User)
 
 def create_Partial_User(username:str,user_id:int|None=None,*,ClientSession:common.ClientSession|None=None,session:"session.Session|None"=None) -> User:
-    ClientSession = common.create_ClientSession(ClientSession)
+    ClientSession = common.create_ClientSession(ClientSession,session)
     _user = User(ClientSession,username,session)
     if user_id is not None:
         _user.id = common.try_int(user_id)
