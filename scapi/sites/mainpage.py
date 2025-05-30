@@ -5,7 +5,7 @@ import warnings
 
 from ..others import common
 from ..others import error as exception
-from . import base,project,comment,activity,studio
+from . import base,project,studio
 
 import bs4
 
@@ -13,7 +13,6 @@ if TYPE_CHECKING:
     from . import session
 
 class ScratchNews(base._BaseSiteAPI):
-    raise_class = exception.ObjectNotFound
     id_name = "id"
 
     def __str__(self):

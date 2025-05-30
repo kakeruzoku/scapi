@@ -8,8 +8,7 @@ import bs4
 
 from ..others import  common
 from ..others import error as exception
-from . import base
-from .user import User
+from . import base,user
 
 if TYPE_CHECKING:
     from .session import Session
@@ -71,7 +70,6 @@ class ForumCategoryType(Enum):
         return cls.unknown
 
 class ForumTopic(base._BaseSiteAPI):
-    raise_class = exception.ForumTopicNotFound
     id_name = "id"
 
     def __init__(
@@ -99,12 +97,12 @@ class ForumTopic(base._BaseSiteAPI):
 
     def __str__(self) -> str: return f"<ForumTopic id:{self.id} title:{self.title} category:{self.category} Session:{self.Session}>"
     def __int__(self) -> int: return self.id
-    def __eq__(self,value) -> bool: return isinstance(value,User) and self.id == value.id
-    def __ne__(self,value) -> bool: return isinstance(value,User) and self.id != value.id
-    def __lt__(self,value) -> bool: return isinstance(value,User) and self.id < value.id
-    def __gt__(self,value) -> bool: return isinstance(value,User) and self.id > value.id
-    def __le__(self,value) -> bool: return isinstance(value,User) and self.id <= value.id
-    def __ge__(self,value) -> bool: return isinstance(value,User) and self.id >= value.id
+    def __eq__(self,value) -> bool: return isinstance(value,user.User) and self.id == value.id
+    def __ne__(self,value) -> bool: return isinstance(value,user.User) and self.id != value.id
+    def __lt__(self,value) -> bool: return isinstance(value,user.User) and self.id < value.id
+    def __gt__(self,value) -> bool: return isinstance(value,user.User) and self.id > value.id
+    def __le__(self,value) -> bool: return isinstance(value,user.User) and self.id <= value.id
+    def __ge__(self,value) -> bool: return isinstance(value,user.User) and self.id >= value.id
 
     def _update_from_dict(self, data):
         warnings.warn(f"please use ForumTopic._update_from_str")
@@ -132,16 +130,7 @@ class ForumTopic(base._BaseSiteAPI):
                 _obj._update_from_str(soup)
                 yield _obj
 
-
-class ForumStatus:
-    def __init__(self,user:User,type:str,count:int):
-        self.user:User = user
-        self.type:Literal["New Scratcher","Scratcher","Scratch Team"] = type
-        self.post_count:int = count
-
-
 class ForumPost(base._BaseSiteAPI):
-    raise_class = exception.ForumPostNotFound
     id_name = "id"
 
     def __init__(
@@ -155,10 +144,9 @@ class ForumPost(base._BaseSiteAPI):
 
         self.id:int = common.try_int(id)
         self.topic:ForumTopic = None
-        self.author:User = None
+        self.author:user.User = None
         self.page:int = None
         self.number:int = None
-        self.author_status:ForumStatus = None
         self.content:str = None
         self.time:str = None
 
@@ -173,12 +161,12 @@ class ForumPost(base._BaseSiteAPI):
 
     def __str__(self) -> str: return f"<ForumPost id:{self.id} topic:{self.topic} author:{self.author} content:{self.content} Session:{self.Session}>"
     def __int__(self) -> int: return self.id
-    def __eq__(self,value) -> bool: return isinstance(value,User) and self.id == value.id
-    def __ne__(self,value) -> bool: return isinstance(value,User) and self.id != value.id
-    def __lt__(self,value) -> bool: return isinstance(value,User) and self.id < value.id
-    def __gt__(self,value) -> bool: return isinstance(value,User) and self.id > value.id
-    def __le__(self,value) -> bool: return isinstance(value,User) and self.id <= value.id
-    def __ge__(self,value) -> bool: return isinstance(value,User) and self.id >= value.id
+    def __eq__(self,value) -> bool: return isinstance(value,user.User) and self.id == value.id
+    def __ne__(self,value) -> bool: return isinstance(value,user.User) and self.id != value.id
+    def __lt__(self,value) -> bool: return isinstance(value,user.User) and self.id < value.id
+    def __gt__(self,value) -> bool: return isinstance(value,user.User) and self.id > value.id
+    def __le__(self,value) -> bool: return isinstance(value,user.User) and self.id <= value.id
+    def __ge__(self,value) -> bool: return isinstance(value,user.User) and self.id >= value.id
 
     def _update_from_dict(self, data):
         warnings.warn(f"please use ForumPost._update_from_str")
@@ -205,11 +193,8 @@ class ForumPost(base._BaseSiteAPI):
         self.author = User(self.ClientSession,_left.next_element.next_element.next_element.next_element.text,self.Session)
         _left_2 = _left.find("img")
         self.author.id = common.split_int(_left_2["src"],"user/","_")
-        self.author_status = ForumStatus(
-            self.author,
-            _left_2.next_element.next_element.strip(),
-            re.findall(r'\d+', _left_2.next_element.next_element.next_element.next_element.strip())[0]
-        )
+        self.author.forum_status = _left_2.next_element.next_element.strip()
+        self.author.forum_post_count = re.findall(r'\d+', _left_2.next_element.next_element.next_element.next_element.strip())[0]
 
     async def get_ocular_reactions(self) -> "OcularReactions":
         return await base.get_object(self.ClientSession,self.id,OcularReactions,self.Session)

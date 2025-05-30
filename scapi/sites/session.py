@@ -1,6 +1,6 @@
 import datetime
 import re
-from typing import TYPE_CHECKING, AsyncGenerator,Literal
+from typing import TYPE_CHECKING, AsyncGenerator,Literal, TypedDict
 import warnings
 import hashlib
 import json
@@ -16,7 +16,7 @@ if TYPE_CHECKING:
 
 
 class SessionStatus:
-    def __init__(self,response_json:dict[str,dict]):
+    def __init__(self):
         self.confirm_email_banner:bool = None
         self.everything_is_totally_normal:bool = None
         self.gallery_comments_enabled:bool = None
@@ -53,7 +53,6 @@ class SessionStatus:
         self.username:str = None
 
         self.joined_dt:datetime.datetime = None
-        self.update(response_json)
 
     def update(self,response_json:dict[str,dict]):
         for _,v1 in response_json.items():
@@ -66,7 +65,6 @@ class SessionStatus:
             pass
 
 class Session(base._BaseSiteAPI):
-    raise_class = exception.SessionNotFound
     id_name = "session_id"
 
     def __str__(self):
@@ -83,7 +81,7 @@ class Session(base._BaseSiteAPI):
         **entries
     ):
         self._ClientSession = ClientSession
-        super().__init__("post","https://scratch.mit.edu/session",ClientSession,self)
+        super().__init__("get","https://scratch.mit.edu/session/",ClientSession,self)
 
         self.ClientSession._cookie = {
             "scratchsessionsid" : session_id,
@@ -102,8 +100,9 @@ class Session(base._BaseSiteAPI):
 
         self._user:user.User|None = None
 
-    def _update_from_dict(self,data):
-        self.status = SessionStatus(data)
+    def _update_from_dict(self,data:dict):
+        self.status = self.status or SessionStatus()
+        self.status.update(data)
         self.xtoken = self.status.token
         self.email = self.status.email
         self.scratcher = self.status.scratcher
@@ -207,11 +206,30 @@ class Session(base._BaseSiteAPI):
         raise exception.ResponseError(response)
     
     async def create_studio(self) -> studio.Studio:
+        if (not self.status.scratcher) and self.check:
+            raise exception.NoPermission()
         response = await self.ClientSession.post("https://scratch.mit.edu/studios/create/")
         id = common.split_int(response.json().get("redirect"),"/studios/","/")
         if id is None:
             raise exception.BadResponse(response)
-        return await studio.get_studio(id)
+        return await base.get_object(self.ClientSession,id,studio.Studio,self)
+    
+    async def create_class(self,title:str,about_class:str="",wiwo:str="") -> classroom.Classroom:
+        if (not self.status.educator) and self.check:
+            raise exception.NoPermission()
+        data = {
+            "title":title,
+            "description":about_class,
+            "status":wiwo,
+            "is_robot":False,
+            "csrfmiddlewaretoken":"a"
+        }
+        r = await self.ClientSession.post("https://scratch.mit.edu/classes/create_classroom/",json=data)
+        data = r.json()
+        if not data[0].get("success"):
+            raise exception.ResponseError(r)
+
+        return await base.get_object(self.ClientSession,data[0]["id"],classroom.Classroom,self)
     
     async def message(self, *, limit=40, offset=0) -> AsyncGenerator[activity.Activity, None]:
         c = 0
@@ -237,6 +255,22 @@ class Session(base._BaseSiteAPI):
     
     async def clear_message(self):
         await self.ClientSession.post("https://scratch.mit.edu/site-api/messages/messages-clear/")
+
+    class scratcher_invite(TypedDict):
+        id:int
+        datetime_created:str
+        unread:int
+        actor_id:int
+        invitee_id:int
+
+    async def check_scratcher_invite(self) -> scratcher_invite|None:
+        r = await self.ClientSession.get(f"https://api.scratch.mit.edu/users/{self.username}/invites")
+        return r.json() or None
+    
+    async def become_scratcher(self):
+        if self.check and not self.status.invited_scratcher:
+            raise exception.NoPermission()
+        await self.ClientSession.get(f"https://scratch.mit.edu/users/{self.username}/promote-to-scratcher/")
 
     async def following_feed(self, *, limit=40, offset=0) -> AsyncGenerator[activity.Activity, None]:
         c = 0
@@ -274,7 +308,7 @@ class Session(base._BaseSiteAPI):
 
     # type: all shared notshared trashed
     # sorted: view_count love_count remixers_count title
-    def get_mystuff_project(
+    def get_mystuff_projects(
             self, start_page:int=1, end_page:int=1, type:str="all", sort:str="", descending:bool=True
         ) -> AsyncGenerator[project.Project, None]:
         add_params = {"descsort":sort} if descending else {"ascsort":sort}
@@ -285,9 +319,11 @@ class Session(base._BaseSiteAPI):
             add_params=add_params,update_func_name="_update_from_mystuff"
         )
     
+    get_mystuff_project = common.deprecated("Classroom","get_mystuff_project","get_mystuff_projects")(get_mystuff_projects)
+    
     # type: all owned curated
     # sorted: projecters_count title
-    def get_mystuff_studio(
+    def get_mystuff_studios(
             self, start_page:int=1, end_page:int=1, type:str="all", sort:str="", descending:bool=True
         ) -> AsyncGenerator[studio.Studio, None]:
         add_params = {"descsort":sort} if descending else {"ascsort":sort}
@@ -297,6 +333,51 @@ class Session(base._BaseSiteAPI):
             limit=end_page-start_page+1 ,offset=start_page, max_limit=1, is_page=True,
             add_params=add_params,update_func_name="_update_from_mystuff"
         )
+    
+    get_mystuff_project = common.deprecated("Classroom","get_mystuff_studio","get_mystuff_studios")(get_mystuff_projects)
+    
+    # type: all closed
+    # sort: student_count title
+    def get_mystuff_classes(
+            self, start_page:int=1, end_page:int=1, type:str="all", sort:str="", descending:bool=True
+        ) -> AsyncGenerator[classroom.Classroom, None]:
+        if self.check and (not self.status.educator):
+            raise exception.NoPermission()
+        add_params = {"descsort":sort} if descending else {"ascsort":sort}
+        return base.get_object_iterator(
+            self.ClientSession,f"https://scratch.mit.edu/site-api/classrooms/{type}/",
+            "pk",classroom.Classroom, self,
+            limit=end_page-start_page+1 ,offset=start_page, max_limit=1, is_page=True,
+            add_params=add_params,update_func_name="_update_from_mystuff"
+        )
+    
+    async def get_mystuff_class(self,id:int) -> classroom.Classroom:
+        if self.check and (not self.status.educator):
+            raise exception.NoPermission()
+        r = await self.ClientSession.get(f"https://scratch.mit.edu/site-api/classrooms/all/{id}/")
+        _classroom = classroom.Classroom(self.ClientSession,id,self.Session)
+        _classroom._update_from_old_dict(r.json())
+        return _classroom
+    
+    def get_mystuff_students(self,start_page:int=1, end_page:int=1) -> AsyncGenerator[user.User, None]:
+        if self.check and (not self.status.educator):
+            raise exception.NoPermission()
+        return base.get_object_iterator(
+            self.ClientSession,f"https://scratch.mit.edu/site-api/classrooms/students/of/{self.username}/",
+            "pk",user.User, self.Session,
+            limit=end_page-start_page+1 ,offset=start_page, max_limit=1, is_page=True,
+            update_func_name="_update_from_student_dict"
+        )
+
+    
+    async def check_educator_password(self,password:str) -> bool:
+        if self.check and (not self.status.educator):
+            raise exception.NoPermission()
+        r = await self.ClientSession.post(
+            f"https://scratch.mit.edu/site-api/classrooms/check_educator_password/",
+            json={"password":password}
+        )
+        return r.json().get("success")
     
     async def upload_asset(self,data:str|bytes,file_ext:str="") -> str:
         data, file_ext = await common.open_tool(data,file_ext)
@@ -375,6 +456,7 @@ class Session(base._BaseSiteAPI):
         r = (await self.ClientSession.get(f"https://api.scratch.mit.edu/classtoken/{classtoken}")).json()
         _obj = classroom.Classroom(self.ClientSession,r["id"])
         _obj._update_from_dict(r)
+        _obj.classtoken = classtoken
         return _obj
     
     async def link_session(self, *l, **d):

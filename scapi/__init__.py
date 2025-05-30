@@ -39,9 +39,8 @@ from .sites.base import (
     get_page_list_data
 )
 from .sites.comment import (
-    CommentData,
     Comment,
-    UserComment
+    create_Partial_Comment
 )
 from .sites.project import (
     Project,
@@ -82,7 +81,6 @@ from .sites.forum import (
     ForumTopic,
     ForumCategoryType,
     ForumPost,
-    ForumStatus,
     OcularReactions,
     get_post,
     get_topic,

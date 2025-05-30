@@ -11,8 +11,7 @@ import aiofiles
 
 from ..others import common
 from ..others import error as exception
-from . import base,activity
-from .comment import Comment,UserComment
+from . import base,activity,comment
 
 if TYPE_CHECKING:
     from .session import Session
@@ -22,7 +21,6 @@ if TYPE_CHECKING:
     from ..cloud import cloud,cloud_event
 
 class Project(base._BaseSiteAPI):
-    raise_class = exception.ProjectNotFound
     id_name = "id"
 
     def __str__(self):
@@ -92,8 +90,7 @@ class Project(base._BaseSiteAPI):
 
         self.comment_count = _stats.get("comments",self.comment_count) #only mystuff
 
-    def _update_from_mystuff(self, data:dict):
-        fields:dict = data.get("fields")
+    def _update_from_old_dict(self, fields:dict):
         from . import user
         self.views = fields.get("view_count",self.views)
         self.favorites = fields.get("favorite_count",self.favorites)
@@ -111,6 +108,9 @@ class Project(base._BaseSiteAPI):
 
         self.loves = fields.get("love_count",self.loves)
         self.comment_count = fields.get("commenters_count",self.comment_count)
+
+    def _update_from_mystuff(self, data:dict):
+        self._update_from_old_dict(data.get("fields"))
 
     @property
     def _is_owner(self) -> bool:
@@ -131,7 +131,7 @@ class Project(base._BaseSiteAPI):
         return f"https://scratch.mit.edu/projects/{self.id}/"
     
     def _is_owner_raise(self) -> None:
-        if self.chack and not self._is_owner:
+        if self.check and not self._is_owner:
             raise exception.NoPermission
     
     def __int__(self) -> int: return self.id
@@ -171,7 +171,7 @@ class Project(base._BaseSiteAPI):
                 f"https://projects.scratch.mit.edu/{self.id}?token={self.project_token}"
             )).json()
         except Exception as e:
-            raise exception.ProjectNotFound(Project,e)
+            raise exception.ObjectNotFound(Project,e)
         
     async def download(self,save_path,filename:str|None=None,download_asset:bool=True,log:bool=False) -> str:
         if filename is None:
@@ -320,67 +320,44 @@ class Project(base._BaseSiteAPI):
             limit=limit,offset=offset
         )
     
-    async def get_comment_by_id(self,id:int) -> Comment:
-        common.no_data_checker(self.author)
-        common.no_data_checker(self.author.username)
-        return await base.get_object(
-            self.ClientSession,{"place":self,"id":id,"data":None},Comment,self.Session
-        )
+    async def get_comment_by_id(self,id:int,is_old:bool|None=None) -> comment.Comment:
+        if is_old is None:
+            is_old = (self.author and self.author.username) is None
 
-    def get_comments(self, *, limit=40, offset=0) -> AsyncGenerator[Comment, None]:
-        common.no_data_checker(self.author)
-        common.no_data_checker(self.author.username)
-        return base.get_object_iterator(
-            self.ClientSession,f"https://api.scratch.mit.edu/users/{self.author.username}/projects/{self.id}/comments",None,Comment,
-            limit=limit,offset=offset,add_params={"cachebust":random.randint(0,9999)},
-            custom_func=base._comment_iterator_func, others={"plece":self}
-        )
-    
-    async def post_comment(self, content:str, parent:int|Comment|None=None, commentee:"int|User|None"=None, is_old:bool=False) -> Comment:
-        self.has_session_raise()
-        data = {
-            "commentee_id": "" if commentee is None else common.get_id(commentee),
-            "content": str(content),
-            "parent_id": "" if parent is None else common.get_id(parent),
-        }
-        header = self.ClientSession._header|{"referer":self.url}
         if is_old:
-            text = (await self.ClientSession.post(
-                f"https://scratch.mit.edu/site-api/comments/project/{self.id}/add/",json=data
-            )).text
-            if text.strip().startswith('<script id="error-data" type="application/json">'):#エラー
-                data:dict = json.loads(common.split(text,'type="application/json">',"</script>"))
-                raise exception.CommentFailure(data.get("error"))
-
-            c = Comment(
-                self.ClientSession,
-                {"place":self,"id":common.split_int(text,"data-comment-id=\"","\">")},
-                self.Session
-            )
-            c._update_from_dict({
-                "parent_id":None if parent == "" else parent,
-                "commentee_id":None if commentee == "" else commentee,
-                "datetime_create":common.split(text,"<span class=\"time\" title=\"","\">"),
-                "content":content,
-                "author":{
-                    "username":common.split(text,"data-comment-user=\"","\">"),
-                    "id":common.split_int(text,"src=\"//cdn2.scratch.mit.edu/get_image/user/","_")
-                },
-                "_reply_cache":[],"reply_count":0,
-            })
-            if c.id is None:
-                raise exception.NoPermission()
-            return c
+            return await comment._get_comment_old_api_by_id(self,f"https://scratch.mit.edu/site-api/comments/project/{self.id}",id)
         else:
-            resp = (await self.ClientSession.post(
-                f"https://api.scratch.mit.edu/proxy/comments/project/{self.id}/",
-                header=header,json=data
-            )).json()
-            if "rejected" in resp:
-                raise exception.CommentFailure(resp["rejected"])
-            return Comment(
-                self.ClientSession,{"place":self,"data":resp,"id":resp["id"]},self.Session
+            common.no_data_checker(self.author)
+            common.no_data_checker(self.author.username)
+            return await base.get_object(
+                self.ClientSession,id,comment.Comment,self.Session,base._comment_get_func,others={"plece":self}
             )
+
+    def get_comments(self, *, limit:int=40, offset:int=0, start_page:int=1, end_page:int=1, is_old:bool|None=None) -> AsyncGenerator[comment.Comment, None]:
+        if is_old is None:
+            is_old = (self.author and self.author.username) is None
+
+        if is_old:
+            return comment._get_comments_old_api(self,f"https://scratch.mit.edu/site-api/comments/project/{self.id}",start_page=start_page,end_page=end_page)
+        else:
+            common.no_data_checker(self.author)
+            common.no_data_checker(self.author.username)
+            return base.get_object_iterator(
+                self.ClientSession,f"https://api.scratch.mit.edu/users/{self.author.username}/projects/{self.id}/comments",None,comment.Comment,
+                limit=limit,offset=offset,add_params={"cachebust":random.randint(0,9999)},
+                custom_func=base._comment_iterator_func, others={"plece":self}
+            )
+    
+    async def post_comment(self, content:str, parent:int|comment.Comment|None=None, commentee:"int|User|None"=None, is_old:bool|None=None) -> comment.Comment:
+        self.has_session_raise()
+
+        if is_old is None: is_old = False
+        if is_old: url = f"https://scratch.mit.edu/site-api/comments/project/{self.id}/add/"
+        else: url = f"https://api.scratch.mit.edu/proxy/comments/project/{self.id}/"
+
+        return await comment._post_comment(
+            self,url,is_old,content,common.get_id(commentee),common.get_id(parent)
+        )
     
     def comment_event(self,interval=30) -> "CommentEvent":
         from ..event.comment import CommentEvent
@@ -408,6 +385,22 @@ class Project(base._BaseSiteAPI):
         r = (await self.ClientSession.get(f"https://api.scratch.mit.edu/users/{self.Session.username}/projects/{self.id}/visibility")).json()
         return r
     
+    async def report(self,category:int,message:str):
+        r = await self.ClientSession.post(
+            f"https://api.scratch.mit.edu/proxy/projects/{self.id}/report",
+            json={
+                "notes":message,
+                "report_category":str(category),
+                "thumbnail":""
+            }
+        )
+        #{"moderation_status": "notreviewed", "success": true} or 空白
+        if len(r.text) == 0:
+            raise exception.BadResponse(r)
+        if not r.json().get("success"):
+            raise exception.BadResponse(r)
+        return
+    
     async def get_remixtree(self) -> "RemixTree":
         _tree = await get_remixtree(self.id,ClientSession=self.ClientSession,session=self.Session)
         _tree.project = self
@@ -433,7 +426,6 @@ class Project(base._BaseSiteAPI):
 
 
 class RemixTree(base._BaseSiteAPI): #no data
-    raise_class = exception.ProjectNotFound
     id_name = "id"
 
     def __init__(
@@ -523,7 +515,7 @@ async def get_remixtree(project_id:int,*,ClientSession:common.ClientSession|None
     ClientSession = common.create_ClientSession(ClientSession,session)
     r = await ClientSession.get(f"https://scratch.mit.edu/projects/{project_id}/remixtree/bare/")
     if r.text == "no data" or r.text == "not visible":
-        raise exception.RemixTreeNotFound(RemixTree,ValueError)
+        raise exception.ObjectNotFound(RemixTree,ValueError)
     rtl:dict[int,RemixTree] = {}
     j = r.json()
     root_id = j["root_id"]

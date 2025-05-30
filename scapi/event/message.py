@@ -50,10 +50,10 @@ class SessionMessageEvent(_base._BaseEvent):
         self._call_event("on_ready")
         while self._running:
             try:
-                comment_list = [i async for i in self.session.message()]
-                comment_list.reverse()
+                message_list = [i async for i in self.session.message()]
+                message_list.reverse()
                 temp_lastest_dt = self.lastest_dt
-                for i in comment_list:
+                for i in message_list:
                     if i.datetime is None:
                         continue
                     if i.datetime > self.lastest_dt:
