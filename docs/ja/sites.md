@@ -1100,6 +1100,11 @@ STによるプロジェクトの評価を返す
 **入力**
 - **datelimit** (`datetime.datetime|None`) offset的な役割。指定した時間より前のアクティビティを取得する。Noneで最新の情報を取得。
 
+> await **classroom()** `-> Classroom|None`
+
+クラススタジオの場合、クラスを取得する。
+
+**`2.x.x`で追加**
 
 > await **roles()** `-> dict[str,bool]`
 
