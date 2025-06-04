@@ -59,6 +59,8 @@ class Response:
         return json.loads(self.text)
 
 class ClientSession(aiohttp.ClientSession):
+    def __str__(self):
+        return f"<ClientSession protect:{self.protect} proxy:{self._proxy}>"
 
     def __init__(self,header:dict={},cookie:dict={},protect:bool=False) -> None:
         super().__init__()

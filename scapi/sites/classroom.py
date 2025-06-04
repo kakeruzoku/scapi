@@ -59,7 +59,7 @@ class Classroom(base._BaseSiteAPI):
         self.commenter_count = fields.get("commenters_count",self.commenter_count)
         _user:dict = fields.get("educator_profile",{})
         _user:dict = _user.get("user",_user) or fields.get("educator")
-        self.educator = user.create_Partial_User(_user.get("username"),_user.get("pk"))
+        self.educator = user.create_Partial_User(_user.get("username"),_user.get("pk"),ClientSession=self.ClientSession,session=self.Session)
         self._studio_count = fields.get("gallery_count",self._studio_count)
 
         self.about_class = fields.get("description",self.about_class)

@@ -219,7 +219,7 @@ Scratchのセッションを表すクラス。
 
 > **banned** `-> bool`
 
-> **session_decode()** `-> dect`
+> **session_decode()** `-> dict`
 
 sessionIDをデコードします。IPアドレスやxtoken、ユーザーIDなどの情報が含まれています。
 

@@ -2,6 +2,16 @@
 
 Scapiの更新履歴です。1.0.0以前の更新履歴は[こちら](https://github.com/kakeruzoku/scapi/blob/main/changelog.md )
 # 2.x.x
+## 2.0.1
+### 新機能
+- ScratchのSessionIDからデータを取得
+
+### 更新/修正
+- 一部の関数でセッション情報が引き継がれない問題を修正
+
+### その他
+- ドキュメントページ`ja/quickstart` `migration`を追加
+
 ## 2.0.0
 ### 破壊的変更
 - `*****NotFound`が削除され、`ObjectNotFound`に統一されました。
