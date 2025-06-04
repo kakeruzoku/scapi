@@ -16,7 +16,7 @@ _T = TypeVar("_T")
 if TYPE_CHECKING:
     from ..sites import session
 
-__version__ = "2.0.0"
+__version__ = "2.0.1"
 
 headers = {
     "user-agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/75.0.3770.142 Safari/537.36",
