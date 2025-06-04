@@ -3,10 +3,13 @@
 ここではwebサイトのAPIを説明します。
 
 # 目次
+- [サイトAPI](#サイトapi)
+- [目次](#目次)
+- [共通事項](#共通事項)
 - [ベースAPI](#ベースapi)
   - [ClientSession](#clientsession)
   - [Response](#response)
-  - [_BaseSiteAPI](#_basesiteapi)
+  - [\_BaseSiteAPI](#_basesiteapi)
 - [アカウント](#アカウント)
   - [Session](#session)
   - [SessionStatus](#sessionstatus)
@@ -20,10 +23,12 @@
   - [OcularStatus](#ocularstatus)
 - [コメント](#コメント)
   - [Comment](#comment)
+  - [~~UserComment~~](#usercomment)
 - [フォーラム](#フォーラム)
   - [ForumCategoryType](#forumcategorytype)
   - [ForumTopic](#forumtopic)
   - [ForumPost](#forumpost)
+  - [~~ForumStatus~~](#forumstatus)
   - [OcularReactions](#ocularreactions)
 - [アクティビティ](#アクティビティ)
   - [Activity](#activity)
@@ -213,6 +218,10 @@ Scratchのセッションを表すクラス。
 > **username** `-> str`
 
 > **banned** `-> bool`
+
+> **session_decode()** `-> dect`
+
+sessionIDをデコードします。IPアドレスやxtoken、ユーザーIDなどの情報が含まれています。
 
 > await **logout()**
 
