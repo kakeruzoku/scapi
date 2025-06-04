@@ -116,6 +116,17 @@ class Session(base._BaseSiteAPI):
             warnings.warn(f"Warning: {self.username} is not email confirmed.")
 
     
+    def session_decode(self) -> dict:
+        import zlib
+        import base64
+        import json
+        session_id = self.session_id.strip('".')
+        session_id = session_id.split(':')[0]
+        padding = '=' * (-len(session_id) % 4)
+        compressed = base64.urlsafe_b64decode(session_id + padding)
+        decompressed = zlib.decompress(compressed)
+        return json.loads(decompressed.decode('utf-8'))
+
     async def logout(self) -> None:
         await self.ClientSession.post(
             "https://scratch.mit.edu/accounts/logout/",
