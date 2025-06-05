@@ -166,4 +166,4 @@ cython_debug/
 /test*.py
 /test.md
 .vscode/
-/scapi/editor/
+_test/
