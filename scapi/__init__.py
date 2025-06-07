@@ -122,3 +122,12 @@ from .cloud.server import (
 from .event._base import _BaseEvent
 from .event.comment import CommentEvent
 from .event.message import MessageEvent,SessionMessageEvent
+
+# Editor関連
+from .editor.project import (
+    load_sb3
+)
+from .editor.project import ScratchProject
+from .editor.asset import Asset
+from .editor.block import Block, BlockGroup, BlockList
+from .editor.base import Base
