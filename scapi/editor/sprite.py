@@ -12,6 +12,9 @@ class Sprite(base.Base):
         self._variables:dict = {}
         self._lists:dict = {}
 
+    def __str__(self) -> str:
+        return f"<Sprite name:{self._name}>"
+    
     @property
     def name(self):
         return self._name
@@ -33,6 +36,9 @@ class Stage(Sprite):
         self._variables:dict = {}
         self._lists:dict = {}
         self._broadcasts:dict = {}
+    
+    def __str__(self) -> str:
+        return f"<Stage name:{self._name}>"
 
     # broadcasts
 
