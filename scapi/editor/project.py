@@ -7,6 +7,7 @@ class ScratchProject(base.Base):
     def __init__(self):
         self.info:info.Info = info.Info()
         self._sprites:dict[str,sprite.Sprite] = {}
+        self._stage:sprite.Stage = sprite.Stage(_project=self)
         self._monitors:dict[str,monitor.MonitorBlock] = {}
         self.protect = True
         self._session:session.Session|None = None
@@ -18,7 +19,8 @@ class ScratchProject(base.Base):
     
     def get_sprite(self,name:str) -> sprite.Sprite | None:
         return self._sprites.get(name)
-    
+    def get_stage(self) -> sprite.Stage:
+        return self._stage
     @property
     def stage(self) -> sprite.Stage:
         return self.get_sprite("Stage") #悩み中
@@ -31,19 +33,22 @@ class ScratchProject(base.Base):
     # 変換
     def from_sb3(self, project_json:dict) -> None:
         meta = project_json.get("meta", {})
-        self.info.useragent = meta.get("agent", "Unknown Agent")
-        self.info.semver = meta.get("semver", "0.0.0")
-        self.info.vm = meta.get("vm", "0.0.0")
+        self.info.useragent = meta.get("agent", None)
+        self.info.semver = meta.get("semver", None)
+        self.info.vm = meta.get("vm", None)
 
         targets = project_json.get("targets", [])
         self._sprites = {}
         for sprite_data in targets:
-            self._sprites[sprite_data["name"]] = sprite.Sprite.from_sb3(sprite_data, self)
+            if sprite_data["isStage"]:
+                self._stage = sprite.load_sprite(sprite_data, _project=self)
+            else:
+                self._sprites[sprite_data["name"]] = sprite.load_sprite(sprite_data, _project=self)
         
         monitors = project_json.get("monitors", [])
         self._monitors = {}
         for monitor_data in monitors:
-            self._monitors[monitor_data["id"]] = monitor.MonitorBlock.from_sb3(monitor_data, self)
+            self._monitors[monitor_data["id"]] = monitor.load_sprite(monitor_data, _project=self)
 
     def to_sb3(self):
         pass
@@ -51,7 +56,7 @@ class ScratchProject(base.Base):
     @classmethod
     def new_project(cls):
         new_project = cls()
-        new_project._sprites["Stage"] = sprite.Stage(new_project)
+        new_project._stage = sprite.Stage(_project=new_project)
 
 def load_sb3(file_path:str) -> ScratchProject:
     if os.path.isdir(file_path):
