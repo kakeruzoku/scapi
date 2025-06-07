@@ -5,8 +5,8 @@ if TYPE_CHECKING:
     from . import project
 
 class Sprite(base.Base):
-    def __init__(self,*,_project:"project.ScratchProject",name:str):
-        self._project:"project.ScratchProject" = _project
+    def __init__(self,*,_project:"project.ScratchProject|None"=None,name:str):
+        self._project:"project.ScratchProject|None" = _project
         self._name:str = name
         self._is_stage:bool = False
         self._variables:dict = {}
@@ -22,8 +22,9 @@ class Sprite(base.Base):
     @name.setter
     def name(self,new_name:str):
         self._name = new_name
-        self._project._sprites.pop(new_name)
-        self._project._sprites[new_name] 
+        if self._project is not None:
+            self._project._sprites.pop(new_name)
+            self._project._sprites[new_name] 
 
     #var
 
@@ -39,9 +40,18 @@ class Stage(Sprite):
     
     def __str__(self) -> str:
         return f"<Stage name:{self._name}>"
+    
+    @property
+    def name(self):
+        return self._name
+    
+    @name.setter
+    def name(self,new_name):
+        raise TypeError()
 
     # broadcasts
 
+# データをjsonじゃなくてobjectとして保存したい
 def load_sprite(sprite_data:dict,*,_project:"project.ScratchProject") -> Stage | Sprite:
     if sprite_data["isStage"]:
         stage = Stage(_project=_project)

@@ -19,14 +19,16 @@ class ScratchProject(base.Base):
     
     def get_sprite(self,name:str) -> sprite.Sprite | None:
         return self._sprites.get(name)
+    
     def get_stage(self) -> sprite.Stage:
         return self._stage
+    
     @property
     def stage(self) -> sprite.Stage:
         return self.get_sprite("Stage") #悩み中
     
     def create_sprite(self,name:str) -> sprite.Sprite:
-        _sprite = sprite.Sprite(self,name)
+        _sprite = sprite.Sprite(name=name,_project=self)
         self._sprites[name] = _sprite
         return _sprite
 
