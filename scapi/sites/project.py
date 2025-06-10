@@ -23,7 +23,7 @@ if TYPE_CHECKING:
 class Project(base._BaseSiteAPI):
     id_name = "id"
 
-    def __str__(self):
+    def __repr__(self):
         return f"<Project id:{self.id} title:{self.title} Session:{self.Session}>"
 
     def __init__(
@@ -449,7 +449,7 @@ class RemixTree(base._BaseSiteAPI): #no data
         self.is_published:bool = None
         self._all_remixtree:dict[int,"RemixTree"] = None
 
-    def __str__(self):
+    def __repr__(self):
         return f"<RemixTree remix_count:{len(self._children)} status:{self.moderation_status} project:{self.project}> session:{self.Session}"
 
     async def update(self):

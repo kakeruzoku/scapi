@@ -15,7 +15,7 @@ if TYPE_CHECKING:
 class ScratchNews(base._BaseSiteAPI):
     id_name = "id"
 
-    def __str__(self):
+    def __repr__(self):
         return f"<ScratchNews id:{self.id} title:{self.title} url:{self.url}>"
     
     def __init__(

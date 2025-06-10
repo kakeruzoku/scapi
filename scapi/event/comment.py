@@ -10,7 +10,7 @@ if TYPE_CHECKING:
 
 class CommentEvent(_base._BaseEvent):
 
-    def __str__(self) -> str:
+    def __repr__(self) -> str:
         return f"<CommentEvent place:{self.place} running:{self._running} event:{self._event.keys()}>"
 
     def __init__(self,place:project.Project|studio.Studio|user.User,interval):

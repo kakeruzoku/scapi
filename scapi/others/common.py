@@ -40,7 +40,7 @@ def create_custom_ClientSession(header:dict={},cookie:dict={}) -> "ClientSession
 
 json_resp = dict[str,"json_resp"]|list["json_resp"]|str|float|int|bool|None
 class Response:
-    def __str__(self) -> str:
+    def __repr__(self) -> str:
         return f"<Response [{self.status_code}] {len(self.data)}>"
 
     def __init__(self,response:aiohttp.ClientResponse,text:bytes) -> None:
@@ -59,7 +59,7 @@ class Response:
         return json.loads(self.text)
 
 class ClientSession(aiohttp.ClientSession):
-    def __str__(self):
+    def __repr__(self):
         return f"<ClientSession protect:{self.protect} proxy:{self._proxy}>"
 
     def __init__(self,header:dict={},cookie:dict={},protect:bool=False) -> None:

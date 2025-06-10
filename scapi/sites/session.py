@@ -67,7 +67,7 @@ class SessionStatus:
 class Session(base._BaseSiteAPI):
     id_name = "session_id"
 
-    def __str__(self):
+    def __repr__(self):
         return f"<Session Username:{self.username}>"
     
     def __eq__(self, other:"Session"):

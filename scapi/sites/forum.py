@@ -95,7 +95,7 @@ class ForumTopic(base._BaseSiteAPI):
     async def update(self):
         self._update_from_str((await self.ClientSession.get(self.update_url)).text)
 
-    def __str__(self) -> str: return f"<ForumTopic id:{self.id} title:{self.title} category:{self.category} Session:{self.Session}>"
+    def __repr__(self) -> str: return f"<ForumTopic id:{self.id} title:{self.title} category:{self.category} Session:{self.Session}>"
     def __int__(self) -> int: return self.id
     def __eq__(self,value) -> bool: return isinstance(value,user.User) and self.id == value.id
     def __ne__(self,value) -> bool: return isinstance(value,user.User) and self.id != value.id
@@ -159,7 +159,7 @@ class ForumPost(base._BaseSiteAPI):
     async def update(self):
         self._update_from_str((await self.ClientSession.get(self.update_url)).text)
 
-    def __str__(self) -> str: return f"<ForumPost id:{self.id} topic:{self.topic} author:{self.author} content:{self.content} Session:{self.Session}>"
+    def __repr__(self) -> str: return f"<ForumPost id:{self.id} topic:{self.topic} author:{self.author} content:{self.content} Session:{self.Session}>"
     def __int__(self) -> int: return self.id
     def __eq__(self,value) -> bool: return isinstance(value,user.User) and self.id == value.id
     def __ne__(self,value) -> bool: return isinstance(value,user.User) and self.id != value.id
@@ -202,7 +202,7 @@ class ForumPost(base._BaseSiteAPI):
 class OcularReactions(base._BaseSiteAPI):
     id_name = "id"
 
-    def __str__(self):
+    def __repr__(self):
         return f"<OcularReactions id:{self.id} 👍:{len(self.thumbs_up)} 👎:{len(self.thumbs_down)} 😄:{len(self.smile)} 🎉:{len(self.tada)} 😕:{len(self.confused)} ❤️:{len(self.heart)} 🚀:{len(self.rocket)} 👀:{len(self.eyes)}>"
 
     def __init__(

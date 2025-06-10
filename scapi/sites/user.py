@@ -19,7 +19,7 @@ if TYPE_CHECKING:
 class User(base._BaseSiteAPI):
     id_name = "username"
 
-    def __str__(self):
+    def __repr__(self):
         return f"<User username:{self.username} id:{self.id} Session:{self.Session}>"
 
     def __init__(
@@ -360,7 +360,7 @@ class User(base._BaseSiteAPI):
 class OcularStatus(base._BaseSiteAPI):
     id_name = "username"
 
-    def __str__(self):
+    def __repr__(self):
         return f"<OcularStatus username:{self.username} status:{self.status} color:{self._color}>"
 
     def __init__(
