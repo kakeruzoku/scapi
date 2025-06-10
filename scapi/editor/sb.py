@@ -8,7 +8,7 @@ _T = TypeVar("_T")
 
 # わけわからん
 
-class _reference:
+class _Reference:
     def __repr__(self):
         return f"参照:{self.number}"
 
@@ -16,9 +16,44 @@ class _reference:
         self.number = number
         self.obj_list = obj_list
 
-class form: #34/35
+class Sound:
     def __repr__(self):
-        return f"form {self.width} {self.height} {self.depth}"
+        return f"Sound {self.length}"
+    
+    def __init__(self,length:int,data:bytes):
+        self.length = length
+        self.data = data
+
+class Bitmap:
+    def __repr__(self):
+        return f"Bitmap {self.length}"
+    
+    def __init__(self,length:int,data:bytes):
+        self.length = length
+        self.data = data
+
+
+class Rectangle: #33
+    def __repr__(self):
+        return f"Rectangle x1{self.x1} y1{self.y1} x2{self.x2} y2{self.y2}"
+    
+    def __init__(self,x1,y1,x2,y2):
+        self.x1 = x1
+        self.y1 = y1
+        self.x2 = x2
+        self.y2 = y2
+
+class Point: #33
+    def __repr__(self):
+        return f"Rectangle x1{self.x} y1{self.y}"
+    
+    def __init__(self,x,y):
+        self.x = x
+        self.y = y
+
+class Form: #34/35
+    def __repr__(self):
+        return f"Form {self.width} {self.height} {self.depth}"
 
     def __init__(self,width:int,height:int,depth:int,byte,colormap=None):
         self.width:int = width
@@ -27,9 +62,9 @@ class form: #34/35
         self.byte = byte
         self.colormap = colormap
 
-class color: #30/31
+class Color: #30/31
     def __repr__(self):
-        return f"color {self.r} {self.g} {self.b} {self.alpha}"
+        return f"Color {self.r} {self.g} {self.b} {self.alpha}"
 
     def __init__(self,r:int,g:int,b:int,alpha:int|None=None):
         self.r = r
@@ -37,10 +72,27 @@ class color: #30/31
         self.b = b
         self.alpha = alpha
 
+class _UserClass:
+    def __repr__(self):
+        return f"_UserClass {self.type} {self.version} {self.length} {" ".join([str(i) for i in self.fields])}"
+
+    def __init__(self,type:int,version:int,length:int):
+        self.type = type
+        self.version = version
+        self.length = length
+        self.fields = []
+
+    def append(self,obj):
+        self.fields.append(obj)
+
+    def read(self,f:io.BytesIO,o:list):
+        for _ in range(self.length):
+            self.append(_read_obj(f,o))
+
 def _load(obj,obj_list:list):
     #while True:
     for _ in range(100): #無限ループ対策
-        if not isinstance(obj,_reference):
+        if not isinstance(obj,_Reference):
             return obj
         obj = obj_list[obj.number]
     raise ValueError()
@@ -48,6 +100,14 @@ def _load(obj,obj_list:list):
 def _read_int(f:io.BytesIO,byte:int=4) -> int:
     return int.from_bytes(f.read(byte))
 
+def _debug_return(f):
+    def _func(*l,**d):
+        _r = f(*l,**d)
+        #print(_r)
+        return _r
+    return _func
+
+@_debug_return
 def _read_obj(f:io.BytesIO,o:list):
     types = _read_int(f,1)
     match types:
@@ -62,15 +122,20 @@ def _read_obj(f:io.BytesIO,o:list):
         case 5: #2byte整数
             return _read_int(f,2)
         case 8: #float?
-            #return f.read(16)
             return struct.unpack('d', f.read(8))[0]
-        case 9|14: #文字列 (9:ASCII 14:utf-8)
+        case 9|10|14: #文字列 (9:ASCII 14:utf-8)
             length = _read_int(f)
             return f.read(length).decode()
         case 11: #bytes
             length = _read_int(f)
             return f.read(length)
-        case 20: #list?
+        case 12:
+            length = _read_int(f) * 2
+            return Sound(length,f.read(length))
+        case 13:
+            length = _read_int(f) * 4
+            return Bitmap(length,f.read(length))
+        case 20|21|22|23: #list? 違いはわからん
             data = []
             for _ in range(_read_int(f)):
                 data.append(_read_obj(f,o))
@@ -83,11 +148,16 @@ def _read_obj(f:io.BytesIO,o:list):
                 data[key] = value
             return data
         case 30|31:
-            r = _read_int(f,2)
-            g = _read_int(f,2)
-            b = _read_int(f,2)
-            alpha = None if types == 30 else _read_int(f,8)
-            return color(r,g,b,alpha)
+            rgb = _read_int(f)
+            r = (rgb >> 22) & 0xff
+            g = (rgb >> 12) & 0xff
+            b = (rgb >> 2) & 0xff
+            alpha = None if types == 30 else _read_int(f,1)
+            return Color(r,g,b,alpha)
+        case 32:
+            return Point(*[_read_obj(f,o) for _ in range(2)])
+        case 33:
+            return Rectangle(*[_read_obj(f,o) for _ in range(4)])
         case 34|35:
             width = _read_obj(f,o)
             height = _read_obj(f,o)
@@ -95,13 +165,17 @@ def _read_obj(f:io.BytesIO,o:list):
             _read_obj(f,o) #未使用 常にNone
             byte = _read_obj(f,o)
             colormap = None if types == 34 else _read_obj(f,o)
-            return form(width,height,depth,byte,colormap)
-
-
+            return Form(width,height,depth,byte,colormap)
         case 99: #さんしょー
-            return _reference(_read_int(f,3),o)
-        case _:
-            raise TypeError(f"unknown type:{types}")
+            return _Reference(_read_int(f,3),o)
+        case x if 100 <= x:
+            version = _read_int(f,1)
+            length = _read_int(f,1)
+            _uc = _UserClass(x,version,length)
+            _uc.read(f,o)
+            return _uc
+        case x:
+            raise TypeError(f"unknown type:{x}")
 
         
 
@@ -114,8 +188,9 @@ def _read_objectstore(f:io.BytesIO):
     try:
         for _ in range(obj_count):
             obj_list.append(_read_obj(f,obj_list))
+        er = None
     except Exception:
-        traceback.print_exc()
+        er = traceback.format_exc()
     print("\n".join([str(i) for i in obj_list]))
     print(len(obj_list),obj_count)
 
@@ -128,4 +203,6 @@ def load_from_sb(path:str):
         infosize = int.from_bytes(f.read(4)) #info objのサイズ
         with io.BytesIO(f.read(infosize)) as infoobj:
             _read_objectstore(infoobj)
+        with io.BytesIO(f.read()) as mainobj:
+            _read_objectstore(mainobj)
 
