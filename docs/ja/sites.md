@@ -3,10 +3,13 @@
 ここではwebサイトのAPIを説明します。
 
 # 目次
+- [サイトAPI](#サイトapi)
+- [目次](#目次)
+- [共通事項](#共通事項)
 - [ベースAPI](#ベースapi)
   - [ClientSession](#clientsession)
   - [Response](#response)
-  - [_BaseSiteAPI](#_basesiteapi)
+  - [\_BaseSiteAPI](#_basesiteapi)
 - [アカウント](#アカウント)
   - [Session](#session)
   - [SessionStatus](#sessionstatus)
@@ -20,10 +23,12 @@
   - [OcularStatus](#ocularstatus)
 - [コメント](#コメント)
   - [Comment](#comment)
+  - [~~UserComment~~](#usercomment)
 - [フォーラム](#フォーラム)
   - [ForumCategoryType](#forumcategorytype)
   - [ForumTopic](#forumtopic)
   - [ForumPost](#forumpost)
+  - [~~ForumStatus~~](#forumstatus)
   - [OcularReactions](#ocularreactions)
 - [アクティビティ](#アクティビティ)
   - [Activity](#activity)
@@ -213,6 +218,10 @@ Scratchのセッションを表すクラス。
 > **username** `-> str`
 
 > **banned** `-> bool`
+
+> **session_decode()** `-> dict`
+
+sessionIDをデコードします。IPアドレスやxtoken、ユーザーIDなどの情報が含まれています。
 
 > await **logout()**
 
@@ -1100,6 +1109,11 @@ STによるプロジェクトの評価を返す
 **入力**
 - **datelimit** (`datetime.datetime|None`) offset的な役割。指定した時間より前のアクティビティを取得する。Noneで最新の情報を取得。
 
+> await **classroom()** `-> Classroom|None`
+
+クラススタジオの場合、クラスを取得する。
+
+**`2.0.1`で追加**
 
 > await **roles()** `-> dict[str,bool]`
 

@@ -24,7 +24,7 @@ async def try_except(coro:Awaitable[_T]|Callable[...,_T],data:tuple[int,str],*pa
     
 class CloudServerConnection:
 
-    def __str__(self):
+    def __repr__(self):
         return f"<CloudServerConnection id:{self.project_id} user:{self.username} joined:{self.connected} closed:{self.closed} set_count:{self.count}>"
 
     def __init__(

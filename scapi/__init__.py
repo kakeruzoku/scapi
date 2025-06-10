@@ -1,13 +1,11 @@
-# Special Thanks: Timmccool / https://github.com/TimMcCool/scratchattach
-
+# Special Thanks: Scratchattach [Timmccool] / https://github.com/TimMcCool/scratchattach
 #███████╗ ██████╗ █████╗ ██████╗ ██╗
 #██╔════╝██╔════╝██╔══██╗██╔══██╗██║
 #███████╗██║     ███████║██████╔╝██║
 #╚════██║██║     ██╔══██║██╔═══╝ ██║
 #███████║╚██████╗██║  ██║██║     ██║
 #╚══════╝ ╚═════╝╚═╝  ╚═╝╚═╝     ╚═╝
-# Created by kakeruzoku [kakeruzoku@gmail.com]
-# pip install scapi / https://github.com/kakeruzoku/scapi 
+# pip install scapi / https://github.com/kakeruzoku/scapi
 
 from .others.common import (
     create_ClientSession,

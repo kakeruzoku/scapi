@@ -14,7 +14,7 @@ if TYPE_CHECKING:
 
 class _BaseCloud:
 
-    def __str__(self) -> str:
+    def __repr__(self) -> str:
         return f"<_BaseCloud id:{self.project_id} connect:{self.is_connect}>"
 
     def __init__(self,clientsession:common.ClientSession|None,project_id:int|str):
@@ -243,7 +243,7 @@ class _BaseCloud:
         return cloud_event.CloudWebsocketEvent(self)
 
 class ScratchCloud(_BaseCloud):
-    def __str__(self) -> str:
+    def __repr__(self) -> str:
         return f"<ScratchCloud id:{self.project_id} user:{self.username} connect:{self.is_connect}>"
 
     def __init__(
@@ -289,7 +289,7 @@ class ScratchCloud(_BaseCloud):
 
 class TurboWarpCloud(_BaseCloud):
     
-    def __str__(self) -> str:
+    def __repr__(self) -> str:
         return f"<TurboWarpCloud id:{self.project_id} connect:{self.is_connect}>"
 
     def __init__(

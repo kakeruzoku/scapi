@@ -12,13 +12,13 @@ from . import project
 
 if TYPE_CHECKING:
     from .session import Session
-    from . import user
+    from . import user,classroom
     from ..event.comment import CommentEvent
 
 class Studio(base._BaseSiteAPI):
     id_name = "id"
 
-    def __str__(self):
+    def __repr__(self):
         return f"<Studio id:{self.id} title:{self.title} Session:{self.Session}>"
 
     def __init__(
@@ -293,6 +293,20 @@ class Studio(base._BaseSiteAPI):
         return (await self.ClientSession.get(
             f"https://api.scratch.mit.edu/studios/{self.id}/users/{self.Session.username}",
         )).json()
+    
+    async def classroom(self) -> "classroom.Classroom|None":
+        from . import classroom
+        r = await self._classroom()
+        if r is None:
+            return r
+        return await base.get_object(self.ClientSession,r,classroom.Classroom,self.Session)
+
+    async def _classroom(self) -> int|None:
+        try:
+            r = await self.ClientSession.get(f"https://api.scratch.mit.edu/studios/{self.id}/classroom")
+            return r.json().get("id")
+        except exception.HTTPNotFound:
+            return None
     
     async def report(self,type:Literal["title","description","thumbnail"]):
         self.has_session_raise()

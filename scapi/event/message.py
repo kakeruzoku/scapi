@@ -10,7 +10,7 @@ if TYPE_CHECKING:
 
 class MessageEvent(_base._BaseEvent):
 
-    def __str__(self) -> str:
+    def __repr__(self) -> str:
         return f"<MessageEvent user:{self.user} running:{self._running} event:{self._event.keys()}>"
 
     def __init__(self,users:user.User,interval):
@@ -35,7 +35,7 @@ class MessageEvent(_base._BaseEvent):
 
 class SessionMessageEvent(_base._BaseEvent):
 
-    def __str__(self) -> str:
+    def __repr__(self) -> str:
         return f"<SessionMessageEvent session:{self.session} running:{self._running} event:{self._event.keys()}>"
 
     def __init__(self,sessions:"Session",interval):

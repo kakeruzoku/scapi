@@ -57,7 +57,7 @@ class ActivityType(Enum):
 class Activity:
     id_name = "data"
 
-    def __str__(self):
+    def __repr__(self):
         return f"<Activity type:{self.type} id:{self.id} place:{self.place} actor:{self.actor} target:{self.target}>"
 
     def __init__(
@@ -400,7 +400,7 @@ class Activity:
 class CloudActivity(base._BaseSiteAPI):
     id_name = "data"
 
-    def __str__(self):
+    def __repr__(self):
         return f"<CloudActivity method:{self.method} id:{self.project_id} user:{self.username} variable:{self.variable} value:{self.value}>"
 
     def __init__(
