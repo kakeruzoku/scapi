@@ -1,6 +1,6 @@
 import io
 from enum import Enum
-from typing import TypeVar
+from typing import TypeVar,Any
 import struct
 import traceback
 
@@ -9,16 +9,31 @@ _T = TypeVar("_T")
 # わけわからん
 
 class _Reference:
+    def __hash__(self) -> int:
+        return hash(id(self))
+
     def __repr__(self):
-        return f"参照:{self.number}"
+        try:
+            return f"<参照:{self.number}/{self.obj_list[self.number]}>"
+        except Exception:
+            return f"<参照:{self.number}>"
+        
+    def __eq__(self,value):
+        try:
+            return self.get() == value
+        except Exception:
+            return None
 
     def __init__(self,number:int,obj_list:list):
         self.number = number
         self.obj_list = obj_list
 
+    def get(self):
+        return self.obj_list[self.number]
+
 class Sound:
     def __repr__(self):
-        return f"Sound {self.length}"
+        return f"<Sound {self.length}>"
     
     def __init__(self,length:int,data:bytes):
         self.length = length
@@ -26,7 +41,7 @@ class Sound:
 
 class Bitmap:
     def __repr__(self):
-        return f"Bitmap {self.length}"
+        return f"<Bitmap {self.length}>"
     
     def __init__(self,length:int,data:bytes):
         self.length = length
@@ -35,7 +50,7 @@ class Bitmap:
 
 class Rectangle: #33
     def __repr__(self):
-        return f"Rectangle x1{self.x1} y1{self.y1} x2{self.x2} y2{self.y2}"
+        return f"<Rectangle x1:{self.x1} y1:{self.y1} x2:{self.x2} y2:{self.y2}>"
     
     def __init__(self,x1,y1,x2,y2):
         self.x1 = x1
@@ -45,7 +60,7 @@ class Rectangle: #33
 
 class Point: #33
     def __repr__(self):
-        return f"Rectangle x1{self.x} y1{self.y}"
+        return f"<Rectangle x:{self.x} y:{self.y}>"
     
     def __init__(self,x,y):
         self.x = x
@@ -53,7 +68,7 @@ class Point: #33
 
 class Form: #34/35
     def __repr__(self):
-        return f"Form {self.width} {self.height} {self.depth}"
+        return f"<Form {self.width} {self.height} {self.depth} {self.byte} {self.colormap}>"
 
     def __init__(self,width:int,height:int,depth:int,byte,colormap=None):
         self.width:int = width
@@ -64,7 +79,7 @@ class Form: #34/35
 
 class Color: #30/31
     def __repr__(self):
-        return f"Color {self.r} {self.g} {self.b} {self.alpha}"
+        return f"<Color {self.r} {self.g} {self.b} {self.alpha}>"
 
     def __init__(self,r:int,g:int,b:int,alpha:int|None=None):
         self.r = r
@@ -72,9 +87,41 @@ class Color: #30/31
         self.b = b
         self.alpha = alpha
 
+class Dict:
+    def __repr__(self) -> str:
+        return f"<Dict {{ {",".join([f"{i[0]}:{i[1]}" for i in (list(self._data.items())+list(self._refdata.items()))])} }}>"
+    
+    def __init__(self):
+        self._data:dict = {}
+        self._refdata:dict[_Reference,Any] = {}
+    
+    def __getitem__(self,key:str):
+        try:
+            return self._data[key]
+        except KeyError:
+            pass
+        for k,v in list(self._refdata.items()):
+            if isinstance(k,_Reference):
+                try:
+                    value = k.get()
+                    self._data[value] = v
+                    self._refdata.pop(k)
+                    if value == key:
+                        return v
+                except IndexError:
+                    pass
+        raise KeyError
+
+
+    def __setitem__(self,key,value):
+        if isinstance(key,_Reference):
+            self._refdata[key] = value
+        else:
+            self._data[key] = value
+
 class _UserClass:
     def __repr__(self):
-        return f"_UserClass {self.type} {self.version} {self.length} {" ".join([str(i) for i in self.fields])}"
+        return f"<_UserClass {self.type} {self.version} {self.length} {" ".join([str(i) for i in self.fields])}>"
 
     def __init__(self,type:int,version:int,length:int):
         self.type = type
@@ -89,12 +136,15 @@ class _UserClass:
         for _ in range(self.length):
             self.append(_read_obj(f,o))
 
-def _load(obj,obj_list:list):
+    def __getitem__(self,key):
+        return self.fields[key]
+
+def _load(obj):
     #while True:
     for _ in range(100): #無限ループ対策
         if not isinstance(obj,_Reference):
             return obj
-        obj = obj_list[obj.number]
+        obj = obj.obj_list[obj.number]
     raise ValueError()
 
 def _read_int(f:io.BytesIO,byte:int=4) -> int:
@@ -141,7 +191,7 @@ def _read_obj(f:io.BytesIO,o:list):
                 data.append(_read_obj(f,o))
             return data
         case 24: #dict?
-            data = {}
+            data = Dict()
             for _ in range(_read_int(f)): #辞書の長さ？
                 key = _read_obj(f,o)
                 value = _read_obj(f,o)
@@ -180,19 +230,16 @@ def _read_obj(f:io.BytesIO,o:list):
         
 
 def _read_objectstore(f:io.BytesIO):
-    obj_list = [None] #番号は1から始まる
+    obj_list:list = [None] #番号は1から始まる
     if f.read(10) != b"ObjS\x01Stch\x01":
         raise ValueError()
     obj_count = _read_int(f)
-    print(obj_count)
     try:
         for _ in range(obj_count):
             obj_list.append(_read_obj(f,obj_list))
         er = None
     except Exception:
         er = traceback.format_exc()
-    print("\n".join([str(i) for i in obj_list]))
-    print(len(obj_list),obj_count)
 
 
 
