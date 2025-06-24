@@ -1496,7 +1496,9 @@ APIがないのでbeautifulsoupでの実装が多めです。Scratchの仕様変
 > scapi.**get_topic_list(category,start_page=1,end_page=1,ClientSession=None)**
 
 **入力**
-- **category** (`ForumCategoryType`) 読み込みたいカテゴリー
+- **category** (`ForumCategoryType|int`) 読み込みたいカテゴリー(のID)
+
+**`*.*.*`で更新** `int`(カテゴリID)も使用できるようになりました
 
 カテゴリーのトピックを取得します。
 
@@ -1531,9 +1533,16 @@ IDからカテゴリーを作成します。不明なIDは`ForumCategoryType.unk
 
 > **last_update** `-> str|None`
 
-> async for **self,start_page=1,end_page=1** `-> ForumPost`
+> async for **get_posts(start_page=1,end_page=1)** `-> ForumPost`
 
 フォーラムの投稿を取得します。
+
+> await **follow(follow=True)**
+
+**入力**
+- **follow** (`bool`) フォローするか
+
+**`*.*.*`で追加**
 
 ## ForumPost
 
@@ -1560,6 +1569,13 @@ Userにある情報:username,id
 > **time** `-> str`
 
 > property **url** `-> str`
+
+> await **report(reason)**
+
+**入力**
+- **reason** (`str`) 報告する理由
+
+**`*.*.*`で追加**
 
 ## ~~ForumStatus~~
 

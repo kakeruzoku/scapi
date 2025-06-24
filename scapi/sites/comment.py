@@ -75,20 +75,23 @@ class Comment(base._BaseSiteAPI):
                 is_old = author_username is None
 
             if is_old:
-                return await self._update_comment_old_api()
+                await self._update_comment_old_api()
+                return True
             else:
                 if author_username is None: raise exception.NoDataError()
                 self.update_url = f"https://api.scratch.mit.edu/users/{author_username}/projects/{self.place.id}/comments/{self.id}"
                 await super().update()
         elif self.type == "Studio": #基本3.0
             if is_old == True:
-                return await self._update_comment_old_api()
+                await self._update_comment_old_api()
+                return True
             else:
                 self.update_url = f"https://api.scratch.mit.edu/studios/{self.place.id}/comments/{self.id}"
                 await super().update()
         elif self.type == "User": #2.0APIのみ
-            if is_old == True: raise ValueError()
-            return await self._update_comment_old_api()
+            if is_old == False: raise ValueError()
+            await self._update_comment_old_api()
+            return True
         else:
             raise TypeError()
         return False
