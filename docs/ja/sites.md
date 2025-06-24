@@ -235,7 +235,7 @@ sessionIDをデコードします。IPアドレスやxtoken、ユーザーIDな�
 
 **`1.5.0`で追加**
 
-**`*.*.*`で更新** 生徒アカウントでのパスワードの再設定に対応。
+**`2.1.0`で更新** 生徒アカウントでのパスワードの再設定に対応。
 
 > await **change_country(country)**
 
@@ -262,7 +262,7 @@ sessionIDをデコードします。IPアドレスやxtoken、ユーザーIDな�
 
 未登録の場合、生徒アカウント情報を登録します。
 
-**`*.*.*`で追加**
+**`2.1.0`で追加**
 
 > await **delete_account(password,delete_project)**
 
@@ -1335,7 +1335,7 @@ Project(key:`object`)に含まれる情報:id,title
 - **icon** (`bytes|str`) 画像のバイナリデータか画像のファイルパス
 - **filename** (`str`) (bytesで入れた場合、)拡張子を含んだファイル名
 
-`*.*.*`で変更 `set_icon`から`change_icon`に変更され、元の関数名は非推奨になりました。
+**`2.1.0`で変更** `set_icon`から`change_icon`に変更され、元の関数名は非推奨になりました。
 
 > await **follow(follow)**
 
@@ -1498,7 +1498,7 @@ APIがないのでbeautifulsoupでの実装が多めです。Scratchの仕様変
 **入力**
 - **category** (`ForumCategoryType|int`) 読み込みたいカテゴリー(のID)
 
-**`*.*.*`で更新** `int`(カテゴリID)も使用できるようになりました
+**`2.1.0`で更新** `int`(カテゴリID)も使用できるようになりました
 
 カテゴリーのトピックを取得します。
 
@@ -1542,7 +1542,7 @@ IDからカテゴリーを作成します。不明なIDは`ForumCategoryType.unk
 **入力**
 - **follow** (`bool`) フォローするか
 
-**`*.*.*`で追加**
+**`2.1.0`で追加**
 
 ## ForumPost
 
@@ -1575,7 +1575,7 @@ Userにある情報:username,id
 **入力**
 - **reason** (`str`) 報告する理由
 
-**`*.*.*`で追加**
+**`2.1.0`で追加**
 
 ## ~~ForumStatus~~
 
@@ -1820,7 +1820,7 @@ Scratchの生徒アカウントを作成します。
 - **id** (`str`) `(md5hash).(file_ext)`形式のID。
 - **path** (`str`) ダウンロード先のパス
 
-**`*.*.*`で追加**
+**`2.1.0`で追加**
 
 ## Backpack
 

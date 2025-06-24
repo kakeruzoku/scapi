@@ -2,6 +2,20 @@
 
 Scapiの更新履歴です。1.0.0以前の更新履歴は[こちら](https://github.com/kakeruzoku/scapi/blob/main/changelog.md )
 # 2.x.x
+## 2.1.0
+### 新機能
+- `Session.register_info()` 生徒アカウントでのアカウント情報登録に対応
+- `ForumTopic.follow()` フォーラムのトピックのフォローに対応
+- `ForumPost.report()` フォーラムの投稿の報告に対応
+- `scapi.download_asset()`アセットのダウンロードに対応
+
+### 更新/修正
+- `Session.change_password()` パスワードリセット時のパスワード更新に対応
+- `scapi.get_topic_list`関数のカテゴリー指定にカテゴリーIDとして`int`が使えるように変更
+- 非推奨関数が正しく実行されない問題を修正
+- `Comment.update()`関数での問題を修正
+- その他微弱な修正
+
 ## 2.0.1
 ### 新機能
 - ScratchのSessionIDからデータを取得
