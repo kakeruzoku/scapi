@@ -5,6 +5,8 @@ import warnings
 import hashlib
 import json
 
+import aiohttp
+
 from scapi.cloud.cloud import ScratchCloud
 
 from ..others import common
@@ -134,19 +136,37 @@ class Session(base._BaseSiteAPI):
         )
         await self.ClientSession.close()
 
-    async def change_password(self,old_password:str,new_password:str):
-        data = json.dumps({
-            "csrfmiddlewaretoken": "a",
-            "old_password": old_password,
-            "new_password1": new_password,
-            "new_password2": new_password
-        })
-        r = await self.ClientSession.post(
-            f"https://scratch.mit.edu/accounts/password_change/",
-            data=data
-        )
-        if r.url == f"https://scratch.mit.edu/accounts/password_change/":
-            raise exception.BadResponse(r)
+    async def change_password(self,old_password:str|None,new_password:str):
+        if self.status.must_reset_password and self.check:
+            old_password = None
+        if old_password is None:
+            if not self.status.must_reset_password and self.check:
+                raise exception.NoPermission()
+            data = aiohttp.FormData({
+                "csrfmiddlewaretoken":"a",
+                "new_password1":new_password,
+                "new_password2":new_password
+            })
+            r = await self.ClientSession.post(
+                f"https://scratch.mit.edu/classes/student_password_reset/",
+                data=data
+            )
+            if r.url == "https://scratch.mit.edu/classes/student_password_reset/":
+                raise exception.BadResponse(r)
+        else:
+            data = json.dumps({
+                "csrfmiddlewaretoken": "a",
+                "old_password": old_password,
+                "new_password1": new_password,
+                "new_password2": new_password
+            })
+            r = await self.ClientSession.post(
+                f"https://scratch.mit.edu/accounts/password_change/",
+                data=data
+            )
+            if r.url == f"https://scratch.mit.edu/accounts/password_change/":
+                raise exception.BadResponse(r)
+    
         
     async def change_country(self,country:str):
         await self.ClientSession.post(
@@ -162,6 +182,20 @@ class Session(base._BaseSiteAPI):
                 "password": password
             }
         )
+
+    async def register_info(self,password:str,birth_day:datetime.date,gender:str,country:str):
+        if (not self.status.must_complete_registration) and self.check:
+            raise exception.NoPermission()
+        data = aiohttp.FormData({
+            "birth_month":str(birth_day.month),
+            "birth_year":str(birth_day.year),
+            "gender":gender,
+            "country":country,
+            "is_robot":"false",
+            "password":password
+        })
+        r = await self.ClientSession.post(f"https://scratch.mit.edu/classes/student_update_registration/",data=data)
+
 
     async def delete_account(self,password:str,delete_project:bool):
         r = await self.ClientSession.post(

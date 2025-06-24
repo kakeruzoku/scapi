@@ -5,11 +5,15 @@
 
 # scapi
 
-特徴
-- `async` `await` を使ったAPI
-- 型ヒント
+## 特徴
+
+- **非同期処理を使用した効率的な実行**
+- **ほぼすべて**のAPIをサポート
+- **型ヒント**による開発のしやすさ
+- オープンソース
 
 # インストール
 `pip install -U scapi`
 
-Wikiは[こちら](https://scapi.kakeru.f5.si )
+Wikiページ: https://scapi.kakeru.f5.si
+公式Scratchフォーラム: https://scratch.mit.edu/discuss/topic/800025/

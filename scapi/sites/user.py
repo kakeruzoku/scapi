@@ -310,8 +310,7 @@ class User(base._BaseSiteAPI):
         form.add_field("file",thumbnail,filename=filename)
         await self.ClientSession.post(f"https://scratch.mit.edu/site-api/users/all/{self.username}/",data=form)
 
-    async def set_icon(self,icon:bytes|str,filetype:str="icon.png"):
-        await self.change_icon(icon,filetype)
+    set_icon = common.deprecated("User","set_icon","change_icon")(change_icon)
 
     async def follow(self,follow:bool=True):
         self.has_session_raise()
@@ -344,7 +343,7 @@ class User(base._BaseSiteAPI):
                 })
             )
 
-    async def report(self,category:int,type:Literal["username","icon","description","working_on"]):
+    async def report(self,type:Literal["username","icon","description","working_on"]):
         self.has_session_raise()
         r = await self.ClientSession.post(
             f"https://scratch.mit.edu/site-api/users/all/{self.username}/report/",

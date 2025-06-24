@@ -4,6 +4,7 @@ import random
 import re
 from typing import AsyncGenerator, Generator, Literal, TypedDict, TYPE_CHECKING, overload
 import warnings
+import aiohttp
 import bs4
 
 from ..others import  common
@@ -130,6 +131,11 @@ class ForumTopic(base._BaseSiteAPI):
                 _obj._update_from_str(soup)
                 yield _obj
 
+    async def follow(self,follow:bool=True):
+        self.has_session_raise()
+        url = f"https://scratch.mit.edu/discuss/subscription/topic/{self.id}/{"add" if follow else "delete"}/"
+        await self.ClientSession.post(url)
+
 class ForumPost(base._BaseSiteAPI):
     id_name = "id"
 
@@ -179,7 +185,7 @@ class ForumPost(base._BaseSiteAPI):
         _raw_page = soup.find("span",{"class":"current page"}) #投稿単体取り出し
         self.page = 1 if _raw_page is None else int(_raw_page.text)
         id = common.split_int(soup.find("img",{"title":"[RSS Feed]"}).parent["href"],"topic/","/")
-        self.topic = ForumTopic(self.ClientSession,id,self.Session) if self.topic is None else self.topic
+        self.topic = self.topic or ForumTopic(self.ClientSession,id,self.Session)
         self.topic._update_from_str(soup)
 
         _raw_post = soup.find("div",{"id":f"p{self.id}"})
@@ -198,6 +204,21 @@ class ForumPost(base._BaseSiteAPI):
 
     async def get_ocular_reactions(self) -> "OcularReactions":
         return await base.get_object(self.ClientSession,self.id,OcularReactions,self.Session)
+    
+    async def report(self,reason:str):
+        await self.ClientSession.post(
+            "https://scratch.mit.edu/discuss/misc/",
+            params={
+                "action":"report",
+                "post_id":str(self.id)
+            },
+            data=aiohttp.FormData({
+                "csrfmiddlewaretoken":"a",
+                "post":str(self.id),
+                "reason":reason,
+                "submit":""
+            })
+        )
 
 class OcularReactions(base._BaseSiteAPI):
     id_name = "id"
@@ -246,11 +267,12 @@ async def get_topic(topic_id:int,*,ClientSession=None) -> ForumTopic:
 async def get_post(post_id:int,*,ClientSession=None) -> ForumPost:
     return await base.get_object(ClientSession,post_id,ForumPost)
 
-async def get_topic_list(category:ForumCategoryType,start_page=1,end_page=1,*,ClientSession=None) -> AsyncGenerator[ForumTopic, None]:
-    if category == ForumCategoryType.unknown: raise ValueError
+async def get_topic_list(category:ForumCategoryType|int,start_page:int=1,end_page:int=1,*,ClientSession:common.ClientSession|None=None) -> AsyncGenerator[ForumTopic, None]:
+    if isinstance(category,ForumCategoryType):
+        category = category.value
     ClientSession = common.create_ClientSession(ClientSession)
     for page in range(start_page,end_page+1):
-        html = (await ClientSession.get(f"https://scratch.mit.edu/discuss/{category.value}",params={"page":page})).text
+        html = (await ClientSession.get(f"https://scratch.mit.edu/discuss/{category}",params={"page":page})).text
         soup = bs4.BeautifulSoup(html, "html.parser")
         topics = soup.find_all('tr')[1:]
         for topic in topics:

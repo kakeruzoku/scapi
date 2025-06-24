@@ -16,7 +16,7 @@ _T = TypeVar("_T")
 if TYPE_CHECKING:
     from ..sites import session
 
-__version__ = "2.0.1"
+__version__ = "2.1.0"
 
 headers = {
     "user-agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/75.0.3770.142 Safari/537.36",
@@ -177,6 +177,9 @@ class ClientSession(aiohttp.ClientSession):
             data=data,json=json,timeout=timeout,params=params,
             header=header,cookie=cookie,check=check,**d
         )
+    
+    async def __aenter__(self):
+        return self
 
 
 
@@ -265,28 +268,6 @@ async def open_tool(inp:str|bytes,default_filename:str) -> tuple[bytes, str]:
         return inp,default_filename
     raise TypeError
 
-async def requests_with_file(filedata:bytes,filename:str,url:str,clientsession:ClientSession) -> Response:
-    random_code = "".join(random.choices(string.ascii_letters,k=20))
-
-    filename = filename.replace("\\","/")
-    if filename.endswith("/"): filename = filename[:-1]
-    filename = filename.split("/")[-1]
-    Extension = filename.split(".")[-1]
-    before = f'------WebKitFormBoundary{random_code}\r\nContent-Disposition: form-data; name="file"; filename="{filename}"\r\nContent-Type: image/{Extension}\r\n\r\n'.encode("utf-8")
-    after = f"\r\n------WebKitFormBoundary{random_code}--\r\n".encode("utf-8")
-    payload = b"".join([before,filedata,after])
-    return await clientsession.post(
-        url,
-        data=payload,
-        header=clientsession.header|{
-            "accept": "*/",
-            "content-type": f"multipart/form-data; boundary=----WebKitFormBoundary{random_code}",
-            "Referer": "https://scratch.mit.edu/",
-            "x-csrftoken": "a",
-            "x-requested-with": "XMLHttpRequest",
-        }
-    )
-
 def get_id(obj:Any,name:str="id") -> int|str|None:
     if obj is None:
         return None
@@ -352,6 +333,6 @@ def deprecated(class_name:str,old:str,new:str) -> Callable[[_T], _T]:
         def deprecated_func(*l,**d):
             print(f"Function {old} in class {class_name} is deprecated."
                   f"\nUse the new {new} function")
-            return f()
+            return f(*l,**d)
         return deprecated_func
     return inner

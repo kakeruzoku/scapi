@@ -75,3 +75,6 @@ class Backpack(base._BaseSiteAPI):
         r = await self.ClientSession.delete(f"https://backpack.scratch.mit.edu/{self.Session.username}/{self.id}")
         if not r.json().get("ok",False):
             raise exception.BadResponse(r)
+        
+async def download_asset(id:str,path:str,ClientSession:common.ClientSession):
+    await common.downloader(ClientSession,f"https://assets.scratch.mit.edu/internalapi/asset/{id}/get/",path)

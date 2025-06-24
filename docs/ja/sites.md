@@ -230,10 +230,12 @@ sessionIDをデコードします。IPアドレスやxtoken、ユーザーIDな�
 > await **change_password(old_password,new_password)**
 
 **入力**
-- **old_password** (`str`) 現在使用しているパスワード
+- **old_password** (`str|None`) 現在使用しているパスワード
 - **new_password** (`str`) 新しいパスワード
 
 **`1.5.0`で追加**
+
+**`2.1.0`で更新** 生徒アカウントでのパスワードの再設定に対応。
 
 > await **change_country(country)**
 
@@ -249,6 +251,18 @@ sessionIDをデコードします。IPアドレスやxtoken、ユーザーIDな�
 - **email** (`str`) 変更先のメールアドレス
 
 **`1.5.0`で追加**
+
+> await **register_info(password,birth_day,gender,country)**
+
+**入力**
+- **password** (`str`) パスワード
+- **birth_day** (`datetime.date`) 誕生日(年と月が使用されます。)
+- **gender** (`str`) 性別
+- **country** (`str`) 国
+
+未登録の場合、生徒アカウント情報を登録します。
+
+**`2.1.0`で追加**
 
 > await **delete_account(password,delete_project)**
 
@@ -1321,6 +1335,8 @@ Project(key:`object`)に含まれる情報:id,title
 - **icon** (`bytes|str`) 画像のバイナリデータか画像のファイルパス
 - **filename** (`str`) (bytesで入れた場合、)拡張子を含んだファイル名
 
+**`2.1.0`で変更** `set_icon`から`change_icon`に変更され、元の関数名は非推奨になりました。
+
 > await **follow(follow)**
 
 **入力**
@@ -1480,7 +1496,9 @@ APIがないのでbeautifulsoupでの実装が多めです。Scratchの仕様変
 > scapi.**get_topic_list(category,start_page=1,end_page=1,ClientSession=None)**
 
 **入力**
-- **category** (`ForumCategoryType`) 読み込みたいカテゴリー
+- **category** (`ForumCategoryType|int`) 読み込みたいカテゴリー(のID)
+
+**`2.1.0`で更新** `int`(カテゴリID)も使用できるようになりました
 
 カテゴリーのトピックを取得します。
 
@@ -1515,9 +1533,16 @@ IDからカテゴリーを作成します。不明なIDは`ForumCategoryType.unk
 
 > **last_update** `-> str|None`
 
-> async for **self,start_page=1,end_page=1** `-> ForumPost`
+> async for **get_posts(start_page=1,end_page=1)** `-> ForumPost`
 
 フォーラムの投稿を取得します。
+
+> await **follow(follow=True)**
+
+**入力**
+- **follow** (`bool`) フォローするか
+
+**`2.1.0`で追加**
 
 ## ForumPost
 
@@ -1544,6 +1569,13 @@ Userにある情報:username,id
 > **time** `-> str`
 
 > property **url** `-> str`
+
+> await **report(reason)**
+
+**入力**
+- **reason** (`str`) 報告する理由
+
+**`2.1.0`で追加**
 
 ## ~~ForumStatus~~
 
@@ -1781,6 +1813,14 @@ Scratchの生徒アカウントを作成します。
 > async for **backpack(limit=40, offset=0)** `-> Backpack`
 
 バックパックを取得する。
+
+> await **download_asset(id,path,ClientSession)**
+
+**入力**
+- **id** (`str`) `(md5hash).(file_ext)`形式のID。
+- **path** (`str`) ダウンロード先のパス
+
+**`2.1.0`で追加**
 
 ## Backpack
 

@@ -14,7 +14,7 @@ var = init.replace(" ","").split("__version__=\"")[1].split("\"")[0]
 setup(
     name="scapi",
     version=var,
-    description="ScratchAttachより高機能をめざして。",
+    description="非同期なScratchAPIモジュール",
     long_description=readme,
     long_description_content_type='text/markdown',
     author="kakeruzoku",
