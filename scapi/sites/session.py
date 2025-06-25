@@ -148,7 +148,7 @@ class Session(base._BaseSiteAPI):
                 "new_password2":new_password
             })
             r = await self.ClientSession.post(
-                f"https://scratch.mit.edu/classes/student_password_reset/",
+                "https://scratch.mit.edu/classes/student_password_reset/",
                 data=data
             )
             if r.url == "https://scratch.mit.edu/classes/student_password_reset/":
@@ -161,16 +161,16 @@ class Session(base._BaseSiteAPI):
                 "new_password2": new_password
             })
             r = await self.ClientSession.post(
-                f"https://scratch.mit.edu/accounts/password_change/",
+                "https://scratch.mit.edu/accounts/password_change/",
                 data=data
             )
-            if r.url == f"https://scratch.mit.edu/accounts/password_change/":
+            if r.url == "https://scratch.mit.edu/accounts/password_change/":
                 raise exception.BadResponse(r)
     
         
     async def change_country(self,country:str):
         await self.ClientSession.post(
-            f"https://scratch.mit.edu/accounts/settings/",
+            "https://scratch.mit.edu/accounts/settings/",
             data={"country": country}
         )
     
@@ -194,7 +194,7 @@ class Session(base._BaseSiteAPI):
             "is_robot":"false",
             "password":password
         })
-        r = await self.ClientSession.post(f"https://scratch.mit.edu/classes/student_update_registration/",data=data)
+        r = await self.ClientSession.post("https://scratch.mit.edu/classes/student_update_registration/",data=data)
 
 
     async def delete_account(self,password:str,delete_project:bool):
@@ -419,7 +419,7 @@ class Session(base._BaseSiteAPI):
         if self.check and (not self.status.educator):
             raise exception.NoPermission()
         r = await self.ClientSession.post(
-            f"https://scratch.mit.edu/site-api/classrooms/check_educator_password/",
+            "https://scratch.mit.edu/site-api/classrooms/check_educator_password/",
             json={"password":password}
         )
         return r.json().get("success")
@@ -468,28 +468,28 @@ class Session(base._BaseSiteAPI):
     
     def explore_projects(self, *, query:str="*", mode:str="trending", language:str="en", limit:int=40, offset:int=0) -> AsyncGenerator["project.Project",None]:
         return base.get_object_iterator(
-            self.ClientSession, f"https://api.scratch.mit.edu/explore/projects",
+            self.ClientSession, "https://api.scratch.mit.edu/explore/projects",
             None,project.Project,self,limit=limit,offset=offset,
             add_params={"language":language,"mode":mode,"q":query}
         )
 
     def search_projects(self, query:str, *, mode:str="trending", language:str="en", limit:int=40, offset:int=0) -> AsyncGenerator["project.Project",None]:
         return base.get_object_iterator(
-            self.ClientSession, f"https://api.scratch.mit.edu/search/projects",
+            self.ClientSession, "https://api.scratch.mit.edu/search/projects",
             None,project.Project,self,limit=limit,offset=offset,
             add_params={"language":language,"mode":mode,"q":query}
         )
     
     def explore_studios(self, *, query:str="*", mode:str="trending", language:str="en", limit:int=40, offset:int=0) -> AsyncGenerator["studio.Studio",None]:
         return base.get_object_iterator(
-            self.ClientSession, f"https://api.scratch.mit.edu/explore/studios",
+            self.ClientSession, "https://api.scratch.mit.edu/explore/studios",
             None,studio.Studio,self,limit=limit,offset=offset,
             add_params={"language":language,"mode":mode,"q":query}
         )
 
     def search_studios(self, query:str, *, mode:str="trending", language:str="en", limit:int=40, offset:int=0) -> AsyncGenerator["studio.Studio",None]:
         return base.get_object_iterator(
-            self.ClientSession, f"https://api.scratch.mit.edu/search/studios",
+            self.ClientSession, "https://api.scratch.mit.edu/search/studios",
             None,studio.Studio,self,limit=limit,offset=offset,
             add_params={"language":language,"mode":mode,"q":query}
         )

@@ -226,7 +226,7 @@ class Project(base._BaseSiteAPI):
             if log: print(f'removed:{zip_directory}')
         except:
             pass
-        if log: print(f"success:"+os.path.join(save_path,filename).replace("\\","/"))
+        if log: print("success:"+os.path.join(save_path,filename).replace("\\","/"))
         return os.path.join(save_path,filename).replace("\\","/")
 
 
@@ -412,7 +412,7 @@ class Project(base._BaseSiteAPI):
     
     def get_cloud_logs(self, *, limit:int=100, offset:int=0) -> AsyncGenerator[activity.CloudActivity, None]:
         return base.get_object_iterator(
-            self.ClientSession,f"https://clouddata.scratch.mit.edu/logs",
+            self.ClientSession,"https://clouddata.scratch.mit.edu/logs",
             None,activity.CloudActivity,self.Session,
             limit=limit,offset=offset,max_limit=100,add_params={"projectid":self.id},
             custom_func=base._cloud_activity_iterator_func,others={"project_id":self.id}
@@ -548,14 +548,14 @@ def create_Partial_Project(project_id:int,author:"User|None"=None,*,ClientSessio
 
 def explore_projects(*, query:str="*", mode:str="trending", language:str="en", limit:int=40, offset:int=0,ClientSession:common.ClientSession|None=None) -> AsyncGenerator["Project",None]:
     return base.get_object_iterator(
-        ClientSession, f"https://api.scratch.mit.edu/explore/projects",
+        ClientSession, "https://api.scratch.mit.edu/explore/projects",
         None,Project,limit=limit,offset=offset,
         add_params={"language":language,"mode":mode,"q":query}
     )
 
 def search_projects(query:str, *, mode:str="trending", language:str="en", limit:int=40, offset:int=0,ClientSession:common.ClientSession|None=None) -> AsyncGenerator["Project",None]:
     return base.get_object_iterator(
-        ClientSession, f"https://api.scratch.mit.edu/search/projects",
+        ClientSession, "https://api.scratch.mit.edu/search/projects",
         None,Project,limit=limit,offset=offset,
         add_params={"language":language,"mode":mode,"q":query}
     )

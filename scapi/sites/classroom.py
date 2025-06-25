@@ -219,7 +219,7 @@ class Classroom(base._BaseSiteAPI):
         self._is_owner_raise()
         common.no_data_checker(self.classtoken)
         r = await self.ClientSession.post(
-            f"https://scratch.mit.edu/classes/create_classroom_gallery/",
+            "https://scratch.mit.edu/classes/create_classroom_gallery/",
             json={
                 "classroom_id":self.id,
                 "classroom_token":self.classtoken,

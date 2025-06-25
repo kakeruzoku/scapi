@@ -26,7 +26,7 @@ class ScratchNews(base._BaseSiteAPI):
         **entries
     ):
         
-        super().__init__("get",f"",ClientSession,scratch_session)
+        super().__init__("get","",ClientSession,scratch_session)
 
         self.id:int = common.try_int(id)
         self._timestamp:str = None
