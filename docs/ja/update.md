@@ -2,6 +2,10 @@
 
 Scapiの更新履歴です。1.0.0以前の更新履歴は[こちら](https://github.com/kakeruzoku/scapi/blob/main/changelog.md )
 # 2.x.x
+## 2.1.1
+### 更新/修正
+- import時に環境によって構文エラーが発生する問題を修正
+
 ## 2.1.0
 ### 新機能
 - `Session.register_info()` 生徒アカウントでのアカウント情報登録に対応

@@ -392,7 +392,7 @@ class Activity:
                 self.place.title = data["comment_obj_title"]
             self.target = create_Partial_Comment(data["comment_id"],self.place,data["comment_fragment"],self.actor,ClientSession=cs,session=ss)
         else:
-            warnings.warn(f"unknown activitytype: {t} (ca)")
+            warnings.warn(f"unknown activitytype: {t} (class activity)")
             
 
         

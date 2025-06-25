@@ -142,7 +142,10 @@ class User(base._BaseSiteAPI):
     
     async def message_count(self) -> int:
         return (await self.ClientSession.get(
-            f"https://api.scratch.mit.edu/users/{self.username}/messages/count/?cachebust={random.randint(0,10000)}"
+            f"https://api.scratch.mit.edu/users/{self.username}/messages/count/",
+            params={
+                "cachebust":str(random.randint(0,10000))
+            }
         )).json()["count"]
     
     def message_event(self,interval=30) -> "MessageEvent":

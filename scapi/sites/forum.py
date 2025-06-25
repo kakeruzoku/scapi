@@ -133,7 +133,7 @@ class ForumTopic(base._BaseSiteAPI):
 
     async def follow(self,follow:bool=True):
         self.has_session_raise()
-        url = f"https://scratch.mit.edu/discuss/subscription/topic/{self.id}/{"add" if follow else "delete"}/"
+        url = f"https://scratch.mit.edu/discuss/subscription/topic/{self.id}/{'add' if follow else 'delete'}/"
         await self.ClientSession.post(url)
 
 class ForumPost(base._BaseSiteAPI):

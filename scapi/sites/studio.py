@@ -214,16 +214,16 @@ class Studio(base._BaseSiteAPI):
     
     async def promote(self,username:"str|user.User"): #404
         self.has_session_raise()
-        await self.ClientSession.put(f"https://scratch.mit.edu/site-api/users/curators-in/{self.id}/promote/?usernames={common.get_id(username,"username")}")
+        await self.ClientSession.put(f"https://scratch.mit.edu/site-api/users/curators-in/{self.id}/promote/?usernames={common.get_id(username,'username')}")
     
     async def remove_user(self,username:"str|user.User"): #404
         self.has_session_raise()
-        await self.ClientSession.put(f"https://scratch.mit.edu/site-api/users/curators-in/{self.id}/remove/?usernames={common.get_id(username,"username")}")
+        await self.ClientSession.put(f"https://scratch.mit.edu/site-api/users/curators-in/{self.id}/remove/?usernames={common.get_id(username,'username')}")
     
     async def transfer_ownership(self,username:"str|user.User",password:str) -> None:
         self._is_owner_raise()
         await self.ClientSession.put(
-            f"https://api.scratch.mit.edu/studios/{self.id}/transfer/{common.get_id(username,"username")}",
+            f"https://api.scratch.mit.edu/studios/{self.id}/transfer/{common.get_id(username,'username')}",
             json={"password":password}
         )
 
@@ -330,14 +330,14 @@ def create_Partial_Studio(studio_id:int,*,ClientSession:common.ClientSession|Non
 
 def explore_studios(*, query:str="*", mode:str="trending", language:str="en", limit:int=40, offset:int=0,ClientSession:common.ClientSession|None=None) -> AsyncGenerator["Studio",None]:
     return base.get_object_iterator(
-        ClientSession, f"https://api.scratch.mit.edu/explore/studios",
+        ClientSession, "https://api.scratch.mit.edu/explore/studios",
         None,Studio,limit=limit,offset=offset,
         add_params={"language":language,"mode":mode,"q":query}
     )
 
 def search_studios(query:str, *, mode:str="trending", language:str="en", limit:int=40, offset:int=0,ClientSession:common.ClientSession|None=None) -> AsyncGenerator["Studio",None]:
     return base.get_object_iterator(
-        ClientSession, f"https://api.scratch.mit.edu/search/studios",
+        ClientSession, "https://api.scratch.mit.edu/search/studios",
         None,Studio,limit=limit,offset=offset,
         add_params={"language":language,"mode":mode,"q":query}
     )

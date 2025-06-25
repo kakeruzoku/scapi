@@ -73,7 +73,7 @@ async def monthly_activity(clientsession:common.ClientSession) -> monthly_activi
 async def translation(language:str,text:str,clientsession:common.ClientSession) -> str:
     text = urllib.parse.quote(text,safe="")
     r = await clientsession.get(
-        f"https://translate-service.scratch.mit.edu/translate",
+        "https://translate-service.scratch.mit.edu/translate",
         params={
             "language":language,
             "text":text
@@ -83,7 +83,7 @@ async def translation(language:str,text:str,clientsession:common.ClientSession) 
 
 async def tts(language:str,text:str,type:Literal["male","female"],clientsession:common.ClientSession) -> bytes:
     r = await clientsession.get(
-        f"https://synthesis-service.scratch.mit.edu/synth",
+        "https://synthesis-service.scratch.mit.edu/synth",
         params={
             "locale":language,
             "gender":type,
