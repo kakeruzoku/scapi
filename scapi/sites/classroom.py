@@ -188,21 +188,36 @@ class Classroom(base._BaseSiteAPI):
                 _obj._update_from_class(self,j)
                 yield _obj
 
+    @overload
+    async def create_student_account(
+        self,username:str
+    ) -> "session.Session":
+        ...
+    
+    @overload
     async def create_student_account(
         self,username:str,password:str,birth_day:datetime.date,gender:str,country:str
+    ) -> "session.Session":
+        ...
+
+    async def create_student_account(
+        self,username:str,password:str|None=None,birth_day:datetime.date|None=None,gender:str|None=None,country:str|None=None
     ) -> "session.Session":
         common.no_data_checker(self.classtoken)
         data = {
             "classroom_id":self.id,
             "classroom_token": self.classtoken,
             "username": username,
-            "password": password,
-            "birth_month": birth_day.month,
-            "birth_year": birth_day.year,
-            "gender": gender,
-            "country": country,
             "is_robot": False
         }
+        if password and birth_day and gender and country:
+            data = data|{
+                "password": password,
+                "birth_month": birth_day.month,
+                "birth_year": birth_day.year,
+                "gender": gender,
+                "country": country,
+            }
         response = await self.ClientSession.post(
             "https://scratch.mit.edu/classes/register_new_student/",data=data,
             cookie={"scratchcsrftoken": 'a'}
