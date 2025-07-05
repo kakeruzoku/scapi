@@ -106,7 +106,7 @@ class ForumTopic(base._BaseSiteAPI):
     def __ge__(self,value) -> bool: return isinstance(value,user.User) and self.id >= value.id
 
     def _update_from_dict(self, data):
-        warnings.warn(f"please use ForumTopic._update_from_str")
+        raise TypeError(f"please use ForumTopic._update_from_str")
 
     def _update_from_str(self, data:str|bs4.BeautifulSoup):
         if isinstance(data,str):
@@ -175,7 +175,7 @@ class ForumPost(base._BaseSiteAPI):
     def __ge__(self,value) -> bool: return isinstance(value,user.User) and self.id >= value.id
 
     def _update_from_dict(self, data):
-        warnings.warn(f"please use ForumPost._update_from_str")
+        raise TypeError(f"please use ForumPost._update_from_str")
 
     def _update_from_str(self, data:str|bs4.BeautifulSoup):
         if isinstance(data,str): #bs4かstrを入れる

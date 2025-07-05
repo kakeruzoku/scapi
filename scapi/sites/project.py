@@ -453,7 +453,7 @@ class RemixTree(base._BaseSiteAPI): #no data
         return f"<RemixTree remix_count:{len(self._children)} status:{self.moderation_status} project:{self.project}> session:{self.Session}"
 
     async def update(self):
-        warnings.warn("remixtree can't update")
+        raise TypeError()
 
     def _update_from_dict(self, data:dict):
         from . import user

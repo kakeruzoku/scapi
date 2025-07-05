@@ -122,7 +122,6 @@ async def get_object(
         raise exception.ObjectNotFound(Class,e)
     except Exception as e:
         import traceback
-        traceback.print_exc()
         if if_close: await ClientSession.close()
         raise exception.ObjectFetchError(Class,e)
 
@@ -200,11 +199,7 @@ def _cloud_activity_iterator_func(data:dict,others:dict):
 _S = TypeVar("_S")
 
 async def _req(func,**d) -> list:
-    try:
-        return [i async for i in func(**d)]
-    except Exception as e:
-        warnings.warn(str(e))
-        return []
+    return [i async for i in func(**d)]
 
 
 async def get_list_data(func:Callable[... ,AsyncGenerator[_S,None]],limit:int=40,offset:int=0,**d) -> list[_S]:
