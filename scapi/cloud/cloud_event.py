@@ -78,7 +78,6 @@ class CloudLogEvent(_base._BaseEvent):
                         self._call_event(f"on_{i.method}",i)
                     self.lastest_dt = temp_lastest_dt
             except Exception as e:
-                print(e)
                 self._call_event("on_error",e)
 
             await asyncio.sleep(self.interval)

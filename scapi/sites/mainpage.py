@@ -37,7 +37,7 @@ class ScratchNews(base._BaseSiteAPI):
         self.content:str = None
 
     async def update(self):
-        warnings.warn("ScratchNews can't update")
+        raise TypeError()
 
     async def _update_from_dict(self, data:dict):
         self.id = data.get("id",self.id)

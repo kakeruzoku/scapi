@@ -122,7 +122,6 @@ async def get_object(
         raise exception.ObjectNotFound(Class,e)
     except Exception as e:
         import traceback
-        traceback.print_exc()
         if if_close: await ClientSession.close()
         raise exception.ObjectFetchError(Class,e)
 
@@ -183,14 +182,15 @@ async def get_object_iterator(
                     _obj._update_from_dict(j)
                 yield _obj
             except Exception as e:
-                print(e)
+                import traceback
+                traceback.print_exc()
             c = c + 1
             if c >= limit and not is_page: return
 
 def _comment_iterator_func(data:dict,others:dict):
     return {
         "id":data.get("id"),
-        "place":data.get("place"),
+        "place":others.get("place"),
     }
 
 def _cloud_activity_iterator_func(data:dict,others:dict):
@@ -200,15 +200,11 @@ def _cloud_activity_iterator_func(data:dict,others:dict):
 _S = TypeVar("_S")
 
 async def _req(func,**d) -> list:
-    try:
-        return [i async for i in func(**d)]
-    except Exception as e:
-        warnings.warn(str(e))
-        return []
+    return [i async for i in func(**d)]
 
 
 async def get_list_data(func:Callable[... ,AsyncGenerator[_S,None]],limit:int=40,offset:int=0,**d) -> list[_S]:
-    tasks = [asyncio.create_task(_req(func,**({"limit":40,"offset":i}|d))) for i in range(offset,limit+offset,40)]
+    tasks = [_req(func,**({"limit":40,"offset":i}|d)) for i in range(offset,limit+offset,40)]
     r:list[list[_S]] = await asyncio.gather(*tasks)
     returns:list[_S] = []
     for i in r:
@@ -216,7 +212,7 @@ async def get_list_data(func:Callable[... ,AsyncGenerator[_S,None]],limit:int=40
     return returns[:limit]
 
 async def get_page_list_data(func:Callable[... ,AsyncGenerator[_T,None]],start_page:int=1,end_page:int=1,**d) -> list[_T]:
-    tasks = [asyncio.create_task(_req(func,**({"start_page":i,"end_page":i}|d))) for i in range(start_page,end_page+1)]
+    tasks = [_req(func,**({"start_page":i,"end_page":i}|d)) for i in range(start_page,end_page+1)]
     r:list[list[_T]] = await asyncio.gather(*tasks)
     returns:list[_T] = []
     for i in r:

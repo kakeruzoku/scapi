@@ -104,6 +104,7 @@ class Session(base._BaseSiteAPI):
 
     def _update_from_dict(self,data:dict):
         self.status = self.status or SessionStatus()
+        assert data.get("user",{}).get("token")
         self.status.update(data)
         self.xtoken = self.status.token
         self.email = self.status.email
@@ -112,10 +113,6 @@ class Session(base._BaseSiteAPI):
         self.username = self.status.username
         self.banned = self.status.banned
         self.ClientSession._header = self.ClientSession._header|{"X-Token":str(self.xtoken)}
-        if self.banned:
-            warnings.warn(f"Warning: {self.username} is BANNED.")
-        if self.status.has_outstanding_email_confirmation:
-            warnings.warn(f"Warning: {self.username} is not email confirmed.")
 
     
     def session_decode(self) -> dict:
@@ -274,7 +271,7 @@ class Session(base._BaseSiteAPI):
         if not data[0].get("success"):
             raise exception.ResponseError(r)
 
-        return await base.get_object(self.ClientSession,data[0]["id"],classroom.Classroom,self)
+        return await self.get_mystuff_class(data[0]["id"])
     
     async def message(self, *, limit=40, offset=0) -> AsyncGenerator[activity.Activity, None]:
         c = 0

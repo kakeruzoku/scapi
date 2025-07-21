@@ -1797,16 +1797,18 @@ Userにある情報:username,id
 
 **`2.0.0`で追加**
 
-> await **create_student_account(username,password,birth_day,gender,country)**
+> await **create_student_account(username,password=None,birth_day=None,gender=None,country=None)**
 
 **入力**
 - **username** (`str`) アカウントのユーザー名
-- **password** (`str`) パスワード
-- **birth_day** (`datetime.date`) 誕生日(年と月が使用されます。)
-- **gender** (`str`) 性別
-- **country** (`str`) 国
+- **password** (`str|None`) パスワード
+- **birth_day** (`datetime.date|None`) 誕生日(年と月が使用されます。)
+- **gender** (`str|None`) 性別
+- **country** (`str|None`) 国
 
 Scratchの生徒アカウントを作成します。
+
+**`2.2.0`で変更** ユーザー名だけで作成できるようになりました。
 
 # アセット
 

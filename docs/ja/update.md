@@ -2,6 +2,23 @@
 
 Scapiの更新履歴です。1.0.0以前の更新履歴は[こちら](https://github.com/kakeruzoku/scapi/blob/main/changelog.md )
 # 2.x.x
+## 2.2.0
+### 破壊的変更
+- 一部利用できない関数で`warning`ではなくエラー出すように変更
+  - `ForumTopic._update_from_dict`
+  - `ForumPost._update_from_dict`
+  - `ScratchNews.update`
+  - `RemixTree.update`
+
+### 新機能
+- 生徒アカウントをユーザー名だけで作成する機能の追加
+
+### 更新/修正
+- `CommentEvent`が非推奨関数を使用していた問題を修正
+- コメントが正しく取得されない問題を修正
+- その他微弱な修正
+
+
 ## 2.1.1
 ### 更新/修正
 - import時に環境によって構文エラーが発生する問題を修正

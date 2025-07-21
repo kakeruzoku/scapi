@@ -330,7 +330,7 @@ class Project(base._BaseSiteAPI):
             common.no_data_checker(self.author)
             common.no_data_checker(self.author.username)
             return await base.get_object(
-                self.ClientSession,id,comment.Comment,self.Session,base._comment_get_func,others={"plece":self}
+                self.ClientSession,id,comment.Comment,self.Session,base._comment_get_func,others={"place":self}
             )
 
     def get_comments(self, *, limit:int=40, offset:int=0, start_page:int=1, end_page:int=1, is_old:bool|None=None) -> AsyncGenerator[comment.Comment, None]:
@@ -345,7 +345,7 @@ class Project(base._BaseSiteAPI):
             return base.get_object_iterator(
                 self.ClientSession,f"https://api.scratch.mit.edu/users/{self.author.username}/projects/{self.id}/comments",None,comment.Comment,
                 limit=limit,offset=offset,add_params={"cachebust":random.randint(0,9999)},
-                custom_func=base._comment_iterator_func, others={"plece":self}
+                custom_func=base._comment_iterator_func, others={"place":self}
             )
     
     async def post_comment(self, content:str, parent:int|comment.Comment|None=None, commentee:"int|User|None"=None, is_old:bool|None=None) -> comment.Comment:
@@ -453,7 +453,7 @@ class RemixTree(base._BaseSiteAPI): #no data
         return f"<RemixTree remix_count:{len(self._children)} status:{self.moderation_status} project:{self.project}> session:{self.Session}"
 
     async def update(self):
-        warnings.warn("remixtree can't update")
+        raise TypeError()
 
     def _update_from_dict(self, data:dict):
         from . import user
