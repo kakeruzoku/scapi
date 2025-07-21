@@ -29,8 +29,8 @@ class CommentEvent(_base._BaseEvent):
                 comment_list.reverse()
                 temp_lastest_dt = self.lastest_comment_dt
                 for i in comment_list:
-                    if i.sent_dt > self.lastest_comment_dt:
-                        temp_lastest_dt = i.sent_dt
+                    if i.sent > self.lastest_comment_dt:
+                        temp_lastest_dt = i.sent
                         self._call_event("on_comment",i)
                     self.lastest_comment_dt = temp_lastest_dt
             except Exception as e:

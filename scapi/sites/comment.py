@@ -16,6 +16,9 @@ if TYPE_CHECKING:
 class Comment(base._BaseSiteAPI):
     id_name = "id"
 
+    def __repr__(self) -> str:
+        return f"<Comment id:{self.id} content:{self.content} place:{self.place} user:{self.author} Session:{self.Session}>"
+
     def __init__(
             self,
             ClientSession:common.ClientSession,
@@ -36,7 +39,7 @@ class Comment(base._BaseSiteAPI):
         elif isinstance(self.place,user.User):
             self.type = "User"
         else:
-            raise TypeError()
+            raise TypeError(self.place)
         
         super().__init__("get","",ClientSession,scratch_session)
 
@@ -124,7 +127,7 @@ class Comment(base._BaseSiteAPI):
                 self.ClientSession,
                 f"https://api.scratch.mit.edu/users/{self.place.author.username}/projects/{self.place.id}/comments/{self.id}/replies/",
                 None,Comment,limit=limit,offset=offset,add_params={"cachebust":random.randint(0,9999)},
-                custom_func=base._comment_iterator_func, others={"plece":self}
+                custom_func=base._comment_iterator_func, others={"place":self.place}
             )
         elif self.type == "User":
             return self._get_replies(limit,offset)
@@ -133,7 +136,7 @@ class Comment(base._BaseSiteAPI):
                 self.ClientSession,
                 f"https://api.scratch.mit.edu/studios/{self.place.id}/comments/{self.id}/replies/",
                 None,Comment,limit=limit,offset=offset,add_params={"cachebust":random.randint(0,9999)},
-                custom_func=base._comment_iterator_func, others={"plece":self}
+                custom_func=base._comment_iterator_func, others={"place":self.place}
             )
 
 
