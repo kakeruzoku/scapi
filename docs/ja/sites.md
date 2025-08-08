@@ -409,11 +409,24 @@ Scratcher招待がある場合、Scratcherになる。
 
 **入力**
 - **data** (`bytes|str`) 画像のバイナリデータか画像のファイルパス
-- **ile_ext** (`str`) (bytesで入れた場合、)ファイルの拡張子
+- **file_ext** (`str`) (bytesで入れた場合、)ファイルの拡張子
 
 ファイルをアップロードする
 
 **`1.5.0`で追加**
+
+> await **upload_backpack(type:asset.Backpacktype,name:str,data:str|bytes,thumbnail:str|bytes)** `-> Backpack`
+
+**入力**
+- **type** (`asset.Backpacktype`) バックパックの種類
+- **name** (`str`) 名前
+- **data** (`bytes|str`) 本体のバイナリデータかファイルパス
+- **dathumbnailta** (`bytes|str`) サムネイルのバイナリデータか画像のファイルパス(jpeg?)
+
+ファイルをバックパックにアップロードする
+
+**`2.3.0`で追加**
+
 
 > await **empty_trash(password)**
 
@@ -1823,6 +1836,10 @@ Scratchの生徒アカウントを作成します。
 - **path** (`str`) ダウンロード先のパス
 
 **`2.1.0`で追加**
+
+## backpacktype
+
+バックパックの種類
 
 ## Backpack
 

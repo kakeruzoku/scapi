@@ -19,9 +19,20 @@ class Backpacktype(Enum):
     VectorCostume=4
     Sound=5
 
+_backpacktype = {
+    Backpacktype.Sprite:("sprite","application/zip"),
+    Backpacktype.Script:("script","application/json"),
+    Backpacktype.BitmapCostume:("costume","image/png"),
+    Backpacktype.VectorCostume:("costume","image/svg+xml"),
+    Backpacktype.Sound:("sound","audio/x-wav"),
+}
+
 
 class Backpack(base._BaseSiteAPI):
     id_name = "id"
+
+    def __repr__(self):
+        return f"<Backpack id:{self.id} name:{self.name} session:{self.Session}>"
 
     def __init__(
         self,
@@ -53,11 +64,12 @@ class Backpack(base._BaseSiteAPI):
         self._thumbnail = data.get("thumbnail",self._thumbnail)
         if data.get("type",None) == "sprite": self.type = Backpacktype.Sprite
         elif data.get("type",None) == "script": self.type = Backpacktype.Script
-        elif data.get("type",None) == "script" and data.get("mime",None) == "image/svg+xml":
+        elif data.get("type",None) == "costume" and data.get("mime",None) == "image/svg+xml":
             self.type = Backpacktype.VectorCostume
-        elif data.get("type",None) == "script" and data.get("mime",None) == "image/png":
+        elif data.get("type",None) == "costume" and data.get("mime",None) == "image/png":
             self.type = Backpacktype.BitmapCostume
         elif data.get("type",None) == "sound": self.type = Backpacktype.Sound
+        else: self.type = Backpacktype.unknown
     
     @property
     def download_url(self) -> str:

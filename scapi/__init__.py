@@ -98,6 +98,11 @@ from .sites.mainpage import (
     community_featured,
     community_featured_response,
 )
+from .sites.asset import (
+    Backpack,
+    Backpacktype,
+    download_asset
+)
 
 
 from .cloud.cloud import (
