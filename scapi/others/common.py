@@ -16,7 +16,7 @@ _T = TypeVar("_T")
 if TYPE_CHECKING:
     from ..sites import session
 
-__version__ = "2.2.0"
+__version__ = "2.3.0"
 
 headers = {
     "user-agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/75.0.3770.142 Safari/537.36",
@@ -127,7 +127,6 @@ class ClientSession(aiohttp.ClientSession):
                 proxy=self._proxy,proxy_auth=self._proxy_auth,**d
             ) as response:
                 r = Response(response,await response.read())
-                #print("\n".join([str(r),str(data or json),r.url,r.text[:2000],str(r)]))
                 response.close()
         except Exception as e:
             raise exceptions.HTTPFetchError(e)

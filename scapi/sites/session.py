@@ -4,6 +4,7 @@ from typing import TYPE_CHECKING, AsyncGenerator,Literal, TypedDict
 import warnings
 import hashlib
 import json
+import base64
 
 import aiohttp
 
@@ -432,6 +433,29 @@ class Session(base._BaseSiteAPI):
         )
 
         return f"{asset_id}.{file_ext}"
+    
+    async def upload_backpack(
+            self,type:asset.Backpacktype,name:str,data:str|bytes,thumbnail:str|bytes,
+        ):
+        data, _ = await common.open_tool(data,"")
+        thumbnail, _ = await common.open_tool(thumbnail,"")
+        data = base64.b64encode(data).decode()
+        thumbnail = base64.b64encode(thumbnail).decode()
+        _type,_mime = asset._backpacktype[type]
+        r = await self.ClientSession.post(
+            f"https://backpack.scratch.mit.edu/{self.username}",
+            json={
+                "type": _type,
+                "mime": _mime,
+                "name": name,
+                "body": data,
+                "thumbnail": thumbnail
+            }
+        )
+        _data = r.json()
+        _backpack = asset.Backpack(self.ClientSession,_data["id"])
+        _backpack._update_from_dict(_data)
+        return _backpack
     
     async def empty_trash(self,password:str):
         data = {

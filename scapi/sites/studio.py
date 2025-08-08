@@ -202,7 +202,7 @@ class Studio(base._BaseSiteAPI):
 
     async def invite(self,username:"str|user.User"):
         self.has_session_raise()
-        r = await self.ClientSession.put(f"https://scratch.mit.edu/site-api/users/curators-in/{self.id}/invite_curator/?usernames={common.get_id(username,"username")}")
+        r = await self.ClientSession.put(f"https://scratch.mit.edu/site-api/users/curators-in/{self.id}/invite_curator/?usernames={common.get_id(username,'username')}")
         if r.json().get("status","error") != "success":
             raise exception.BadResponse(r)
     
