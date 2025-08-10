@@ -46,6 +46,8 @@ class HTTPclient:
         self.headers = headers or {}
         self.cookies = cookies or {}
         self.scratch_cookies = scratch_cookies or {}
+        self._proxy = None
+        self._proxy_auth = None
         self._session:aiohttp.ClientSession = aiohttp.ClientSession()
 
     @staticmethod
@@ -54,6 +56,14 @@ class HTTPclient:
         if hostname is None:
             return False
         return hostname.endswith("scratch.mit.edu")
+    
+    @property
+    def proxy(self) -> tuple[str|None,aiohttp.BasicAuth|None]:
+        return self._proxy,self._proxy_auth
+    
+    def set_proxy(self,url:str|None=None,auth:aiohttp.BasicAuth|None=None):
+        self._proxy = url
+        self._proxy_auth = auth
     
     def get_cookie(self,url:str) -> dict[str, str]:
         return self.scratch_cookies if self.is_scratch(url) else self.cookies
@@ -84,15 +94,17 @@ class HTTPclient:
     async def _request(self,method:str,url:str,**kwargs:Unpack[_RequestOptions]) -> Response:
         kwargs["cookies"] = kwargs.get("cookies") or self.get_cookie(url)
         kwargs["headers"] = kwargs.get("headers") or self.headers
+        if self.closed:
+            raise error.SessionClosed()
         try:
-            async with self._session.request(method,url,**kwargs) as _response:
+            async with self._session.request(method,url,proxy=self._proxy,proxy_auth=self._proxy_auth,**kwargs) as _response:
                 await _response.read()
             response = Response(_response)
             self._check(response)
             return response
         except Exception as e:
             raise error.ProcessingError(e) from None
-        
+
     async def get(self,url:str,**kwargs:Unpack[_RequestOptions]) -> Response:
         return await self._request("GET",url,**kwargs)
     
@@ -104,3 +116,16 @@ class HTTPclient:
     
     async def delete(self,url:str,**kwargs:Unpack[_RequestOptions]) -> Response:
         return await self._request("DELETE",url,**kwargs)
+    
+    @property
+    def closed(self):
+        return self._session.closed
+    
+    async def close(self):
+        await self._session.close()
+    
+    async def __aenter__(self):
+        return self
+    
+    async def __aexit__(self):
+        await self.close()

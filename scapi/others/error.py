@@ -45,3 +45,12 @@ class TooManyRequests(ClientError):
 
 class ServerError(ResponseError):
     pass
+
+class CheckingFailed(Exception):
+    pass
+
+class NoSession(CheckingFailed):
+    pass
+
+class NoPermission(CheckingFailed):
+    pass
