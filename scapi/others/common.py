@@ -9,6 +9,12 @@ def split(text:str,before:str,after:str) -> str|None:
     except IndexError:
         return
     
+def try_int(text:str) -> int | None:
+    try:
+        return int(text)
+    except (ValueError, TypeError):
+        return
+    
 def b62decode(text:str):
     text_len = len(text)
     return sum([BASE62_ALPHABET.index(text[i])*(62**(text_len-i-1)) for i in range(text_len)])

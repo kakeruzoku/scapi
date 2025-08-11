@@ -36,14 +36,14 @@ class Response:
     def json(self,loads:Callable[[str], Any]=json.loads,/,**kwargs) -> Any:
         return loads(self.text,**kwargs)
 
-class HTTPclient:
+class HTTPClient:
     def __init__(
             self,*,
             headers:dict[str,str]|None=None,
             cookies:dict[str,str]|None=None,
             scratch_cookies:dict[str,str]|None=None
         ):
-        self.headers = headers or {}
+        self.headers = headers or default_headers
         self.cookies = cookies or {}
         self.scratch_cookies = scratch_cookies or {}
         self._proxy = None

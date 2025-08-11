@@ -1,5 +1,5 @@
 from typing import TYPE_CHECKING, Literal,Any
-from ..others import requests,error
+from ..others import client,error
 
 if TYPE_CHECKING:
     from . import session
@@ -11,23 +11,26 @@ class _BaseSiteAPI:
 
     def __init__(
             self,
-            client:requests.HTTPclient,
-            session:"session.Session|None"=None,
+            client_or_session:"client.HTTPClient|session.Session",
         ) -> None:
-        self.client = client
-        self._session:"session.Session|None" = session
+        if isinstance(client_or_session,client.HTTPClient):
+            self.client = client_or_session
+            self.session = None
+        else:
+            self.client = client_or_session.client
+            self.session = client_or_session
 
     @property
     def has_session(self) -> bool:
-        return self._session is not None
+        return self.session is not None
 
     def require_session(self):
         if not self.has_session:
             raise error.NoSession()
     
     @property
-    def session_closed(self) -> bool:
+    def client_closed(self) -> bool:
         return self.client.closed
     
-    async def session_close(self):
+    async def client_close(self):
         await self.client.close()
