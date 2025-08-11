@@ -19,5 +19,8 @@ def b62decode(text:str):
     text_len = len(text)
     return sum([BASE62_ALPHABET.index(text[i])*(62**(text_len-i-1)) for i in range(text_len)])
 
-def timestamp_to_dt(timestamp:float):
+def dt_from_isoformat(timestamp:str):
+    return datetime.datetime.fromisoformat(timestamp).replace(tzinfo=datetime.timezone.utc)
+
+def dt_from_timestamp(timestamp:float):
     return datetime.datetime.fromtimestamp(timestamp, tz=datetime.timezone.utc)

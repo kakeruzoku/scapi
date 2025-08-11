@@ -1,24 +1,51 @@
-from typing import TYPE_CHECKING, Literal,Any
+from typing import TYPE_CHECKING, Literal,Any,TypeVar, Generic
+from abc import ABC,abstractmethod
 from ..others import client,error
 
 if TYPE_CHECKING:
     from . import session
 
+_T_ID = TypeVar("_T_ID")
 
-class _BaseSiteAPI:
-    update_type:Literal["GET","POST","PUT","DELETE",None]=None
-    update_url:str|None=None
+class _BaseSiteAPI(ABC,Generic[_T_ID]):
 
+    @abstractmethod
     def __init__(
             self,
             client_or_session:"client.HTTPClient|session.Session",
         ) -> None:
-        if isinstance(client_or_session,client.HTTPClient):
+        if client_or_session is None:
+            self.client = client.HTTPClient()
+        elif isinstance(client_or_session,client.HTTPClient):
             self.client = client_or_session
             self.session = None
         else:
             self.client = client_or_session.client
             self.session = client_or_session
+
+    async def update(self,is_old:bool=False):
+        url = self.old_update_url if is_old else self.update_url
+        if url is None:
+            raise TypeError()
+        response = await self.client.get(url)
+        data = response.json_or_text()
+        is_ok = self.update_from_old_data(data) if is_old else self.update_from_data(data)
+        if not is_ok:
+            raise error.InvalidData(response)
+
+    @property
+    def update_url(self) -> str|None:
+        return
+    
+    @property
+    def old_update_url(self) -> str|None:
+        return
+    
+    def update_from_data(self,data) -> bool:
+        return False
+
+    def update_from_old_data(self,data) -> bool:
+        return False
 
     @property
     def has_session(self) -> bool:
@@ -34,3 +61,15 @@ class _BaseSiteAPI:
     
     async def client_close(self):
         await self.client.close()
+
+    @classmethod
+    async def _get(
+        cls,
+        id:_T_ID,
+        client_or_session:"client.HTTPClient|session.Session",
+        is_old:bool,
+        **others
+    ):
+        _cls = cls(id,client_or_session,**others) # type: ignore
+        await _cls.update(is_old)
+        return _cls

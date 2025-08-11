@@ -1,11 +1,13 @@
 import zlib
 import base64
 import json
+import datetime
 from typing import Any
 from ..others import client, common
 from . import base
 from ..others.types import (
-    DecodedSessionID
+    DecodedSessionID,
+    SessionStatusPayload
 )
 
 def decode_session(session_id:str) -> tuple[DecodedSessionID,int]:
@@ -17,19 +19,55 @@ def decode_session(session_id:str) -> tuple[DecodedSessionID,int]:
     return json.loads(decompressed.decode('utf-8')),common.b62decode(s2)
 
 class SessionStatus:
-    def __init__(self,session:"Session",data:dict):
-        pass
+    def __init__(self,session:"Session",data:SessionStatusPayload):
+        self.session = session
 
-class Session(base._BaseSiteAPI):
-    update_type="POST"
-    update_url="https://scratch.mit.edu/session/"
+    def update(self,data:SessionStatusPayload):
+        _user = data.get("user")
+        self.session.user_id = _user.get("id")
+        self.banned = _user.get("banned")
+        self.should_vpn = _user.get("should_vpn")
+        self.session.username = _user.get("username")
+        self.session.xtoken = _user.get("token")
+        self.thumbnail_url = _user.get("thumbnailUrl")
+        self.joined_at = common.dt_from_isoformat(_user.get("dataJoined"))
+        self.email = _user.get("email")
+        self.birthday = datetime.date(_user.get("birthYear"),_user.get("birthMonth"),1)
+        self.gender = _user.get("gender")
+        self.classroom_id = _user.get("classroomId")
 
-    def __init__(self,session_id:str,*,_client:client.HTTPClient|None=None):
+        _permission = data.get("permissions")
+        self.admin = _permission.get("admin")
+        self.scratcher = _permission.get("scratcher")
+        self.new_scratcher = _permission.get("new_scratcher")
+        self.invited_scratcher = _permission.get("invited_scratcher")
+        self.social = _permission.get("social")
+        self.educator = _permission.get("educator")
+        self.educator_invitee = _permission.get("educator_invitee")
+        self.student = _permission.get("student")
+        self.mute_status = _permission.get("mute_status")
+
+        _flags = data.get("flags")
+        self.must_reset_password = _flags.get("must_reset_password")
+        self.must_complete_registration = _flags.get("must_complete_registration")
+        self.has_outstanding_email_confirmation = _flags.get("has_outstanding_email_confirmation")
+        self.show_welcome = _flags.get("show_welcome")
+        self.confirm_email_banner = _flags.get("confirm_email_banner")
+        self.unsupported_browser_banner = _flags.get("unsupported_browser_banner")
+        self.with_parent_email = _flags.get("with_parent_email")
+        self.project_comments_enabled = _flags.get("project_comments_enabled")
+        self.gallery_comments_enabled = _flags.get("gallery_comments_enabled")
+        self.userprofile_comments_enabled = _flags.get("userprofile_comments_enabled")
+        self.everything_is_totally_normal = _flags.get("everything_is_totally_normal")
+
+class Session(base._BaseSiteAPI[str]):
+
+    def __init__(self,session_id:str,_client:client.HTTPClient|None=None):
         self.client = _client or client.HTTPClient()
-        
+
         super().__init__(self)
         self.session_id:str = session_id
-        self.status:SessionStatus|None = None
+        self._status:SessionStatus|None = None
         
         decoded,login_dt = decode_session(self.session_id)
 
@@ -39,6 +77,39 @@ class Session(base._BaseSiteAPI):
         self.user_id = common.try_int(decoded.get("_auth_user_id"))
         self._logged_at = login_dt
 
+        self.client.scratch_cookies = {
+            "scratchsessionsid": session_id,
+            "scratchcsrftoken": "a",
+            "scratchlanguage": "en",
+            "X-token": self.xtoken
+        }
+
+    @property
+    def update_url(self):
+        return "https://scratch.mit.edu/session/"
+    
+    def update_from_data(self, data:SessionStatusPayload|str):
+        if isinstance(data,str):
+            return False
+        if data.get("user") is None:
+            return False
+        if self._status:
+            self._status.update(data)
+        else:
+            self._status = SessionStatus(self,data)
+        return True
+    
     @property
     def logged_at(self):
-        return common.timestamp_to_dt(self._logged_at)
+        return common.dt_from_timestamp(self._logged_at)
+    
+    @property
+    def is_scratcher(self) -> None | bool:
+        return self._status and self._status.scratcher
+    
+    @property
+    def is_verified_educator(self) -> None | bool:
+        return self._status and self._status.educator and (not self._status.invited_scratcher)
+    
+async def session_login(session_id:str):
+    pass

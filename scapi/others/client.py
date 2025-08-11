@@ -17,6 +17,7 @@ class _RequestOptions(TypedDict, total=False):
     json: Any
     cookies: dict[str,str]|None
     headers: dict[str,str]|None
+    check: bool
 
 class Response:
     def __init__(self,response:aiohttp.ClientResponse):
@@ -35,6 +36,12 @@ class Response:
     
     def json(self,loads:Callable[[str], Any]=json.loads,/,**kwargs) -> Any:
         return loads(self.text,**kwargs)
+    
+    def json_or_text(self,loads:Callable[[str], Any]=json.loads,/,**kwargs) -> Any:
+        try:
+            return self.json(loads,**kwargs)
+        except Exception:
+            return self.text
 
 class HTTPClient:
     def __init__(
@@ -94,13 +101,15 @@ class HTTPClient:
     async def _request(self,method:str,url:str,**kwargs:Unpack[_RequestOptions]) -> Response:
         kwargs["cookies"] = kwargs.get("cookies") or self.get_cookie(url)
         kwargs["headers"] = kwargs.get("headers") or self.headers
+        check = kwargs.pop("check",True)
         if self.closed:
             raise error.SessionClosed()
         try:
             async with self._session.request(method,url,proxy=self._proxy,proxy_auth=self._proxy_auth,**kwargs) as _response:
                 await _response.read()
             response = Response(_response)
-            self._check(response)
+            if check:
+                self._check(response)
             return response
         except Exception as e:
             raise error.ProcessingError(e) from None

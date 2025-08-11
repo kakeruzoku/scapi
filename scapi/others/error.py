@@ -46,6 +46,9 @@ class TooManyRequests(ClientError):
 class ServerError(ResponseError):
     pass
 
+class InvalidData(ResponseError):
+    pass
+
 class CheckingFailed(Exception):
     pass
 

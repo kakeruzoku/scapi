@@ -1,4 +1,5 @@
 from typing import TypedDict
+from typing_extensions import NotRequired
 
 
 DecodedSessionID = TypedDict(
@@ -9,3 +10,47 @@ DecodedSessionID = TypedDict(
         "_auth_user_id":str
     }
 )
+
+class SessionStatusUserPayload(TypedDict):
+    id:int
+    banned:bool
+    should_vpn:bool
+    username:str
+    token:str
+    thumbnailUrl:str
+    dataJoined:str
+    email:str
+    birthYear:int
+    birthMonth:int
+    gender:str
+    classroomId:NotRequired[int]
+
+class SessionStatusPermissionsPayload(TypedDict):
+    admin:bool
+    scratcher:bool
+    new_scratcher:bool
+    invited_scratcher:bool
+    social:bool
+    educator:bool
+    educator_invitee:bool
+    student:bool
+    mute_status:dict
+
+class SessionStatusFlagsPayload(TypedDict):
+    must_reset_password:bool
+    must_complete_registration:bool
+    has_outstanding_email_confirmation:bool
+    show_welcome:bool
+    confirm_email_banner:bool
+    unsupported_browser_banner:bool
+    with_parent_email:bool
+    project_comments_enabled:bool
+    gallery_comments_enabled:bool
+    userprofile_comments_enabled:bool
+    everything_is_totally_normal:bool
+
+
+class SessionStatusPayload(TypedDict):
+    user:SessionStatusUserPayload
+    permissions:SessionStatusPermissionsPayload
+    flags:SessionStatusFlagsPayload
