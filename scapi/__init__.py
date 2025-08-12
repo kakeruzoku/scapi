@@ -26,3 +26,8 @@ from .sites.user import (
     User,
     get_user
 )
+
+from .sites.studio import (
+    Studio,
+    get_studio
+)

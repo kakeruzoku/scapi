@@ -28,10 +28,10 @@ class Project(base._BaseSiteAPI[int]):
         self._modified_at:str|None = None
         self._shared_at:str|None = None
 
-        self.views:int|None = None
-        self.loves:int|None = None
-        self.favorites:int|None = None
-        self.remixes:int|None = None
+        self.view_count:int|None = None
+        self.love_count:int|None = None
+        self.favorite_count:int|None = None
+        self.remix_count:int|None = None
 
         self.remix_parent_id:int|None = None
         self.remix_root_id:int|None = None
@@ -67,10 +67,10 @@ class Project(base._BaseSiteAPI[int]):
         _stats = data.get("stats")
         if _stats:
             self._update_to_attributes(
-                views=_stats.get("views"),
-                loves=_stats.get("loves"),
-                favorites=_stats.get("favorites"),
-                remixes=_stats.get("remixes")
+                view_count=_stats.get("views"),
+                love_count=_stats.get("loves"),
+                favorite_count=_stats.get("favorites"),
+                remix_count=_stats.get("remixes")
             )
 
         _remix = data.get("remix")

@@ -130,3 +130,25 @@ ProjectServerPayload = TypedDict(
         "content-title":NotRequired[str]
     }
 )
+class StudioHistoryPayload(TypedDict):
+    created:str
+    modified:str
+
+class StudioStatsPayload(TypedDict):
+    comments:int
+    followers:int
+    managers:int
+    projects:int
+
+class StudioPayload(TypedDict,total=False):
+    id:Required[int]
+    title:str
+    host:int
+    description:str
+    visibility:Literal["visible"]
+    public:Literal[True]
+    open_to_all:bool
+    comments_allowed:bool
+    image:str
+    history:StudioHistoryPayload
+    stats:StudioStatsPayload

@@ -68,4 +68,7 @@ class NoSession(CheckingFailed):
 class NoPermission(CheckingFailed):
     pass
 
-del TYPE_CHECKING,LoginFailurePayload
+if TYPE_CHECKING:
+    del client
+
+del LoginFailurePayload,TYPE_CHECKING
