@@ -1,5 +1,4 @@
-from typing import Literal, TypedDict
-from typing_extensions import NotRequired
+from typing import Literal, TypedDict, Required, NotRequired
 
 
 DecodedSessionID = TypedDict(
@@ -73,6 +72,24 @@ class LoginSuccessPayload(TypedDict):
     messages:list
     id:int
 
+class UserHistoryPayload(TypedDict):
+    joined:str
+
+class UserProfilePayload(TypedDict,total=False):
+    id:int
+    #images
+    status:str
+    bio:str
+    country:str
+
+
+class UserPayload(TypedDict,total=False):
+    id:int
+    username:Required[str]
+    scratchteam:bool
+    history:UserHistoryPayload
+    profile:UserProfilePayload
+
 class ProjectHistoryPayload(TypedDict):
     created:str
     modified:str
@@ -89,7 +106,7 @@ class ProjectRemixPayload(TypedDict):
     root:int|None
 
 class ProjectPayload(TypedDict,total=False):
-    id:int
+    id:Required[int]
     title:str
     description:str
     instructions:str
@@ -97,7 +114,7 @@ class ProjectPayload(TypedDict,total=False):
     public:bool
     comments_allowed:bool
     is_published:bool
-    #author
+    author:UserPayload
     image:str
     #images
     history:ProjectHistoryPayload

@@ -1,6 +1,9 @@
 from typing import TYPE_CHECKING
 from ..others import client, common, error
 from . import base
+from ..others.types import (
+    UserPayload
+)
 
 if TYPE_CHECKING:
     from . import session
@@ -14,15 +17,36 @@ class User(base._BaseSiteAPI[str]):
 
         self._joined_at:str|None = None
 
+        self.profile_id:int|None = None
         self.status:str|None = None
         self.bio:str|None = None
         self.country:str|None = None
         self.scratchteam:bool|None = None
 
-    @property
-    def update_url(self):
-        return f"https://api.scratch.mit.edu/users/{self.username}"
+    async def update(self):
+        response = await self.client.get(f"https://api.scratch.mit.edu/users/{self.username}")
+        self._update_from_data(response.json())
+
+    def _update_from_data(self, data:UserPayload):
+        self._update_to_attributes(
+            id=data.get("id"),
+            scratchteam=data.get("scratchteam")
+        )
+        _history = data.get("history")
+        if _history:
+            self._update_to_attributes(_joined_at=_history.get("joined"))
+        
+        _profile = data.get("profile")
+        if _profile:
+            self._update_to_attributes(
+                profile_id=_profile.get("id"),
+                status=_profile.get("status"),
+                bio=_profile.get("bio")
+            )
     
     @property
     def joined_at(self):
         return common.dt_from_isoformat(self._joined_at)
+    
+def get_user(username:str,*,_client:client.HTTPClient|None=None) -> common._AwaitableContextManager[User]:
+    return common._AwaitableContextManager(User._create_from_api(username,_client))

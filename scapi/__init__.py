@@ -23,5 +23,6 @@ from .sites.project import (
 )
 
 from .sites.user import (
-    User
+    User,
+    get_user
 )

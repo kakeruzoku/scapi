@@ -33,7 +33,7 @@ class _BaseSiteAPI(ABC,Generic[_T]):
     def _update_from_data(self,data):
         return
     
-    def _update_to_attributes(self,data:dict[str,Any]):
+    def _update_to_attributes(self,**data:Any):
         for k,v in data.items():
             if v is None:
                 return

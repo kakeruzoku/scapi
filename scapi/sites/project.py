@@ -4,6 +4,7 @@ from . import base
 from ..others.types import (
     ProjectPayload
 )
+from . import user
 
 if TYPE_CHECKING:
     from . import session
@@ -15,7 +16,7 @@ class Project(base._BaseSiteAPI[int]):
         self.id:int = id
         self.title:str|None = None
 
-        self.author = None
+        self.author:"user.User|None" = None
         self.description:str|None = None
         self.instructions:str|None = None
         self.public:bool|None = None
@@ -38,37 +39,44 @@ class Project(base._BaseSiteAPI[int]):
         self._update_from_data(response.json())
 
     def _update_from_data(self, data:ProjectPayload):
-        self._update_to_attributes({
-            "title":data.get("title"),
-            "description":data.get("description"),
-            "instructions":data.get("instructions"),
-            "public":data.get("public"),
-            "comments_allowed":data.get("comments_allowed"),
-        })
+        self._update_to_attributes(
+            title=data.get("title"),
+            description=data.get("description"),
+            instructions=data.get("instructions"),
+            public=data.get("public"),
+            comments_allowed=data.get("comments_allowed"),
+        )
+        
+        _author = data.get("author")
+        if _author:
+            if self.author is None:
+                self.author = user.User(_author.get("username"),self.client_or_session)
+            self.author._update_from_data(_author)
+            
 
         _history = data.get("history")
         if _history:
-            self._update_to_attributes({
-                "_created_at":_history.get("created"),
-                "_modified_at":_history.get("modified"),
-                "_shared_at":_history.get("shared")
-            })
+            self._update_to_attributes(
+                _created_at=_history.get("created"),
+                _modified_at=_history.get("modified"),
+                _shared_at=_history.get("shared")
+            )
 
         _stats = data.get("stats")
         if _stats:
-            self._update_to_attributes({
-                "views":_stats.get("views"),
-                "loves":_stats.get("loves"),
-                "favorites":_stats.get("favorites"),
-                "remixes":_stats.get("remixes")
-            })
+            self._update_to_attributes(
+                views=_stats.get("views"),
+                loves=_stats.get("loves"),
+                favorites=_stats.get("favorites"),
+                remixes=_stats.get("remixes")
+            )
 
         _remix = data.get("remix")
         if _remix:
-            self._update_to_attributes({
-                "remix_parent_id":_remix.get("parent"),
-                "remix_root_id":_remix.get("root")
-            })
+            self._update_to_attributes(
+                remix_parent_id=_remix.get("parent"),
+                remix_root_id=_remix.get("root")
+            )
     
     @property
     def created_at(self):
