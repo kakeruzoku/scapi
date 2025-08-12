@@ -1,0 +1,35 @@
+from typing import TYPE_CHECKING
+from ..others import client, common, error
+from . import base
+
+if TYPE_CHECKING:
+    from . import session
+
+class Project(base._BaseSiteAPI[int]):
+
+    def __init__(self,id:int,client_or_session:"client.HTTPClient|session.Session|None"=None):
+        super().__init__(client_or_session)
+        self.id:int = id
+        self.title:str|None = None
+
+        self.author = None
+        self.description:str|None = None
+        self.instructions:str|None = None
+        self.public:bool|None = None
+        self.comments_allowed:bool|None = None
+        
+        self._created_at:str|None = None
+        self._modified_at:str|None = None
+        self._shared_at:str|None = None
+
+        self.views:int|None = None
+        self.loves:int|None = None
+        self.favorites:int|None = None
+        self.remixes:int|None = None
+
+        self.remix_parent_id:int|None = None
+        self.remix_root_id:int|None = None
+
+    @property
+    def update_url(self):
+        return f"https://api.scratch.mit.edu/projects/{self.id}"

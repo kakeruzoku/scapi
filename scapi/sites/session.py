@@ -2,7 +2,6 @@ import zlib
 import base64
 import json
 import datetime
-from typing import Any
 from ..others import client, common, error
 from . import base
 from ..others.types import (
