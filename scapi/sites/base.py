@@ -46,6 +46,12 @@ class _BaseSiteAPI(ABC,Generic[_T_ID]):
 
     def update_from_old_data(self,data) -> bool:
         return False
+    
+    def _update(self,data:dict[str,Any]):
+        for k,v in data.items():
+            if v is None:
+                return
+            setattr(self,k,v)
 
     @property
     def has_session(self) -> bool:

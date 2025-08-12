@@ -72,3 +72,35 @@ class LoginSuccessPayload(TypedDict):
     msg:str
     messages:list
     id:int
+
+class ProjectHistoryPayload(TypedDict):
+    created:str
+    modified:str
+    shared:str
+
+class ProjectStatsPayload(TypedDict):
+    views:int
+    loves:int
+    favorites:int
+    remixes:int
+
+class ProjectRemixPayload(TypedDict):
+    parent:int|None
+    root:int|None
+
+class ProjectPayload(TypedDict,total=False):
+    id:int
+    title:str
+    description:str
+    instructions:str
+    visibility:Literal["visible"]
+    public:bool
+    comments_allowed:bool
+    is_published:bool
+    #author
+    image:str
+    #images
+    history:ProjectHistoryPayload
+    stats:ProjectStatsPayload
+    remix:ProjectRemixPayload
+    project_token:str
