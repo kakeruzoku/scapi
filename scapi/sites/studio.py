@@ -154,9 +154,9 @@ class Studio(base._BaseSiteAPI):
         # This API 's response == Session.me.featured_data() wtf??????????
         self.has_session_raise()
         if follow:
-            self.ClientSession.put(f"https://scratch.mit.edu/site-api/users/bookmarkers/{self.id}/add/?usernames={self.Session.username}")
+            await self.ClientSession.put(f"https://scratch.mit.edu/site-api/users/bookmarkers/{self.id}/add/?usernames={self.Session.username}")
         else:
-            self.ClientSession.put(f"https://scratch.mit.edu/site-api/users/bookmarkers/{self.id}/remove/?usernames={self.Session.username}")
+            await self.ClientSession.put(f"https://scratch.mit.edu/site-api/users/bookmarkers/{self.id}/remove/?usernames={self.Session.username}")
 
     async def set_thumbnail(self,thumbnail:bytes|str,filename:str="image.png"):
         self._is_owner_raise()
