@@ -121,3 +121,12 @@ class ProjectPayload(TypedDict,total=False):
     stats:ProjectStatsPayload
     remix:ProjectRemixPayload
     project_token:str
+
+ProjectServerPayload = TypedDict(
+    "ProjectServerPayload",{
+        "status":str,
+        "autosave-interval":str,
+        "content-name":NotRequired[str],
+        "content-title":NotRequired[str]
+    }
+)

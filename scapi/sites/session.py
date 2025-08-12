@@ -1,12 +1,14 @@
+from typing import Any
 import zlib
 import base64
 import json
 import datetime
 from ..others import client, common, error
-from . import base
+from . import base,project,user
 from ..others.types import (
     DecodedSessionID,
-    SessionStatusPayload
+    SessionStatusPayload,
+    ProjectServerPayload
 )
 
 def decode_session(session_id:str) -> tuple[DecodedSessionID,int]:
@@ -79,6 +81,9 @@ class Session(base._BaseSiteAPI[str]):
         self.user_id = common.try_int(decoded.get("_auth_user_id"))
         self._logged_at = login_dt
 
+        self.user:user.User = user.User(self.username,self)
+        self.user.id = self.user_id
+
         self.client.scratch_cookies = {
             "scratchsessionsid": session_id,
             "scratchcsrftoken": "a",
@@ -101,6 +106,7 @@ class Session(base._BaseSiteAPI[str]):
             self._status.update(data)
         else:
             self._status = SessionStatus(self,data)
+        self.user.id = self.user_id
     
     @property
     def logged_at(self):
@@ -113,6 +119,36 @@ class Session(base._BaseSiteAPI[str]):
     @property
     def is_verified_educator(self) -> None | bool:
         return self._status and self._status.educator and (not self._status.invited_scratcher)
+    
+    async def create_project(self,title:str|None=None,project_json:Any=None,*,remix_id:int|None=None):
+        param = {}
+        if remix_id:
+            param["is_remix"] = 1
+            param["original_id"] = remix_id
+        else:
+            param["is_remix"] = 0
+        
+        if title:
+            param["title"] = title
+
+        project_json = project_json or common.empty_project_json
+        response = await self.client.post(
+            "https://projects.scratch.mit.edu/",
+            params=param,json=project_json
+        )
+
+        data:ProjectServerPayload = response.json()
+        project_id = data.get("content-name")
+        if not project_id:
+            raise error.InvalidData(response)
+        
+        _project = project.Project(int(project_id),self)
+        _project.author = self.user
+        b64_title = data.get("content-title")
+        if b64_title:
+            _project.title = base64.b64decode(b64_title).decode()
+
+        return _project
     
 def session_login(session_id:str) -> common._AwaitableContextManager[Session]:
     return common._AwaitableContextManager(Session._create_from_api(session_id))
