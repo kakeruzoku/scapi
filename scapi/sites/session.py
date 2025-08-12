@@ -116,10 +116,10 @@ class Session(base._BaseSiteAPI[str]):
     def is_verified_educator(self) -> None | bool:
         return self._status and self._status.educator and (not self._status.invited_scratcher)
     
-async def session_login(session_id:str):
-    return await Session._create_from_api(session_id)
+def session_login(session_id:str) -> common._AwaitableContextManager[Session]:
+    return common._AwaitableContextManager(Session._create_from_api(session_id))
 
-async def login(
+async def _login(
         username:str,
         password:str,
         load_status:bool=True,
@@ -159,3 +159,5 @@ async def login(
     else:
         return Session(session_id,_client)
     
+def login(username:str,password:str,load_status:bool=True,*,recaptcha_code:str|None=None) -> common._AwaitableContextManager[Session]:
+    return common._AwaitableContextManager(_login(username,password,load_status,recaptcha_code=recaptcha_code))

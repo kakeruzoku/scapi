@@ -1,13 +1,13 @@
-from typing import TYPE_CHECKING, Literal,Any,TypeVar, Generic
+from typing import TYPE_CHECKING, Coroutine, Literal,Any,TypeVar, Generic
 from abc import ABC,abstractmethod
 from ..others import client,error
 
 if TYPE_CHECKING:
     from . import session
 
-_T_ID = TypeVar("_T_ID")
+_T = TypeVar("_T")
 
-class _BaseSiteAPI(ABC,Generic[_T_ID]):
+class _BaseSiteAPI(ABC,Generic[_T]):
 
     @abstractmethod
     def __init__(
@@ -22,6 +22,10 @@ class _BaseSiteAPI(ABC,Generic[_T_ID]):
         else:
             self.client = client_or_session.client
             self.session = client_or_session
+
+    @property
+    def client_or_session(self) -> "client.HTTPClient|session.Session":
+        return self.session or self.client
 
     async def update(self) -> None:
         raise TypeError()
@@ -53,7 +57,7 @@ class _BaseSiteAPI(ABC,Generic[_T_ID]):
     @classmethod
     async def _create_from_api(
         cls,
-        id:_T_ID,
+        id:_T,
         client_or_session:"client.HTTPClient|session.Session|None"=None,
         **others
     ):

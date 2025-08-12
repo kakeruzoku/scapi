@@ -18,7 +18,8 @@ from .sites.session import (
 )
 
 from .sites.project import (
-    Project
+    Project,
+    get_project
 )
 
 from .sites.user import (

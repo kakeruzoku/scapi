@@ -1,6 +1,6 @@
 import string
 import datetime
-from typing import TYPE_CHECKING, Any, AsyncGenerator, Literal, overload
+from typing import TYPE_CHECKING, Any, AsyncGenerator, Coroutine, Generic, Literal, TypeVar, overload,AsyncContextManager
 from . import error
 
 if TYPE_CHECKING:
@@ -67,11 +67,12 @@ def dt_from_timestamp(timestamp:float|None,allow_none:bool=True) -> None | datet
 async def api_iterative(
         _client:"client.HTTPClient",
         url:str,
-        limit:int|None,
-        offset:int=0,
+        limit:int|None=None,
+        offset:int|None=None,
         max_limit:int=40
     ) -> AsyncGenerator[Any, None]:
     limit = limit or max_limit
+    offset = offset or 0
     for i in range(offset,offset+limit,max_limit):
         response = await _client.get(
             url,
@@ -84,11 +85,12 @@ async def api_iterative(
             yield i
 
 async def page_api_iterative(
-        _client:client.HTTPClient,
+        _client:"client.HTTPClient",
         url:str,
-        start_page:int=1,
+        start_page:int|None=None,
         end_page:int|None=None,
     ) -> AsyncGenerator[Any, None]:
+    start_page = start_page or 1
     end_page = end_page or start_page
     for i in range(start_page,end_page+1):
         try:
@@ -97,3 +99,21 @@ async def page_api_iterative(
             return
         for i in response.json():
             yield i
+
+_T = TypeVar("_T")
+
+class _AwaitableContextManager(Generic[_T]):
+    def __init__(self, coro:Coroutine[Any, Any, AsyncContextManager[_T]]):
+        self._coro = coro
+        self._cm = None
+
+    def __await__(self):
+        return self._coro.__await__()
+
+    async def __aenter__(self) -> _T:
+        self._cm = await self._coro
+        return await self._cm.__aenter__()
+
+    async def __aexit__(self, exc_type, exc, tb):
+        assert self._cm
+        return await self._cm.__aexit__(exc_type, exc, tb)

@@ -1,4 +1,4 @@
-from typing import TYPE_CHECKING
+from typing import TYPE_CHECKING, AsyncGenerator
 from ..others import client, common, error
 from . import base
 from ..others.types import (
@@ -81,3 +81,15 @@ class Project(base._BaseSiteAPI[int]):
     @property
     def shared_at(self):
         return common.dt_from_isoformat(self._shared_at)
+    
+    async def get_remix(self,limit:int|None=None,offset:int|None=None) -> AsyncGenerator["Project", None]:
+        async for _p in common.api_iterative(
+            self.client,f"https://api.scratch.mit.edu/projects/{self.id}/remixes",
+            limit=limit,offset=offset
+        ):
+            p = Project(_p["id"],self.client_or_session)
+            p._update_from_data(_p)
+            yield p
+
+def get_project(project_id:int,*,_client:client.HTTPClient|None=None) -> common._AwaitableContextManager[Project]:
+    return common._AwaitableContextManager(Project._create_from_api(project_id,_client))
