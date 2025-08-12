@@ -30,7 +30,7 @@ class SessionStatus:
         self.session.username = _user.get("username")
         self.session.xtoken = _user.get("token")
         self.thumbnail_url = _user.get("thumbnailUrl")
-        self.joined_at = common.dt_from_isoformat(_user.get("dateJoined"))
+        self.joined_at = common.dt_from_isoformat(_user.get("dateJoined"),False)
         self.email = _user.get("email")
         self.birthday = datetime.date(_user.get("birthYear"),_user.get("birthMonth"),1)
         self.gender = _user.get("gender")
@@ -101,7 +101,7 @@ class Session(base._BaseSiteAPI[str]):
     
     @property
     def logged_at(self):
-        return common.dt_from_timestamp(self._logged_at)
+        return common.dt_from_timestamp(self._logged_at,False)
     
     @property
     def is_scratcher(self) -> None | bool:

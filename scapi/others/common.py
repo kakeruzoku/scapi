@@ -21,7 +21,7 @@ def b62decode(text:str):
     return sum([BASE62_ALPHABET.index(text[i])*(62**(text_len-i-1)) for i in range(text_len)])
 
 @overload
-def dt_from_isoformat(timestamp:str) -> datetime.datetime:
+def dt_from_isoformat(timestamp:str|None) -> datetime.datetime|None:
     ...
 
 @overload
@@ -32,7 +32,7 @@ def dt_from_isoformat(timestamp:str|None,allow_none:Literal[True]) -> datetime.d
 def dt_from_isoformat(timestamp:str,allow_none:Literal[False]) -> datetime.datetime:
     ...
 
-def dt_from_isoformat(timestamp:str|None,allow_none:bool=False) -> None | datetime.datetime:
+def dt_from_isoformat(timestamp:str|None,allow_none:bool=True) -> None | datetime.datetime:
     if timestamp is None:
         if allow_none:
             return
@@ -41,7 +41,7 @@ def dt_from_isoformat(timestamp:str|None,allow_none:bool=False) -> None | dateti
     return datetime.datetime.fromisoformat(timestamp).replace(tzinfo=datetime.timezone.utc)
 
 @overload
-def dt_from_timestamp(timestamp:float) -> datetime.datetime:
+def dt_from_timestamp(timestamp:float|None) -> datetime.datetime|None:
     ...
 
 @overload
@@ -52,7 +52,7 @@ def dt_from_timestamp(timestamp:float|None,allow_none:Literal[True]) -> datetime
 def dt_from_timestamp(timestamp:float,allow_none:Literal[False]) -> datetime.datetime:
     ...
 
-def dt_from_timestamp(timestamp:float|None,allow_none:bool=False) -> None | datetime.datetime:
+def dt_from_timestamp(timestamp:float|None,allow_none:bool=True) -> None | datetime.datetime:
     if timestamp is None:
         if allow_none:
             return

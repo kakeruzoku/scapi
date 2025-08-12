@@ -70,6 +70,17 @@ class Project(base._BaseSiteAPI[int]):
                 "remix_parent_id":_remix.get("parent"),
                 "remix_root_id":_remix.get("root")
             })
-
-
+        
         return True
+    
+    @property
+    def created_at(self):
+        return common.dt_from_isoformat(self._created_at)
+    
+    @property
+    def modified_at(self):
+        return common.dt_from_isoformat(self._modified_at)
+    
+    @property
+    def shared_at(self):
+        return common.dt_from_isoformat(self._shared_at)
