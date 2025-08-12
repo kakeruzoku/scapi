@@ -61,6 +61,8 @@ class SessionStatus:
         self.everything_is_totally_normal = _flags.get("everything_is_totally_normal")
 
 class Session(base._BaseSiteAPI[str]):
+    def __repr__(self) -> str:
+        return f"<Session username:{self.username}>"
 
     def __init__(self,session_id:str,_client:client.HTTPClient|None=None):
         self.client = _client or client.HTTPClient()
@@ -83,10 +85,6 @@ class Session(base._BaseSiteAPI[str]):
             "scratchlanguage": "en",
             "X-token": self.xtoken
         }
-
-    @property
-    def update_url(self):
-        return "https://scratch.mit.edu/session/"
     
     async def update(self):
         response = await self.client.get("https://scratch.mit.edu/session/")

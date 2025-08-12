@@ -52,6 +52,9 @@ class Response:
             return self.text
 
 class HTTPClient:
+    def __repr__(self):
+        return f"<HTTPClient proxy:{bool(self._proxy)}>"
+
     def __init__(
             self,*,
             headers:dict[str,str]|None=None,

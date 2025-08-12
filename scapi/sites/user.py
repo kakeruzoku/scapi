@@ -9,6 +9,8 @@ if TYPE_CHECKING:
     from . import session
 
 class User(base._BaseSiteAPI[str]):
+    def __repr__(self) -> str:
+        return f"<User username:{self.username} id:{self.id} session:{self.session}>"
 
     def __init__(self,username:str,client_or_session:"client.HTTPClient|session.Session|None"=None):
         super().__init__(client_or_session)

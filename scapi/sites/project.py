@@ -10,6 +10,8 @@ if TYPE_CHECKING:
     from . import session
 
 class Project(base._BaseSiteAPI[int]):
+    def __repr__(self) -> str:
+        return f"<Project id:{self.id} author:{self.author} session:{self.session}>"
 
     def __init__(self,id:int,client_or_session:"client.HTTPClient|session.Session|None"=None):
         super().__init__(client_or_session)
