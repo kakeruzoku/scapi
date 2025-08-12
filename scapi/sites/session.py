@@ -88,16 +88,21 @@ class Session(base._BaseSiteAPI[str]):
     def update_url(self):
         return "https://scratch.mit.edu/session/"
     
-    def update_from_data(self, data:SessionStatusPayload|str):
-        if isinstance(data,str):
-            return False
+    async def update(self):
+        response = await self.client.get("https://scratch.mit.edu/session/")
+        try:
+            data:SessionStatusPayload = response.json()
+            self._update_from_data(data)
+        except Exception:
+            raise error.InvalidData(response)
+    
+    def _update_from_data(self, data:SessionStatusPayload):
         if data.get("user") is None:
-            return False
+            raise ValueError()
         if self._status:
             self._status.update(data)
         else:
             self._status = SessionStatus(self,data)
-        return True
     
     @property
     def logged_at(self):
@@ -112,7 +117,7 @@ class Session(base._BaseSiteAPI[str]):
         return self._status and self._status.educator and (not self._status.invited_scratcher)
     
 async def session_login(session_id:str):
-    return await Session._get(session_id)
+    return await Session._create_from_api(session_id)
 
 async def login(
         username:str,
@@ -150,7 +155,7 @@ async def login(
     if not session_id:
         raise error.LoginFailure(response)
     if load_status:
-        return await Session._get(session_id,_client)
+        return await Session._create_from_api(session_id,_client)
     else:
         return Session(session_id,_client)
     

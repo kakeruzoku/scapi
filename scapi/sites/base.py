@@ -23,31 +23,13 @@ class _BaseSiteAPI(ABC,Generic[_T_ID]):
             self.client = client_or_session.client
             self.session = client_or_session
 
-    async def update(self,is_old:bool=False):
-        url = self.old_update_url if is_old else self.update_url
-        if url is None:
-            raise TypeError()
-        response = await self.client.get(url)
-        data = response.json_or_text()
-        is_ok = self.update_from_old_data(data) if is_old else self.update_from_data(data)
-        if not is_ok:
-            raise error.InvalidData(response)
-
-    @property
-    def update_url(self) -> str|None:
+    async def update(self) -> None:
+        raise TypeError()
+    
+    def _update_from_data(self,data):
         return
     
-    @property
-    def old_update_url(self) -> str|None:
-        return
-    
-    def update_from_data(self,data) -> bool:
-        return False
-
-    def update_from_old_data(self,data) -> bool:
-        return False
-    
-    def _update(self,data:dict[str,Any]):
+    def _update_to_attributes(self,data:dict[str,Any]):
         for k,v in data.items():
             if v is None:
                 return
@@ -69,15 +51,14 @@ class _BaseSiteAPI(ABC,Generic[_T_ID]):
         await self.client.close()
 
     @classmethod
-    async def _get(
+    async def _create_from_api(
         cls,
         id:_T_ID,
         client_or_session:"client.HTTPClient|session.Session|None"=None,
-        is_old:bool=False,
         **others
     ):
         _cls = cls(id,client_or_session,**others) # type: ignore
-        await _cls.update(is_old)
+        await _cls.update()
         return _cls
     
     async def __aenter__(self):

@@ -32,14 +32,13 @@ class Project(base._BaseSiteAPI[int]):
 
         self.remix_parent_id:int|None = None
         self.remix_root_id:int|None = None
-
-    @property
-    def update_url(self):
-        return f"https://api.scratch.mit.edu/projects/{self.id}"
     
-    def update_from_data(self, data:ProjectPayload) -> bool:
-        
-        self._update({
+    async def update(self):
+        response = await self.client.get(f"https://api.scratch.mit.edu/projects/{self.id}")
+        self._update_from_data(response.json())
+
+    def _update_from_data(self, data:ProjectPayload):
+        self._update_to_attributes({
             "title":data.get("title"),
             "description":data.get("description"),
             "instructions":data.get("instructions"),
@@ -49,7 +48,7 @@ class Project(base._BaseSiteAPI[int]):
 
         _history = data.get("history")
         if _history:
-            self._update({
+            self._update_to_attributes({
                 "_created_at":_history.get("created"),
                 "_modified_at":_history.get("modified"),
                 "_shared_at":_history.get("shared")
@@ -57,7 +56,7 @@ class Project(base._BaseSiteAPI[int]):
 
         _stats = data.get("stats")
         if _stats:
-            self._update({
+            self._update_to_attributes({
                 "views":_stats.get("views"),
                 "loves":_stats.get("loves"),
                 "favorites":_stats.get("favorites"),
@@ -66,12 +65,10 @@ class Project(base._BaseSiteAPI[int]):
 
         _remix = data.get("remix")
         if _remix:
-            self._update({
+            self._update_to_attributes({
                 "remix_parent_id":_remix.get("parent"),
                 "remix_root_id":_remix.get("root")
             })
-        
-        return True
     
     @property
     def created_at(self):
