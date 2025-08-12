@@ -16,7 +16,7 @@ _T = TypeVar("_T")
 if TYPE_CHECKING:
     from ..sites import session
 
-__version__ = "2.3.0"
+__version__ = "2.3.1"
 
 headers = {
     "user-agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/75.0.3770.142 Safari/537.36",
@@ -110,7 +110,7 @@ class ClientSession(aiohttp.ClientSession):
             pass
 
     async def _send_requests(
-        self,obj:Callable[...,aiohttp.ClientResponse],url:str,*,
+        self,method:str,url:str,*,
         data:Any=None,json:dict|None=None,timeout:float|None=None,params:dict[str,str]|None=None,
         header:dict[str,str]|None=None,cookie:dict[str,str]|None=None,check:bool=True,**d
     ) -> Response:
@@ -122,8 +122,8 @@ class ClientSession(aiohttp.ClientSession):
             if header is None: header = self._header.copy()
             if cookie is None: cookie = self._cookie.copy()
         try:
-            async with obj(
-                url,data=data,json=json,timeout=timeout,params=params,headers=header,cookies=cookie,
+            async with self.request(
+                method,url,data=data,json=json,timeout=timeout,params=params,headers=header,cookies=cookie,
                 proxy=self._proxy,proxy_auth=self._proxy_auth,**d
             ) as response:
                 r = Response(response,await response.read())
@@ -139,7 +139,7 @@ class ClientSession(aiohttp.ClientSession):
         header:dict[str,str]|None=None,cookie:dict[str,str]|None=None,check:bool=True,**d
     ) -> Response:
         return await self._send_requests(
-            super().get,url=url,
+            "GET",url=url,
             data=data,json=json,timeout=timeout,params=params,
             header=header,cookie=cookie,check=check,**d
         )
@@ -150,7 +150,7 @@ class ClientSession(aiohttp.ClientSession):
         header:dict[str,str]|None=None,cookie:dict[str,str]|None=None,check:bool=True,**d
     ) -> Response:
         return await self._send_requests(
-            super().post,url=url,
+            "POST",url=url,
             data=data,json=json,timeout=timeout,params=params,
             header=header,cookie=cookie,check=check,**d
         )
@@ -161,7 +161,7 @@ class ClientSession(aiohttp.ClientSession):
         header:dict[str,str]|None=None,cookie:dict[str,str]|None=None,check:bool=True,**d
     ) -> Response:
         return await self._send_requests(
-            super().put,url=url,
+            "PUT",url=url,
             data=data,json=json,timeout=timeout,params=params,
             header=header,cookie=cookie,check=check,**d
         )
@@ -172,7 +172,7 @@ class ClientSession(aiohttp.ClientSession):
         header:dict[str,str]|None=None,cookie:dict[str,str]|None=None,check:bool=True,**d
     ) -> Response:
         return await self._send_requests(
-            super().delete,url=url,
+            "DELETE",url=url,
             data=data,json=json,timeout=timeout,params=params,
             header=header,cookie=cookie,check=check,**d
         )

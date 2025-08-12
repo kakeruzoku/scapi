@@ -2,6 +2,10 @@
 
 Scapiの更新履歴です。1.0.0以前の更新履歴は[こちら](https://github.com/kakeruzoku/scapi/blob/main/changelog.md )
 # 2.x.x
+## 2.3.1
+- スタジオフォローのAPIが呼び出されていない問題を修正
+- その他コードの最適化
+
 ## 2.3.0
 ### 新機能
 - バックパックへのアップロード
