@@ -12,11 +12,11 @@ class _BaseSiteAPI(ABC,Generic[_T_ID]):
     @abstractmethod
     def __init__(
             self,
-            client_or_session:"client.HTTPClient|session.Session",
+            client_or_session:"client.HTTPClient|session.Session|None",
         ) -> None:
         if client_or_session is None:
-            self.client = client.HTTPClient()
-        elif isinstance(client_or_session,client.HTTPClient):
+            client_or_session = client.HTTPClient()
+        if isinstance(client_or_session,client.HTTPClient):
             self.client = client_or_session
             self.session = None
         else:
@@ -66,10 +66,16 @@ class _BaseSiteAPI(ABC,Generic[_T_ID]):
     async def _get(
         cls,
         id:_T_ID,
-        client_or_session:"client.HTTPClient|session.Session",
-        is_old:bool,
+        client_or_session:"client.HTTPClient|session.Session|None"=None,
+        is_old:bool=False,
         **others
     ):
         _cls = cls(id,client_or_session,**others) # type: ignore
         await _cls.update(is_old)
         return _cls
+    
+    async def __aenter__(self):
+        return self
+
+    async def __aexit__(self, exc_type, exc, tb):
+        await self.client_close()

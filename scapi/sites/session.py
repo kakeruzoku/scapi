@@ -21,6 +21,7 @@ def decode_session(session_id:str) -> tuple[DecodedSessionID,int]:
 class SessionStatus:
     def __init__(self,session:"Session",data:SessionStatusPayload):
         self.session = session
+        self.update(data)
 
     def update(self,data:SessionStatusPayload):
         _user = data.get("user")
@@ -30,7 +31,7 @@ class SessionStatus:
         self.session.username = _user.get("username")
         self.session.xtoken = _user.get("token")
         self.thumbnail_url = _user.get("thumbnailUrl")
-        self.joined_at = common.dt_from_isoformat(_user.get("dataJoined"))
+        self.joined_at = common.dt_from_isoformat(_user.get("dateJoined"))
         self.email = _user.get("email")
         self.birthday = datetime.date(_user.get("birthYear"),_user.get("birthMonth"),1)
         self.gender = _user.get("gender")
@@ -112,4 +113,4 @@ class Session(base._BaseSiteAPI[str]):
         return self._status and self._status.educator and (not self._status.invited_scratcher)
     
 async def session_login(session_id:str):
-    pass
+    return await Session._get(session_id)

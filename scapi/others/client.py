@@ -1,6 +1,6 @@
 from typing import Any, Callable, TypedDict, Unpack
 import aiohttp
-import json
+import json as _json
 from urllib.parse import urlparse
 from . import error,common
 
@@ -10,6 +10,14 @@ default_headers = {
     "x-requested-with": "XMLHttpRequest",
     "referer": "https://scratch.mit.edu",
 }
+
+default_proxy:str|None=None
+default_proxy_auth:aiohttp.BasicAuth|None=None
+
+def set_default_proxy(url:str|None=None,auth:aiohttp.BasicAuth|None=None):
+    global default_proxy,default_proxy_auth
+    default_proxy = url
+    default_proxy_auth = auth
 
 class _RequestOptions(TypedDict, total=False):
     params: dict[str,str]
@@ -26,6 +34,12 @@ class Response:
         assert response._body
         self._body = response._body
 
+        print(self._response.url)
+        try:
+            print(self.text[:2000])
+        except Exception:
+            print(self.data[:2000])
+
     @property
     def data(self) -> bytes:
         return self._body
@@ -34,10 +48,10 @@ class Response:
     def text(self) -> str:
         return self._body.decode(self._response.get_encoding())
     
-    def json(self,loads:Callable[[str], Any]=json.loads,/,**kwargs) -> Any:
+    def json(self,loads:Callable[[str], Any]=_json.loads,/,**kwargs) -> Any:
         return loads(self.text,**kwargs)
     
-    def json_or_text(self,loads:Callable[[str], Any]=json.loads,/,**kwargs) -> Any:
+    def json_or_text(self,loads:Callable[[str], Any]=_json.loads,/,**kwargs) -> Any:
         try:
             return self.json(loads,**kwargs)
         except Exception:
@@ -53,8 +67,8 @@ class HTTPClient:
         self.headers = headers or default_headers
         self.cookies = cookies or {}
         self.scratch_cookies = scratch_cookies or {}
-        self._proxy = None
-        self._proxy_auth = None
+        self._proxy = default_proxy
+        self._proxy_auth = default_proxy_auth
         self._session:aiohttp.ClientSession = aiohttp.ClientSession()
 
     @staticmethod
@@ -136,5 +150,5 @@ class HTTPClient:
     async def __aenter__(self):
         return self
     
-    async def __aexit__(self):
+    async def __aexit__(self, exc_type, exc, tb):
         await self.close()

@@ -18,7 +18,7 @@ class SessionStatusUserPayload(TypedDict):
     username:str
     token:str
     thumbnailUrl:str
-    dataJoined:str
+    dateJoined:str
     email:str
     birthYear:int
     birthMonth:int

@@ -1,6 +1,7 @@
 from .others.client import (
     Response,
     HTTPClient,
+    set_default_proxy
 )
 
 from .others.error import (
@@ -22,7 +23,12 @@ from .others.error import (
     NoPermission
 )
 
+from .sites.base import (
+    _BaseSiteAPI
+)
+
 from .sites.session import (
     Session,
-    SessionStatus
+    SessionStatus,
+    session_login
 )
