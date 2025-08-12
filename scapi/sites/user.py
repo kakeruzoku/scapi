@@ -22,3 +22,7 @@ class User(base._BaseSiteAPI[str]):
     @property
     def update_url(self):
         return f"https://api.scratch.mit.edu/users/{self.username}"
+    
+    @property
+    def joined_at(self):
+        return common.dt_from_isoformat(self._joined_at)

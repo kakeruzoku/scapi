@@ -20,7 +20,7 @@ def set_default_proxy(url:str|None=None,auth:aiohttp.BasicAuth|None=None):
     default_proxy_auth = auth
 
 class _RequestOptions(TypedDict, total=False):
-    params: dict[str,str]
+    params: dict[str,str|int|float]
     data: Any
     json: Any
     cookies: dict[str,str]|None

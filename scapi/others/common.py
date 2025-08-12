@@ -1,6 +1,10 @@
 import string
 import datetime
-from typing import Literal, overload
+from typing import TYPE_CHECKING, Any, AsyncGenerator, Literal, overload
+from . import error
+
+if TYPE_CHECKING:
+    from . import client
 
 BASE62_ALPHABET = string.digits + string.ascii_uppercase + string.ascii_lowercase
 
@@ -59,3 +63,37 @@ def dt_from_timestamp(timestamp:float|None,allow_none:bool=True) -> None | datet
         else:
             raise ValueError()
     return datetime.datetime.fromtimestamp(timestamp, tz=datetime.timezone.utc)
+
+async def api_iterative(
+        _client:"client.HTTPClient",
+        url:str,
+        limit:int|None,
+        offset:int=0,
+        max_limit:int=40
+    ) -> AsyncGenerator[Any, None]:
+    limit = limit or max_limit
+    for i in range(offset,offset+limit,max_limit):
+        response = await _client.get(
+            url,
+            params={
+                "limit":min(max_limit,limit-i),
+                "offset":offset,
+            }
+        )
+        for i in response.json():
+            yield i
+
+async def page_api_iterative(
+        _client:client.HTTPClient,
+        url:str,
+        start_page:int=1,
+        end_page:int|None=None,
+    ) -> AsyncGenerator[Any, None]:
+    end_page = end_page or start_page
+    for i in range(start_page,end_page+1):
+        try:
+            response = await _client.get(url,params={"page":i})
+        except error.NotFound:
+            return
+        for i in response.json():
+            yield i
