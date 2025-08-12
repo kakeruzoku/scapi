@@ -1,4 +1,4 @@
-from typing import TypedDict
+from typing import Literal, TypedDict
 from typing_extensions import NotRequired
 
 
@@ -54,3 +54,21 @@ class SessionStatusPayload(TypedDict):
     user:SessionStatusUserPayload
     permissions:SessionStatusPermissionsPayload
     flags:SessionStatusFlagsPayload
+
+class LoginFailurePayload(TypedDict):
+    username:str
+    num_tries:NotRequired[int]
+    redirect:NotRequired[str]
+    success:Literal[0]
+    msg:str
+    messages:list
+    id:None
+
+class LoginSuccessPayload(TypedDict):
+    username:str
+    token:str
+    num_tries:int
+    success:Literal[1]
+    msg:str
+    messages:list
+    id:int

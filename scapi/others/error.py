@@ -1,4 +1,5 @@
-from typing import TYPE_CHECKING, Literal
+from typing import TYPE_CHECKING
+from .types import LoginFailurePayload
 
 if TYPE_CHECKING:
     from . import client
@@ -37,6 +38,15 @@ class AccountBlocked(Forbidden):
     def __init__(self,response:"client.Response"):
         super().__init__(response)
 
+class LoginFailure(Forbidden):
+    def __init__(self,response:"client.Response"):
+        super().__init__(response)
+        data:LoginFailurePayload = response.json()[0]
+        self.username = data.get("username")
+        self.num_tries = data.get("num_tries")
+        self.request_capture = bool(data.get("redirect"))
+        self.message = data.get("msg")
+
 class NotFound(ClientError):
     pass
 
@@ -57,3 +67,5 @@ class NoSession(CheckingFailed):
 
 class NoPermission(CheckingFailed):
     pass
+
+del TYPE_CHECKING,LoginFailurePayload

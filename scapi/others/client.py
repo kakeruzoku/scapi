@@ -34,12 +34,6 @@ class Response:
         assert response._body
         self._body = response._body
 
-        print(self._response.url)
-        try:
-            print(self.text[:2000])
-        except Exception:
-            print(self.data[:2000])
-
     @property
     def data(self) -> bytes:
         return self._body
@@ -122,11 +116,11 @@ class HTTPClient:
             async with self._session.request(method,url,proxy=self._proxy,proxy_auth=self._proxy_auth,**kwargs) as _response:
                 await _response.read()
             response = Response(_response)
-            if check:
-                self._check(response)
-            return response
         except Exception as e:
-            raise error.ProcessingError(e) from None
+            raise error.ProcessingError(e) from e
+        if check:
+            self._check(response)
+        return response
 
     async def get(self,url:str,**kwargs:Unpack[_RequestOptions]) -> Response:
         return await self._request("GET",url,**kwargs)

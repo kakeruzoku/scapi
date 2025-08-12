@@ -4,24 +4,7 @@ from .others.client import (
     set_default_proxy
 )
 
-from .others.error import (
-    HTTPerror,
-    SessionClosed,
-    ProcessingError,
-    ResponseError,
-    ClientError,
-    Unauthorized,
-    Forbidden,
-    IPBanned,
-    AccountBlocked,
-    NotFound,
-    TooManyRequests,
-    ServerError,
-    InvalidData,
-    CheckingFailed,
-    NoSession,
-    NoPermission
-)
+from .others import error
 
 from .sites.base import (
     _BaseSiteAPI
@@ -30,5 +13,6 @@ from .sites.base import (
 from .sites.session import (
     Session,
     SessionStatus,
-    session_login
+    session_login,
+    login
 )

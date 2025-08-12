@@ -3,7 +3,7 @@ import base64
 import json
 import datetime
 from typing import Any
-from ..others import client, common
+from ..others import client, common, error
 from . import base
 from ..others.types import (
     DecodedSessionID,
@@ -114,3 +114,44 @@ class Session(base._BaseSiteAPI[str]):
     
 async def session_login(session_id:str):
     return await Session._get(session_id)
+
+async def login(
+        username:str,
+        password:str,
+        load_status:bool=True,
+        *,
+        recaptcha_code:str|None=None
+    ):
+    _client = client.HTTPClient()
+    data = {"username":username,"password":password}
+    if recaptcha_code:
+        login_url = "https://scratch.mit.edu/login_retry/"
+        data["g-recaptcha-response"] = recaptcha_code
+    else:
+        login_url = "https://scratch.mit.edu/login/"
+    try:
+        response = await _client.post(
+            login_url,
+            json=data,
+            cookies={
+                "scratchcsrftoken" : "a",
+                "scratchlanguage" : "en",
+            }
+        )
+    except error.Forbidden as e:
+        await _client.close()
+        if type(e) is not error.Forbidden:
+            raise
+        raise error.LoginFailure(e.response) from None
+    except:
+        await _client.close()
+        raise
+    set_cookie = response._response.headers.get("Set-Cookie","")
+    session_id = common.split(set_cookie,"scratchsessionsid=\"","\"")
+    if not session_id:
+        raise error.LoginFailure(response)
+    if load_status:
+        return await Session._get(session_id,_client)
+    else:
+        return Session(session_id,_client)
+    
