@@ -45,7 +45,7 @@ class _BaseSiteAPI(ABC,Generic[_T]):
     
     @common._bypass_checking
     def require_session(self):
-        if not self.session:
+        if self.session is None:
             raise error.NoSession(self)
     
     @property

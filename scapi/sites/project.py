@@ -3,7 +3,9 @@ from typing import TYPE_CHECKING, AsyncGenerator
 from ..others import client, common, error
 from . import base
 from ..others.types import (
-    ProjectPayload
+    ProjectPayload,
+    ProjectLovePayload,
+    ProjectFavoritePayload
 )
 from . import user,studio,session
 
@@ -128,9 +130,6 @@ class Project(base._BaseSiteAPI[int]):
             return await self._create_from_api(self.remix_root_id,self.client_or_session)
 
 
-    async def create_remix(self,title:str|None=None) -> "Project":
-        #TODO download project
-        return await self._session.create_project(title,remix_id=self.id)
     
     async def edit_project(self,project_json:dict|str|bytes):
         self._check_owner()
@@ -173,6 +172,41 @@ class Project(base._BaseSiteAPI[int]):
             json=data
         )
         self._update_from_data(r.json())
+
+
+    async def create_remix(self,title:str|None=None) -> "Project":
+        #TODO download project
+        return await self._session.create_project(title,remix_id=self.id)
+    
+    async def is_loved(self):
+        response = await self.client.get(f"https://api.scratch.mit.edu/projects/{self.id}/loves/user/{self._session.username}")
+        data:ProjectLovePayload = response.json()
+        return data.get("userLove")
+
+    async def add_love(self) -> bool:
+        response = await self.client.post(f"https://api.scratch.mit.edu/projects/{self.id}/loves/user/{self._session.username}")
+        data:ProjectLovePayload = response.json()
+        return data.get("statusChanged")
+    
+    async def remove_love(self) -> bool:
+        response = await self.client.delete(f"https://api.scratch.mit.edu/projects/{self.id}/loves/user/{self._session.username}")
+        data:ProjectLovePayload = response.json()
+        return data.get("statusChanged")
+    
+    async def is_favorited(self):
+        response = await self.client.get(f"https://api.scratch.mit.edu/projects/{self.id}/favorites/user/{self._session.username}")
+        data:ProjectFavoritePayload = response.json()
+        return data.get("userFavorite")
+
+    async def add_favorite(self) -> bool:
+        response = await self.client.post(f"https://api.scratch.mit.edu/projects/{self.id}/favorites/user/{self._session.username}")
+        data:ProjectFavoritePayload = response.json()
+        return data.get("statusChanged")
+    
+    async def remove_favorite(self) -> bool:
+        response = await self.client.delete(f"https://api.scratch.mit.edu/projects/{self.id}/favorites/user/{self._session.username}")
+        data:ProjectFavoritePayload = response.json()
+        return data.get("statusChanged")
 
 def get_project(project_id:int,*,_client:client.HTTPClient|None=None) -> common._AwaitableContextManager[Project]:
     return common._AwaitableContextManager(Project._create_from_api(project_id,_client))

@@ -3,6 +3,8 @@ import datetime
 from typing import TYPE_CHECKING, Any, AsyncGenerator, Callable, Coroutine, Generic, Literal, TypeVar, overload,AsyncContextManager
 from . import error,client,config
 
+__version__ = "3.0.0a"
+
 BASE62_ALPHABET = string.digits + string.ascii_uppercase + string.ascii_lowercase
 
 def split(text:str,before:str,after:str) -> str|None:

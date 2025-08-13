@@ -130,6 +130,17 @@ ProjectServerPayload = TypedDict(
         "content-title":NotRequired[str]
     }
 )
+
+class ProjectLovePayload(TypedDict):
+    projectId:str
+    userLove:bool
+    statusChanged:bool
+
+class ProjectFavoritePayload(TypedDict):
+    projectId:str
+    userFavorite:bool
+    statusChanged:bool
+
 class StudioHistoryPayload(TypedDict):
     created:str
     modified:str
