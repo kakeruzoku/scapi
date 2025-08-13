@@ -4,7 +4,7 @@ import base64
 import json
 import datetime
 from ..others import client, common, error
-from . import base,project,user
+from . import base,project,user,studio
 from ..others.types import (
     DecodedSessionID,
     SessionStatusPayload,
@@ -149,6 +149,15 @@ class Session(base._BaseSiteAPI[str]):
             _project.title = base64.b64decode(b64_title).decode()
 
         return _project
+    
+    async def get_project(self,project_id:int) -> "project.Project":
+        return await project.Project._create_from_api(project_id,self.session)
+    
+    async def get_studio(self,studio_id:int) -> "studio.Studio":
+        return await studio.Studio._create_from_api(studio_id,self.session)
+    
+    async def get_user(self,username:str) -> "user.User":
+        return await user.User._create_from_api(username,self.session)
     
 def session_login(session_id:str) -> common._AwaitableContextManager[Session]:
     return common._AwaitableContextManager(Session._create_from_api(session_id))

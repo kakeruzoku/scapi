@@ -116,5 +116,13 @@ class Project(base._BaseSiteAPI[int]):
             p._update_from_data(_p)
             yield p
 
+    async def get_parent_project(self) -> "Project|None":
+        if self.remix_parent_id:
+            return await self._create_from_api(self.remix_parent_id,self.client_or_session)
+        
+    async def get_root_project(self) -> "Project|None":
+        if self.remix_root_id:
+            return await self._create_from_api(self.remix_root_id,self.client_or_session)
+
 def get_project(project_id:int,*,_client:client.HTTPClient|None=None) -> common._AwaitableContextManager[Project]:
     return common._AwaitableContextManager(Project._create_from_api(project_id,_client))
