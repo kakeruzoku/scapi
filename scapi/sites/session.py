@@ -32,7 +32,7 @@ class SessionStatus:
         self.session.username = _user.get("username")
         self.session.xtoken = _user.get("token")
         self.thumbnail_url = _user.get("thumbnailUrl")
-        self.joined_at = common.dt_from_isoformat(_user.get("dateJoined"),False)
+        self._joined_at = _user.get("dateJoined")
         self.email = _user.get("email")
         self.birthday = datetime.date(_user.get("birthYear"),_user.get("birthMonth"),1)
         self.gender = _user.get("gender")
@@ -61,6 +61,11 @@ class SessionStatus:
         self.gallery_comments_enabled = _flags.get("gallery_comments_enabled")
         self.userprofile_comments_enabled = _flags.get("userprofile_comments_enabled")
         self.everything_is_totally_normal = _flags.get("everything_is_totally_normal")
+
+    @property
+    def joined_at(self):
+        return common.dt_from_isoformat(self._joined_at,False)
+
 
 class Session(base._BaseSiteAPI[str]):
     def __repr__(self) -> str:
@@ -120,6 +125,12 @@ class Session(base._BaseSiteAPI[str]):
     @property
     def is_verified_educator(self) -> None | bool:
         return self._status and self._status.educator and (not self._status.invited_scratcher)
+    
+    async def logout(self):
+        await self.client.post(
+            "https://scratch.mit.edu/accounts/logout/",
+            json={"csrfmiddlewaretoken":"a"}
+        )
     
     async def create_project(self,title:str|None=None,project_json:Any=None,*,remix_id:int|None=None):
         param = {}

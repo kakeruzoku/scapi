@@ -26,6 +26,29 @@ class Response:
         assert response._body
         self._body = response._body
 
+    def _check(self):
+        url = self._response.url
+        status_code = self.status_code
+        if url.host == "scratch.mit.edu":
+            if url.path.startswith("/ip_ban_appeal/"):
+                raise error.IPBanned(self,common.split(url.path,"/ip_ban_appeal/","/"))
+            elif url.path.startswith("/accounts/banned-response"):
+                raise error.AccountBlocked(self)
+            elif url.path.startswith("/accounts/login"):
+                raise error.Unauthorized(self)
+        if status_code == 401:
+            raise error.Unauthorized(self)
+        elif status_code == 403:
+            raise error.Forbidden(self)
+        elif status_code == 404:
+            raise error.NotFound(self)
+        elif status_code == 429:
+            raise error.TooManyRequests(self)
+        elif status_code // 100 == 4:
+            raise error.ClientError(self)
+        elif status_code // 100 == 5:
+            raise error.ServerError(self)
+
     @property
     def data(self) -> bytes:
         return self._body
@@ -80,29 +103,6 @@ class HTTPClient:
     def get_cookie(self,url:str) -> dict[str, str]:
         return self.scratch_cookies if self.is_scratch(url) else self.cookies
     
-    def _check(self,response:Response):
-        url = response._response.url
-        status_code = response.status_code
-        if url.host == "scratch.mit.edu":
-            if url.path.startswith("/ip_ban_appeal/"):
-                raise error.IPBanned(response,common.split(url.path,"/ip_ban_appeal/","/"))
-            elif url.path.startswith("/accounts/banned-response"):
-                raise error.AccountBlocked(response)
-            elif url.path.startswith("/accounts/login"):
-                raise error.Unauthorized(response)
-        if status_code == 401:
-            raise error.Unauthorized(response)
-        elif status_code == 403:
-            raise error.Forbidden(response)
-        elif status_code == 404:
-            raise error.NotFound(response)
-        elif status_code == 429:
-            raise error.TooManyRequests(response)
-        elif status_code // 100 == 4:
-            raise error.ClientError(response)
-        elif status_code // 100 == 5:
-            raise error.ServerError(response)
-    
     async def _request(self,method:str,url:str,**kwargs:Unpack[_RequestOptions]) -> Response:
         if self.get_cookie(url):
             kwargs["cookies"] = kwargs.get("cookies") or self.scratch_cookies
@@ -120,7 +120,7 @@ class HTTPClient:
         except Exception as e:
             raise error.ProcessingError(e) from e
         if check:
-            self._check(response)
+            response._check()
         return response
 
     async def get(self,url:str,**kwargs:Unpack[_RequestOptions]) -> Response:
