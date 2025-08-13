@@ -1,7 +1,7 @@
 import string
 import datetime
-from typing import TYPE_CHECKING, Any, AsyncGenerator, Coroutine, Generic, Literal, TypeVar, overload,AsyncContextManager
-from . import error,client
+from typing import TYPE_CHECKING, Any, AsyncGenerator, Callable, Coroutine, Generic, Literal, TypeVar, overload,AsyncContextManager
+from . import error,client,config
 
 BASE62_ALPHABET = string.digits + string.ascii_uppercase + string.ascii_lowercase
 
@@ -104,6 +104,14 @@ async def page_api_iterative(
             return
 
 _T = TypeVar("_T")
+
+def _bypass_checking(func:Callable[[_T], Any]) -> Callable[[_T], None]:
+    def decorated(self:_T):
+        if config.bypass_checking:
+            return
+        else:
+            func(self)
+    return decorated
 
 class _AwaitableContextManager(Generic[_T]):
     def __init__(self, coro:Coroutine[Any, Any, AsyncContextManager[_T]]):

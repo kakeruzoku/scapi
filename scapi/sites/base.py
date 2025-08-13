@@ -1,6 +1,6 @@
 from typing import TYPE_CHECKING, Coroutine, Literal,Any,TypeVar, Generic
 from abc import ABC,abstractmethod
-from ..others import client,error
+from ..others import client,error,common
 from . import session
 
 _T = TypeVar("_T")
@@ -38,12 +38,15 @@ class _BaseSiteAPI(ABC,Generic[_T]):
             setattr(self,k,v)
 
     @property
-    def has_session(self) -> bool:
-        return self.session is not None
-
+    def _session(self):
+        if self.session is None:
+            raise error.NoSession(self)
+        return self.session
+    
+    @common._bypass_checking
     def require_session(self):
-        if not self.has_session:
-            raise error.NoSession()
+        if not self.session:
+            raise error.NoSession(self)
     
     @property
     def client_closed(self) -> bool:

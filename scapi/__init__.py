@@ -27,7 +27,11 @@ from .sites.base import (
 from .others.client import (
     Response,
     HTTPClient,
-    set_default_proxy
+)
+
+from .others.config import (
+    set_default_proxy,
+    set_debug
 )
 
 from .others import error

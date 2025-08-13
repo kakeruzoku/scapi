@@ -80,8 +80,13 @@ class Project(base._BaseSiteAPI[int]):
     @property
     def _author_username(self) -> str:
         if not (self.author and self.author.username):
-            raise error.NoDataError()
+            raise error.NoDataError(self)
         return self.author.username
+    
+    @common._bypass_checking
+    def _check_owner(self):
+        if self._author_username.lower() != self._session.username.lower():
+            raise error.NoPermission(self)
     
     @property
     def created_at(self):
@@ -120,6 +125,11 @@ class Project(base._BaseSiteAPI[int]):
     async def get_root_project(self) -> "Project|None":
         if self.remix_root_id:
             return await self._create_from_api(self.remix_root_id,self.client_or_session)
+
+
+    async def create_remix(self,title:str|None=None) -> "Project":
+        #TODO download project
+        return await self._session.create_project(title,remix_id=self.id)
 
 def get_project(project_id:int,*,_client:client.HTTPClient|None=None) -> common._AwaitableContextManager[Project]:
     return common._AwaitableContextManager(Project._create_from_api(project_id,_client))

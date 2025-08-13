@@ -1,5 +1,6 @@
 from .types import LoginFailurePayload
 from . import client
+from ..sites import base
 
 class HTTPerror(Exception):
     pass
@@ -57,7 +58,8 @@ class InvalidData(ResponseError):
     pass
 
 class CheckingFailed(Exception):
-    pass
+    def __init__(self,cls:"base._BaseSiteAPI"):
+        self.cls = cls
 
 class NoSession(CheckingFailed):
     pass

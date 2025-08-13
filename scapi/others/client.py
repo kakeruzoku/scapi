@@ -2,7 +2,7 @@ from typing import Any, Callable, TypedDict, Unpack
 import aiohttp
 import json as _json
 from urllib.parse import urlparse
-from . import error,common
+from . import error,common,config
 
 default_headers = {
     "user-agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/75.0.3770.142 Safari/537.36",
@@ -10,14 +10,6 @@ default_headers = {
     "x-requested-with": "XMLHttpRequest",
     "referer": "https://scratch.mit.edu",
 }
-
-default_proxy:str|None=None
-default_proxy_auth:aiohttp.BasicAuth|None=None
-
-def set_default_proxy(url:str|None=None,auth:aiohttp.BasicAuth|None=None):
-    global default_proxy,default_proxy_auth
-    default_proxy = url
-    default_proxy_auth = auth
 
 class _RequestOptions(TypedDict, total=False):
     params: dict[str,str|int|float]
@@ -64,8 +56,8 @@ class HTTPClient:
         self.headers = headers or default_headers
         self.cookies = cookies or {}
         self.scratch_cookies = scratch_cookies or {}
-        self._proxy = default_proxy
-        self._proxy_auth = default_proxy_auth
+        self._proxy = config.default_proxy
+        self._proxy_auth = config.default_proxy_auth
         self._session:aiohttp.ClientSession = aiohttp.ClientSession()
 
     @staticmethod
