@@ -1,12 +1,9 @@
 from typing import TYPE_CHECKING, AsyncGenerator
 from ..others import client, common, error
-from . import base,project,user
+from . import base,project,user,session
 from ..others.types import (
     StudioPayload
 )
-
-if TYPE_CHECKING:
-    from . import session
 
 class Studio(base._BaseSiteAPI[int]):
     def __repr__(self) -> str:

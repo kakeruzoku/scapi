@@ -1,10 +1,7 @@
 import string
 import datetime
 from typing import TYPE_CHECKING, Any, AsyncGenerator, Coroutine, Generic, Literal, TypeVar, overload,AsyncContextManager
-from . import error
-
-if TYPE_CHECKING:
-    from . import client
+from . import error,client
 
 BASE62_ALPHABET = string.digits + string.ascii_uppercase + string.ascii_lowercase
 

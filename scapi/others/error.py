@@ -1,8 +1,5 @@
-from typing import TYPE_CHECKING
 from .types import LoginFailurePayload
-
-if TYPE_CHECKING:
-    from . import client
+from . import client
 
 class HTTPerror(Exception):
     pass
@@ -71,7 +68,4 @@ class NoPermission(CheckingFailed):
 class NoDataError(CheckingFailed):
     pass
 
-if TYPE_CHECKING:
-    del client
-
-del LoginFailurePayload,TYPE_CHECKING
+del LoginFailurePayload,client

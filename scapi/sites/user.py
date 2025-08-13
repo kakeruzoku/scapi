@@ -1,12 +1,9 @@
 from typing import TYPE_CHECKING
 from ..others import client, common, error
-from . import base
+from . import base,session
 from ..others.types import (
     UserPayload
 )
-
-if TYPE_CHECKING:
-    from . import session
 
 class User(base._BaseSiteAPI[str]):
     def __repr__(self) -> str:

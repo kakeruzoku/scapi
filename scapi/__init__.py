@@ -1,15 +1,3 @@
-from .others.client import (
-    Response,
-    HTTPClient,
-    set_default_proxy
-)
-
-from .others import error
-
-from .sites.base import (
-    _BaseSiteAPI
-)
-
 from .sites.session import (
     Session,
     SessionStatus,
@@ -31,3 +19,15 @@ from .sites.studio import (
     Studio,
     get_studio
 )
+
+from .sites.base import (
+    _BaseSiteAPI
+)
+
+from .others.client import (
+    Response,
+    HTTPClient,
+    set_default_proxy
+)
+
+from .others import error

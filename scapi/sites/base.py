@@ -1,9 +1,7 @@
 from typing import TYPE_CHECKING, Coroutine, Literal,Any,TypeVar, Generic
 from abc import ABC,abstractmethod
 from ..others import client,error
-
-if TYPE_CHECKING:
-    from . import session
+from . import session
 
 _T = TypeVar("_T")
 

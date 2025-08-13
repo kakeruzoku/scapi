@@ -4,10 +4,7 @@ from . import base
 from ..others.types import (
     ProjectPayload
 )
-from . import user,studio
-
-if TYPE_CHECKING:
-    from . import session
+from . import user,studio,session
 
 class Project(base._BaseSiteAPI[int]):
     def __repr__(self) -> str:
