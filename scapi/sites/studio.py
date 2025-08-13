@@ -1,6 +1,6 @@
-from typing import TYPE_CHECKING
-from ..others import client, common
-from . import base
+from typing import TYPE_CHECKING, AsyncGenerator
+from ..others import client, common, error
+from . import base,project,user
 from ..others.types import (
     StudioPayload
 )
@@ -67,6 +67,35 @@ class Studio(base._BaseSiteAPI[int]):
     def modified_at(self):
         return common.dt_from_isoformat(self._modified_at)
     
+    async def get_project(self,limit:int|None=None,offset:int|None=None) -> AsyncGenerator["project.Project", None]:
+        async for _p in common.api_iterative(
+            self.client,f"https://api.scratch.mit.edu/studios/{self.id}/projects",
+            limit=limit,offset=offset
+        ):
+            p = project.Project(_p["id"],self.client_or_session)
+            p._update_from_data(_p)
+            yield p
+
+    async def get_host(self) -> "user.User":
+        return await anext(self.get_manager(limit=1))
+
+    async def get_manager(self,limit:int|None=None,offset:int|None=None) -> AsyncGenerator["user.User", None]:
+        async for _u in common.api_iterative(
+            self.client,f"https://api.scratch.mit.edu/studios/{self.id}/managers",
+            limit=limit,offset=offset
+        ):
+            u = user.User(_u["username"],self.client_or_session)
+            u._update_from_data(_u)
+            yield u
+
+    async def get_curator(self,limit:int|None=None,offset:int|None=None) -> AsyncGenerator["user.User", None]:
+        async for _u in common.api_iterative(
+            self.client,f"https://api.scratch.mit.edu/studios/{self.id}/curators",
+            limit=limit,offset=offset
+        ):
+            u = user.User(_u["username"],self.client_or_session)
+            u._update_from_data(_u)
+            yield u
 
 def get_studio(studio_id:int,*,_client:client.HTTPClient|None=None) -> common._AwaitableContextManager[Studio]:
     return common._AwaitableContextManager(Studio._create_from_api(studio_id,_client))

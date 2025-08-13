@@ -68,6 +68,9 @@ class NoSession(CheckingFailed):
 class NoPermission(CheckingFailed):
     pass
 
+class NoDataError(CheckingFailed):
+    pass
+
 if TYPE_CHECKING:
     del client
 

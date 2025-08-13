@@ -78,11 +78,14 @@ async def api_iterative(
             url,
             params={
                 "limit":min(max_limit,limit-i),
-                "offset":offset,
+                "offset":i,
             }
         )
-        for i in response.json():
+        data = response.json()
+        for i in data:
             yield i
+        if not data:
+            return
 
 async def page_api_iterative(
         _client:"client.HTTPClient",
@@ -97,8 +100,11 @@ async def page_api_iterative(
             response = await _client.get(url,params={"page":i})
         except error.NotFound:
             return
-        for i in response.json():
+        data = response.json()
+        for i in data:
             yield i
+        if not data:
+            return
 
 _T = TypeVar("_T")
 

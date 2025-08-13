@@ -4,7 +4,7 @@ from . import base
 from ..others.types import (
     ProjectPayload
 )
-from . import user
+from . import user,studio
 
 if TYPE_CHECKING:
     from . import session
@@ -79,6 +79,12 @@ class Project(base._BaseSiteAPI[int]):
                 remix_parent_id=_remix.get("parent"),
                 remix_root_id=_remix.get("root")
             )
+
+    @property
+    def _author_username(self) -> str:
+        if not (self.author and self.author.username):
+            raise error.NoDataError()
+        return self.author.username
     
     @property
     def created_at(self):
@@ -98,6 +104,15 @@ class Project(base._BaseSiteAPI[int]):
             limit=limit,offset=offset
         ):
             p = Project(_p["id"],self.client_or_session)
+            p._update_from_data(_p)
+            yield p
+
+    async def get_studio(self,limit:int|None=None,offset:int|None=None) -> AsyncGenerator["studio.Studio", None]:
+        async for _p in common.api_iterative(
+            self.client,f"https://api.scratch.mit.edu/users/{self._author_username}/projects/{self.id}/studios",
+            limit=limit,offset=offset
+        ):
+            p = studio.Studio(_p["id"],self.client_or_session)
             p._update_from_data(_p)
             yield p
 
