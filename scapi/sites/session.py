@@ -88,8 +88,8 @@ class Session(base._BaseSiteAPI[str]):
             "scratchsessionsid": session_id,
             "scratchcsrftoken": "a",
             "scratchlanguage": "en",
-            "X-token": self.xtoken
         }
+        self.client.scratch_headers["X-token"] = self.xtoken
     
     async def update(self):
         response = await self.client.get("https://scratch.mit.edu/session/")
@@ -98,6 +98,7 @@ class Session(base._BaseSiteAPI[str]):
             self._update_from_data(data)
         except Exception:
             raise error.InvalidData(response)
+        self.client.scratch_headers["X-token"] = self.xtoken
     
     def _update_from_data(self, data:SessionStatusPayload):
         if data.get("user") is None:
@@ -132,9 +133,22 @@ class Session(base._BaseSiteAPI[str]):
             param["title"] = title
 
         project_json = project_json or common.empty_project_json
+        if isinstance(project_json,dict):
+            _data = json.dumps(project_json)
+            content_type = "application/json"
+        elif isinstance(project_json,str):
+            _data = project_json
+            content_type = "application/json"
+        elif isinstance(project_json,bytes):
+            _data = project_json
+            content_type = "application/zip"
+        else:
+            raise TypeError()
+        headers = self.client.scratch_headers|{"Content-Type": content_type}
+        
         response = await self.client.post(
             "https://projects.scratch.mit.edu/",
-            params=param,json=project_json
+            params=param,data=_data,headers=headers
         )
 
         data:ProjectServerPayload = response.json()

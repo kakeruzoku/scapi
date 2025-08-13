@@ -51,10 +51,12 @@ class HTTPClient:
             self,*,
             headers:dict[str,str]|None=None,
             cookies:dict[str,str]|None=None,
+            scratch_headers:dict[str,str]|None=None,
             scratch_cookies:dict[str,str]|None=None
         ):
-        self.headers = headers or default_headers
+        self.headers = headers or {}
         self.cookies = cookies or {}
+        self.scratch_headers = scratch_headers or default_headers
         self.scratch_cookies = scratch_cookies or {}
         self._proxy = config.default_proxy
         self._proxy_auth = config.default_proxy_auth
@@ -102,8 +104,12 @@ class HTTPClient:
             raise error.ServerError(response)
     
     async def _request(self,method:str,url:str,**kwargs:Unpack[_RequestOptions]) -> Response:
-        kwargs["cookies"] = kwargs.get("cookies") or self.get_cookie(url)
-        kwargs["headers"] = kwargs.get("headers") or self.headers
+        if self.get_cookie(url):
+            kwargs["cookies"] = kwargs.get("cookies") or self.scratch_cookies
+            kwargs["headers"] = kwargs.get("headers") or self.scratch_headers
+        else:
+            kwargs["cookies"] = kwargs.get("cookies") or self.cookies
+            kwargs["headers"] = kwargs.get("headers") or self.headers
         check = kwargs.pop("check",True)
         if self.closed:
             raise error.SessionClosed()
