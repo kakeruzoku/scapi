@@ -5,7 +5,8 @@ from . import base
 from ..others.types import (
     ProjectPayload,
     ProjectLovePayload,
-    ProjectFavoritePayload
+    ProjectFavoritePayload,
+    ProjectVisibilityPayload
 )
 from . import user,studio,session
 
@@ -173,6 +174,20 @@ class Project(base._BaseSiteAPI[int]):
         )
         self._update_from_data(r.json())
 
+    async def share(self):
+        self._check_owner()
+        await self.client.put(f"https://api.scratch.mit.edu/proxy/projects/{self.id}/share")
+        self.public = True
+
+    async def unshare(self):
+        self._check_owner()
+        await self.client.put(f"https://api.scratch.mit.edu/proxy/projects/{self.id}/unshare")
+        self.public = False
+
+    async def get_visibility(self) -> ProjectVisibilityPayload:
+        self._check_owner()
+        response = await self.client.get(f"https://api.scratch.mit.edu/users/{self._session.username}/projects/{self.id}/visibility")
+        return response.json()
 
     async def create_remix(self,title:str|None=None) -> "Project":
         #TODO download project
@@ -207,6 +222,15 @@ class Project(base._BaseSiteAPI[int]):
         response = await self.client.delete(f"https://api.scratch.mit.edu/projects/{self.id}/favorites/user/{self._session.username}")
         data:ProjectFavoritePayload = response.json()
         return data.get("statusChanged")
+    
+    async def add_view(self) -> bool:
+        try:
+            await self.client.post(f"https://api.scratch.mit.edu/users/{self._author_username}/projects/{self.id}/views/")
+        except error.TooManyRequests:
+            return False
+        else:
+            return True
+
 
 def get_project(project_id:int,*,_client:client.HTTPClient|None=None) -> common._AwaitableContextManager[Project]:
     return common._AwaitableContextManager(Project._create_from_api(project_id,_client))

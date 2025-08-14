@@ -23,8 +23,7 @@ class Response:
     def __init__(self,response:aiohttp.ClientResponse):
         self._response = response
         self.status_code:int = response.status
-        assert response._body
-        self._body = response._body
+        self._body = response._body or b""
 
     def _check(self):
         url = self._response.url

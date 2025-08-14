@@ -141,6 +141,16 @@ class ProjectFavoritePayload(TypedDict):
     userFavorite:bool
     statusChanged:bool
 
+class ProjectVisibilityPayload(TypedDict):
+    projectId:int
+    creatorId:int
+    deleted:bool
+    censored:bool
+    censoredByAdmin:bool
+    censoredByCommunity:bool
+    reshareable:bool
+    message:str
+
 class StudioHistoryPayload(TypedDict):
     created:str
     modified:str
