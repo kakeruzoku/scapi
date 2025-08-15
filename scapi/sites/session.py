@@ -3,9 +3,9 @@ import zlib
 import base64
 import json
 import datetime
-from ..others import client, common, error
+from ..utils import client, common, error
 from . import base,project,user,studio
-from ..others.types import (
+from ..utils.types import (
     DecodedSessionID,
     SessionStatusPayload,
     ProjectServerPayload

@@ -1,6 +1,6 @@
 from typing import TYPE_CHECKING, Coroutine, Literal,Any,TypeVar, Generic
 from abc import ABC,abstractmethod
-from ..others import client,error,common
+from ..utils import client,error,common
 from . import session
 
 _T = TypeVar("_T")
@@ -60,9 +60,9 @@ class _BaseSiteAPI(ABC,Generic[_T]):
         cls,
         id:_T,
         client_or_session:"client.HTTPClient|session.Session|None"=None,
-        **others
+        **utils
     ):
-        _cls = cls(id,client_or_session,**others) # type: ignore
+        _cls = cls(id,client_or_session,**utils) # type: ignore
         await _cls.update()
         return _cls
     

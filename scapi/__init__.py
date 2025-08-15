@@ -24,20 +24,20 @@ from .sites.base import (
     _BaseSiteAPI
 )
 
-from .others.client import (
+from .utils.client import (
     Response,
     HTTPClient,
 )
 
-from .others.common import (
+from .utils.common import (
     empty_project_json
 )
 
-from .others.file import File
+from .utils.file import File
 
-from .others.config import (
+from .utils.config import (
     set_default_proxy,
     set_debug
 )
 
-from .others import error
+from .utils import error

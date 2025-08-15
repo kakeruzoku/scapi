@@ -1,7 +1,7 @@
 from typing import TYPE_CHECKING, AsyncGenerator
-from ..others import client, common, error
+from ..utils import client, common, error
 from . import base,project,user,session
-from ..others.types import (
+from ..utils.types import (
     StudioPayload
 )
 

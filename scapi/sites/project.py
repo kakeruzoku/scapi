@@ -1,8 +1,8 @@
 import json
 from typing import TYPE_CHECKING, AsyncGenerator
-from ..others import client, common, error
+from ..utils import client, common, error
 from . import base
-from ..others.types import (
+from ..utils.types import (
     ProjectPayload,
     ProjectLovePayload,
     ProjectFavoritePayload,
