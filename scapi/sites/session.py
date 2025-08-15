@@ -3,7 +3,7 @@ import zlib
 import base64
 import json
 import datetime
-from ..utils import client, common, error
+from ..utils import client, common, error, file
 from . import base,project,user,studio
 from ..utils.types import (
     DecodedSessionID,
@@ -131,8 +131,23 @@ class Session(base._BaseSiteAPI[str]):
             "https://scratch.mit.edu/accounts/logout/",
             json={"csrfmiddlewaretoken":"a"}
         )
+
+    async def _create_project(self,data:Any,param:dict,is_json:bool):
+        content_type = "application/json" if is_json else "application/zip"
+        headers = self.client.scratch_headers | {"Content-Type": content_type}
+        return await self.client.post(
+            f"https://projects.scratch.mit.edu/",
+            data=data,headers=headers,params=param
+        )
     
-    async def create_project(self,title:str|None=None,project_json:Any=None,*,remix_id:int|None=None):
+    async def create_project(
+            self,title:str|None=None,
+            project_data:file.File|file._FileType|dict|None=None,
+            *,
+            remix_id:int|None=None,
+            is_json:bool|None=None
+            
+        ):
         param = {}
         if remix_id:
             param["is_remix"] = 1
@@ -143,24 +158,18 @@ class Session(base._BaseSiteAPI[str]):
         if title:
             param["title"] = title
 
-        project_json = project_json or common.empty_project_json
-        if isinstance(project_json,dict):
-            _data = json.dumps(project_json)
-            content_type = "application/json"
-        elif isinstance(project_json,str):
-            _data = project_json
-            content_type = "application/json"
-        elif isinstance(project_json,bytes):
-            _data = project_json
-            content_type = "application/zip"
+        project_data = project_data or common.empty_project_json
+        if isinstance(project_data,dict):
+            response = await self._create_project(json.dumps(project_data),param,True)
         else:
-            raise TypeError()
-        headers = self.client.scratch_headers|{"Content-Type": content_type}
-        
-        response = await self.client.post(
-            "https://projects.scratch.mit.edu/",
-            params=param,data=_data,headers=headers
-        )
+            try:
+                async with file.open_file(project_data) as f:
+                    response = await self._create_project(f.fp,param,bool(is_json))
+            except FileNotFoundError as e:
+                if isinstance(project_data,str):
+                    response = await self._create_project(project_data,param,True)
+                else:
+                    raise
 
         data:ProjectServerPayload = response.json()
         project_id = data.get("content-name")

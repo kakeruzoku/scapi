@@ -1,6 +1,6 @@
 import json
-from typing import TYPE_CHECKING, AsyncGenerator
-from ..utils import client, common, error
+from typing import TYPE_CHECKING, Any, AsyncGenerator
+from ..utils import client, common, error, file
 from . import base
 from ..utils.types import (
     ProjectPayload,
@@ -130,28 +130,30 @@ class Project(base._BaseSiteAPI[int]):
         if self.remix_root_id:
             return await self._create_from_api(self.remix_root_id,self.client_or_session)
 
-
-    
-    async def edit_project(self,project_json:dict|str|bytes):
-        self._check_owner()
-
-        if isinstance(project_json,dict):
-            _data = json.dumps(project_json)
-            content_type = "application/json"
-        elif isinstance(project_json,str):
-            _data = project_json
-            content_type = "application/json"
-        elif isinstance(project_json,bytes):
-            _data = project_json
-            content_type = "application/zip"
-        else:
-            raise TypeError()
-        headers = self.client.scratch_headers|{"Content-Type": content_type}
-
+    async def _edit_project(self,data:Any,is_json:bool):
+        content_type = "application/json" if is_json else "application/zip"
+        headers = self.client.scratch_headers | {"Content-Type": content_type}
         await self.client.put(
             f"https://projects.scratch.mit.edu/{self.id}",
-            data=_data,headers=headers
+            data=data, headers=headers
         )
+
+    async def edit_project(
+            self,data:file.File|file._FileType|dict,is_json:bool|None=None
+        ):
+        self._check_owner()
+
+        if isinstance(data,dict):
+            await self._edit_project(json.dumps(data),True)
+        else:
+            try:
+                async with file.open_file(data) as f:
+                    await self._edit_project(f.fp,bool(is_json))
+            except FileNotFoundError:
+                if isinstance(data,str):
+                    await self._edit_project(data,True)
+                else:
+                    raise
 
     async def edit(
             self,*,
