@@ -3,6 +3,7 @@ from typing import IO
 from aiofiles.threadpool.binary import AsyncBufferedReader
 import io
 import aiofiles
+from . import common
 
 _FileType = str|bytes|IO[bytes]|AsyncBufferedReader
 
@@ -30,10 +31,7 @@ class File:
     
     async def close(self):
         assert self._fp
-        if isinstance(self._fp,IO):
-            self._fp.close()
-        else:
-            await self._fp.close()
+        await common.maybe_coroutine(self._fp.close)
         
     @property
     def fp(self) -> IO[bytes] | AsyncBufferedReader:

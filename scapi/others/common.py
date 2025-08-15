@@ -1,6 +1,7 @@
 import string
 import datetime
-from typing import Any, AsyncGenerator, Callable, Coroutine, Generic, Literal, TypeVar, overload,AsyncContextManager
+from typing import Any, AsyncGenerator, Callable, Coroutine, Generic, Literal, ParamSpec, TypeVar, overload,AsyncContextManager
+import inspect
 
 from . import error,client,config
 
@@ -107,6 +108,7 @@ async def page_api_iterative(
             return
 
 _T = TypeVar("_T")
+_P = ParamSpec('_P')
 
 def _bypass_checking(func:Callable[[_T], Any]) -> Callable[[_T], None]:
     def decorated(self:_T):
@@ -131,6 +133,13 @@ class _AwaitableContextManager(Generic[_T]):
     async def __aexit__(self, exc_type, exc, tb):
         assert self._cm
         return await self._cm.__aexit__(exc_type, exc, tb)
+    
+async def maybe_coroutine(func:Callable[_P,Coroutine[Any,Any,_T]|_T],*args:_P.args,**kwargs:_P.kwargs) -> _T:
+    maybe_coro = func(*args,**kwargs)
+    if inspect.isawaitable(maybe_coro):
+        return await maybe_coro
+    else:
+        return maybe_coro
     
 empty_project_json = {
     'targets': [
