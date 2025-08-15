@@ -1,6 +1,7 @@
 import string
 import datetime
-from typing import TYPE_CHECKING, Any, AsyncGenerator, Callable, Coroutine, Generic, Literal, TypeVar, overload,AsyncContextManager
+from typing import Any, AsyncGenerator, Callable, Coroutine, Generic, Literal, TypeVar, overload,AsyncContextManager
+
 from . import error,client,config
 
 __version__ = "3.0.0a"
