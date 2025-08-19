@@ -130,30 +130,26 @@ class Project(base._BaseSiteAPI[int]):
         if self.remix_root_id:
             return await self._create_from_api(self.remix_root_id,self.client_or_session)
 
-    async def _edit_project(self,data:Any,is_json:bool):
+    async def edit_project(
+            self,project_data:file.File|dict|str|bytes,is_json:bool|None=None
+        ):
+        self._check_owner()
+
+        if isinstance(project_data,dict):
+            project_data = json.dumps(project_data)
+        if isinstance(project_data,(bytes, bytearray, memoryview)):
+            is_json = False
+        elif isinstance(project_data,str):
+            is_json = True
+
+        _data = await file.file(project_data)
+
         content_type = "application/json" if is_json else "application/zip"
         headers = self.client.scratch_headers | {"Content-Type": content_type}
         await self.client.put(
             f"https://projects.scratch.mit.edu/{self.id}",
-            data=data, headers=headers
+            data=_data.fp,headers=headers
         )
-
-    async def edit_project(
-            self,data:file.File|file._FileType|dict,is_json:bool|None=None
-        ):
-        self._check_owner()
-
-        if isinstance(data,dict):
-            await self._edit_project(json.dumps(data),True)
-        else:
-            try:
-                async with file.open_file(data) as f:
-                    await self._edit_project(f.fp,bool(is_json))
-            except FileNotFoundError:
-                if isinstance(data,str):
-                    await self._edit_project(data,True)
-                else:
-                    raise
 
     async def edit(
             self,*,

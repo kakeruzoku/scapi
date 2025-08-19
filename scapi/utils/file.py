@@ -1,20 +1,18 @@
-from typing import IO
+from typing import IO, Any
 
 from aiofiles.threadpool.binary import AsyncBufferedReader
 import io
 import aiofiles
 from . import common
 
-_FileType = str|bytes|IO[bytes]|AsyncBufferedReader
-
 class File:
-    def __init__(self,data:_FileType):
+    def __init__(self,data:str|bytes|IO[bytes]|AsyncBufferedReader):
         self._fp:IO[bytes]|AsyncBufferedReader|None = None
         self._coro_fp = None
         if isinstance(data, (IO,AsyncBufferedReader)):
             self._fp = data
             self._owner = False
-        elif isinstance(data, bytes):
+        elif isinstance(data, (bytes, bytearray, memoryview)):
             self._fp = io.BytesIO(data)
             self._owner = True
         elif isinstance(data, str):
@@ -48,8 +46,12 @@ class File:
         if self._owner:
             await self.close()
 
-def open_file(data:_FileType|File) -> File:
+class _FileLike:
+    def __init__(self,data):
+        self.fp = data
+
+async def file(data:Any) -> File|_FileLike:
     if isinstance(data,File):
-        return data
+        return await data
     else:
-        return File(data)
+        return _FileLike(data)
