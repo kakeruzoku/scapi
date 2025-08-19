@@ -110,18 +110,14 @@ class Project(base._BaseSiteAPI[int]):
             self.client,f"https://api.scratch.mit.edu/projects/{self.id}/remixes",
             limit=limit,offset=offset
         ):
-            p = Project(_p["id"],self.client_or_session)
-            p._update_from_data(_p)
-            yield p
+            yield Project._create_from_data(_p["id"],_p,self.client_or_session)
 
     async def get_studio(self,limit:int|None=None,offset:int|None=None) -> AsyncGenerator["studio.Studio", None]:
-        async for _p in common.api_iterative(
+        async for _s in common.api_iterative(
             self.client,f"https://api.scratch.mit.edu/users/{self._author_username}/projects/{self.id}/studios",
             limit=limit,offset=offset
         ):
-            p = studio.Studio(_p["id"],self.client_or_session)
-            p._update_from_data(_p)
-            yield p
+            yield studio.Studio._create_from_data(_s["id"],_s,self.client_or_session)
 
     async def get_parent_project(self) -> "Project|None":
         if self.remix_parent_id:

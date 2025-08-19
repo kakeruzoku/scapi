@@ -60,11 +60,28 @@ class _BaseSiteAPI(ABC,Generic[_T]):
         cls,
         id:_T,
         client_or_session:"client.HTTPClient|session.Session|None"=None,
-        **utils
+        **kwargs
     ):
-        _cls = cls(id,client_or_session,**utils) # type: ignore
+        _cls = cls(id,client_or_session,**kwargs) # type: ignore
         await _cls.update()
         return _cls
+    
+    @classmethod
+    def _create_from_data(
+        cls,
+        id:_T,
+        data,
+        client_or_session:"client.HTTPClient|session.Session|None"=None,
+        _update_func_name:str|None=None,
+        **kwargs
+    ):
+        _cls = cls(id,client_or_session,**kwargs) # type: ignore
+        if _update_func_name is None:
+            _cls._update_from_data(data)
+        else:
+            getattr(_cls,_update_func_name)(data)
+        return _cls
+
     
     async def __aenter__(self):
         return self

@@ -1,6 +1,6 @@
-from typing import TYPE_CHECKING
+from typing import TYPE_CHECKING, AsyncGenerator
 from ..utils import client, common, error
-from . import base,session,project
+from . import base,session,project,user
 from ..utils.types import (
     UserPayload,
     UserFeaturedPayload
@@ -52,6 +52,20 @@ class User(base._BaseSiteAPI[str]):
     async def get_featured(self) -> "project.ProjectFeatured|None":
         response = await self.client.get(f"https://scratch.mit.edu/site-api/users/all/{self.username}/")
         return project.ProjectFeatured(response.json(),self)
+    
+    async def get_follower(self,limit:int|None=None,offset:int|None=None) -> AsyncGenerator["user.User", None]:
+        async for _u in common.api_iterative(
+            self.client,f"https://api.scratch.mit.edu/users/{self.username}/followers/",
+            limit=limit,offset=offset
+        ):
+            yield user.User._create_from_data(_u["username"],_u,self.client_or_session)
+
+    async def get_following(self,limit:int|None=None,offset:int|None=None) -> AsyncGenerator["user.User", None]:
+        async for _u in common.api_iterative(
+            self.client,f"https://api.scratch.mit.edu/users/{self.username}/following/",
+            limit=limit,offset=offset
+        ):
+            yield user.User._create_from_data(_u["username"],_u,self.client_or_session)
     
 def get_user(username:str,*,_client:client.HTTPClient|None=None) -> common._AwaitableContextManager[User]:
     return common._AwaitableContextManager(User._create_from_api(username,_client))
