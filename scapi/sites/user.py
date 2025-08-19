@@ -1,6 +1,6 @@
 from typing import TYPE_CHECKING, AsyncGenerator
 from ..utils import client, common, error
-from . import base,session,project,user
+from . import base,session,project,user,studio
 from ..utils.types import (
     UserPayload,
     UserFeaturedPayload
@@ -66,6 +66,27 @@ class User(base._BaseSiteAPI[str]):
             limit=limit,offset=offset
         ):
             yield user.User._create_from_data(_u["username"],_u,self.client_or_session)
+
+    async def get_project(self,limit:int|None=None,offset:int|None=None) -> AsyncGenerator["project.Project", None]:
+        async for _p in common.api_iterative(
+            self.client,f"https://api.scratch.mit.edu/users/{self.username}/projects/",
+            limit=limit,offset=offset
+        ):
+            yield project.Project._create_from_data(_p["id"],_p,self.client_or_session)
+
+    async def get_favorite(self,limit:int|None=None,offset:int|None=None) -> AsyncGenerator["project.Project", None]:
+        async for _p in common.api_iterative(
+            self.client,f"https://api.scratch.mit.edu/users/{self.username}/favorites/",
+            limit=limit,offset=offset
+        ):
+            yield project.Project._create_from_data(_p["id"],_p,self.client_or_session)
+
+    async def get_studio(self,limit:int|None=None,offset:int|None=None) -> AsyncGenerator["studio.Studio", None]:
+        async for _s in common.api_iterative(
+            self.client,f"https://api.scratch.mit.edu/users/{self.username}/studios/curate",
+            limit=limit,offset=offset
+        ):
+            yield studio.Studio._create_from_data(_s["id"],_s,self.client_or_session)
     
 def get_user(username:str,*,_client:client.HTTPClient|None=None) -> common._AwaitableContextManager[User]:
     return common._AwaitableContextManager(User._create_from_api(username,_client))
