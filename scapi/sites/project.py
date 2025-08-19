@@ -6,7 +6,8 @@ from ..utils.types import (
     ProjectPayload,
     ProjectLovePayload,
     ProjectFavoritePayload,
-    ProjectVisibilityPayload
+    ProjectVisibilityPayload,
+    UserFeaturedPayload
 )
 from . import user,studio,session
 
@@ -142,7 +143,7 @@ class Project(base._BaseSiteAPI[int]):
         elif isinstance(project_data,str):
             is_json = True
 
-        _data = await file.file(project_data)
+        _data = file._file(project_data)
 
         content_type = "application/json" if is_json else "application/zip"
         headers = self.client.scratch_headers | {"Content-Type": content_type}
@@ -182,10 +183,11 @@ class Project(base._BaseSiteAPI[int]):
         await self.client.put(f"https://api.scratch.mit.edu/proxy/projects/{self.id}/unshare")
         self.public = False
 
-    async def get_visibility(self) -> ProjectVisibilityPayload:
+    async def get_visibility(self) -> "ProjectVisibility":
         self._check_owner()
         response = await self.client.get(f"https://api.scratch.mit.edu/users/{self._session.username}/projects/{self.id}/visibility")
-        return response.json()
+        return ProjectVisibility(response.json(),self)
+
 
     async def create_remix(self,title:str|None=None) -> "Project":
         #TODO download project
@@ -228,6 +230,48 @@ class Project(base._BaseSiteAPI[int]):
             return False
         else:
             return True
+        
+
+class ProjectVisibility:
+    def __init__(self,data:ProjectVisibilityPayload,project:Project):
+        assert project.session
+        self.id = data.get("projectId")
+        self.project = project
+        self.author = self.project.author or project.session.user
+        self.author.id = data.get("creatorId")
+
+        self.deleted = data.get("deleted")
+        self.censored = data.get("censored")
+        self.censored_by_admin = data.get("censoredByAdmin")
+        self.censored_by_community = data.get("censoredByCommunity")
+        self.reshareble = data.get("reshareable")
+        self.message = data.get("message")
+
+class ProjectFeatured:
+    def __repr__(self):
+        return repr(self.project)
+
+    def __new__(cls,data:UserFeaturedPayload,_user:"user.User"):
+        _project = data.get("featured_project_data")
+        if _project is None:
+            return
+        else:
+            return super().__new__(cls)
+
+    def __init__(self,data:UserFeaturedPayload,_user:"user.User"):
+        _project = data.get("featured_project_data")
+        _user_payload = data.get("user")
+        assert _project
+
+        self.project = Project(int(_project.get("id")),_user.client_or_session)
+        self.project._modified_at = _project.get("datetime_modified") + "Z"
+        self.project.title = _project.get("title")
+
+        self.author = self.project.author = _user
+        self.author.id = data.get("id")
+        self.author.profile_id = _user_payload.get("pk")
+
+        self.label = data.get("featured_project_label_name")
 
 
 def get_project(project_id:int,*,_client:client.HTTPClient|None=None) -> common._AwaitableContextManager[Project]:

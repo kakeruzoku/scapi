@@ -158,7 +158,7 @@ class Session(base._BaseSiteAPI[str]):
         elif isinstance(project_data,str):
             is_json = True
 
-        _data = await file.file(project_data)
+        _data = file._file(project_data)
 
         content_type = "application/json" if is_json else "application/zip"
         headers = self.client.scratch_headers | {"Content-Type": content_type}

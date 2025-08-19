@@ -50,8 +50,8 @@ class _FileLike:
     def __init__(self,data):
         self.fp = data
 
-async def file(data:Any) -> File|_FileLike:
+def _file(data:Any) -> File|_FileLike:
     if isinstance(data,File):
-        return await data
+        return data
     else:
         return _FileLike(data)

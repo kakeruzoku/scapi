@@ -1,8 +1,9 @@
 from typing import TYPE_CHECKING
 from ..utils import client, common, error
-from . import base,session
+from . import base,session,project
 from ..utils.types import (
-    UserPayload
+    UserPayload,
+    UserFeaturedPayload
 )
 
 class User(base._BaseSiteAPI[str]):
@@ -46,6 +47,11 @@ class User(base._BaseSiteAPI[str]):
     @property
     def joined_at(self):
         return common.dt_from_isoformat(self._joined_at)
+    
+
+    async def get_featured(self) -> "project.ProjectFeatured|None":
+        response = await self.client.get(f"https://scratch.mit.edu/site-api/users/all/{self.username}/")
+        return project.ProjectFeatured(response.json(),self)
     
 def get_user(username:str,*,_client:client.HTTPClient|None=None) -> common._AwaitableContextManager[User]:
     return common._AwaitableContextManager(User._create_from_api(username,_client))

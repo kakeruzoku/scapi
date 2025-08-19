@@ -82,13 +82,32 @@ class UserProfilePayload(TypedDict,total=False):
     bio:str
     country:str
 
-
 class UserPayload(TypedDict,total=False):
     id:int
     username:Required[str]
     scratchteam:bool
     history:UserHistoryPayload
     profile:UserProfilePayload
+
+class UserFeaturedProjectPayload(TypedDict):
+    creator:str
+    thumbnail_url:str
+    id:str
+    datetime_modified:str
+    title:str
+
+class UserFeaturedUserPayload(TypedDict):
+    username:str
+    pk:int
+
+class UserFeaturedPayload(TypedDict):
+    featured_project_label_name:str
+    featured_project_data:UserFeaturedProjectPayload|None
+    featured_project:int|None
+    thumbnail_url:str
+    user:UserFeaturedUserPayload
+    featured_project_label_id:None
+    id:int
 
 class ProjectHistoryPayload(TypedDict):
     created:str
