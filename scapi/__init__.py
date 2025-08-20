@@ -30,7 +30,8 @@ from .utils.client import (
 )
 
 from .utils.common import (
-    empty_project_json
+    empty_project_json,
+    UNKNOWN
 )
 
 from .utils.file import File

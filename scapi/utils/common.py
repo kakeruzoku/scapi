@@ -1,6 +1,6 @@
 import string
 import datetime
-from typing import Any, AsyncGenerator, Callable, Coroutine, Generic, Literal, ParamSpec, TypeVar, overload,AsyncContextManager
+from typing import Any, AsyncGenerator, Callable, Coroutine, Final, Generic, Literal, ParamSpec, TypeVar, overload,AsyncContextManager
 import inspect
 
 from . import error,client,config
@@ -8,6 +8,18 @@ from . import error,client,config
 __version__ = "3.0.0a"
 
 BASE62_ALPHABET = string.digits + string.ascii_uppercase + string.ascii_lowercase
+
+class _Unknown:
+    def __repr__(self):
+        return "<UNKNOWN>"
+    
+    def __eq__(self, value):
+        return False
+    
+    def __bool__(self):
+        return False
+
+UNKNOWN:Any = _Unknown()
 
 def split(text:str,before:str,after:str) -> str|None:
     try:

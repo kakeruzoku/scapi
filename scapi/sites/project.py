@@ -1,5 +1,5 @@
 import json
-from typing import TYPE_CHECKING, Any, AsyncGenerator
+from typing import TYPE_CHECKING, Any, AsyncGenerator, Final, Literal
 from ..utils import client, common, error, file
 from . import base
 from ..utils.types import (
@@ -17,7 +17,7 @@ class Project(base._BaseSiteAPI[int]):
 
     def __init__(self,id:int,client_or_session:"client.HTTPClient|session.Session|None"=None):
         super().__init__(client_or_session)
-        self.id:int = id
+        self.id:Final[int] = id
         self.title:str|None = None
 
         self.author:"user.User|None" = None

@@ -1,4 +1,4 @@
-from typing import TYPE_CHECKING, AsyncGenerator
+from typing import TYPE_CHECKING, AsyncGenerator, Final
 from ..utils import client, common, error
 from . import base,project,user,session
 from ..utils.types import (
@@ -11,7 +11,7 @@ class Studio(base._BaseSiteAPI[int]):
 
     def __init__(self,id:int,client_or_session:"client.HTTPClient|session.Session|None"=None):
         super().__init__(client_or_session)
-        self.id:int = id
+        self.id:Final[int] = id
         self.title:str|None = None
         self.host_id:int|None = None
         self.description:str|None = None

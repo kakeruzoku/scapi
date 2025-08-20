@@ -1,4 +1,4 @@
-from typing import TYPE_CHECKING, AsyncGenerator
+from typing import TYPE_CHECKING, AsyncGenerator, Final
 from ..utils import client, common, error
 from . import base,session,project,user,studio
 from ..utils.types import (
@@ -12,7 +12,7 @@ class User(base._BaseSiteAPI[str]):
 
     def __init__(self,username:str,client_or_session:"client.HTTPClient|session.Session|None"=None):
         super().__init__(client_or_session)
-        self.username:str = username
+        self.username:Final[str] = username
         self.id:int|None = None
 
         self._joined_at:str|None = None
