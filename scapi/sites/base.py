@@ -33,7 +33,8 @@ class _BaseSiteAPI(ABC,Generic[_T]):
     
     def _update_to_attributes(self,**data:Any):
         for k,v in data.items():
-            if v is None:
+            if v is common.UNKNOWN:
+                print(f"got {v} in {k}")
                 return
             setattr(self,k,v)
 

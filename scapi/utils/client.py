@@ -56,12 +56,14 @@ class Response:
     def text(self) -> str:
         return self._body.decode(self._response.get_encoding())
     
-    def json(self,loads:Callable[[str], Any]=_json.loads,/,**kwargs) -> Any:
+    def json(self,loads:Callable[[str], Any]=_json.loads,use_unknown:bool=True,/,**kwargs) -> Any:
+        if use_unknown:
+            kwargs["object_hook"] = common.UnknownDict
         return loads(self.text,**kwargs)
     
-    def json_or_text(self,loads:Callable[[str], Any]=_json.loads,/,**kwargs) -> Any:
+    def json_or_text(self,loads:Callable[[str], Any]=_json.loads,use_unknown:bool=True,/,**kwargs) -> Any:
         try:
-            return self.json(loads,**kwargs)
+            return self.json(loads,use_unknown,**kwargs)
         except Exception:
             return self.text
 

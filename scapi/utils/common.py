@@ -1,3 +1,4 @@
+from enum import Enum
 import string
 import datetime
 from typing import Any, AsyncGenerator, Callable, Coroutine, Final, Generic, Literal, ParamSpec, TypeVar, overload,AsyncContextManager
@@ -7,9 +8,15 @@ from . import error,client,config
 
 __version__ = "3.0.0a"
 
+_KT = TypeVar("_KT")
+_VT = TypeVar("_VT")
+_T = TypeVar("_T")
+
 BASE62_ALPHABET = string.digits + string.ascii_uppercase + string.ascii_lowercase
 
-class _Unknown:
+class _Special(Enum):
+    UNKNOWN = "UNKNOWN"
+
     def __repr__(self):
         return "<UNKNOWN>"
     
@@ -19,7 +26,22 @@ class _Unknown:
     def __bool__(self):
         return False
 
-UNKNOWN:Any = _Unknown()
+UNKNOWN = _Special.UNKNOWN
+UNKNOWN_TYPE = Literal[_Special.UNKNOWN]
+MAYBE_UNKNOWN = _T|Literal[_Special.UNKNOWN]
+
+del _Special
+
+class UnknownDict(dict[_KT, _VT]):
+    @overload  # default が None の場合
+    def get(self, key: _KT, default: UNKNOWN_TYPE = UNKNOWN, /) -> _VT | UNKNOWN_TYPE: ...
+    @overload  # default が値と同じ型の場合
+    def get(self, key: _KT, default: _VT, /) -> _VT: ...
+    @overload  # default が任意型の場合
+    def get(self, key: _KT, default: _T, /) -> _VT | _T: ...
+
+    def get(self, key: _KT, default: Any = UNKNOWN, /) -> Any: # type: ignore
+        return super().get(key, default)
 
 def split(text:str,before:str,after:str) -> str|None:
     try:

@@ -31,7 +31,9 @@ from .utils.client import (
 
 from .utils.common import (
     empty_project_json,
-    UNKNOWN
+    UNKNOWN,
+    UNKNOWN_TYPE,
+    MAYBE_UNKNOWN
 )
 
 from .utils.file import File
