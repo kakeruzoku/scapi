@@ -1,3 +1,4 @@
+import datetime
 from typing import TYPE_CHECKING, AsyncGenerator, Final
 from ..utils import client, common, error
 from . import base,project,user,session
@@ -12,19 +13,19 @@ class Studio(base._BaseSiteAPI[int]):
     def __init__(self,id:int,client_or_session:"client.HTTPClient|session.Session|None"=None):
         super().__init__(client_or_session)
         self.id:Final[int] = id
-        self.title:str|None = None
-        self.host_id:int|None = None
-        self.description:str|None = None
-        self.open_to_all:bool|None = None
-        self.comments_allowed:bool|None = None
+        self.title:common.MAYBE_UNKNOWN[str] = common.UNKNOWN
+        self.host_id:common.MAYBE_UNKNOWN[int] = common.UNKNOWN
+        self.description:common.MAYBE_UNKNOWN[str] = common.UNKNOWN
+        self.open_to_all:common.MAYBE_UNKNOWN[bool] = common.UNKNOWN
+        self.comments_allowed:common.MAYBE_UNKNOWN[bool] = common.UNKNOWN
 
-        self._created_at:str|None = None
-        self._modified_at:str|None = None
+        self._created_at:common.MAYBE_UNKNOWN[str] = common.UNKNOWN
+        self._modified_at:common.MAYBE_UNKNOWN[str] = common.UNKNOWN
 
-        self.comment_count:int|None = None
-        self.follower_count:int|None = None
-        self.manager_count:int|None = None
-        self.project_count:int|None = None
+        self.comment_count:common.MAYBE_UNKNOWN[int] = common.UNKNOWN
+        self.follower_count:common.MAYBE_UNKNOWN[int] = common.UNKNOWN
+        self.manager_count:common.MAYBE_UNKNOWN[int] = common.UNKNOWN
+        self.project_count:common.MAYBE_UNKNOWN[int] = common.UNKNOWN
     
     async def update(self):
         response = await self.client.get(f"https://api.scratch.mit.edu/studios/{self.id}")
@@ -57,11 +58,11 @@ class Studio(base._BaseSiteAPI[int]):
             )
     
     @property
-    def created_at(self):
+    def created_at(self) -> datetime.datetime|common.UNKNOWN_TYPE:
         return common.dt_from_isoformat(self._created_at)
     
     @property
-    def modified_at(self):
+    def modified_at(self) -> datetime.datetime|common.UNKNOWN_TYPE:
         return common.dt_from_isoformat(self._modified_at)
     
     

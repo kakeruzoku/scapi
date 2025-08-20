@@ -13,15 +13,15 @@ class User(base._BaseSiteAPI[str]):
     def __init__(self,username:str,client_or_session:"client.HTTPClient|session.Session|None"=None):
         super().__init__(client_or_session)
         self.username:Final[str] = username
-        self.id:int|None = None
+        self.id:common.MAYBE_UNKNOWN[int] = common.UNKNOWN
 
-        self._joined_at:str|None = None
+        self._joined_at:common.MAYBE_UNKNOWN[str] = common.UNKNOWN
 
-        self.profile_id:int|None = None
-        self.status:str|None = None
-        self.bio:str|None = None
-        self.country:str|None = None
-        self.scratchteam:bool|None = None
+        self.profile_id:common.MAYBE_UNKNOWN[int] = common.UNKNOWN
+        self.status:common.MAYBE_UNKNOWN[str] = common.UNKNOWN
+        self.bio:common.MAYBE_UNKNOWN[str] = common.UNKNOWN
+        self.country:common.MAYBE_UNKNOWN[str] = common.UNKNOWN
+        self.scratchteam:common.MAYBE_UNKNOWN[bool] = common.UNKNOWN
 
     async def update(self):
         response = await self.client.get(f"https://api.scratch.mit.edu/users/{self.username}")

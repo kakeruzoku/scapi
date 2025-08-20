@@ -60,41 +60,41 @@ def b62decode(text:str):
     return sum([BASE62_ALPHABET.index(text[i])*(62**(text_len-i-1)) for i in range(text_len)])
 
 @overload
-def dt_from_isoformat(timestamp:str|None) -> datetime.datetime|None:
+def dt_from_isoformat(timestamp:str|_T) -> datetime.datetime|_T:
     ...
 
 @overload
-def dt_from_isoformat(timestamp:str|None,allow_none:Literal[True]) -> datetime.datetime|None:
+def dt_from_isoformat(timestamp:str|_T,allow_unknown:Literal[True]) -> datetime.datetime|_T:
     ...
 
 @overload
-def dt_from_isoformat(timestamp:str,allow_none:Literal[False]) -> datetime.datetime:
+def dt_from_isoformat(timestamp:str|Any,allow_unknown:Literal[False]) -> datetime.datetime:
     ...
 
-def dt_from_isoformat(timestamp:str|None,allow_none:bool=True) -> None | datetime.datetime:
-    if timestamp is None:
-        if allow_none:
-            return
+def dt_from_isoformat(timestamp:str|_T,allow_unknown:bool=True) -> datetime.datetime|_T:
+    if not isinstance(timestamp,str):
+        if allow_unknown:
+            return timestamp
         else:
             raise ValueError()
     return datetime.datetime.fromisoformat(timestamp).replace(tzinfo=datetime.timezone.utc)
 
 @overload
-def dt_from_timestamp(timestamp:float|None) -> datetime.datetime|None:
+def dt_from_timestamp(timestamp:float|_T) -> datetime.datetime|_T:
     ...
 
 @overload
-def dt_from_timestamp(timestamp:float|None,allow_none:Literal[True]) -> datetime.datetime|None:
+def dt_from_timestamp(timestamp:float|_T,allow_unknown:Literal[True]) -> datetime.datetime|_T:
     ...
 
 @overload
-def dt_from_timestamp(timestamp:float,allow_none:Literal[False]) -> datetime.datetime:
+def dt_from_timestamp(timestamp:float|Any,allow_unknown:Literal[False]) -> datetime.datetime:
     ...
 
-def dt_from_timestamp(timestamp:float|None,allow_none:bool=True) -> None | datetime.datetime:
-    if timestamp is None:
-        if allow_none:
-            return
+def dt_from_timestamp(timestamp:float|_T,allow_unknown:bool=True) -> datetime.datetime|_T:
+    if not isinstance(timestamp,(float,int)):
+        if allow_unknown:
+            return timestamp
         else:
             raise ValueError()
     return datetime.datetime.fromtimestamp(timestamp, tz=datetime.timezone.utc)

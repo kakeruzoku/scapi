@@ -1,3 +1,4 @@
+import datetime
 import json
 from typing import TYPE_CHECKING, Any, AsyncGenerator, Final, Literal
 from ..utils import client, common, error, file
@@ -18,25 +19,25 @@ class Project(base._BaseSiteAPI[int]):
     def __init__(self,id:int,client_or_session:"client.HTTPClient|session.Session|None"=None):
         super().__init__(client_or_session)
         self.id:Final[int] = id
-        self.title:str|None = None
+        self.title:common.MAYBE_UNKNOWN[str] = common.UNKNOWN
 
-        self.author:"user.User|None" = None
-        self.instructions:str|None = None
-        self.description:str|None = None
-        self.public:bool|None = None
-        self.comments_allowed:bool|None = None
+        self.author:"common.MAYBE_UNKNOWN[user.User]" = common.UNKNOWN
+        self.instructions:common.MAYBE_UNKNOWN[str] = common.UNKNOWN
+        self.description:common.MAYBE_UNKNOWN[str] = common.UNKNOWN
+        self.public:common.MAYBE_UNKNOWN[bool] = common.UNKNOWN
+        self.comments_allowed:common.MAYBE_UNKNOWN[bool] = common.UNKNOWN
         
-        self._created_at:str|None = None
-        self._modified_at:str|None = None
-        self._shared_at:str|None = None
+        self._created_at:common.MAYBE_UNKNOWN[str] = common.UNKNOWN
+        self._modified_at:common.MAYBE_UNKNOWN[str|None] = common.UNKNOWN
+        self._shared_at:common.MAYBE_UNKNOWN[str|None] = common.UNKNOWN
 
-        self.view_count:int|None = None
-        self.love_count:int|None = None
-        self.favorite_count:int|None = None
-        self.remix_count:int|None = None
+        self.view_count:common.MAYBE_UNKNOWN[int] = common.UNKNOWN
+        self.love_count:common.MAYBE_UNKNOWN[int] = common.UNKNOWN
+        self.favorite_count:common.MAYBE_UNKNOWN[int] = common.UNKNOWN
+        self.remix_count:common.MAYBE_UNKNOWN[int] = common.UNKNOWN
 
-        self.remix_parent_id:int|None = None
-        self.remix_root_id:int|None = None
+        self.remix_parent_id:common.MAYBE_UNKNOWN[int|None] = common.UNKNOWN
+        self.remix_root_id:common.MAYBE_UNKNOWN[int|None] = common.UNKNOWN
     
     async def update(self):
         response = await self.client.get(f"https://api.scratch.mit.edu/projects/{self.id}")
@@ -53,7 +54,7 @@ class Project(base._BaseSiteAPI[int]):
         
         _author = data.get("author")
         if _author:
-            if self.author is None:
+            if self.author is common.UNKNOWN:
                 self.author = user.User(_author.get("username"),self.client_or_session)
             self.author._update_from_data(_author)
             
@@ -94,15 +95,15 @@ class Project(base._BaseSiteAPI[int]):
             raise error.NoPermission(self)
     
     @property
-    def created_at(self):
+    def created_at(self) -> datetime.datetime|common.UNKNOWN_TYPE:
         return common.dt_from_isoformat(self._created_at)
     
     @property
-    def modified_at(self):
+    def modified_at(self) -> datetime.datetime|common.UNKNOWN_TYPE|None:
         return common.dt_from_isoformat(self._modified_at)
     
     @property
-    def shared_at(self):
+    def shared_at(self) -> datetime.datetime|common.UNKNOWN_TYPE|None:
         return common.dt_from_isoformat(self._shared_at)
     
     async def get_remix(self,limit:int|None=None,offset:int|None=None) -> AsyncGenerator["Project", None]:

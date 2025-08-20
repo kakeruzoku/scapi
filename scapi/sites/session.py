@@ -63,7 +63,7 @@ class SessionStatus:
         self.everything_is_totally_normal = _flags.get("everything_is_totally_normal")
 
     @property
-    def joined_at(self):
+    def joined_at(self) -> datetime.datetime:
         return common.dt_from_isoformat(self._joined_at,False)
 
 
@@ -87,7 +87,7 @@ class Session(base._BaseSiteAPI[str]):
         self._logged_at = login_dt
 
         self.user:user.User = user.User(self.username,self)
-        self.user.id = self.user_id
+        self.user.id = self.user_id or common.UNKNOWN
 
         self.client.scratch_cookies = {
             "scratchsessionsid": session_id,
@@ -112,7 +112,7 @@ class Session(base._BaseSiteAPI[str]):
             self._status.update(data)
         else:
             self._status = SessionStatus(self,data)
-        self.user.id = self.user_id
+        self.user.id = self.user_id or common.UNKNOWN
     
     @property
     def logged_at(self):

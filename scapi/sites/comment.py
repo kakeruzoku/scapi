@@ -1,3 +1,5 @@
+import datetime
+from typing import Final
 from ..utils import client, common, error, file
 from . import base,session,user,project,studio
 
@@ -10,17 +12,17 @@ class Comment(base._BaseSiteAPI):
         ):
 
         super().__init__(client_or_session)
-        self.id = id
+        self.id:Final[int] = id
         self.place = place
 
-        self.parent_id:int|None = None
-        self.commentee_id:int|None = None
-        self.content:str|None = None
+        self.parent_id:common.MAYBE_UNKNOWN[int] = common.UNKNOWN
+        self.commentee_id:common.MAYBE_UNKNOWN[int] = common.UNKNOWN
+        self.content:common.MAYBE_UNKNOWN[str] = common.UNKNOWN
 
-        self._created_at:str|None = None
-        self.author:"user.User|None" = None
-        self.reply_count:int|None = None
+        self._created_at:common.MAYBE_UNKNOWN[str] = common.UNKNOWN
+        self.author:"common.MAYBE_UNKNOWN[user.User]" = common.UNKNOWN
+        self.reply_count:common.MAYBE_UNKNOWN[int] = common.UNKNOWN
 
     @property
-    def created_at(self):
+    def created_at(self) -> datetime.datetime|common.UNKNOWN_TYPE:
         return common.dt_from_isoformat(self._created_at)
