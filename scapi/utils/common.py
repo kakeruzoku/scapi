@@ -43,11 +43,20 @@ class UnknownDict(dict[_KT, _VT]):
     def get(self, key: _KT, default: Any = UNKNOWN, /) -> Any: # type: ignore
         return super().get(key, default)
 
-def split(text:str,before:str,after:str) -> str|None:
+@overload
+def split(text:str,before:str,after:str,forced:Literal[True]) -> str:
+    ...
+
+@overload
+def split(text:str,before:str,after:str,forced:Literal[False]=False) -> str|None:
+    ...
+
+def split(text:str,before:str,after:str,forced:bool=False) -> str|None:
     try:
         return text.split(before)[1].split(after)[0]
     except IndexError:
-        return
+        if forced:
+            raise ValueError()
     
 def try_int(text:str) -> int | None:
     try:

@@ -1,5 +1,7 @@
 from typing import Literal, TypedDict, Required, NotRequired
 
+class NoElementsPayload(TypedDict):
+    pass
 
 DecodedSessionID = TypedDict(
     "DecodedSessionID",{
@@ -33,7 +35,7 @@ class SessionStatusPermissionsPayload(TypedDict):
     educator:bool
     educator_invitee:bool
     student:bool
-    mute_status:dict
+    mute_status:"CommentMuteStatusPayload|NoElementsPayload"
 
 class SessionStatusFlagsPayload(TypedDict):
     must_reset_password:bool
@@ -203,3 +205,25 @@ class CommentPayload(TypedDict,total=False):
     visibility:str
     author:UserPayload
     reply_count:int
+
+class CommentMuteStatusOffensePayload(TypedDict):
+    createdAt:float
+    expiresAt:float
+    messageType:str
+
+class CommentMuteStatusPayload(TypedDict):
+    offenses:list[CommentMuteStatusOffensePayload]
+    showWarning:bool
+    muteExpiresAt:float
+    currentMessageType:str
+
+class CommentFailureStatusPayload(TypedDict):
+    mute_status:CommentMuteStatusPayload|NoElementsPayload
+
+class CommentFailurePayload(TypedDict):
+    status:CommentFailureStatusPayload
+    rejected:str
+
+class CommentFailureOldPayload(TypedDict):
+    mute_status:CommentMuteStatusPayload|NoElementsPayload
+    error:str

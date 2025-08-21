@@ -1,11 +1,13 @@
 import datetime
+import json
 from typing import AsyncGenerator, Final
 
 import bs4
 from ..utils import client, common, error, file
 from . import base,session,user,project,studio
 from ..utils.types import (
-    CommentPayload
+    CommentPayload,
+    CommentFailurePayload
 )
 
 class Comment(base._BaseSiteAPI[int]):
@@ -144,6 +146,56 @@ class Comment(base._BaseSiteAPI[int]):
         if self._cached_parent is None or use_cache:
             self._cached_parent = await Comment._create_from_api(self.parent_id,place=self.place)
         return self._cached_parent
+    
+    
+    @classmethod
+    async def post_comment(
+        cls,place:"project.Project|studio.Studio|user.User",
+        content:str,parent:"Comment|int|None",commentee:"user.User|int|None",
+        is_old:bool=False
+    ) -> "Comment":
+        place.require_session()
+
+        if isinstance(place,user.User):
+            is_old = True
+        if is_old:
+            url = cls._root_old_url(place)
+        else:
+            url = cls._root_proxy_url(place)
+        parent_id = parent.id if isinstance(parent,Comment) else parent
+        commentee_id = commentee.id if isinstance(commentee,user.User) else commentee
+        if commentee_id is common.UNKNOWN:
+            raise error.NoDataError(commentee) # type: ignore
+
+        _data = {
+            "commentee_id": commentee_id or "",
+            "content": str(content),
+            "parent_id": parent_id or "",
+        }
+
+        response = await place.client.post(url,json=_data)
+
+        if is_old:
+            text = response.text.strip()
+            if text.startswith('<script id="error-data" type="application/json">'):
+                error_data = json.loads(common.split(
+                    text,'<script id="error-data" type="application/json">',"</script>",True
+                ))
+                raise error.CommentFailure.from_old_data(response,place._session,error_data)
+            soup = bs4.BeautifulSoup(response.text, "html.parser")
+            comment = Comment._create_from_data(
+                int(soup["data-comment-id"]), # type: ignore
+                soup,place.client_or_session,
+                "_update_from_html",
+                place=place,
+                _reply=[]
+            )
+        else:
+            data:CommentFailurePayload|CommentPayload = response.json()
+            if "rejected" in data:
+                raise error.CommentFailure.from_data(response,place._session,data)
+            comment = Comment._create_from_data(data["id"],data,place.client_or_session)
+        return comment
 
 async def get_comment_from_old(
         place:"project.Project|studio.Studio|user.User",

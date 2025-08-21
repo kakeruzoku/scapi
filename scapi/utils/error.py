@@ -1,6 +1,12 @@
-from .types import LoginFailurePayload
-from . import client
-from ..sites import base
+from .types import (
+    NoElementsPayload,
+    LoginFailurePayload,
+    CommentMuteStatusPayload,
+    CommentFailurePayload,
+    CommentFailureOldPayload
+)
+from . import client,common
+from ..sites import base,session
 
 class HTTPerror(Exception):
     pass
@@ -44,6 +50,39 @@ class LoginFailure(Forbidden):
         self.num_tries = data.get("num_tries")
         self.request_capture = bool(data.get("redirect"))
         self.message = data.get("msg")
+
+class CommentFailure(Forbidden):
+    def __init__(
+            self,
+            response:"client.Response",
+            session:"session.Session",
+            type:str,
+            status:CommentMuteStatusPayload|NoElementsPayload
+        ):
+        super().__init__(response)
+        self.type = type
+        self.session = session
+        if self.session and self.session._status is not common.UNKNOWN:
+            self.session._status.mute_status = status
+        self.mute_status = status
+
+    @classmethod
+    def from_data(
+        cls,
+        response:"client.Response",
+        session:"session.Session",
+        data:CommentFailurePayload
+    ):
+        return cls(response,session,data.get("rejected"),data.get("status").get("mute_status"))
+    
+    @classmethod
+    def from_old_data(
+        cls,
+        response:"client.Response",
+        session:"session.Session",
+        data:CommentFailureOldPayload
+    ):
+        return cls(response,session,data.get("error"),data.get("mute_status"))
 
 class NotFound(ClientError):
     pass
