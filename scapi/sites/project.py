@@ -139,6 +139,10 @@ class Project(base._BaseSiteAPI[int]):
     async def get_comment_by_id(self,comment_id:int) -> "comment.Comment":
         return await comment.Comment._create_from_api(comment_id,place=self)
     
+    def get_comment_from_old(self,start_page:int|None=None,end_page:int|None=None) -> AsyncGenerator["comment.Comment", None]:
+        return comment.get_comment_from_old(self,start_page,end_page)
+        
+
 
     async def edit_project(
             self,project_data:file.File|dict|str|bytes,is_json:bool|None=None

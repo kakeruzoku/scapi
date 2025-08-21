@@ -1,5 +1,7 @@
 import datetime
 from typing import AsyncGenerator, Final
+
+import bs4
 from ..utils import client, common, error, file
 from . import base,session,user,project,studio
 from ..utils.types import (
@@ -17,7 +19,8 @@ class Comment(base._BaseSiteAPI[int]):
             client_or_session:"client.HTTPClient|session.Session|None"=None,
             *,
             place:"project.Project|studio.Studio|user.User",
-            _parent:"Comment|None" = None
+            _parent:"Comment|None" = None,
+            _reply:"list[Comment]|common.UNKNOWN_TYPE" = common.UNKNOWN
         ):
 
         super().__init__(place.client_or_session)
@@ -33,7 +36,8 @@ class Comment(base._BaseSiteAPI[int]):
         self.author:"common.MAYBE_UNKNOWN[user.User]" = common.UNKNOWN
         self.reply_count:common.MAYBE_UNKNOWN[int] = common.UNKNOWN
 
-        self._cached_parent_comment:"Comment|None" = _parent
+        self._cached_parent:"Comment|None" = _parent
+        self._cached_reply:common.MAYBE_UNKNOWN["list[Comment]"] = _reply
 
     @property
     def root_url(self):
@@ -84,6 +88,21 @@ class Comment(base._BaseSiteAPI[int]):
                 self.author = user.User(_author.get("username"),self.client_or_session)
             self.author._update_from_data(_author)
 
+    def _update_from_html(self,data:bs4.BeautifulSoup|bs4.element.Tag):
+        comment = data
+
+        _created_at = str(comment.find("span", class_="time")["title"]) # type: ignore
+        self._update_to_attributes(
+            content=str(comment.find("div", class_="content").get_text(strip=True)), # type: ignore
+            _created_at=_created_at,
+            _modified_at=_created_at,
+        )
+        author_username = comment.find("div", class_="name").get_text(strip=True) # type: ignore
+        author_user_id = int(comment.find("a", class_="reply")["data-commentee-id"]) # type: ignore
+        if self.author is common.UNKNOWN:
+            self.author = user.User(author_username,self.client_or_session)
+        self.author.id = author_user_id
+
     @property
     def created_at(self) -> datetime.datetime|common.UNKNOWN_TYPE:
         return common.dt_from_isoformat(self._created_at)
@@ -93,7 +112,65 @@ class Comment(base._BaseSiteAPI[int]):
         return common.dt_from_isoformat(self._modified_at)
     
 
-    async def get_reply(self,limit:int|None=None,offset:int|None=None) -> AsyncGenerator["Comment", None]:
+    async def get_reply(self,limit:int|None=None,offset:int|None=None,*,use_cache:bool=True) -> AsyncGenerator["Comment", None]:
+        if use_cache and self._cached_reply is not common.UNKNOWN:
+            limit = limit or 40
+            offset = offset or 0
+            for c in self._cached_reply[offset:offset+limit]:
+                yield c
         url = self.root_url + "/replies"
         async for _c in common.api_iterative(self.client,url,limit,offset):
             yield Comment._create_from_data(_c["id"],_c,place=self.place)
+
+async def get_comment_from_old(
+        place:"project.Project|studio.Studio|user.User",
+        start_page:int|None=None,end_page:int|None=None
+    ) -> AsyncGenerator[Comment,None]:
+    if start_page is None:
+        start_page = 1
+    if end_page is None:
+        end_page = start_page
+
+    if isinstance(place,project.Project):
+        url = f"https://scratch.mit.edu/site-api/comments/project/{place.id}"
+    elif isinstance(place,studio.Studio):
+        url = f"https://scratch.mit.edu/site-api/comments/gallery/{place.id}"
+    elif isinstance(place,user.User):
+        url = f"https://scratch.mit.edu/site-api/comments/user/{place.username}"
+    else:
+        raise TypeError("Unknown comment place type.")
+
+    for i in range(start_page,end_page+1):
+        try:
+            response = await place.client.get(url,params={"page":i})
+        except error.NotFound:
+            return
+        except error.ServerError as e:
+            raise error.NotFound(e.response)
+        
+        soup = bs4.BeautifulSoup(response.text, "html.parser")
+        _comments = soup.find_all("li", {"class": "top-level-reply"})
+        for _comment_outside in _comments:
+            _comment = _comment_outside.find("div") # type: ignore
+            c = Comment._create_from_data(
+                int(_comment["data-comment-id"]), # type: ignore
+                _comment,
+                place.client_or_session,
+                "_update_from_html",
+                place=place,
+                _reply=[]
+            )
+            assert c._cached_reply is not common.UNKNOWN
+            _comment_replies = _comment_outside.find("ul", {"class":"replies"}) # type: ignore
+            _replies = _comment_replies.find_all("div", {"class": "comment"}) # type: ignore
+            for _reply in _replies:
+                c._cached_reply.append(Comment._create_from_data(
+                    int(_reply["data-comment-id"]), # type: ignore
+                    _reply,
+                    place.client_or_session,
+                    "_update_from_html",
+                    place=place,
+                    _parent=c,
+                    _reply=[]
+                ))
+            yield c

@@ -1,7 +1,7 @@
 import datetime
 from typing import TYPE_CHECKING, AsyncGenerator, Final
 from ..utils import client, common, error
-from . import base,session,project,user,studio
+from . import base,session,project,user,studio,comment
 from ..utils.types import (
     UserPayload,
     UserFeaturedPayload
@@ -88,6 +88,11 @@ class User(base._BaseSiteAPI[str]):
             limit=limit,offset=offset
         ):
             yield studio.Studio._create_from_data(_s["id"],_s,self.client_or_session)
+
+    def get_comment(self,start_page:int|None=None,end_page:int|None=None) -> AsyncGenerator["comment.Comment", None]:
+        return comment.get_comment_from_old(self,start_page,end_page)
+    
+    get_comment_from_old = get_comment
     
 def get_user(username:str,*,_client:client.HTTPClient|None=None) -> common._AwaitableContextManager[User]:
     return common._AwaitableContextManager(User._create_from_api(username,_client))
