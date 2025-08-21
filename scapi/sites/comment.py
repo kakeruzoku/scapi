@@ -7,7 +7,8 @@ from ..utils import client, common, error, file
 from . import base,session,user,project,studio
 from ..utils.types import (
     CommentPayload,
-    CommentFailurePayload
+    CommentFailurePayload,
+    CommentPostPayload
 )
 
 class Comment(base._BaseSiteAPI[int]):
@@ -71,11 +72,11 @@ class Comment(base._BaseSiteAPI[int]):
     @staticmethod
     def _root_old_url(place:"project.Project|studio.Studio|user.User"):
         if isinstance(place,project.Project):
-            return f"https://scratch.mit.edu/site-api/comments/project/{place.id}"
+            return f"https://scratch.mit.edu/site-api/comments/project/{place.id}/"
         elif isinstance(place,studio.Studio):
-            return f"https://scratch.mit.edu/site-api/comments/gallery/{place.id}"
+            return f"https://scratch.mit.edu/site-api/comments/gallery/{place.id}/"
         elif isinstance(place,user.User):
-            return f"https://scratch.mit.edu/site-api/comments/user/{place.username}"
+            return f"https://scratch.mit.edu/site-api/comments/user/{place.username}/"
         else:
             raise TypeError("Unknown comment place type.")
 
@@ -103,7 +104,7 @@ class Comment(base._BaseSiteAPI[int]):
                 self.author = user.User(_author.get("username"),self.client_or_session)
             self.author._update_from_data(_author)
 
-    def _update_from_html(self,data:bs4.BeautifulSoup|bs4.element.Tag):
+    def _update_from_html(self,data:bs4.element.Tag):
         comment = data
 
         _created_at = str(comment.find("span", class_="time")["title"]) # type: ignore
@@ -147,7 +148,7 @@ class Comment(base._BaseSiteAPI[int]):
             self._cached_parent = await Comment._create_from_api(self.parent_id,place=self.place)
         return self._cached_parent
     
-    
+
     @classmethod
     async def post_comment(
         cls,place:"project.Project|studio.Studio|user.User",
@@ -159,15 +160,20 @@ class Comment(base._BaseSiteAPI[int]):
         if isinstance(place,user.User):
             is_old = True
         if is_old:
-            url = cls._root_old_url(place)
+            url = cls._root_old_url(place) + "add/"
         else:
-            url = cls._root_proxy_url(place)
+            if isinstance(place,project.Project):
+                url =  f"https://api.scratch.mit.edu/proxy/comments/project/{place.id}/"
+            elif isinstance(place,studio.Studio):
+                url =  f"https://api.scratch.mit.edu/proxy/comments/studio/{place.id}/"
+            else:
+                raise TypeError("User comment updates are not supported.")
         parent_id = parent.id if isinstance(parent,Comment) else parent
         commentee_id = commentee.id if isinstance(commentee,user.User) else commentee
         if commentee_id is common.UNKNOWN:
             raise error.NoDataError(commentee) # type: ignore
 
-        _data = {
+        _data:CommentPostPayload = {
             "commentee_id": commentee_id or "",
             "content": str(content),
             "parent_id": parent_id or "",
@@ -181,11 +187,13 @@ class Comment(base._BaseSiteAPI[int]):
                 error_data = json.loads(common.split(
                     text,'<script id="error-data" type="application/json">',"</script>",True
                 ))
-                raise error.CommentFailure.from_old_data(response,place._session,error_data)
+                raise error.CommentFailure.from_old_data(response,place._session,_data["content"],error_data)
             soup = bs4.BeautifulSoup(response.text, "html.parser")
+            tag = soup.find("div")
+            
             comment = Comment._create_from_data(
-                int(soup["data-comment-id"]), # type: ignore
-                soup,place.client_or_session,
+                int(tag["data-comment-id"]), # type: ignore
+                tag,place.client_or_session,
                 "_update_from_html",
                 place=place,
                 _reply=[]
@@ -193,7 +201,7 @@ class Comment(base._BaseSiteAPI[int]):
         else:
             data:CommentFailurePayload|CommentPayload = response.json()
             if "rejected" in data:
-                raise error.CommentFailure.from_data(response,place._session,data)
+                raise error.CommentFailure.from_data(response,place._session,_data["content"],data)
             comment = Comment._create_from_data(data["id"],data,place.client_or_session)
         return comment
 

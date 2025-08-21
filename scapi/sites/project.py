@@ -243,7 +243,13 @@ class Project(base._BaseSiteAPI[int]):
             return False
         else:
             return True
-        
+    
+    async def post_comment(
+        self,content:str,
+        parent:"comment.Comment|int|None"=None,commentee:"user.User|int|None"=None,
+        is_old:bool=False
+    ) -> "comment.Comment":
+        return await comment.Comment.post_comment(self,content,parent,commentee,is_old)
 
 class ProjectVisibility:
     def __init__(self,data:ProjectVisibilityPayload,project:Project):

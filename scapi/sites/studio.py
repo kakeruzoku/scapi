@@ -102,6 +102,14 @@ class Studio(base._BaseSiteAPI[int]):
     
     def get_comment_from_old(self,start_page:int|None=None,end_page:int|None=None) -> AsyncGenerator["comment.Comment", None]:
         return comment.get_comment_from_old(self,start_page,end_page)
+    
+
+    async def post_comment(
+        self,content:str,
+        parent:"comment.Comment|int|None"=None,commentee:"user.User|int|None"=None,
+        is_old:bool=False
+    ) -> "comment.Comment":
+        return await comment.Comment.post_comment(self,content,parent,commentee,is_old)
 
 def get_studio(studio_id:int,*,_client:client.HTTPClient|None=None) -> common._AwaitableContextManager[Studio]:
     return common._AwaitableContextManager(Studio._create_from_api(studio_id,_client))

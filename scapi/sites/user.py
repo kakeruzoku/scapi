@@ -93,6 +93,14 @@ class User(base._BaseSiteAPI[str]):
         return comment.get_comment_from_old(self,start_page,end_page)
     
     get_comment_from_old = get_comment
+
+
+    async def post_comment(
+        self,content:str,
+        parent:"comment.Comment|int|None"=None,commentee:"user.User|int|None"=None,
+        is_old:bool=True
+    ) -> "comment.Comment":
+        return await comment.Comment.post_comment(self,content,parent,commentee,is_old)
     
 def get_user(username:str,*,_client:client.HTTPClient|None=None) -> common._AwaitableContextManager[User]:
     return common._AwaitableContextManager(User._create_from_api(username,_client))

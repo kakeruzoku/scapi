@@ -1,9 +1,11 @@
+import time
 from .types import (
     NoElementsPayload,
     LoginFailurePayload,
     CommentMuteStatusPayload,
     CommentFailurePayload,
-    CommentFailureOldPayload
+    CommentFailureOldPayload,
+    CommentPostPayload
 )
 from . import client,common
 from ..sites import base,session
@@ -56,33 +58,38 @@ class CommentFailure(Forbidden):
             self,
             response:"client.Response",
             session:"session.Session",
+            content:str,
             type:str,
-            status:CommentMuteStatusPayload|NoElementsPayload
+            status:CommentMuteStatusPayload|NoElementsPayload|None,
         ):
         super().__init__(response)
         self.type = type
         self.session = session
-        if self.session and self.session._status is not common.UNKNOWN:
+        if self.session and self.session._status is not common.UNKNOWN and status is not None:
             self.session._status.mute_status = status
         self.mute_status = status
+        self.timestamp:int = int(time.time())
+        self.content = content
 
     @classmethod
     def from_data(
-        cls,
-        response:"client.Response",
-        session:"session.Session",
-        data:CommentFailurePayload
-    ):
-        return cls(response,session,data.get("rejected"),data.get("status").get("mute_status"))
+            cls,
+            response:"client.Response",
+            session:"session.Session",
+            content:str,
+            data:CommentFailurePayload
+        ):
+        return cls(response,session,content,data.get("rejected"),data.get("status").get("mute_status"))
     
     @classmethod
     def from_old_data(
-        cls,
-        response:"client.Response",
-        session:"session.Session",
-        data:CommentFailureOldPayload
-    ):
-        return cls(response,session,data.get("error"),data.get("mute_status"))
+            cls,
+            response:"client.Response",
+            session:"session.Session",
+            content:str,
+            data:CommentFailureOldPayload
+        ):
+        return cls(response,session,content,data.get("error"),data.get("mute_status"))
 
 class NotFound(ClientError):
     pass

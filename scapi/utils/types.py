@@ -206,6 +206,11 @@ class CommentPayload(TypedDict,total=False):
     author:UserPayload
     reply_count:int
 
+class CommentPostPayload(TypedDict):
+    content:str
+    parent_id:int|Literal[""]
+    commentee_id:int|Literal[""]
+
 class CommentMuteStatusOffensePayload(TypedDict):
     createdAt:float
     expiresAt:float
@@ -225,5 +230,5 @@ class CommentFailurePayload(TypedDict):
     rejected:str
 
 class CommentFailureOldPayload(TypedDict):
-    mute_status:CommentMuteStatusPayload|NoElementsPayload
+    mute_status:NotRequired[CommentMuteStatusPayload|NoElementsPayload]
     error:str

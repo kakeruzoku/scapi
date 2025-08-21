@@ -20,7 +20,8 @@ class _RequestOptions(TypedDict, total=False):
     check: bool
 
 class Response:
-    def __init__(self,response:aiohttp.ClientResponse):
+    def __init__(self,response:aiohttp.ClientResponse,client:"HTTPClient"):
+        self.client = client
         self._response = response
         self.status_code:int = response.status
         self._body = response._body or b""
@@ -117,7 +118,7 @@ class HTTPClient:
         try:
             async with self._session.request(method,url,proxy=self._proxy,proxy_auth=self._proxy_auth,**kwargs) as _response:
                 await _response.read()
-            response = Response(_response)
+            response = Response(_response,self)
         except Exception as e:
             raise error.ProcessingError(e) from e
         if check:
