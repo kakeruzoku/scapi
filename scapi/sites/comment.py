@@ -55,19 +55,6 @@ class Comment(base._BaseSiteAPI[int]):
     @property
     def root_url(self):
         return self._root_url(self.place) + str(self.id)
-    
-    @staticmethod
-    def _root_proxy_url(place:"project.Project|studio.Studio|user.User"):
-        if isinstance(place,project.Project):
-            return f"https://api.scratch.mit.edu/proxy/project/{place.id}/comment/"
-        elif isinstance(place,studio.Studio):
-            return f"https://api.scratch.mit.edu/proxy/studio/{place.id}/comment/"
-        else:
-            raise TypeError("User comment updates are not supported.")
-
-    @property
-    def root_proxy_url(self):
-        return self._root_proxy_url(self.place) + str(self.id)
         
     @staticmethod
     def _root_old_url(place:"project.Project|studio.Studio|user.User"):
@@ -204,6 +191,48 @@ class Comment(base._BaseSiteAPI[int]):
                 raise error.CommentFailure.from_data(response,place._session,_data["content"],data)
             comment = Comment._create_from_data(data["id"],data,place.client_or_session)
         return comment
+    
+    async def post_reply(
+            self,
+            content:str,
+            commentee:"user.User|int|None|common.UNKNOWN_TYPE"=common.UNKNOWN,
+            is_old:bool=False
+        ):
+        if commentee is common.UNKNOWN:
+            commentee = self.author and self.author.id or None
+        return await Comment.post_comment(self.place,content,self.parent_id or self.id,commentee,is_old)
+    
+    async def delete(self,is_old:bool=False):
+        self.require_session()
+        if isinstance(self.place,user.User):
+            is_old = True
+        if is_old:
+            url = self.root_old_url + "del/"
+            await self.client.post(url,json={"id":str(self.id)})
+        else:
+            if isinstance(self.place,project.Project):
+                url =  f"https://api.scratch.mit.edu/proxy/comments/project/{self.place.id}/comment/{self.id}"
+            elif isinstance(self.place,studio.Studio):
+                url =  f"https://api.scratch.mit.edu/proxy/comments/studio/{self.place.id}/comment/{self.id}"
+            else:
+                raise TypeError("User comment updates are not supported.")
+            await self.client.delete(url,json={"reportId":None})
+
+    async def report(self,is_old:bool=False):
+        self.require_session()
+        if isinstance(self.place,user.User):
+            is_old = True
+        if is_old:
+            url = self.root_old_url + "rep/"
+            await self.client.post(url,json={"id":str(self.id)})
+        else:
+            if isinstance(self.place,project.Project):
+                url =  f"https://api.scratch.mit.edu/proxy/project/{self.place.id}/comment/{self.id}/report"
+            elif isinstance(self.place,studio.Studio):
+                url =  f"https://api.scratch.mit.edu/proxy/studio/{self.place.id}/comment/{self.id}/report"
+            else:
+                raise TypeError("User comment updates are not supported.")
+            await self.client.post(url,json={"reportId":None})
 
 async def get_comment_from_old(
         place:"project.Project|studio.Studio|user.User",

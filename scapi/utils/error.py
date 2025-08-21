@@ -90,6 +90,22 @@ class CommentFailure(Forbidden):
             data:CommentFailureOldPayload
         ):
         return cls(response,session,content,data.get("error"),data.get("mute_status"))
+    
+    async def feedback(self,message:str,language:str="en"):
+        if self.session is None:
+            raise NoSession(self.session)
+        await self.session.client.post(
+            "https://api.scratch.mit.edu/comments/feedback",
+            json={
+                "timestamp":self.timestamp,
+                "feedback":message,
+                "comment":self.content,
+                "userId":self.session.user_id,
+                "username":self.session.username,
+                "language":language,
+                "typeOfMessage":self.type
+            }
+        )
 
 class NotFound(ClientError):
     pass
