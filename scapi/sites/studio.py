@@ -1,7 +1,7 @@
 import datetime
 from typing import TYPE_CHECKING, AsyncGenerator, Final
 from ..utils import client, common, error
-from . import base,project,user,session
+from . import base,project,user,session,comment
 from ..utils.types import (
     StudioPayload
 )
@@ -89,6 +89,16 @@ class Studio(base._BaseSiteAPI[int]):
             limit=limit,offset=offset
         ):
             yield user.User._create_from_data(_u["username"],_u,self.client_or_session)
+
+    async def get_comment(self,limit:int|None=None,offset:int|None=None) -> AsyncGenerator["comment.Comment", None]:
+        async for _c in common.api_iterative(
+            self.client,f"https://api.scratch.mit.edu/studios/{self.id}/comments",
+            limit=limit,offset=offset
+        ):
+            yield comment.Comment._create_from_data(_c["id"],_c,place=self)
+
+    async def get_comment_by_id(self,comment_id:int) -> "comment.Comment":
+        return await comment.Comment._create_from_api(comment_id,place=self)
 
 def get_studio(studio_id:int,*,_client:client.HTTPClient|None=None) -> common._AwaitableContextManager[Studio]:
     return common._AwaitableContextManager(Studio._create_from_api(studio_id,_client))

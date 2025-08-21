@@ -20,6 +20,10 @@ from .sites.studio import (
     get_studio
 )
 
+from .sites.comment import (
+    Comment
+)
+
 from .sites.base import (
     _BaseSiteAPI
 )

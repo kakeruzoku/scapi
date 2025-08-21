@@ -2,7 +2,6 @@ import datetime
 import json
 from typing import TYPE_CHECKING, Any, AsyncGenerator, Final, Literal
 from ..utils import client, common, error, file
-from . import base
 from ..utils.types import (
     ProjectPayload,
     ProjectLovePayload,
@@ -10,7 +9,7 @@ from ..utils.types import (
     ProjectVisibilityPayload,
     UserFeaturedPayload
 )
-from . import user,studio,session
+from . import user,studio,session,base,comment
 
 class Project(base._BaseSiteAPI[int]):
     def __repr__(self) -> str:
@@ -127,6 +126,17 @@ class Project(base._BaseSiteAPI[int]):
     async def get_root_project(self) -> "Project|None":
         if self.remix_root_id:
             return await self._create_from_api(self.remix_root_id,self.client_or_session)
+        
+    async def get_comment(self,limit:int|None=None,offset:int|None=None) -> AsyncGenerator["comment.Comment", None]:
+        async for _c in common.api_iterative(
+            self.client,f"https://api.scratch.mit.edu/users/{self._author_username}/projects/{self.id}/comments",
+            limit=limit,offset=offset
+        ):
+            yield comment.Comment._create_from_data(_c["id"],_c,place=self)
+
+    async def get_comment_by_id(self,comment_id:int) -> "comment.Comment":
+        return await comment.Comment._create_from_api(comment_id,place=self)
+    
 
     async def edit_project(
             self,project_data:file.File|dict|str|bytes,is_json:bool|None=None

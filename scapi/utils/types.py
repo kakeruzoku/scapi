@@ -192,3 +192,14 @@ class StudioPayload(TypedDict,total=False):
     image:str
     history:StudioHistoryPayload
     stats:StudioStatsPayload
+
+class CommentPayload(TypedDict,total=False):
+    id:Required[int]
+    parent_id:int|None
+    commentee_id:int|None
+    content:str
+    datetime_created:str
+    datetime_modified:str
+    visibility:str
+    author:UserPayload
+    reply_count:int
