@@ -1,3 +1,4 @@
+import datetime
 from typing import TYPE_CHECKING, AsyncGenerator, Final
 from ..utils import client, common, error
 from . import base,session,project,user,studio
@@ -45,7 +46,7 @@ class User(base._BaseSiteAPI[str]):
             )
     
     @property
-    def joined_at(self):
+    def joined_at(self) -> datetime.datetime|common.UNKNOWN_TYPE:
         return common.dt_from_isoformat(self._joined_at)
     
 

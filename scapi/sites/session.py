@@ -76,7 +76,7 @@ class Session(base._BaseSiteAPI[str]):
 
         super().__init__(self)
         self.session_id:str = session_id
-        self._status:SessionStatus|None = None
+        self._status:SessionStatus|common.UNKNOWN_TYPE = common.UNKNOWN
         
         decoded,login_dt = decode_session(self.session_id)
 
@@ -115,15 +115,15 @@ class Session(base._BaseSiteAPI[str]):
         self.user.id = self.user_id or common.UNKNOWN
     
     @property
-    def logged_at(self):
+    def logged_at(self) -> datetime.datetime:
         return common.dt_from_timestamp(self._logged_at,False)
     
     @property
-    def is_scratcher(self) -> None | bool:
+    def is_scratcher(self) -> common.UNKNOWN_TYPE|bool:
         return self._status and self._status.scratcher
     
     @property
-    def is_verified_educator(self) -> None | bool:
+    def is_verified_educator(self) -> common.UNKNOWN_TYPE|bool:
         return self._status and self._status.educator and (not self._status.invited_scratcher)
     
     async def logout(self):

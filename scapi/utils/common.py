@@ -23,7 +23,7 @@ class _Special(Enum):
     def __eq__(self, value):
         return False
     
-    def __bool__(self):
+    def __bool__(self) -> Literal[False]:
         return False
 
 UNKNOWN = _Special.UNKNOWN

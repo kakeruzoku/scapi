@@ -119,13 +119,15 @@ class Project(base._BaseSiteAPI[int]):
         ):
             yield studio.Studio._create_from_data(_s["id"],_s,self.client_or_session)
 
-    async def get_parent_project(self) -> "Project|None":
-        if self.remix_parent_id:
+    async def get_parent_project(self) -> "Project|None|common.UNKNOWN_TYPE":
+        if isinstance(self.remix_parent_id,int):
             return await self._create_from_api(self.remix_parent_id,self.client_or_session)
+        return self.remix_parent_id
         
-    async def get_root_project(self) -> "Project|None":
-        if self.remix_root_id:
+    async def get_root_project(self) -> "Project|None|common.UNKNOWN_TYPE":
+        if isinstance(self.remix_root_id,int):
             return await self._create_from_api(self.remix_root_id,self.client_or_session)
+        return self.remix_root_id
         
     async def get_comment(self,limit:int|None=None,offset:int|None=None) -> AsyncGenerator["comment.Comment", None]:
         async for _c in common.api_iterative(
@@ -200,7 +202,7 @@ class Project(base._BaseSiteAPI[int]):
         #TODO download project
         return await self._session.create_project(title,remix_id=self.id)
     
-    async def is_loved(self):
+    async def is_loved(self) -> bool:
         response = await self.client.get(f"https://api.scratch.mit.edu/projects/{self.id}/loves/user/{self._session.username}")
         data:ProjectLovePayload = response.json()
         return data.get("userLove")
@@ -215,7 +217,7 @@ class Project(base._BaseSiteAPI[int]):
         data:ProjectLovePayload = response.json()
         return data.get("statusChanged")
     
-    async def is_favorited(self):
+    async def is_favorited(self) -> bool:
         response = await self.client.get(f"https://api.scratch.mit.edu/projects/{self.id}/favorites/user/{self._session.username}")
         data:ProjectFavoritePayload = response.json()
         return data.get("userFavorite")
