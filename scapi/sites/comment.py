@@ -19,16 +19,16 @@ class Comment(base._BaseSiteAPI[int]):
             client_or_session:"client.HTTPClient|session.Session|None"=None,
             *,
             place:"project.Project|studio.Studio|user.User",
-            _parent:"Comment|None" = None,
-            _reply:"list[Comment]|common.UNKNOWN_TYPE" = common.UNKNOWN
+            _parent:"Comment|None|common.UNKNOWN_TYPE" = common.UNKNOWN,
+            _reply:"list[Comment]|None" = None
         ):
 
         super().__init__(place.client_or_session)
         self.id:Final[int] = id
         self.place = place
 
-        self.parent_id:common.MAYBE_UNKNOWN[int] = common.UNKNOWN if _parent is None else _parent.id
-        self.commentee_id:common.MAYBE_UNKNOWN[int] = common.UNKNOWN
+        self.parent_id:common.MAYBE_UNKNOWN[int|None] = _parent.id if isinstance(_parent,Comment) else _parent
+        self.commentee_id:common.MAYBE_UNKNOWN[int|None] = common.UNKNOWN
         self.content:common.MAYBE_UNKNOWN[str] = common.UNKNOWN
 
         self._created_at:common.MAYBE_UNKNOWN[str] = common.UNKNOWN
@@ -36,37 +36,50 @@ class Comment(base._BaseSiteAPI[int]):
         self.author:"common.MAYBE_UNKNOWN[user.User]" = common.UNKNOWN
         self.reply_count:common.MAYBE_UNKNOWN[int] = common.UNKNOWN
 
-        self._cached_parent:"Comment|None" = _parent
-        self._cached_reply:common.MAYBE_UNKNOWN["list[Comment]"] = _reply
+        self._cached_parent:"Comment|None" = _parent or None
+        self._cached_reply:"list[Comment]|None" = _reply
+
+    @staticmethod
+    def _root_url(place:"project.Project|studio.Studio|user.User"):
+        if isinstance(place,project.Project):
+            return f"https://api.scratch.mit.edu/users/{place._author_username}/projects/{place.id}/comments/"
+        elif isinstance(place,studio.Studio):
+            return f"https://api.scratch.mit.edu/studios/{place.id}/comments/"
+        else:
+            raise TypeError("User comment updates are not supported.")
+
 
     @property
     def root_url(self):
-        if isinstance(self.place,project.Project):
-            return f"https://api.scratch.mit.edu/users/{self.place._author_username}/projects/{self.place.id}/comments/{self.id}"
-        elif isinstance(self.place,studio.Studio):
-            return f"https://api.scratch.mit.edu/studios/{self.place.id}/comments/{self.id}"
+        return self._root_url(self.place) + str(self.id)
+    
+    @staticmethod
+    def _root_proxy_url(place:"project.Project|studio.Studio|user.User"):
+        if isinstance(place,project.Project):
+            return f"https://api.scratch.mit.edu/proxy/project/{place.id}/comment/"
+        elif isinstance(place,studio.Studio):
+            return f"https://api.scratch.mit.edu/proxy/studio/{place.id}/comment/"
         else:
             raise TypeError("User comment updates are not supported.")
-        
+
     @property
     def root_proxy_url(self):
-        if isinstance(self.place,project.Project):
-            return f"https://api.scratch.mit.edu/proxy/project/{self.place.id}/comment/{self.id}"
-        elif isinstance(self.place,studio.Studio):
-            return f"https://api.scratch.mit.edu/proxy/studio/{self.place.id}/comment/{self.id}"
-        else:
-            raise TypeError("User comment updates are not supported.")
+        return self._root_proxy_url(self.place) + str(self.id)
         
-    @property
-    def root_old_url(self):
-        if isinstance(self.place,project.Project):
-            return f"https://scratch.mit.edu/site-api/comments/project/{self.place.id}"
-        elif isinstance(self.place,studio.Studio):
-            return f"https://scratch.mit.edu/site-api/comments/gallery/{self.place.id}"
-        elif isinstance(self.place,user.User):
-            return f"https://scratch.mit.edu/site-api/comments/user/{self.place.username}"
+    @staticmethod
+    def _root_old_url(place:"project.Project|studio.Studio|user.User"):
+        if isinstance(place,project.Project):
+            return f"https://scratch.mit.edu/site-api/comments/project/{place.id}"
+        elif isinstance(place,studio.Studio):
+            return f"https://scratch.mit.edu/site-api/comments/gallery/{place.id}"
+        elif isinstance(place,user.User):
+            return f"https://scratch.mit.edu/site-api/comments/user/{place.username}"
         else:
             raise TypeError("Unknown comment place type.")
+
+    @property
+    def root_old_url(self):
+        return self._root_old_url(self.place)
 
     async def update(self):
         response = await self.client.get(self.root_url)
@@ -113,14 +126,24 @@ class Comment(base._BaseSiteAPI[int]):
     
 
     async def get_reply(self,limit:int|None=None,offset:int|None=None,*,use_cache:bool=True) -> AsyncGenerator["Comment", None]:
-        if use_cache and self._cached_reply is not common.UNKNOWN:
-            limit = limit or 40
-            offset = offset or 0
+        if use_cache and self._cached_reply is not None:
+            if limit is None:
+                limit = 40
+            if offset is None:
+                offset = 0
             for c in self._cached_reply[offset:offset+limit]:
                 yield c
-        url = self.root_url + "/replies"
-        async for _c in common.api_iterative(self.client,url,limit,offset):
-            yield Comment._create_from_data(_c["id"],_c,place=self.place)
+        else:
+            url = self.root_url + "/replies"
+            async for _c in common.api_iterative(self.client,url,limit,offset):
+                yield Comment._create_from_data(_c["id"],_c,place=self.place)
+
+    async def get_parent(self,use_cache:bool=True) -> "Comment|None|common.UNKNOWN_TYPE":
+        if not isinstance(self.parent_id,int):
+            return self.parent_id
+        if self._cached_parent is None or use_cache:
+            self._cached_parent = await Comment._create_from_api(self.parent_id,place=self.place)
+        return self._cached_parent
 
 async def get_comment_from_old(
         place:"project.Project|studio.Studio|user.User",
@@ -131,14 +154,7 @@ async def get_comment_from_old(
     if end_page is None:
         end_page = start_page
 
-    if isinstance(place,project.Project):
-        url = f"https://scratch.mit.edu/site-api/comments/project/{place.id}"
-    elif isinstance(place,studio.Studio):
-        url = f"https://scratch.mit.edu/site-api/comments/gallery/{place.id}"
-    elif isinstance(place,user.User):
-        url = f"https://scratch.mit.edu/site-api/comments/user/{place.username}"
-    else:
-        raise TypeError("Unknown comment place type.")
+    url = Comment._root_old_url(place)
 
     for i in range(start_page,end_page+1):
         try:
@@ -158,9 +174,10 @@ async def get_comment_from_old(
                 place.client_or_session,
                 "_update_from_html",
                 place=place,
+                _parent=None,
                 _reply=[]
             )
-            assert c._cached_reply is not common.UNKNOWN
+            assert c._cached_reply is not None
             _comment_replies = _comment_outside.find("ul", {"class":"replies"}) # type: ignore
             _replies = _comment_replies.find_all("div", {"class": "comment"}) # type: ignore
             for _reply in _replies:
