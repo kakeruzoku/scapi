@@ -6,7 +6,7 @@ sys.path.insert(0, os.path.abspath('.'))
 
 
 # -- Project information -----------------------------------------------------
-project = 'scapi'
+project = 'Scapi'
 copyright = '2024, かける族'
 author = 'かける族'
 
@@ -34,7 +34,7 @@ language = 'ja'
 
 # -- Options for HTML output -------------------------------------------------
 
-html_theme = 'alabaster'
+html_theme = 'sphinx_rtd_theme'
 html_static_path = ['_static']
 
 latex_elements = {
