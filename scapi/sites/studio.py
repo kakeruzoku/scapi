@@ -110,6 +110,38 @@ class Studio(base._BaseSiteAPI[int]):
         is_old:bool=False
     ) -> "comment.Comment":
         return await comment.Comment.post_comment(self,content,parent,commentee,is_old)
+    
+    async def follow(self) -> "None | project.ProjectFeatured":
+        response = await self.client.put(f"https://scratch.mit.edu/site-api/users/bookmarkers/{self.id}/add/?usernames={self._session.username}")
+        return project.ProjectFeatured(response.json(),self._session.user)
+
+    async def unfollow(self) -> "None | project.ProjectFeatured":
+        response = await self.client.put(f"https://scratch.mit.edu/site-api/users/bookmarkers/{self.id}/remove/?usernames={self._session.username}")
+        return project.ProjectFeatured(response.json(),self._session.user)
+    
+
+    async def edit(
+            self,
+            title:str|None=None,
+            description:str|None=None,
+            trash:bool|None=None
+        ) -> None:
+        data = {}
+        if description is not None: data["description"] = description + "\n"
+        if title is not None: data["title"] = title
+        if trash: data["visibility"] = "delbyusr"
+        response = await self.client.put(f"https://scratch.mit.edu/site-api/galleries/all/{self.id}",json=data)
+        self._update_from_data(response.json())
+
+    async def open_project(self):
+        await self.client.put(f"https://scratch.mit.edu/site-api/galleries/{self.id}/mark/open/")
+
+    async def close_project(self):
+        await self.client.put(f"https://scratch.mit.edu/site-api/galleries/{self.id}/mark/closed/")
+
+    async def toggle_comment(self):
+        await self.client.post(f"https://scratch.mit.edu/site-api/comments/gallery/{self.id}/toggle-comments/")
+        
 
 def get_studio(studio_id:int,*,_client:client.HTTPClient|None=None) -> common._AwaitableContextManager[Studio]:
     return common._AwaitableContextManager(Studio._create_from_api(studio_id,_client))
