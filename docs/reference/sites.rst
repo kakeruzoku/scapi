@@ -7,15 +7,10 @@
 ベースクラス
 -------------------------
 
-.. autodata:: scapi.utils.common.UNKNOWN
-
-.. autodata:: scapi.utils.common.UNKNOWN_TYPE
-
 .. autoclass:: scapi.sites.base._BaseSiteAPI
 
-.. autoclass:: scapi.utils.common._AwaitableContextManager
 
-アカウント情報
+アカウント
 -------------------------
 
 .. autofunction:: scapi.sites.session.login

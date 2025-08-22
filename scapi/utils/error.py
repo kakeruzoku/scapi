@@ -65,8 +65,8 @@ class CommentFailure(Forbidden):
         super().__init__(response)
         self.type = type
         self.session = session
-        if self.session and self.session._status is not common.UNKNOWN and status is not None:
-            self.session._status.mute_status = status
+        if self.session and self.session.status is not common.UNKNOWN and status is not None:
+            self.session.status.mute_status = status
         self.mute_status = status
         self.timestamp:int = int(time.time())
         self.content = content

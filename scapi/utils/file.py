@@ -6,7 +6,17 @@ import aiofiles
 from . import common
 
 class File:
+    """
+    ファイルをアップロードする時に使用するオブジェクト
+    """
     def __init__(self,data:str|bytes|IO[bytes]|AsyncBufferedReader):
+        """
+        Args:
+            data (str | bytes | IO[bytes] | AsyncBufferedReader): データ本体またはファイルパスまたはファイルオブジェクト
+
+        Raises:
+            TypeError: 処理できないデータ形式
+        """
         self._fp:IO[bytes]|AsyncBufferedReader|None = None
         self._coro_fp = None
         if isinstance(data, (IO,AsyncBufferedReader)):

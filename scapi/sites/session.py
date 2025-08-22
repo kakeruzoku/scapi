@@ -106,6 +106,17 @@ class SessionStatus:
 
 
 class Session(base._BaseSiteAPI[str]):
+    """
+    ログイン済みのアカウントを表す
+
+    Attributes:
+        session_id (str): アカウントのセッションID
+        status (common.MAYBE_UNKNOWN[SessionStatus]): アカウントのステータス
+        xtoken (str): アカウントのXtoken
+        username (str): ユーザー名
+        login_ip (str): ログイン時のIPアドレス
+        user (user.User): ログインしているユーザー
+    """
     def __repr__(self) -> str:
         return f"<Session username:{self.username}>"
 
@@ -114,7 +125,7 @@ class Session(base._BaseSiteAPI[str]):
 
         super().__init__(self)
         self.session_id:str = session_id
-        self._status:SessionStatus|common.UNKNOWN_TYPE = common.UNKNOWN
+        self.status:common.MAYBE_UNKNOWN[SessionStatus] = common.UNKNOWN
         
         decoded,login_dt = decode_session(self.session_id)
 
@@ -146,25 +157,28 @@ class Session(base._BaseSiteAPI[str]):
     def _update_from_data(self, data:SessionStatusPayload):
         if data.get("user") is None:
             raise ValueError()
-        if self._status:
-            self._status.update(data)
+        if self.status:
+            self.status.update(data)
         else:
-            self._status = SessionStatus(self,data)
+            self.status = SessionStatus(self,data)
         self.user.id = self.user_id or common.UNKNOWN
     
     @property
     def logged_at(self) -> datetime.datetime:
+        """
+        アカウントにログインした時間を取得する。
+
+        Returns:
+            datetime.datetime: ログインした時間
+        """
         return common.dt_from_timestamp(self._logged_at,False)
     
-    @property
-    def is_scratcher(self) -> common.UNKNOWN_TYPE|bool:
-        return self._status and self._status.scratcher
-    
-    @property
-    def is_verified_educator(self) -> common.UNKNOWN_TYPE|bool:
-        return self._status and self._status.educator and (not self._status.invited_scratcher)
-    
     async def logout(self):
+        """
+        アカウントからログアウトする。
+
+        リクエストが無意味な可能性があります。
+        """
         await self.client.post(
             "https://scratch.mit.edu/accounts/logout/",
             json={"csrfmiddlewaretoken":"a"}
@@ -178,6 +192,21 @@ class Session(base._BaseSiteAPI[str]):
             is_json:bool|None=None
             
         ) -> "project.Project":
+        """
+        プロジェクトを作成する
+
+        Args:
+            title (str | None, optional): プロジェクトのタイトル
+            project_data (file.File | dict | str | bytes | None, optional): プロジェクトのデータ
+            remix_id (int | None, optional): リミックスする場合、リミックス元のプロジェクトID
+            is_json (bool | None, optional): プロジェクトのデータがjsonか
+
+        Raises:
+            error.InvalidData: 作成されたプロジェクトのIDが読み取れませんでした
+
+        Returns:
+            project.Project: 作成されたプロジェクト
+        """
         param = {}
         if remix_id:
             param["is_remix"] = 1
@@ -219,15 +248,57 @@ class Session(base._BaseSiteAPI[str]):
         return _project
     
     async def get_project(self,project_id:int) -> "project.Project":
+        """
+        プロジェクトを取得する。
+
+        Args:
+            project_id (int): 取得したいプロジェクトのID
+
+        Returns:
+            project.Project: 取得したプロジェクト
+        """
         return await project.Project._create_from_api(project_id,self.session)
     
     async def get_studio(self,studio_id:int) -> "studio.Studio":
+        """
+        スタジオを取得する。
+
+        Args:
+            studio_id (int): 取得したいスタジオのID
+
+        Returns:
+            studio.Studio: 取得したスタジオ
+        """
         return await studio.Studio._create_from_api(studio_id,self.session)
     
     async def get_user(self,username:str) -> "user.User":
+        """
+        ユーザーを取得する。
+
+        Args:
+            username (str): 取得したいユーザーの名前
+
+        Returns:
+            user.User: 取得したユーザー
+        """
         return await user.User._create_from_api(username,self.session)
     
 def session_login(session_id:str) -> common._AwaitableContextManager[Session]:
+    """
+    セッションIDからアカウントにログインする。
+
+    async with または await でSessionを取得できます。
+
+    Args:
+        session_id (str): _description_
+
+    Raises:
+        error.HTTPError: 不明な理由でログインに失敗した。
+        ValueError: 無効なセッションID。
+
+    Returns:
+        common._AwaitableContextManager[Session]: await か async with で取得できるセッション。
+    """
     return common._AwaitableContextManager(Session._create_from_api(session_id))
 
 async def _login(
@@ -271,4 +342,21 @@ async def _login(
         return Session(session_id,_client)
     
 def login(username:str,password:str,load_status:bool=True,*,recaptcha_code:str|None=None) -> common._AwaitableContextManager[Session]:
+    """_summary_
+
+    _extended_summary_
+
+    Args:
+        username (str): ユーザー名
+        password (str): パスワード
+        load_status (bool, optional): アカウントのステータスを取得するか。デフォルトはTrueです。
+        recaptcha_code (str | None, optional)
+
+    Raises:
+        error.LoginFailure: ログインに失敗した。
+        error.HTTPError: 不明な理由でログインに失敗した。
+
+    Returns:
+        common._AwaitableContextManager[Session]: await か async with で取得できるセッション
+    """
     return common._AwaitableContextManager(_login(username,password,load_status,recaptcha_code=recaptcha_code))
