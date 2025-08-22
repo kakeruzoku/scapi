@@ -16,8 +16,9 @@ with open(_path, 'r', encoding='utf-8') as fp:
 
 release = init.replace(" ","").split("__version__=\"")[1].split("\"")[0]
 
-
 # -- General configuration ---------------------------------------------------
+# https://www.sphinx-doc.org/en/master/usage/configuration.html#general-configuration
+
 extensions = [
     'sphinx.ext.autodoc',
     'sphinx.ext.napoleon',
@@ -26,31 +27,21 @@ extensions = [
     'sphinx_rtd_theme',
 ]
 
-source_encoding = 'utf-8-sig'
-
-source_suffix = '.rst'
-
-master_doc = 'index'
+templates_path = ['_templates']
+exclude_patterns = ['_build', 'Thumbs.db', '.DS_Store']
 
 language = 'ja'
 
-exclude_patterns = []
-
-pygments_style = 'sphinx'
-
-
 # -- Options for HTML output -------------------------------------------------
-html_theme = 'sphinx_rtd_theme'
 
+html_theme = 'alabaster'
+html_static_path = ['_static']
 
-# -- Options for LaTeX output ------------------------------------------------
 latex_elements = {
     'papersize': 'a4paper',
     'pointsize': '10pt',
 }
 
-
-# -- Extension configuration -------------------------------------------------
 autodoc_default_options = {
     'members': True,
     'undoc-members': True,
