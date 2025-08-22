@@ -28,7 +28,9 @@ class _Special(Enum):
         return False
 
 UNKNOWN = _Special.UNKNOWN
+UNKNOWN.__doc__ = "「不明」を表す定数。"
 UNKNOWN_TYPE = Literal[_Special.UNKNOWN]
+UNKNOWN_TYPE.__doc__ = "UNKNOWNを表す型ヒント"
 MAYBE_UNKNOWN = _T|Literal[_Special.UNKNOWN]
 
 del _Special
@@ -164,6 +166,11 @@ def _bypass_checking(func:Callable[[_T], Any]) -> Callable[[_T], None]:
     return decorated
 
 class _AwaitableContextManager(Generic[_T]):
+    """
+    Coroutineからasync withとawaitどちらにも対応できるようにするクラス。
+
+    obj = await coro または async with coroutine() as obj: のようにすると obj に _T が入ります。
+    """
     def __init__(self, coro:Coroutine[Any, Any, AsyncContextManager[_T]]):
         self._coro = coro
         self._cm = None

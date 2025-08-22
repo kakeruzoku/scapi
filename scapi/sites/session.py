@@ -20,6 +20,40 @@ def decode_session(session_id:str) -> tuple[DecodedSessionID,int]:
     return json.loads(decompressed.decode('utf-8')),common.b62decode(s2)
 
 class SessionStatus:
+    """
+    アカウントのステータスを表す。
+    Attributes:
+        session (Session): ステータスを表しているアカウントのセッション
+        banned (bool): アカウントがブロックされているか
+        should_vpn (bool)
+        thumbnail_url (str): アカウントのアイコンのURL
+        email (str): アカウントのメールアドレス
+        birthday (datetime.date): アカウントに登録された誕生日。日付は常に`1`です
+        gender (str): アカウントに登録された性別
+        classroom_id (int|None): 生徒アカウントの場合、所属しているクラス
+
+        admin (bool): ScratchTeamのアカウントか
+        scratcher (bool): Scratcherか
+        new_scratcher (bool): New Scratcherか
+        invited_scratcher (bool): Scratcherへの招待が届いているか
+        social (bool)
+        educator (bool): 教師アカウントか
+        educator_invitee (bool)
+        student (bool): 生徒アカウントか
+        mute_status (bool): アカウントのコメントのミュートステータス
+
+        must_reset_password (bool): パスワードを再設定する必要があるか
+        must_complete_registration (bool): アカウント情報を登録する必要があるか
+        has_outstanding_email_confirmation (bool)
+        show_welcome (bool)
+        confirm_email_banner (bool)
+        unsupported_browser_banner (bool)
+        with_parent_email (bool): 親のメールアドレスで登録しているか
+        project_comments_enabled (bool)
+        gallery_comments_enabled (bool)
+        userprofile_comments_enabled (bool)
+        everything_is_totally_normal (bool)
+    """
     def __init__(self,session:"Session",data:SessionStatusPayload):
         self.session = session
         self.update(data)
@@ -64,6 +98,10 @@ class SessionStatus:
 
     @property
     def joined_at(self) -> datetime.datetime:
+        """
+        Returns:
+            datetime.datetime: Scratchに参加した時間
+        """
         return common.dt_from_isoformat(self._joined_at,False)
 
 

@@ -174,7 +174,7 @@ class Comment(base._BaseSiteAPI[int]):
                 error_data = json.loads(common.split(
                     text,'<script id="error-data" type="application/json">',"</script>",True
                 ))
-                raise error.CommentFailure.from_old_data(response,place._session,_data["content"],error_data)
+                raise error.CommentFailure._from_old_data(response,place._session,_data["content"],error_data)
             soup = bs4.BeautifulSoup(response.text, "html.parser")
             tag = soup.find("div")
             
@@ -188,7 +188,7 @@ class Comment(base._BaseSiteAPI[int]):
         else:
             data:CommentFailurePayload|CommentPayload = response.json()
             if "rejected" in data:
-                raise error.CommentFailure.from_data(response,place._session,_data["content"],data)
+                raise error.CommentFailure._from_data(response,place._session,_data["content"],data)
             comment = Comment._create_from_data(data["id"],data,place.client_or_session)
         return comment
     

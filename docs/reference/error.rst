@@ -32,8 +32,7 @@
   * :class:`NoPermission <scapi.utils.error.NoPermission>`
   * :class:`NoDataError <scapi.utils.error.NoDataError>`
 
+例外
+-------------------------
 
 .. automodule:: scapi.utils.error
-    :members:
-    :undoc-members:
-    :show-inheritance:

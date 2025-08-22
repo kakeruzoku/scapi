@@ -72,7 +72,7 @@ class CommentFailure(Forbidden):
         self.content = content
 
     @classmethod
-    def from_data(
+    def _from_data(
             cls,
             response:"client.Response",
             session:"session.Session",
@@ -82,7 +82,7 @@ class CommentFailure(Forbidden):
         return cls(response,session,content,data.get("rejected"),data.get("status").get("mute_status"))
     
     @classmethod
-    def from_old_data(
+    def _from_old_data(
             cls,
             response:"client.Response",
             session:"session.Session",
