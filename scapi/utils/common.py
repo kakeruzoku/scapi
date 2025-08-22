@@ -3,6 +3,7 @@ import string
 import datetime
 from typing import Any, AsyncGenerator, Callable, Coroutine, Final, Generic, Literal, ParamSpec, TypeVar, overload,AsyncContextManager
 import inspect
+from functools import wraps
 
 from . import error,client,config
 
@@ -154,6 +155,7 @@ _T = TypeVar("_T")
 _P = ParamSpec('_P')
 
 def _bypass_checking(func:Callable[[_T], Any]) -> Callable[[_T], None]:
+    @wraps(func)
     def decorated(self:_T):
         if config.bypass_checking:
             return

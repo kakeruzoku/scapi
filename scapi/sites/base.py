@@ -6,7 +6,13 @@ from . import session
 _T = TypeVar("_T")
 
 class _BaseSiteAPI(ABC,Generic[_T]):
+    """
+    Scratchの何かしらのオブジェクトを表す。
 
+    Attributes:
+        client (client.HTTPClient): 通信に使用するHTTPクライアント。
+        session (session.Session|None): ログインしている場合、そのセッション。
+    """
     @abstractmethod
     def __init__(
             self,
@@ -23,9 +29,21 @@ class _BaseSiteAPI(ABC,Generic[_T]):
 
     @property
     def client_or_session(self) -> "client.HTTPClient|session.Session":
+        """
+        紐づけられているSessionかHTTPClientを返す。
+
+        Returns:
+            client.HTTPClient|session.Session
+        """
         return self.session or self.client
 
     async def update(self) -> None:
+        """
+        APIからデータを更新する。
+
+        Raises:
+            TypeError: このクラスでupdate()が定義されていない。
+        """
         raise TypeError()
     
     def _update_from_data(self,data):
@@ -46,14 +64,29 @@ class _BaseSiteAPI(ABC,Generic[_T]):
     
     @common._bypass_checking
     def require_session(self):
+        """
+        クラスにセッションが紐づけられていない場合、例外を送出する。
+
+        Raises:
+            error.NoSession: セッションが紐づけられていない。
+        """
         if self.session is None:
             raise error.NoSession(self)
     
     @property
     def client_closed(self) -> bool:
+        """
+        HTTPClientが閉じられているか。
+
+        Returns:
+            bool: 接続が閉じられているか
+        """
         return self.client.closed
     
     async def client_close(self):
+        """
+        紐づけられているHTTPClientを閉じる。
+        """
         await self.client.close()
 
     @classmethod

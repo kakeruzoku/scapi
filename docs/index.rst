@@ -7,5 +7,5 @@ ScapiはScratch APIを非同期に実行できるPythonモジュールです。
    :maxdepth: 2
    :caption: Contents:
 
-   changelog.rst
-
+   changelog
+   reference/index

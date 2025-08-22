@@ -2,8 +2,7 @@
 import os
 import sys
 
-sys.path.insert(0, os.path.abspath('.'))
-
+sys.path.insert(0, os.path.abspath("..")) 
 
 # -- Project information -----------------------------------------------------
 project = 'Scapi'
@@ -17,7 +16,6 @@ with open(_path, 'r', encoding='utf-8') as fp:
 release = init.replace(" ","").split("__version__=\"")[1].split("\"")[0]
 
 # -- General configuration ---------------------------------------------------
-# https://www.sphinx-doc.org/en/master/usage/configuration.html#general-configuration
 
 extensions = [
     'sphinx.ext.autodoc',
