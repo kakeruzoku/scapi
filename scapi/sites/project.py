@@ -89,7 +89,7 @@ class Project(base._BaseSiteAPI[int]):
         return self.author.username
     
     @common._bypass_checking
-    def _check_owner(self):
+    def require_author(self):
         if self._author_username.lower() != self._session.username.lower():
             raise error.NoPermission(self)
     
@@ -147,7 +147,7 @@ class Project(base._BaseSiteAPI[int]):
     async def edit_project(
             self,project_data:file.File|dict|str|bytes,is_json:bool|None=None
         ):
-        self._check_owner()
+        self.require_author()
 
         if isinstance(project_data,dict):
             project_data = json.dumps(project_data)
@@ -172,7 +172,7 @@ class Project(base._BaseSiteAPI[int]):
             instructions:str|None=None,
             description:str|None=None,
         ):
-        self._check_owner()
+        self.require_author()
 
         data = {}
         if comment_allowed is not None: data["comment_allowed"] = comment_allowed
@@ -187,51 +187,58 @@ class Project(base._BaseSiteAPI[int]):
         self._update_from_data(r.json())
 
     async def share(self):
-        self._check_owner()
+        self.require_author()
         await self.client.put(f"https://api.scratch.mit.edu/proxy/projects/{self.id}/share")
         self.public = True
 
     async def unshare(self):
-        self._check_owner()
+        self.require_author()
         await self.client.put(f"https://api.scratch.mit.edu/proxy/projects/{self.id}/unshare")
         self.public = False
 
     async def get_visibility(self) -> "ProjectVisibility":
-        self._check_owner()
+        self.require_author()
         response = await self.client.get(f"https://api.scratch.mit.edu/users/{self._session.username}/projects/{self.id}/visibility")
         return ProjectVisibility(response.json(),self)
 
 
     async def create_remix(self,title:str|None=None) -> "Project":
         #TODO download project
+        self.require_session()
         return await self._session.create_project(title,remix_id=self.id)
     
     async def is_loved(self) -> bool:
+        self.require_session()
         response = await self.client.get(f"https://api.scratch.mit.edu/projects/{self.id}/loves/user/{self._session.username}")
         data:ProjectLovePayload = response.json()
         return data.get("userLove")
 
     async def add_love(self) -> bool:
+        self.require_session()
         response = await self.client.post(f"https://api.scratch.mit.edu/projects/{self.id}/loves/user/{self._session.username}")
         data:ProjectLovePayload = response.json()
         return data.get("statusChanged")
     
     async def remove_love(self) -> bool:
+        self.require_session()
         response = await self.client.delete(f"https://api.scratch.mit.edu/projects/{self.id}/loves/user/{self._session.username}")
         data:ProjectLovePayload = response.json()
         return data.get("statusChanged")
     
     async def is_favorited(self) -> bool:
+        self.require_session()
         response = await self.client.get(f"https://api.scratch.mit.edu/projects/{self.id}/favorites/user/{self._session.username}")
         data:ProjectFavoritePayload = response.json()
         return data.get("userFavorite")
 
     async def add_favorite(self) -> bool:
+        self.require_session()
         response = await self.client.post(f"https://api.scratch.mit.edu/projects/{self.id}/favorites/user/{self._session.username}")
         data:ProjectFavoritePayload = response.json()
         return data.get("statusChanged")
     
     async def remove_favorite(self) -> bool:
+        self.require_session()
         response = await self.client.delete(f"https://api.scratch.mit.edu/projects/{self.id}/favorites/user/{self._session.username}")
         data:ProjectFavoritePayload = response.json()
         return data.get("statusChanged")
@@ -249,6 +256,7 @@ class Project(base._BaseSiteAPI[int]):
         parent:"comment.Comment|int|None"=None,commentee:"user.User|int|None"=None,
         is_old:bool=False
     ) -> "comment.Comment":
+        self.require_session()
         return await comment.Comment.post_comment(self,content,parent,commentee,is_old)
 
 class ProjectVisibility:

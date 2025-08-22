@@ -100,6 +100,7 @@ class User(base._BaseSiteAPI[str]):
         parent:"comment.Comment|int|None"=None,commentee:"user.User|int|None"=None,
         is_old:bool=True
     ) -> "comment.Comment":
+        self.require_session()
         return await comment.Comment.post_comment(self,content,parent,commentee,is_old)
     
 def get_user(username:str,*,_client:client.HTTPClient|None=None) -> common._AwaitableContextManager[User]:
