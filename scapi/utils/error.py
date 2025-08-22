@@ -10,17 +10,17 @@ from .types import (
 from . import client,common
 from ..sites import base,session
 
-class HTTPerror(Exception):
+class HTTPError(Exception):
     pass
 
-class SessionClosed(HTTPerror):
+class SessionClosed(HTTPError):
     pass
 
-class ProcessingError(HTTPerror):
+class ProcessingError(HTTPError):
     def __init__(self,exception:Exception):
         self.exception = exception
 
-class ResponseError(HTTPerror):
+class ResponseError(HTTPError):
     def __init__(self,response:"client.Response"):
         self.response = response
         self.status_code = response.status_code
