@@ -2,7 +2,7 @@
 import os
 import sys
 
-sys.path.insert(0, os.path.abspath('..'))
+sys.path.insert(0, os.path.abspath('.'))
 
 
 # -- Project information -----------------------------------------------------
@@ -10,7 +10,8 @@ project = 'scapi'
 copyright = '2024, かける族'
 author = 'かける族'
 
-with open('scapi/utils/common.py', 'r', encoding='utf-8') as fp:
+_path = os.path.join(os.path.dirname(os.path.abspath(__file__)), '..', 'scapi', 'utils', 'common.py')
+with open(_path, 'r', encoding='utf-8') as fp:
     init = fp.read()
 
 release = init.replace(" ","").split("__version__=\"")[1].split("\"")[0]
