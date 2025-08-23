@@ -1,6 +1,8 @@
 import datetime
 from typing import TYPE_CHECKING, AsyncGenerator, Final
-from ..utils import client, common, error
+
+import aiohttp
+from ..utils import client, common, error, file
 from . import base,project,user,session,comment
 from ..utils.types import (
     StudioPayload
@@ -141,6 +143,13 @@ class Studio(base._BaseSiteAPI[int]):
         if trash: data["visibility"] = "delbyusr"
         response = await self.client.put(f"https://scratch.mit.edu/site-api/galleries/all/{self.id}",json=data)
         self._update_from_data(response.json())
+
+    async def set_thumbnail(self,thumbnail:file.File|bytes):
+        async with file._read_file(thumbnail) as f:
+            await self.client.post(
+                f"https://scratch.mit.edu/site-api/galleries/all/{self.id}/",
+                data=aiohttp.FormData({"file":f})
+            )
 
     async def open_project(self):
         self.require_owner()

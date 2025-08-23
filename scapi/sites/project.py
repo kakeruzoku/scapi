@@ -156,14 +156,13 @@ class Project(base._BaseSiteAPI[int]):
         elif isinstance(project_data,str):
             is_json = True
 
-        _data = file._file(project_data)
-
-        content_type = "application/json" if is_json else "application/zip"
-        headers = self.client.scratch_headers | {"Content-Type": content_type}
-        await self.client.put(
-            f"https://projects.scratch.mit.edu/{self.id}",
-            data=_data.fp,headers=headers
-        )
+        async with file._file(project_data) as f:
+            content_type = "application/json" if is_json else "application/zip"
+            headers = self.client.scratch_headers | {"Content-Type": content_type}
+            await self.client.put(
+                f"https://projects.scratch.mit.edu/{self.id}",
+                data=f.fp,headers=headers
+            )
 
     async def edit(
             self,*,
@@ -185,6 +184,13 @@ class Project(base._BaseSiteAPI[int]):
             json=data
         )
         self._update_from_data(r.json())
+
+    async def set_thumbnail(self,thumbnail:file.File|bytes):
+        async with file._file(thumbnail) as f:
+            await self.client.post(
+                f"https://scratch.mit.edu/internalapi/project/thumbnail/{self.id}/set/",
+                data=f.fp
+            )
 
     async def share(self):
         self.require_author()

@@ -225,14 +225,13 @@ class Session(base._BaseSiteAPI[str]):
         elif isinstance(project_data,str):
             is_json = True
 
-        _data = file._file(project_data)
-
-        content_type = "application/json" if is_json else "application/zip"
-        headers = self.client.scratch_headers | {"Content-Type": content_type}
-        response = await self.client.post(
-            f"https://projects.scratch.mit.edu/",
-            data=_data.fp,headers=headers,params=param
-        )
+        async with file._file(project_data) as f:
+            content_type = "application/json" if is_json else "application/zip"
+            headers = self.client.scratch_headers | {"Content-Type": content_type}
+            response = await self.client.post(
+                f"https://projects.scratch.mit.edu/",
+                data=f.fp,headers=headers,params=param
+            )
 
         data:ProjectServerPayload = response.json()
         project_id = data.get("content-name")
