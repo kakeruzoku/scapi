@@ -5,7 +5,8 @@ import aiohttp
 from ..utils import client, common, error, file
 from . import base,project,user,session,comment
 from ..utils.types import (
-    StudioPayload
+    StudioPayload,
+    StudioRolePayload
 )
 
 class Studio(base._BaseSiteAPI[int]):
@@ -125,6 +126,64 @@ class Studio(base._BaseSiteAPI[int]):
             f"https://scratch.mit.edu/site-api/users/bookmarkers/{self.id}/remove/",
             params={"usernames":self._session.username}
         )
+
+    async def add_project(self,project_id:"project.Project|int"):
+        self.require_session()
+        project_id = project_id.id if isinstance(project_id,project.Project) else project_id
+        await self.client.post(f"https://api.scratch.mit.edu/studios/{self.id}/project/{project_id}")
+
+    async def remove_project(self,project_id:"project.Project|int"):
+        self.require_session()
+        project_id = project_id.id if isinstance(project_id,project.Project) else project_id
+        await self.client.delete(f"https://api.scratch.mit.edu/studios/{self.id}/project/{project_id}")
+
+    async def invite(self,username:"user.User|str"):
+        self.require_session()
+        username = username.username if isinstance(username,user.User) else username
+        response = await self.client.put(
+            f"https://scratch.mit.edu/site-api/users/curators-in/{self.id}/invite_curator/",
+            params={"usernames":username}
+        )
+        data = response.json()
+        if data.get("status") != "success":
+            raise error.ClientError(response,data.get("message"))
+        
+    async def accept_invite(self):
+        await self.client.put(
+            f"https://scratch.mit.edu/site-api/users/curators-in/{self.id}/add/",
+            params={"usernames":self._session.username}
+        )
+
+    async def promote(self,username:"user.User|str"):
+        self.require_session()
+        username = username.username if isinstance(username,user.User) else username
+        await self.client.put(
+            f"https://scratch.mit.edu/site-api/users/curators-in/{self.id}/promote/",
+            params={"usernames":username}
+        )
+    
+    async def remove_curator(self,username:"user.User|str"):
+        self.require_session()
+        username = username.username if isinstance(username,user.User) else username
+        await self.client.put(
+            f"https://scratch.mit.edu/site-api/users/curators-in/{self.id}/remove/",
+            params={"usernames":username}
+        )
+
+    async def leave(self):
+        await self.remove_curator(self._session.username)
+
+    async def transfer_ownership(self,username:"str|user.User",password:str):
+        self.require_session()
+        username = username.username if isinstance(username,user.User) else username
+        await self.client.put(
+            f"https://api.scratch.mit.edu/studios/{self.id}/transfer/{username}",
+            json={"password":password}
+        )
+
+    async def get_my_role(self) -> "StudioStatus":
+        response = await self.client.get(f"https://api.scratch.mit.edu/studios/{self.id}/users/{self._session.username}")
+        return StudioStatus(response.json(),self)
     
 
     async def edit(
@@ -160,7 +219,14 @@ class Studio(base._BaseSiteAPI[int]):
     async def toggle_comment(self):
         self.require_session()
         await self.client.post(f"https://scratch.mit.edu/site-api/comments/gallery/{self.id}/toggle-comments/")
-        
+
+class StudioStatus:
+    def __init__(self,data:StudioRolePayload,studio:Studio):
+        self.studio = studio
+        self.manager = data.get("manager")
+        self.curator = data.get("curator")
+        self.invited = data.get("invited")
+        self.following = data.get("following")
 
 def get_studio(studio_id:int,*,_client:client.HTTPClient|None=None) -> common._AwaitableContextManager[Studio]:
     return common._AwaitableContextManager(Studio._create_from_api(studio_id,_client))

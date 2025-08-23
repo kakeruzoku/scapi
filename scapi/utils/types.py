@@ -198,6 +198,12 @@ class StudioPayload(TypedDict,total=False):
     history:StudioHistoryPayload
     stats:StudioStatsPayload
 
+class StudioRolePayload(TypedDict):
+    manager:bool
+    curator:bool
+    invited:bool
+    following:bool
+
 class CommentPayload(TypedDict,total=False):
     id:Required[int]
     parent_id:int|None

@@ -152,7 +152,7 @@ class Session(base._BaseSiteAPI[str]):
             data:SessionStatusPayload = response.json()
             self._update_from_data(data)
         except Exception:
-            raise error.InvalidData(response)
+            raise error.ClientError(response)
         self.client.scratch_headers["X-token"] = self.xtoken
     
     def _update_from_data(self, data:SessionStatusPayload):

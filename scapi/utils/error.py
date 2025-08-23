@@ -1,4 +1,5 @@
 import time
+from typing import Any
 from .types import (
     NoElementsPayload,
     LoginFailurePayload,
@@ -21,9 +22,10 @@ class ProcessingError(HTTPError):
         self.exception = exception
 
 class ResponseError(HTTPError):
-    def __init__(self,response:"client.Response"):
+    def __init__(self,response:"client.Response",message:Any=None):
         self.response = response
         self.status_code = response.status_code
+        self.message = message
 
 class ClientError(ResponseError):
     pass

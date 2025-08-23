@@ -144,7 +144,7 @@ class User(base._BaseSiteAPI[str]):
         response = await self.client.put(f"https://scratch.mit.edu/site-api/users/all/{self.username}/",json=_data)
         data = response.json()
         if data.get("errors"):
-            raise error.ClientError(response)
+            raise error.ClientError(response,data.get("errors"))
         return project.ProjectFeatured(data,self)
 
     async def toggle_comment(self):
