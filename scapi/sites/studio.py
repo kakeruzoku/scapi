@@ -113,16 +113,18 @@ class Studio(base._BaseSiteAPI[int]):
     ) -> "comment.Comment":
         self.require_session()
         return await comment.Comment.post_comment(self,content,parent,commentee,is_old)
-    
-    async def follow(self) -> "None | project.ProjectFeatured":
-        self.require_session()
-        response = await self.client.put(f"https://scratch.mit.edu/site-api/users/bookmarkers/{self.id}/add/?usernames={self._session.username}")
-        return project.ProjectFeatured(response.json(),self._session.user)
 
-    async def unfollow(self) -> "None | project.ProjectFeatured":
-        self.require_session()
-        response = await self.client.put(f"https://scratch.mit.edu/site-api/users/bookmarkers/{self.id}/remove/?usernames={self._session.username}")
-        return project.ProjectFeatured(response.json(),self._session.user)
+    async def follow(self):
+        await self.client.put(
+            f"https://scratch.mit.edu/site-api/users/bookmarkers/{self.id}/add/",
+            params={"usernames":self._session.username}
+        )
+
+    async def unfollow(self):
+        await self.client.put(
+            f"https://scratch.mit.edu/site-api/users/bookmarkers/{self.id}/remove/",
+            params={"usernames":self._session.username}
+        )
     
 
     async def edit(
@@ -131,6 +133,7 @@ class Studio(base._BaseSiteAPI[int]):
             description:str|None=None,
             trash:bool|None=None
         ) -> None:
+        self.require_session()
         data = {}
         if description is not None: data["description"] = description + "\n"
         if title is not None: data["title"] = title
@@ -140,18 +143,22 @@ class Studio(base._BaseSiteAPI[int]):
 
     async def set_thumbnail(self,thumbnail:file.File|bytes):
         async with file._read_file(thumbnail) as f:
+            self.require_session()
             await self.client.post(
                 f"https://scratch.mit.edu/site-api/galleries/all/{self.id}/",
                 data=aiohttp.FormData({"file":f})
             )
 
     async def open_project(self):
+        self.require_session()
         await self.client.put(f"https://scratch.mit.edu/site-api/galleries/{self.id}/mark/open/")
 
     async def close_project(self):
+        self.require_session()
         await self.client.put(f"https://scratch.mit.edu/site-api/galleries/{self.id}/mark/closed/")
 
     async def toggle_comment(self):
+        self.require_session()
         await self.client.post(f"https://scratch.mit.edu/site-api/comments/gallery/{self.id}/toggle-comments/")
         
 

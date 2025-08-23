@@ -2,7 +2,9 @@ import datetime
 from enum import Enum
 import random
 from typing import TYPE_CHECKING, AsyncGenerator, Final
-from ..utils import client, common, error
+
+import aiohttp
+from ..utils import client, common, error, file
 from . import base,session,project,studio,comment
 from ..utils.types import (
     UserPayload,
@@ -113,6 +115,18 @@ class User(base._BaseSiteAPI[str]):
         self.require_session()
         return await comment.Comment.post_comment(self,content,parent,commentee,is_old)
     
+    async def follow(self):
+        await self.client.put(
+            f"https://scratch.mit.edu/site-api/users/followers/{self.username}/add/",
+            params={"usernames":self._session.username}
+        )
+
+    async def unfollow(self):
+        await self.client.put(
+            f"https://scratch.mit.edu/site-api/users/followers/{self.username}/remove/",
+            params={"usernames":self._session.username}
+        )
+
 
     async def edit(
             self,*,
@@ -133,9 +147,17 @@ class User(base._BaseSiteAPI[str]):
             raise error.ClientError(response)
         return project.ProjectFeatured(data,self)
 
-
     async def toggle_comment(self):
         await self.client.post(f"https://scratch.mit.edu/site-api/comments/user/{self.username}/toggle-comments/")
+
+    async def set_icon(self,icon:file.File|bytes):
+        async with file._read_file(icon) as f:
+            self.require_session()
+            await self.client.post(
+                f"https://scratch.mit.edu/site-api/users/all/{self.id}/",
+                data=aiohttp.FormData({"file":f})
+            )
+
 
 class ProjectFeaturedLabel(Enum):
     ProjectFeatured=""

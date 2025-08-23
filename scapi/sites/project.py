@@ -266,6 +266,7 @@ class Project(base._BaseSiteAPI[int]):
             is_json = True
 
         async with file._file(project_data) as f:
+            self.require_session()
             content_type = "application/json" if is_json else "application/zip"
             headers = self.client.scratch_headers | {"Content-Type": content_type}
             await self.client.put(
@@ -289,7 +290,7 @@ class Project(base._BaseSiteAPI[int]):
             instructions (str | None, optional): プロジェクトの「使い方」欄
             description (str | None, optional): プロジェクトの「メモとクレジット」欄
         """
-
+        self.require_session()
         data = {}
         if comment_allowed is not None: data["comment_allowed"] = comment_allowed
         if title is not None: data["title"] = title
@@ -309,6 +310,7 @@ class Project(base._BaseSiteAPI[int]):
         Args:
             thumbnail (File | bytes): サムネイルデータ
         """
+        self.require_session()
         async with file._file(thumbnail) as f:
             await self.client.post(
                 f"https://scratch.mit.edu/internalapi/project/thumbnail/{self.id}/set/",
@@ -319,6 +321,7 @@ class Project(base._BaseSiteAPI[int]):
         """
         プロジェクトを共有する
         """
+        self.require_session()
         await self.client.put(f"https://api.scratch.mit.edu/proxy/projects/{self.id}/share")
         self.public = True
 
@@ -326,6 +329,7 @@ class Project(base._BaseSiteAPI[int]):
         """
         プロジェクトを非共有にする
         """
+        self.require_session()
         await self.client.put(f"https://api.scratch.mit.edu/proxy/projects/{self.id}/unshare")
         self.public = False
 
@@ -336,6 +340,7 @@ class Project(base._BaseSiteAPI[int]):
         Returns:
             ProjectVisibility: プロジェクトの共有ステータス
         """
+        self.require_session()
         response = await self.client.get(f"https://api.scratch.mit.edu/users/{self._session.username}/projects/{self.id}/visibility")
         return ProjectVisibility(response.json(),self)
 
