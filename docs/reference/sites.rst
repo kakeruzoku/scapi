@@ -7,16 +7,16 @@
 ベースクラス
 -------------------------
 
-.. autoclass:: scapi.sites.base._BaseSiteAPI
+.. autoclass:: scapi._BaseSiteAPI
 
 
 アカウント
 -------------------------
 
-.. autofunction:: scapi.sites.session.login
+.. autofunction:: scapi.login
 
-.. autofunction:: scapi.sites.session.session_login
+.. autofunction:: scapi.session_login
 
-.. autoclass:: scapi.sites.session.Session
+.. autoclass:: scapi.Session
 
-.. autoclass:: scapi.sites.session.SessionStatus
+.. autoclass:: scapi.SessionStatus

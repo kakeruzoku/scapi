@@ -7,13 +7,13 @@
 定数
 -------------------------
 
-.. autodata:: scapi.utils.common.UNKNOWN
+.. autodata:: scapi.UNKNOWN
 
-.. autodata:: scapi.utils.common.UNKNOWN_TYPE
+.. autodata:: scapi.UNKNOWN_TYPE
 
 ユーティリティクラス
 -------------------------
 
 .. autoclass:: scapi.utils.common._AwaitableContextManager
 
-.. autoclass:: scapi.utils.file.File
+.. autoclass:: scapi.File

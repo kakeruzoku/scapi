@@ -23,6 +23,7 @@ extensions = [
     'sphinx.ext.viewcode',
     'sphinx.ext.todo',
     'sphinx_rtd_theme',
+    'sphinx.ext.intersphinx'
 ]
 
 templates_path = ['_templates']
@@ -31,6 +32,10 @@ exclude_patterns = ['_build', 'Thumbs.db', '.DS_Store']
 language = 'ja'
 
 autodoc_member_order = 'bysource'
+
+intersphinx_mapping = {
+    'python': ('https://docs.python.org/3/', None),
+}
 
 # -- Options for HTML output -------------------------------------------------
 

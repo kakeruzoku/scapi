@@ -108,8 +108,11 @@ class UserFeaturedPayload(TypedDict):
     featured_project:int|None
     thumbnail_url:str
     user:UserFeaturedUserPayload
-    featured_project_label_id:None
+    featured_project_label_id:int|None
     id:int
+
+class UserMessageCountPayload(TypedDict):
+    count:int
 
 class ProjectHistoryPayload(TypedDict):
     created:str
