@@ -7,7 +7,7 @@ from functools import wraps
 
 from . import error,client,config
 
-__version__ = "3.0.0a"
+__version__ = "3.0.0.dev1"
 
 _KT = TypeVar("_KT")
 _VT = TypeVar("_VT")

@@ -20,6 +20,7 @@ from .sites.user import (
 
 from .sites.studio import (
     Studio,
+    StudioStatus,
     get_studio
 )
 

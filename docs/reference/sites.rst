@@ -33,3 +33,30 @@
 .. autoclass:: scapi.ProjectFeatured
 
 .. autoclass:: scapi.ProjectVisibility
+
+スタジオ
+-------------------------
+
+.. autofunction:: scapi.get_studio
+
+.. autofunction:: scapi.Session.get_studio
+    :no-index:
+
+.. autoclass:: scapi.Studio
+
+.. autoclass:: scapi.StudioStatus
+
+ユーザー
+-------------------------
+
+.. autofunction:: scapi.get_user
+
+.. autofunction:: scapi.Session.get_user
+    :no-index:
+
+.. autoclass:: scapi.User
+
+コメント
+-------------------------
+
+.. autoclass:: scapi.Comment

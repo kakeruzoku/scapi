@@ -10,6 +10,22 @@ from ..utils.types import (
 )
 
 class Studio(base._BaseSiteAPI[int]):
+    """
+    スタジオを表す
+
+    Attributes:
+        id (int): スタジオのID
+        title (common.MAYBE_UNKNOWN[str]): スタジオの名前
+        host_id (common.MAYBE_UNKNOWN[int]): スタジオの所有者のユーザーID
+        description (common.MAYBE_UNKNOWN[str]): スタジオの説明欄
+        open_to_all (common.MAYBE_UNKNOWN[bool]): 誰でもプロジェクトを追加できるか
+        comments_allowed (common.MAYBE_UNKNOWN[bool]): コメント欄が開いているか
+
+        comment_count (common.MAYBE_UNKNOWN[int]): コメントの数(<=100)
+        follower_count (common.MAYBE_UNKNOWN[int]): フォロワーの数
+        manager_count (common.MAYBE_UNKNOWN[int]): マネージャーの数
+        project_count (common.MAYBE_UNKNOWN[int]): プロジェクトの数(<=100)
+    """
     def __repr__(self) -> str:
         return f"<Studio id:{self.id} session:{self.session}>"
 
