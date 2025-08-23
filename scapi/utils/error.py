@@ -126,9 +126,6 @@ class CheckingFailed(Exception):
 class NoSession(CheckingFailed):
     pass
 
-class NoPermission(CheckingFailed):
-    pass
-
 class NoDataError(CheckingFailed):
     pass
 

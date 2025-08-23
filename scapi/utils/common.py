@@ -31,7 +31,7 @@ UNKNOWN = _Special.UNKNOWN
 UNKNOWN.__doc__ = "「不明」を表す定数。"
 UNKNOWN_TYPE = Literal[_Special.UNKNOWN]
 UNKNOWN_TYPE.__doc__ = "UNKNOWNを表す型ヒント"
-MAYBE_UNKNOWN = _T|Literal[_Special.UNKNOWN]
+MAYBE_UNKNOWN = _T|UNKNOWN_TYPE
 
 del _Special
 
@@ -159,6 +159,9 @@ _P = ParamSpec('_P')
 def _bypass_checking(func:Callable[[_T], Any]) -> Callable[[_T], None]:
     @wraps(func)
     def decorated(self:_T):
+        """
+        このチェックはデバックモードにすることで回避できます。
+        """
         if config.bypass_checking:
             return
         else:

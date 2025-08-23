@@ -46,14 +46,6 @@ class User(base._BaseSiteAPI[str]):
                 status=_profile.get("status"),
                 bio=_profile.get("bio")
             )
-
-    @common._bypass_checking
-    async def require_myself(self):
-        _session = self._session
-        if _session.status and _session.status.educator:
-            return
-        if self.username.lower() != _session.username.lower():
-            raise error.NoPermission(self)
     
     @property
     def joined_at(self) -> datetime.datetime|common.UNKNOWN_TYPE:
@@ -129,7 +121,6 @@ class User(base._BaseSiteAPI[str]):
             featured_project_id:int|None=None,
             featured_project_label:"ProjectFeaturedLabel|None"=None
         ) -> "None | project.ProjectFeatured":
-        self.require_myself()
         _data = {}
         if bio is not None: _data["bio"] = bio
         if status is not None: _data["status"] = status
@@ -144,7 +135,6 @@ class User(base._BaseSiteAPI[str]):
 
 
     async def toggle_comment(self):
-        self.require_myself()
         await self.client.post(f"https://scratch.mit.edu/site-api/comments/user/{self.username}/toggle-comments/")
 
 class ProjectFeaturedLabel(Enum):

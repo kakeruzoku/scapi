@@ -58,11 +58,6 @@ class Studio(base._BaseSiteAPI[int]):
                 manager_count=_stats.get("managers"),
                 project_count=_stats.get("projects")
             )
-
-    @common._bypass_checking
-    def require_owner(self):
-        if self.host_id != self._session.user_id:
-            raise error.NoPermission(self)
     
     @property
     def created_at(self) -> datetime.datetime|common.UNKNOWN_TYPE:
@@ -136,7 +131,6 @@ class Studio(base._BaseSiteAPI[int]):
             description:str|None=None,
             trash:bool|None=None
         ) -> None:
-        self.require_owner()
         data = {}
         if description is not None: data["description"] = description + "\n"
         if title is not None: data["title"] = title
@@ -152,15 +146,12 @@ class Studio(base._BaseSiteAPI[int]):
             )
 
     async def open_project(self):
-        self.require_owner()
         await self.client.put(f"https://scratch.mit.edu/site-api/galleries/{self.id}/mark/open/")
 
     async def close_project(self):
-        self.require_owner()
         await self.client.put(f"https://scratch.mit.edu/site-api/galleries/{self.id}/mark/closed/")
 
     async def toggle_comment(self):
-        self.require_owner()
         await self.client.post(f"https://scratch.mit.edu/site-api/comments/gallery/{self.id}/toggle-comments/")
         
 

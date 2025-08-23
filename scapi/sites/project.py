@@ -12,6 +12,26 @@ from ..utils.types import (
 from . import user,studio,session,base,comment
 
 class Project(base._BaseSiteAPI[int]):
+    """
+    プロジェクトを表す
+
+    Attributes:
+        id (int): プロジェクトのID
+        title (common.MAYBE_UNKNOWN[str]): プロジェクトのタイトル
+        author (common.MAYBE_UNKNOWN[user.User]): プロジェクトの作者
+        instructions (common.MAYBE_UNKNOWN[str]): プロジェクトの使い方欄
+        description (common.MAYBE_UNKNOWN[str]): プロジェクトのメモとクレジット欄
+        public (common.MAYBE_UNKNOWN[bool]): プロジェクトが公開されているか
+        comments_allowed (common.MAYBE_UNKNOWN[bool]): コメント欄が開いているか
+
+        view_count (common.MAYBE_UNKNOWN[int]): プロジェクトの閲覧数
+        love_count (common.MAYBE_UNKNOWN[int]): プロジェクトの「好き」の数
+        favorite_count (common.MAYBE_UNKNOWN[int]): プロジェクトの「お気に入り」の数
+        remix_count (common.MAYBE_UNKNOWN[int]): プロジェクトの「リミックス」の数
+
+        remix_parent_id (common.MAYBE_UNKNOWN[int|None]): プロジェクトの親プロジェクトID
+        remix_root_id (common.MAYBE_UNKNOWN[int|None]): プロジェクトの元プロジェクトID
+    """
     def __repr__(self) -> str:
         return f"<Project id:{self.id} author:{self.author} session:{self.session}>"
 
@@ -88,11 +108,6 @@ class Project(base._BaseSiteAPI[int]):
             raise error.NoDataError(self)
         return self.author.username
     
-    @common._bypass_checking
-    def require_author(self):
-        if self._author_username.lower() != self._session.username.lower():
-            raise error.NoPermission(self)
-    
     @property
     def created_at(self) -> datetime.datetime|common.UNKNOWN_TYPE:
         return common.dt_from_isoformat(self._created_at)
@@ -147,7 +162,6 @@ class Project(base._BaseSiteAPI[int]):
     async def edit_project(
             self,project_data:file.File|dict|str|bytes,is_json:bool|None=None
         ):
-        self.require_author()
 
         if isinstance(project_data,dict):
             project_data = json.dumps(project_data)
@@ -171,7 +185,6 @@ class Project(base._BaseSiteAPI[int]):
             instructions:str|None=None,
             description:str|None=None,
         ):
-        self.require_author()
 
         data = {}
         if comment_allowed is not None: data["comment_allowed"] = comment_allowed
@@ -193,17 +206,14 @@ class Project(base._BaseSiteAPI[int]):
             )
 
     async def share(self):
-        self.require_author()
         await self.client.put(f"https://api.scratch.mit.edu/proxy/projects/{self.id}/share")
         self.public = True
 
     async def unshare(self):
-        self.require_author()
         await self.client.put(f"https://api.scratch.mit.edu/proxy/projects/{self.id}/unshare")
         self.public = False
 
     async def get_visibility(self) -> "ProjectVisibility":
-        self.require_author()
         response = await self.client.get(f"https://api.scratch.mit.edu/users/{self._session.username}/projects/{self.id}/visibility")
         return ProjectVisibility(response.json(),self)
 
