@@ -22,6 +22,7 @@ def decode_session(session_id:str) -> tuple[DecodedSessionID,int]:
 class SessionStatus:
     """
     アカウントのステータスを表す。
+    
     Attributes:
         session (Session): ステータスを表しているアカウントのセッション
         banned (bool): アカウントがブロックされているか

@@ -7,11 +7,14 @@ from .sites.session import (
 
 from .sites.project import (
     Project,
+    ProjectFeatured,
+    ProjectVisibility,
     get_project
 )
 
 from .sites.user import (
     User,
+    ProjectFeaturedLabel,
     get_user
 )
 

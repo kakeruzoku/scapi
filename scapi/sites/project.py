@@ -304,7 +304,7 @@ class ProjectFeatured:
         self.author.id = data.get("id")
         self.author.profile_id = _user_payload.get("pk")
 
-        self.label = data.get("featured_project_label_name")
+        self.label = user.ProjectFeaturedLabel.get_from_id(data.get("featured_project_label_id"))
 
 
 def get_project(project_id:int,*,_client:client.HTTPClient|None=None) -> common._AwaitableContextManager[Project]:
