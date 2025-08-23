@@ -22,7 +22,7 @@ def decode_session(session_id:str) -> tuple[DecodedSessionID,int]:
 class SessionStatus:
     """
     アカウントのステータスを表す。
-    
+
     Attributes:
         session (Session): ステータスを表しているアカウントのセッション
         banned (bool): アカウントがブロックされているか
@@ -112,11 +112,11 @@ class Session(base._BaseSiteAPI[str]):
 
     Attributes:
         session_id (str): アカウントのセッションID
-        status (common.MAYBE_UNKNOWN[SessionStatus]): アカウントのステータス
+        status (MAYBE_UNKNOWN[SessionStatus]): アカウントのステータス
         xtoken (str): アカウントのXtoken
         username (str): ユーザー名
         login_ip (str): ログイン時のIPアドレス
-        user (user.User): ログインしているユーザー
+        user (User): ログインしているユーザー
     """
     def __repr__(self) -> str:
         return f"<Session username:{self.username}>"
@@ -198,15 +198,12 @@ class Session(base._BaseSiteAPI[str]):
 
         Args:
             title (str | None, optional): プロジェクトのタイトル
-            project_data (file.File | dict | str | bytes | None, optional): プロジェクトのデータ
+            project_data (File | dict | str | bytes | None, optional): プロジェクトのデータ本体。
             remix_id (int | None, optional): リミックスする場合、リミックス元のプロジェクトID
-            is_json (bool | None, optional): プロジェクトのデータがjsonか
-
-        Raises:
-            error.InvalidData: 作成されたプロジェクトのIDが読み取れませんでした
+            is_json (bool | None, optional): プロジェクトのデータの形式。zip形式を使用したい場合はFalseを指定してください。Noneにすると簡易的に判定されます。
 
         Returns:
-            project.Project: 作成されたプロジェクト
+            Project: 作成されたプロジェクト
         """
         param = {}
         if remix_id:
@@ -255,7 +252,7 @@ class Session(base._BaseSiteAPI[str]):
             project_id (int): 取得したいプロジェクトのID
 
         Returns:
-            project.Project: 取得したプロジェクト
+            Project: 取得したプロジェクト
         """
         return await project.Project._create_from_api(project_id,self.session)
     
@@ -267,7 +264,7 @@ class Session(base._BaseSiteAPI[str]):
             studio_id (int): 取得したいスタジオのID
 
         Returns:
-            studio.Studio: 取得したスタジオ
+            Studio: 取得したスタジオ
         """
         return await studio.Studio._create_from_api(studio_id,self.session)
     
@@ -279,7 +276,7 @@ class Session(base._BaseSiteAPI[str]):
             username (str): 取得したいユーザーの名前
 
         Returns:
-            user.User: 取得したユーザー
+            User: 取得したユーザー
         """
         return await user.User._create_from_api(username,self.session)
     
