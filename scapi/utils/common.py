@@ -1,7 +1,7 @@
 from enum import Enum
 import string
 import datetime
-from typing import Any, AsyncGenerator, Callable, Coroutine, Final, Generic, Literal, ParamSpec, TypeVar, overload,AsyncContextManager
+from typing import Any, AsyncGenerator, Callable, Coroutine, Generic, Literal, ParamSpec, TypeVar, overload,AsyncContextManager
 import inspect
 from functools import wraps
 
@@ -168,20 +168,26 @@ def _bypass_checking(func:Callable[[_T], Any]) -> Callable[[_T], None]:
             func(self)
     return decorated
 
-class _AwaitableContextManager(Generic[_T]):
+_AT = TypeVar("_AT", bound="_SelfContextManager")
+
+class _SelfContextManager(AsyncContextManager[_AT]):
+    async def __aenter__(self) -> _AT: ...
+    async def __aexit__(self, exc_type, exc, tb) -> bool|None: ...
+
+class _AwaitableContextManager(Generic[_AT]):
     """
     Coroutineからasync withとawaitどちらにも対応できるようにするクラス。
 
     obj = await coro または async with coroutine() as obj: のようにすると obj に _T が入ります。
     """
-    def __init__(self, coro:Coroutine[Any, Any, AsyncContextManager[_T]]):
+    def __init__(self, coro:Coroutine[Any,Any,_AT]):
         self._coro = coro
         self._cm = None
 
     def __await__(self):
         return self._coro.__await__()
 
-    async def __aenter__(self) -> _T:
+    async def __aenter__(self) -> _AT:
         self._cm = await self._coro
         return await self._cm.__aenter__()
 
