@@ -46,7 +46,8 @@ class User(base._BaseSiteAPI[str]):
             self._update_to_attributes(
                 profile_id=_profile.get("id"),
                 status=_profile.get("status"),
-                bio=_profile.get("bio")
+                bio=_profile.get("bio"),
+                country=_profile.get("country")
             )
     
     @property

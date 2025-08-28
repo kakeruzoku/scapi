@@ -1,7 +1,7 @@
 from enum import Enum
 import string
 import datetime
-from typing import Any, AsyncGenerator, Callable, Coroutine, Generic, Literal, ParamSpec, TypeVar, overload,AsyncContextManager
+from typing import Any, AsyncGenerator, Callable, Coroutine, Generic, Literal, ParamSpec, Protocol, Self, TypeVar, overload,AsyncContextManager
 import inspect
 from functools import wraps
 
@@ -168,11 +168,11 @@ def _bypass_checking(func:Callable[[_T], Any]) -> Callable[[_T], None]:
             func(self)
     return decorated
 
-_AT = TypeVar("_AT", bound="_SelfContextManager")
-
-class _SelfContextManager(AsyncContextManager[_AT]):
-    async def __aenter__(self) -> _AT: ...
+class _SelfContextManager(AsyncContextManager,Protocol):
+    async def __aenter__(self) -> Self: ...
     async def __aexit__(self, exc_type, exc, tb) -> bool|None: ...
+
+_AT = TypeVar("_AT", bound="_SelfContextManager")
 
 class _AwaitableContextManager(Generic[_AT]):
     """

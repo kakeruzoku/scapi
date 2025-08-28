@@ -1,4 +1,4 @@
-from typing import TYPE_CHECKING, Coroutine, Literal,Any,TypeVar, Generic
+from typing import TYPE_CHECKING, Coroutine, Literal,Any, Self,TypeVar, Generic
 from abc import ABC,abstractmethod
 from ..utils import client,error,common
 from . import session
@@ -117,7 +117,7 @@ class _BaseSiteAPI(ABC,Generic[_T]):
         return _cls
 
     
-    async def __aenter__(self):
+    async def __aenter__(self) -> Self:
         return self
 
     async def __aexit__(self, exc_type, exc, tb):
