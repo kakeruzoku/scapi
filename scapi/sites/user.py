@@ -59,35 +59,35 @@ class User(base._BaseSiteAPI[str]):
         response = await self.client.get(f"https://scratch.mit.edu/site-api/users/all/{self.username}/")
         return project.ProjectFeatured(response.json(),self)
     
-    async def get_follower(self,limit:int|None=None,offset:int|None=None) -> AsyncGenerator["User", None]:
+    async def get_followers(self,limit:int|None=None,offset:int|None=None) -> AsyncGenerator["User", None]:
         async for _u in common.api_iterative(
             self.client,f"https://api.scratch.mit.edu/users/{self.username}/followers/",
             limit=limit,offset=offset
         ):
             yield User._create_from_data(_u["username"],_u,self.client_or_session)
 
-    async def get_following(self,limit:int|None=None,offset:int|None=None) -> AsyncGenerator["User", None]:
+    async def get_followings(self,limit:int|None=None,offset:int|None=None) -> AsyncGenerator["User", None]:
         async for _u in common.api_iterative(
             self.client,f"https://api.scratch.mit.edu/users/{self.username}/following/",
             limit=limit,offset=offset
         ):
             yield User._create_from_data(_u["username"],_u,self.client_or_session)
 
-    async def get_project(self,limit:int|None=None,offset:int|None=None) -> AsyncGenerator["project.Project", None]:
+    async def get_projects(self,limit:int|None=None,offset:int|None=None) -> AsyncGenerator["project.Project", None]:
         async for _p in common.api_iterative(
             self.client,f"https://api.scratch.mit.edu/users/{self.username}/projects/",
             limit=limit,offset=offset
         ):
             yield project.Project._create_from_data(_p["id"],_p,self.client_or_session)
 
-    async def get_favorite(self,limit:int|None=None,offset:int|None=None) -> AsyncGenerator["project.Project", None]:
+    async def get_favorites(self,limit:int|None=None,offset:int|None=None) -> AsyncGenerator["project.Project", None]:
         async for _p in common.api_iterative(
             self.client,f"https://api.scratch.mit.edu/users/{self.username}/favorites/",
             limit=limit,offset=offset
         ):
             yield project.Project._create_from_data(_p["id"],_p,self.client_or_session)
 
-    async def get_studio(self,limit:int|None=None,offset:int|None=None) -> AsyncGenerator["studio.Studio", None]:
+    async def get_studios(self,limit:int|None=None,offset:int|None=None) -> AsyncGenerator["studio.Studio", None]:
         async for _s in common.api_iterative(
             self.client,f"https://api.scratch.mit.edu/users/{self.username}/studios/curate",
             limit=limit,offset=offset
@@ -102,10 +102,10 @@ class User(base._BaseSiteAPI[str]):
         data:UserMessageCountPayload = response.json()
         return data.get("count")
 
-    def get_comment(self,start_page:int|None=None,end_page:int|None=None) -> AsyncGenerator["comment.Comment", None]:
+    def get_comments(self,start_page:int|None=None,end_page:int|None=None) -> AsyncGenerator["comment.Comment", None]:
         return comment.get_comment_from_old(self,start_page,end_page)
     
-    get_comment_from_old = get_comment
+    get_comments_from_old = get_comments
 
 
     async def post_comment(

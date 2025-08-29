@@ -32,6 +32,8 @@ class Project(base._BaseSiteAPI[int]):
 
         remix_parent_id (MAYBE_UNKNOWN[int|None]): プロジェクトの親プロジェクトID
         remix_root_id (MAYBE_UNKNOWN[int|None]): プロジェクトの元プロジェクトID
+
+        comment_count (MAYBE_UNKNOWN[int|None]): コメントの数。Session.get_mystuff_projects()からでのみ取得できます。
     """
     def __repr__(self) -> str:
         return f"<Project id:{self.id} author:{self.author} session:{self.session}>"
@@ -164,7 +166,7 @@ class Project(base._BaseSiteAPI[int]):
         """
         return common.dt_from_isoformat(self._shared_at)
     
-    async def get_remix(self,limit:int|None=None,offset:int|None=None) -> AsyncGenerator["Project", None]:
+    async def get_remixes(self,limit:int|None=None,offset:int|None=None) -> AsyncGenerator["Project", None]:
         """
         リミックスされたプロジェクトを取得する。
 
@@ -181,7 +183,7 @@ class Project(base._BaseSiteAPI[int]):
         ):
             yield Project._create_from_data(_p["id"],_p,self.client_or_session)
 
-    async def get_studio(self,limit:int|None=None,offset:int|None=None) -> AsyncGenerator["studio.Studio", None]:
+    async def get_studios(self,limit:int|None=None,offset:int|None=None) -> AsyncGenerator["studio.Studio", None]:
         """
         プロジェクトが追加されたスタジオを取得する。
 
@@ -226,7 +228,7 @@ class Project(base._BaseSiteAPI[int]):
             return await self._create_from_api(self.remix_root_id,self.client_or_session)
         return self.remix_root_id
         
-    async def get_comment(self,limit:int|None=None,offset:int|None=None) -> AsyncGenerator["comment.Comment", None]:
+    async def get_comments(self,limit:int|None=None,offset:int|None=None) -> AsyncGenerator["comment.Comment", None]:
         """
         プロジェクトに投稿されたコメントを取得する。
 
@@ -258,7 +260,7 @@ class Project(base._BaseSiteAPI[int]):
         """
         return await comment.Comment._create_from_api(comment_id,place=self)
     
-    def get_comment_from_old(self,start_page:int|None=None,end_page:int|None=None) -> AsyncGenerator["comment.Comment", None]:
+    def get_comments_from_old(self,start_page:int|None=None,end_page:int|None=None) -> AsyncGenerator["comment.Comment", None]:
         """
         プロジェクトに投稿されたコメントを古いAPIから取得する。
 

@@ -85,7 +85,7 @@ class Studio(base._BaseSiteAPI[int]):
         return common.dt_from_isoformat(self._modified_at)
     
     
-    async def get_project(self,limit:int|None=None,offset:int|None=None) -> AsyncGenerator["project.Project", None]:
+    async def get_projects(self,limit:int|None=None,offset:int|None=None) -> AsyncGenerator["project.Project", None]:
         async for _p in common.api_iterative(
             self.client,f"https://api.scratch.mit.edu/studios/{self.id}/projects",
             limit=limit,offset=offset
@@ -93,23 +93,23 @@ class Studio(base._BaseSiteAPI[int]):
             yield project.Project._create_from_data(_p["id"],_p,self.client_or_session)
 
     async def get_host(self) -> "user.User":
-        return await anext(self.get_manager(limit=1))
+        return await anext(self.get_managers(limit=1))
 
-    async def get_manager(self,limit:int|None=None,offset:int|None=None) -> AsyncGenerator["user.User", None]:
+    async def get_managers(self,limit:int|None=None,offset:int|None=None) -> AsyncGenerator["user.User", None]:
         async for _u in common.api_iterative(
             self.client,f"https://api.scratch.mit.edu/studios/{self.id}/managers",
             limit=limit,offset=offset
         ):
             yield user.User._create_from_data(_u["username"],_u,self.client_or_session)
 
-    async def get_curator(self,limit:int|None=None,offset:int|None=None) -> AsyncGenerator["user.User", None]:
+    async def get_curators(self,limit:int|None=None,offset:int|None=None) -> AsyncGenerator["user.User", None]:
         async for _u in common.api_iterative(
             self.client,f"https://api.scratch.mit.edu/studios/{self.id}/curators",
             limit=limit,offset=offset
         ):
             yield user.User._create_from_data(_u["username"],_u,self.client_or_session)
 
-    async def get_comment(self,limit:int|None=None,offset:int|None=None) -> AsyncGenerator["comment.Comment", None]:
+    async def get_comments(self,limit:int|None=None,offset:int|None=None) -> AsyncGenerator["comment.Comment", None]:
         async for _c in common.api_iterative(
             self.client,f"https://api.scratch.mit.edu/studios/{self.id}/comments",
             limit=limit,offset=offset
@@ -119,7 +119,7 @@ class Studio(base._BaseSiteAPI[int]):
     async def get_comment_by_id(self,comment_id:int) -> "comment.Comment":
         return await comment.Comment._create_from_api(comment_id,place=self)
     
-    def get_comment_from_old(self,start_page:int|None=None,end_page:int|None=None) -> AsyncGenerator["comment.Comment", None]:
+    def get_comments_from_old(self,start_page:int|None=None,end_page:int|None=None) -> AsyncGenerator["comment.Comment", None]:
         return comment.get_comment_from_old(self,start_page,end_page)
     
 

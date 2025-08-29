@@ -246,7 +246,7 @@ class Session(base._BaseSiteAPI[str]):
 
         return _project
     
-    async def get_mystuff_project(
+    async def get_mystuff_projects(
             self,
             start_page:int|None=None,
             end_page:int|None=None,
@@ -254,6 +254,19 @@ class Session(base._BaseSiteAPI[str]):
             sort:Literal["","view_count","love_count","remixers_count","title"]="",
             descending:bool=True
         ):
+        """
+        自分の所有しているプロジェクトを取得する。
+
+        Args:
+            start_page (int|None, optional): 取得するコメントの開始ページ位置。初期値は1です。
+            end_page (int|None, optional): 取得するコメントの終了ページ位置。初期値はstart_pageの値です。
+            type (Literal[&quot;all&quot;,&quot;shared&quot;,&quot;notshared&quot;,&quot;trashed&quot;], optional): 取得したいプロジェクトの種類。デフォルトは"all"です。
+            sort (Literal[&quot;&quot;,&quot;view_count&quot;,&quot;love_count&quot;,&quot;remixers_count&quot;,&quot;title&quot;], optional): ソートしたい順。デフォルトは "" (最終更新順)です。
+            descending (bool, optional): 降順にするか。デフォルトはTrueです。
+
+        Yields:
+            _type_: _description_
+        """
         add_params:dict[str,str|int|float] = {"descsort":sort} if descending else {"ascsort":sort}
         async for _p in common.page_api_iterative(
             self.client,f"https://scratch.mit.edu/site-api/projects/{type}/",

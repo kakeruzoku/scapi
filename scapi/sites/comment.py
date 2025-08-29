@@ -115,7 +115,7 @@ class Comment(base._BaseSiteAPI[int]):
         return common.dt_from_isoformat(self._modified_at)
     
 
-    async def get_reply(self,limit:int|None=None,offset:int|None=None,*,use_cache:bool=True) -> AsyncGenerator["Comment", None]:
+    async def get_replies(self,limit:int|None=None,offset:int|None=None,*,use_cache:bool=True) -> AsyncGenerator["Comment", None]:
         if use_cache and self._cached_reply is not None:
             if limit is None:
                 limit = 40
