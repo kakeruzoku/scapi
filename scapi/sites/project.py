@@ -7,7 +7,8 @@ from ..utils.types import (
     ProjectLovePayload,
     ProjectFavoritePayload,
     ProjectVisibilityPayload,
-    UserFeaturedPayload
+    UserFeaturedPayload,
+    OldProjectPayload
 )
 from . import user,studio,session,base,comment
 
@@ -57,6 +58,8 @@ class Project(base._BaseSiteAPI[int]):
 
         self.remix_parent_id:common.MAYBE_UNKNOWN[int|None] = common.UNKNOWN
         self.remix_root_id:common.MAYBE_UNKNOWN[int|None] = common.UNKNOWN
+
+        self.comment_count:common.MAYBE_UNKNOWN[int|None] = common.UNKNOWN
     
     async def update(self):
         response = await self.client.get(f"https://api.scratch.mit.edu/projects/{self.id}")
@@ -101,6 +104,29 @@ class Project(base._BaseSiteAPI[int]):
                 remix_parent_id=_remix.get("parent"),
                 remix_root_id=_remix.get("root")
             )
+
+    def _update_from_old_data(self, data:OldProjectPayload):
+        _author = data.get("creator")
+
+        if _author:
+            if self.author is common.UNKNOWN:
+                self.author = user.User(_author.get("username"),self.client_or_session)
+            self.author.id = _author.get("pk")
+            self.author.scratchteam = _author.get("admin")
+
+        self._update_to_attributes(
+            title=data.get("title"),
+            public=data.get("isPublished"),
+
+            _created_at=data.get("datetime_created"),
+            _modified_at=data.get("datetime_modified"),
+            _shared_at=data.get("datetime_shared"),
+
+            view_count=data.get("view_count"),
+            favorite_count=data.get("favorite_count"),
+            remix_count=data.get("remixers_count"),
+            love_count=data.get("love_count")
+        )
 
     @property
     def _author_username(self) -> str:

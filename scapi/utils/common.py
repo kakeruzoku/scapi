@@ -116,8 +116,10 @@ async def api_iterative(
         url:str,
         limit:int|None=None,
         offset:int|None=None,
-        max_limit:int=40
+        max_limit:int=40,
+        params:dict[str,str|int|float]|None=None
     ) -> AsyncGenerator[Any, None]:
+    params = params or {}
     limit = limit or max_limit
     offset = offset or 0
     for i in range(offset,offset+limit,max_limit):
@@ -126,7 +128,7 @@ async def api_iterative(
             params={
                 "limit":min(max_limit,limit-i),
                 "offset":i,
-            }
+            }|params
         )
         data = response.json()
         for i in data:
@@ -139,12 +141,14 @@ async def page_api_iterative(
         url:str,
         start_page:int|None=None,
         end_page:int|None=None,
+        params:dict[str,str|int|float]|None=None
     ) -> AsyncGenerator[Any, None]:
+    params = params or {}
     start_page = start_page or 1
     end_page = end_page or start_page
     for i in range(start_page,end_page+1):
         try:
-            response = await _client.get(url,params={"page":i})
+            response = await _client.get(url,params={"page":i}|params)
         except error.NotFound:
             return
         data = response.json()

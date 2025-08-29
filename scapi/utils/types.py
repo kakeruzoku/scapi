@@ -1,4 +1,4 @@
-from typing import Literal, TypedDict, Required, NotRequired
+from typing import Generic, Literal, TypeVar, TypedDict, Required, NotRequired
 
 class NoElementsPayload(TypedDict):
     pass
@@ -11,6 +11,13 @@ DecodedSessionID = TypedDict(
         "_auth_user_id":str
     }
 )
+
+_T = TypeVar("_T")
+
+class OldAnyObjectPayload(TypedDict,Generic[_T]):
+    fields:_T
+    model:str
+    pk:int
 
 class SessionStatusUserPayload(TypedDict):
     id:int
@@ -91,6 +98,12 @@ class UserPayload(TypedDict,total=False):
     history:UserHistoryPayload
     profile:UserProfilePayload
 
+class OldUserPayload(TypedDict):
+    username:str
+    pk:int
+    thumbnail_url:str
+    admin:bool
+
 class UserFeaturedProjectPayload(TypedDict):
     creator:str
     thumbnail_url:str
@@ -145,6 +158,23 @@ class ProjectPayload(TypedDict,total=False):
     stats:ProjectStatsPayload
     remix:ProjectRemixPayload
     project_token:str
+
+class OldProjectPayload(TypedDict):
+    view_count:int
+    favorite_count:int
+    remixers_count:int
+    creator:OldUserPayload
+    title:str
+    isPublished:bool
+    datetime_created:str
+    thumbnail_url:str
+    visibility:str
+    love_count:int
+    datetime_modified:str|None
+    uncached_thumbnail_url:str
+    thumbnail:str
+    datetime_shared:str|None
+    commenters_count:str
 
 ProjectServerPayload = TypedDict(
     "ProjectServerPayload",{

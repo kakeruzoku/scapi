@@ -1,4 +1,4 @@
-from typing import Any
+from typing import Any, Literal
 import zlib
 import base64
 import json
@@ -8,7 +8,9 @@ from . import base,project,user,studio
 from ..utils.types import (
     DecodedSessionID,
     SessionStatusPayload,
-    ProjectServerPayload
+    ProjectServerPayload,
+    OldAnyObjectPayload,
+    OldProjectPayload
 )
 
 def decode_session(session_id:str) -> tuple[DecodedSessionID,int]:
@@ -243,6 +245,22 @@ class Session(base._BaseSiteAPI[str]):
             _project.title = base64.b64decode(b64_title).decode()
 
         return _project
+    
+    async def get_mystuff_project(
+            self,
+            start_page:int|None=None,
+            end_page:int|None=None,
+            type:Literal["all","shared","notshared","trashed"]="all",
+            sort:Literal["","view_count","love_count","remixers_count","title"]="",
+            descending:bool=True
+        ):
+        add_params:dict[str,str|int|float] = {"descsort":sort} if descending else {"ascsort":sort}
+        async for _p in common.page_api_iterative(
+            self.client,f"https://scratch.mit.edu/site-api/projects/{type}/",
+            start_page,end_page,add_params
+        ):
+            _p:OldAnyObjectPayload[OldProjectPayload]
+            yield project.Project._create_from_data(_p["pk"],_p["fields"],self,"_update_from_old_data")
     
     async def get_project(self,project_id:int) -> "project.Project":
         """
