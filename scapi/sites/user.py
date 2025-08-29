@@ -8,7 +8,8 @@ from ..utils import client, common, error, file
 from . import base,session,project,studio,comment
 from ..utils.types import (
     UserPayload,
-    UserMessageCountPayload
+    UserMessageCountPayload,
+    OldUserPayload
 )
 
 class User(base._BaseSiteAPI[str]):
@@ -49,6 +50,12 @@ class User(base._BaseSiteAPI[str]):
                 bio=_profile.get("bio"),
                 country=_profile.get("country")
             )
+
+    def _update_from_old_data(self, data:OldUserPayload):
+        self._update_to_attributes(
+            id=data.get("pk"),
+            scratchteam=data.get("admin")
+        )
     
     @property
     def joined_at(self) -> datetime.datetime|common.UNKNOWN_TYPE:

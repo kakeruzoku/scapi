@@ -6,7 +6,8 @@ from ..utils import client, common, error, file
 from . import base,project,user,session,comment
 from ..utils.types import (
     StudioPayload,
-    StudioRolePayload
+    StudioRolePayload,
+    OldStudioPayload
 )
 
 class Studio(base._BaseSiteAPI[int]):
@@ -25,6 +26,8 @@ class Studio(base._BaseSiteAPI[int]):
         follower_count (common.MAYBE_UNKNOWN[int]): フォロワーの数
         manager_count (common.MAYBE_UNKNOWN[int]): マネージャーの数
         project_count (common.MAYBE_UNKNOWN[int]): プロジェクトの数(<=100)
+
+        _host (common.MAYBE_UNKNOWN[User]): 所有者の情報。Session.get_mystuff_studios()からでのみ取得できます。
     """
     def __repr__(self) -> str:
         return f"<Studio id:{self.id} session:{self.session}>"
@@ -45,6 +48,8 @@ class Studio(base._BaseSiteAPI[int]):
         self.follower_count:common.MAYBE_UNKNOWN[int] = common.UNKNOWN
         self.manager_count:common.MAYBE_UNKNOWN[int] = common.UNKNOWN
         self.project_count:common.MAYBE_UNKNOWN[int] = common.UNKNOWN
+
+        self._host:common.MAYBE_UNKNOWN["user.User"] = common.UNKNOWN
     
     async def update(self):
         response = await self.client.get(f"https://api.scratch.mit.edu/studios/{self.id}")
@@ -75,6 +80,25 @@ class Studio(base._BaseSiteAPI[int]):
                 manager_count=_stats.get("managers"),
                 project_count=_stats.get("projects")
             )
+
+    def _update_from_old_data(self, data:OldStudioPayload):
+        _author = data.get("owner")
+
+        if _author:
+            if self._host is common.UNKNOWN:
+                self._host = user.User(_author.get("username"),self.client_or_session)
+            self._host._update_from_old_data(_author)
+        
+        self._update_to_attributes(
+            title=data.get("title"),
+
+            _created_at=data.get("datetime_created"),
+            _modified_at=data.get("datetime_modified"),
+
+            comment_count=data.get("commenters_count"),
+            curator_count=data.get("curators_count"),
+            project_count=data.get("projecters_count"),
+        )
     
     @property
     def created_at(self) -> datetime.datetime|common.UNKNOWN_TYPE:

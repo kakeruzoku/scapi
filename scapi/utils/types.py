@@ -228,6 +228,16 @@ class StudioPayload(TypedDict,total=False):
     history:StudioHistoryPayload
     stats:StudioStatsPayload
 
+class OldStudioPayload(TypedDict):
+    commenters_count:int
+    curators_count:int
+    datetime_created:str
+    datetime_modified:str
+    owner:OldUserPayload
+    projecters_count:int
+    thumbnail_url:str
+    title:str
+
 class StudioRolePayload(TypedDict):
     manager:bool
     curator:bool

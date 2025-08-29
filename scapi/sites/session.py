@@ -1,4 +1,4 @@
-from typing import Any, Literal
+from typing import Any, AsyncGenerator, Literal
 import zlib
 import base64
 import json
@@ -10,7 +10,8 @@ from ..utils.types import (
     SessionStatusPayload,
     ProjectServerPayload,
     OldAnyObjectPayload,
-    OldProjectPayload
+    OldProjectPayload,
+    OldStudioPayload
 )
 
 def decode_session(session_id:str) -> tuple[DecodedSessionID,int]:
@@ -253,7 +254,7 @@ class Session(base._BaseSiteAPI[str]):
             type:Literal["all","shared","notshared","trashed"]="all",
             sort:Literal["","view_count","love_count","remixers_count","title"]="",
             descending:bool=True
-        ):
+        ) -> AsyncGenerator[project.Project]:
         """
         自分の所有しているプロジェクトを取得する。
 
@@ -265,7 +266,7 @@ class Session(base._BaseSiteAPI[str]):
             descending (bool, optional): 降順にするか。デフォルトはTrueです。
 
         Yields:
-            _type_: _description_
+            Project: 取得したプロジェクト
         """
         add_params:dict[str,str|int|float] = {"descsort":sort} if descending else {"ascsort":sort}
         async for _p in common.page_api_iterative(
@@ -274,6 +275,35 @@ class Session(base._BaseSiteAPI[str]):
         ):
             _p:OldAnyObjectPayload[OldProjectPayload]
             yield project.Project._create_from_data(_p["pk"],_p["fields"],self,"_update_from_old_data")
+
+    async def get_mystuff_studios(
+            self,
+            start_page:int|None=None,
+            end_page:int|None=None,
+            type:Literal["all","owned","curated"]="all",
+            sort:Literal["","projecters_count","title"]="",
+            descending:bool=True
+        ) -> AsyncGenerator[studio.Studio]:
+        """
+        自分の所有または参加しているスタジオを取得する。
+
+        Args:
+            start_page (int|None, optional): 取得するコメントの開始ページ位置。初期値は1です。
+            end_page (int|None, optional): 取得するコメントの終了ページ位置。初期値はstart_pageの値です。
+            type (Literal[&quot;all&quot;,&quot;owned&quot;,&quot;curated&quot;], optional): 取得したいスタジオの種類。デフォルトは"all"です。
+            sort (Literal[&quot;&quot;,&quot;projecters_count&quot;,&quot;title&quot;], optional): ソートしたい順。デフォルトは ""です。
+            descending (bool, optional): 降順にするか。デフォルトはTrueです。
+
+        Yields:
+            studio.Studio: 取得したスタジオ
+        """
+        add_params:dict[str,str|int|float] = {"descsort":sort} if descending else {"ascsort":sort}
+        async for _s in common.page_api_iterative(
+            self.client,f"https://scratch.mit.edu/site-api/galleries/{type}/",
+            start_page,end_page,add_params
+        ):
+            _s:OldAnyObjectPayload[OldStudioPayload]
+            yield studio.Studio._create_from_data(_s["pk"],_s["fields"],self,"_update_from_old_data")
     
     async def get_project(self,project_id:int) -> "project.Project":
         """

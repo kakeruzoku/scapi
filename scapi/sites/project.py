@@ -113,8 +113,7 @@ class Project(base._BaseSiteAPI[int]):
         if _author:
             if self.author is common.UNKNOWN:
                 self.author = user.User(_author.get("username"),self.client_or_session)
-            self.author.id = _author.get("pk")
-            self.author.scratchteam = _author.get("admin")
+            self.author._update_from_old_data(_author)
 
         self._update_to_attributes(
             title=data.get("title"),
