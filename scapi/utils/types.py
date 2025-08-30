@@ -147,7 +147,7 @@ class ProjectPayload(TypedDict,total=False):
     title:str
     description:str
     instructions:str
-    visibility:Literal["visible"]
+    visibility:Literal["visible","notvisible"]
     public:bool
     comments_allowed:bool
     is_published:bool
@@ -168,13 +168,20 @@ class OldProjectPayload(TypedDict):
     isPublished:bool
     datetime_created:str
     thumbnail_url:str
-    visibility:str
+    visibility:Literal["visible","trshbyusr"]
     love_count:int
     datetime_modified:str|None
     uncached_thumbnail_url:str
     thumbnail:str
     datetime_shared:str|None
     commenters_count:str
+
+class OldProjectEditPayload(TypedDict):
+    creator:str
+    thumbnail_url:str
+    id:int
+    datetime_modified:str
+    title:str
 
 ProjectServerPayload = TypedDict(
     "ProjectServerPayload",{

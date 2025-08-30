@@ -8,7 +8,8 @@ from ..utils.types import (
     ProjectFavoritePayload,
     ProjectVisibilityPayload,
     UserFeaturedPayload,
-    OldProjectPayload
+    OldProjectPayload,
+    OldProjectEditPayload
 )
 from . import user,studio,session,base,comment
 
@@ -24,6 +25,7 @@ class Project(base._BaseSiteAPI[int]):
         description (MAYBE_UNKNOWN[str]): プロジェクトのメモとクレジット欄
         public (MAYBE_UNKNOWN[bool]): プロジェクトが公開されているか
         comments_allowed (MAYBE_UNKNOWN[bool]): コメント欄が開いているか
+        deleted (MAYBE_UNKNOWN[bool]): プロジェクトがゴミ箱またはゴミ箱からも削除されているか。
 
         view_count (MAYBE_UNKNOWN[int]): プロジェクトの閲覧数
         love_count (MAYBE_UNKNOWN[int]): プロジェクトの「好き」の数
@@ -48,6 +50,7 @@ class Project(base._BaseSiteAPI[int]):
         self.description:common.MAYBE_UNKNOWN[str] = common.UNKNOWN
         self.public:common.MAYBE_UNKNOWN[bool] = common.UNKNOWN
         self.comments_allowed:common.MAYBE_UNKNOWN[bool] = common.UNKNOWN
+        self.deleted:common.MAYBE_UNKNOWN[bool] = common.UNKNOWN
         
         self._created_at:common.MAYBE_UNKNOWN[str] = common.UNKNOWN
         self._modified_at:common.MAYBE_UNKNOWN[str|None] = common.UNKNOWN
@@ -74,6 +77,7 @@ class Project(base._BaseSiteAPI[int]):
             description=data.get("description"),
             public=data.get("public"),
             comments_allowed=data.get("comments_allowed"),
+            deleted=(data.get("visibility") == "notvisible")
         )
         
         _author = data.get("author")
@@ -118,6 +122,7 @@ class Project(base._BaseSiteAPI[int]):
         self._update_to_attributes(
             title=data.get("title"),
             public=data.get("isPublished"),
+            deleted=(data.get("visibility") == "trshbyusr"),
 
             _created_at=data.get("datetime_created"),
             _modified_at=data.get("datetime_modified"),
@@ -324,11 +329,26 @@ class Project(base._BaseSiteAPI[int]):
         if instructions is not None: data["instructions"] = instructions
         if description is not None: data["description"] = description
 
-        r = await self.client.put(
-            f"https://api.scratch.mit.edu/projects/{self.id}",
-            json=data
-        )
+        r = await self.client.put(f"https://api.scratch.mit.edu/projects/{self.id}",json=data)
         self._update_from_data(r.json())
+    
+    async def old_edit(
+            self,*,
+            title:str|None=None,
+            share:bool|None=None,
+            trash:bool|None=None,
+        ):
+        self.require_session()
+        data = {}
+        if share is not None: data["isPublished"] = share
+        if title is not None: data["title"] = title
+        if trash is not None: data["visibility"] = "trshbyusr" if trash else "visible"
+        r = await self.client.put(f"https://scratch.mit.edu/site-api/projects/all/{self.id}/",json=data)
+        _data:OldProjectEditPayload = r.json()
+        self._update_to_attributes(
+            title=_data.get("title"),
+            _modified_at=_data.get("datetime_modified")
+        )
 
     async def set_thumbnail(self,thumbnail:file.File|bytes):
         """
