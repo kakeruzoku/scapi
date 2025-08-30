@@ -32,6 +32,10 @@ class Project(base._BaseSiteAPI[int]):
         favorite_count (MAYBE_UNKNOWN[int]): プロジェクトの「お気に入り」の数
         remix_count (MAYBE_UNKNOWN[int]): プロジェクトの「リミックス」の数
 
+    .. warning::
+        remix_count の値は 3.0APIのリスト形式での取得など(傾向等)では常に0になります。正確な値を確認したい場合は .update() を実行してください。
+    
+    Attributes:
         remix_parent_id (MAYBE_UNKNOWN[int|None]): プロジェクトの親プロジェクトID
         remix_root_id (MAYBE_UNKNOWN[int|None]): プロジェクトの元プロジェクトID
 
@@ -175,8 +179,8 @@ class Project(base._BaseSiteAPI[int]):
         リミックスされたプロジェクトを取得する。
 
         Args:
-            limit (int|None, optional) 取得するプロジェクトの数。初期値は40です。
-            offset (int|None, optional) 取得するプロジェクトの開始位置。初期値は0です。
+            limit (int|None, optional): 取得するプロジェクトの数。初期値は40です。
+            offset (int|None, optional): 取得するプロジェクトの開始位置。初期値は0です。
 
         Yields:
             Project: リミックスされたプロジェクト
@@ -192,8 +196,8 @@ class Project(base._BaseSiteAPI[int]):
         プロジェクトが追加されたスタジオを取得する。
 
         Args:
-            limit (int|None, optional) 取得するスタジオの数。初期値は40です。
-            offset (int|None, optional) 取得するスタジオの開始位置。初期値は0です。
+            limit (int|None, optional): 取得するスタジオの数。初期値は40です。
+            offset (int|None, optional): 取得するスタジオの開始位置。初期値は0です。
 
         Yields:
             Studio: 追加されたスタジオ。
@@ -237,8 +241,8 @@ class Project(base._BaseSiteAPI[int]):
         プロジェクトに投稿されたコメントを取得する。
 
         Args:
-            limit (int|None, optional) 取得するコメントの数。初期値は40です。
-            offset (int|None, optional) 取得するコメントの開始位置。初期値は0です。
+            limit (int|None, optional): 取得するコメントの数。初期値は40です。
+            offset (int|None, optional): 取得するコメントの開始位置。初期値は0です。
 
         Yields:
             Comment: プロジェクトに投稿されたコメント
@@ -269,8 +273,8 @@ class Project(base._BaseSiteAPI[int]):
         プロジェクトに投稿されたコメントを古いAPIから取得する。
 
         Args:
-            start_page (int|None, optional) 取得するコメントの開始ページ位置。初期値は1です。
-            end_page (int|None, optional) 取得するコメントの終了ページ位置。初期値はstart_pageの値です。
+            start_page (int|None, optional): 取得するコメントの開始ページ位置。初期値は1です。
+            end_page (int|None, optional): 取得するコメントの終了ページ位置。初期値はstart_pageの値です。
 
         Returns:
             Comment: プロジェクトに投稿されたコメント
@@ -338,6 +342,14 @@ class Project(base._BaseSiteAPI[int]):
             share:bool|None=None,
             trash:bool|None=None,
         ):
+        """
+        プロジェクトのステータスを古いAPIで編集します。
+
+        Args:
+            title (str | None, optional): プロジェクトのタイトル
+            share (bool | None, optional): プロジェクトの共有状態
+            trash (bool | None, optional): ゴミ箱に入れるか
+        """
         self.require_session()
         data = {}
         if share is not None: data["isPublished"] = share
@@ -499,7 +511,7 @@ class Project(base._BaseSiteAPI[int]):
         is_old:bool=False
     ) -> "comment.Comment":
         """
-        コメントを投稿します。
+        コメントを投稿する。
 
         Args:
             content (str): コメントの内容
@@ -510,7 +522,6 @@ class Project(base._BaseSiteAPI[int]):
         Returns:
             comment.Comment: 投稿されたコメント
         """
-        self.require_session()
         return await comment.Comment.post_comment(self,content,parent,commentee,is_old)
 
 class ProjectVisibility:

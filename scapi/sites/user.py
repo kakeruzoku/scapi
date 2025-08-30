@@ -120,7 +120,6 @@ class User(base._BaseSiteAPI[str]):
         parent:"comment.Comment|int|None"=None,commentee:"User|int|None"=None,
         is_old:bool=True
     ) -> "comment.Comment":
-        self.require_session()
         return await comment.Comment.post_comment(self,content,parent,commentee,is_old)
     
     async def follow(self):

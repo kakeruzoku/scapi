@@ -182,7 +182,12 @@ class _AwaitableContextManager(Generic[_AT]):
     """
     Coroutineからasync withとawaitどちらにも対応できるようにするクラス。
 
-    obj = await coro または async with coroutine() as obj: のようにすると obj に _T が入ります。
+    obj = await coro または async with coro as obj: のようにして使用できます。
+
+    .. info::
+        特別な理由がない限りは async with で使用すべきです。
+        awaitのみで使用する場合は、最後に実行すべき関数 (.client_close())などを確認してください。
+
     """
     def __init__(self, coro:Coroutine[Any,Any,_AT]):
         self._coro = coro
