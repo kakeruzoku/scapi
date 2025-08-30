@@ -35,6 +35,9 @@ MAYBE_UNKNOWN = _T|UNKNOWN_TYPE
 
 del _Special
 
+async def do_nothing(*args,**kwargs):
+    pass
+
 class UnknownDict(dict[_KT, _VT]):
     @overload  # default が None の場合
     def get(self, key: _KT, default: UNKNOWN_TYPE = UNKNOWN, /) -> _VT | UNKNOWN_TYPE: ...
