@@ -7,7 +7,7 @@ from functools import wraps
 
 from . import error,client,config
 
-__version__ = "3.0.0.dev1"
+__version__ = "3.0.0.dev2"
 
 _KT = TypeVar("_KT")
 _VT = TypeVar("_VT")
@@ -184,7 +184,7 @@ class _AwaitableContextManager(Generic[_AT]):
 
     obj = await coro または async with coro as obj: のようにして使用できます。
 
-    .. info::
+    .. note::
         特別な理由がない限りは async with で使用すべきです。
         awaitのみで使用する場合は、最後に実行すべき関数 (.client_close())などを確認してください。
 

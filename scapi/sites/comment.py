@@ -12,7 +12,24 @@ from ..utils.types import (
 )
 
 class Comment(base._BaseSiteAPI[int]):
+    """
+    コメントを表す。
 
+    .. note::
+        プロジェクト欄でコメントに関するAPIを使用する場合、プロジェクトの作者のユーザー名が必要です。データが取得されていない可能性がある場合、古いAPIを使用することを検討してください。
+
+    .. note::
+        プロフィール欄でコメントに関するAPIを使用する場合、必ず古いAPIが使用されます。新しいAPIでしか利用できない関数では TypeError が送出されることがあります。
+
+    Attributes:
+        id (int): コメントID
+        place (common.MAYBE_UNKNOWN[Project|Studio|User]): コメントの場所
+        parent_id (common.MAYBE_UNKNOWN[int|None]): 親コメントID
+        commentee_id (common.MAYBE_UNKNOWN[int|None]): メンションしたユーザーのID
+        content (common.MAYBE_UNKNOWN[str]): コメントの内容
+        author (common.MAYBE_UNKNOWN[User]): コメントしたユーザー
+        reply_count (common.MAYBE_UNKNOWN[int]): コメントにある返信の数
+    """
     def __repr__(self) -> str:
         return f"<Comment id:{self.id} content:{self.content} place:{self.place} user:{self.author} Session:{self.session}>"
 
@@ -108,14 +125,39 @@ class Comment(base._BaseSiteAPI[int]):
 
     @property
     def created_at(self) -> datetime.datetime|common.UNKNOWN_TYPE:
+        """
+        コメントが作成された時間を返す
+
+        Returns:
+            datetime.datetime|UNKNOWN_TYPE: データがある場合、その時間。
+        """
         return common.dt_from_isoformat(self._created_at)
     
     @property
     def modified_at(self) -> datetime.datetime|common.UNKNOWN_TYPE:
+        """
+        コメントが最後に編集された時間を返す
+        ユーザーがコメントを編集することはできないため、基本的に created_at と同じになります。
+
+        Returns:
+            datetime.datetime|UNKNOWN_TYPE: データがある場合、その時間。
+        """
         return common.dt_from_isoformat(self._modified_at)
     
 
     async def get_replies(self,limit:int|None=None,offset:int|None=None,*,use_cache:bool=True) -> AsyncGenerator["Comment", None]:
+        """
+        コメントの返信を取得する。
+        ユーザーページや、作者の不明なプロジェクト欄では取得できません。
+
+        Args:
+            limit (int|None, optional): 取得するコメントの数。初期値は40です。
+            offset (int|None, optional): 取得するコメントの開始位置。初期値は0です。
+            use_cache (bool, optional): 古いAPIから取得した時のキャッシュを使用するか。
+
+        Yields:
+            Comment: 取得したコメント
+        """
         if use_cache and self._cached_reply is not None:
             if limit is None:
                 limit = 40
@@ -129,6 +171,15 @@ class Comment(base._BaseSiteAPI[int]):
                 yield Comment._create_from_data(_c["id"],_c,place=self.place)
 
     async def get_parent(self,use_cache:bool=True) -> "Comment|None|common.UNKNOWN_TYPE":
+        """
+        親コメントを取得する。
+
+        Args:
+            use_cache (bool, optional): キャッシュを使用するか。デフォルトはTrueです。
+
+        Returns:
+            Comment|None|common.UNKNOWN_TYPE: 取得できる場合、取得されたコメント
+        """
         if not isinstance(self.parent_id,int):
             return self.parent_id
         if self._cached_parent is None or use_cache:
@@ -197,12 +248,29 @@ class Comment(base._BaseSiteAPI[int]):
             content:str,
             commentee:"user.User|int|None|common.UNKNOWN_TYPE"=common.UNKNOWN,
             is_old:bool=False
-        ):
+        ) -> "Comment":
+        """
+        コメントを返信する。
+
+        Args:
+            content (str): コメントの内容
+            commentee (User|int|None, optional): メンションする場合、ユーザーかそのユーザーのID
+            is_old (bool, optional): 古いAPIを使用して送信するか
+
+        Returns:
+            comment.Comment: 投稿されたコメント
+        """
         if commentee is common.UNKNOWN:
             commentee = self.author and self.author.id or None
         return await Comment.post_comment(self.place,content,self.parent_id or self.id,commentee,is_old)
     
     async def delete(self,is_old:bool=False):
+        """
+        コメントを削除する。
+
+        Args:
+            is_old (bool, optional): 古いAPIを使用するか
+        """
         self.require_session()
         if isinstance(self.place,user.User):
             is_old = True
@@ -219,6 +287,12 @@ class Comment(base._BaseSiteAPI[int]):
             await self.client.delete(url,json={"reportId":None})
 
     async def report(self,is_old:bool=False):
+        """
+        コメントを報告する。
+
+        Args:
+            is_old (bool, optional): 古いAPIを使用するか
+        """
         self.require_session()
         if isinstance(self.place,user.User):
             is_old = True
@@ -227,9 +301,9 @@ class Comment(base._BaseSiteAPI[int]):
             await self.client.post(url,json={"id":str(self.id)})
         else:
             if isinstance(self.place,project.Project):
-                url =  f"https://api.scratch.mit.edu/proxy/project/{self.place.id}/comment/{self.id}/report"
+                url = f"https://api.scratch.mit.edu/proxy/project/{self.place.id}/comment/{self.id}/report"
             elif isinstance(self.place,studio.Studio):
-                url =  f"https://api.scratch.mit.edu/proxy/studio/{self.place.id}/comment/{self.id}/report"
+                url = f"https://api.scratch.mit.edu/proxy/studio/{self.place.id}/comment/{self.id}/report"
             else:
                 raise TypeError("User comment updates are not supported.")
             await self.client.post(url,json={"reportId":None})
