@@ -255,14 +255,14 @@ class Session(base._BaseSiteAPI[str]):
             sort:Literal["","view_count","love_count","remixers_count","title"]="",
             descending:bool=True
         ) -> AsyncGenerator[project.Project]:
-        """
+        """s
         自分の所有しているプロジェクトを取得する。
 
         Args:
             start_page (int|None, optional): 取得するコメントの開始ページ位置。初期値は1です。
             end_page (int|None, optional): 取得するコメントの終了ページ位置。初期値はstart_pageの値です。
-            type (Literal[&quot;all&quot;,&quot;shared&quot;,&quot;notshared&quot;,&quot;trashed&quot;], optional): 取得したいプロジェクトの種類。デフォルトは"all"です。
-            sort (Literal[&quot;&quot;,&quot;view_count&quot;,&quot;love_count&quot;,&quot;remixers_count&quot;,&quot;title&quot;], optional): ソートしたい順。デフォルトは "" (最終更新順)です。
+            type (Literal["all","shared","notshared","trashed"], optional): 取得したいプロジェクトの種類。デフォルトは"all"です。
+            sort (Literal["","view_count","love_count","remixers_count","title"], optional): ソートしたい順。デフォルトは "" (最終更新順)です。
             descending (bool, optional): 降順にするか。デフォルトはTrueです。
 
         Yields:
@@ -290,8 +290,8 @@ class Session(base._BaseSiteAPI[str]):
         Args:
             start_page (int|None, optional): 取得するコメントの開始ページ位置。初期値は1です。
             end_page (int|None, optional): 取得するコメントの終了ページ位置。初期値はstart_pageの値です。
-            type (Literal[&quot;all&quot;,&quot;owned&quot;,&quot;curated&quot;], optional): 取得したいスタジオの種類。デフォルトは"all"です。
-            sort (Literal[&quot;&quot;,&quot;projecters_count&quot;,&quot;title&quot;], optional): ソートしたい順。デフォルトは ""です。
+            type (Literal["all","owned","curated"], optional): 取得したいスタジオの種類。デフォルトは"all"です。
+            sort (Literal["","projecters_count","title"], optional): ソートしたい順。デフォルトは ""です。
             descending (bool, optional): 降順にするか。デフォルトはTrueです。
 
         Yields:
@@ -304,6 +304,22 @@ class Session(base._BaseSiteAPI[str]):
         ):
             _s:OldAnyObjectPayload[OldStudioPayload]
             yield studio.Studio._create_from_data(_s["pk"],_s["fields"],self,"_update_from_old_data")
+    
+    async def empty_trash(self,password:str) -> int:
+        """
+        ゴミ箱を空にする
+
+        Args:
+            password (str): アカウントのパスワード
+
+        Returns:
+            int: 削除されたプロジェクトの数
+        """
+        r = await self.client.put(
+            "https://scratch.mit.edu/site-api/projects/trashed/empty/",
+            json={"csrfmiddlewaretoken":"a","password":password}
+        )
+        return r.json().get("trashed")
     
     async def get_project(self,project_id:int) -> "project.Project":
         """
