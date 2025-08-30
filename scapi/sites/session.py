@@ -255,7 +255,7 @@ class Session(base._BaseSiteAPI[str]):
             sort:Literal["","view_count","love_count","remixers_count","title"]="",
             descending:bool=True
         ) -> AsyncGenerator[project.Project]:
-        """s
+        """
         自分の所有しているプロジェクトを取得する。
 
         Args:
@@ -305,6 +305,40 @@ class Session(base._BaseSiteAPI[str]):
             _s:OldAnyObjectPayload[OldStudioPayload]
             yield studio.Studio._create_from_data(_s["pk"],_s["fields"],self,"_update_from_old_data")
     
+    async def get_followings_loves(self,limit:int|None=None,offset:int|None=None) -> AsyncGenerator["project.Project", None]:
+        """
+        フォロー中のユーザーが好きなプロジェクトを取得する。
+
+        Args:
+            limit (int|None, optional): 取得するプロジェクトの数。初期値は40です。
+            offset (int|None, optional): 取得するプロジェクトの開始位置。初期値は0です。
+
+        Yields:
+            Project: 取得したプロジェクト
+        """
+        async for _p in common.api_iterative(
+            self.client,f"https://api.scratch.mit.edu/users/{self.username}/following/users/loves",
+            limit=limit,offset=offset
+        ):
+            yield project.Project._create_from_data(_p["id"],_p,self.client_or_session)
+
+    async def get_viewed_projects(self,limit:int|None=None,offset:int|None=None) -> AsyncGenerator["project.Project", None]:
+        """
+        プロジェクトの閲覧履歴を取得する。
+
+        Args:
+            limit (int|None, optional): 取得するプロジェクトの数。初期値は40です。
+            offset (int|None, optional): 取得するプロジェクトの開始位置。初期値は0です。
+
+        Yields:
+            Project: 取得したプロジェクト
+        """
+        async for _p in common.api_iterative(
+            self.client,f"https://api.scratch.mit.edu/users/{self.username}/projects/recentlyviewed",
+            limit=limit,offset=offset
+        ):
+            yield project.Project._create_from_data(_p["id"],_p,self.client_or_session)
+
     async def empty_trash(self,password:str) -> int:
         """
         ゴミ箱を空にする
