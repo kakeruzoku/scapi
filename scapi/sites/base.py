@@ -1,3 +1,5 @@
+from __future__ import annotations
+
 from typing import TYPE_CHECKING, Coroutine, Literal,Any, Self,TypeVar, Generic
 from abc import ABC,abstractmethod
 from ..utils.client import HTTPClient

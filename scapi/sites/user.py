@@ -4,30 +4,53 @@ import random
 from typing import TYPE_CHECKING, AsyncGenerator, Final
 
 import aiohttp
-from ..utils import client, common, error, file
-from . import base,session,project,studio,comment
 from ..utils.types import (
     UserPayload,
     UserMessageCountPayload,
     OldUserPayload
 )
+from ..utils.client import HTTPClient
+from ..utils.common import (
+    UNKNOWN,
+    MAYBE_UNKNOWN,
+    UNKNOWN_TYPE,
+    api_iterative,
+    dt_from_isoformat,
+    _AwaitableContextManager
+)
+from ..utils.error import ClientError
+from ..utils.file import File,_read_file
+from .base import _BaseSiteAPI
 
-class User(base._BaseSiteAPI[str]):
+from .project import (
+    Project,
+    ProjectFeatured,
+)
+from .studio import Studio
+from .comment import (
+    Comment,
+    get_comment_from_old
+)
+
+if TYPE_CHECKING:
+    from .session import Session
+
+class User(_BaseSiteAPI[str]):
     def __repr__(self) -> str:
         return f"<User username:{self.username} id:{self.id} session:{self.session}>"
 
-    def __init__(self,username:str,client_or_session:"client.HTTPClient|session.Session|None"=None):
+    def __init__(self,username:str,client_or_session:"HTTPClient|Session|None"=None):
         super().__init__(client_or_session)
         self.username:Final[str] = username
-        self.id:common.MAYBE_UNKNOWN[int] = common.UNKNOWN
+        self.id:MAYBE_UNKNOWN[int] = UNKNOWN
 
-        self._joined_at:common.MAYBE_UNKNOWN[str] = common.UNKNOWN
+        self._joined_at:MAYBE_UNKNOWN[str] = UNKNOWN
 
-        self.profile_id:common.MAYBE_UNKNOWN[int] = common.UNKNOWN
-        self.bio:common.MAYBE_UNKNOWN[str] = common.UNKNOWN
-        self.status:common.MAYBE_UNKNOWN[str] = common.UNKNOWN
-        self.country:common.MAYBE_UNKNOWN[str] = common.UNKNOWN
-        self.scratchteam:common.MAYBE_UNKNOWN[bool] = common.UNKNOWN
+        self.profile_id:MAYBE_UNKNOWN[int] = UNKNOWN
+        self.bio:MAYBE_UNKNOWN[str] = UNKNOWN
+        self.status:MAYBE_UNKNOWN[str] = UNKNOWN
+        self.country:MAYBE_UNKNOWN[str] = UNKNOWN
+        self.scratchteam:MAYBE_UNKNOWN[bool] = UNKNOWN
 
     async def update(self):
         response = await self.client.get(f"https://api.scratch.mit.edu/users/{self.username}")
@@ -58,25 +81,25 @@ class User(base._BaseSiteAPI[str]):
         )
     
     @property
-    def joined_at(self) -> datetime.datetime|common.UNKNOWN_TYPE:
+    def joined_at(self) -> datetime.datetime|UNKNOWN_TYPE:
         """
         ユーザーが参加した時間を返す。
 
         Returns:
             datetime.datetime|UNKNOWN_TYPE: データがある場合、その時間。
         """
-        return common.dt_from_isoformat(self._joined_at)
+        return dt_from_isoformat(self._joined_at)
     
 
-    async def get_featured(self) -> "project.ProjectFeatured|None":
+    async def get_featured(self) -> "ProjectFeatured|None":
         """
         ユーザーの注目のプロジェクト欄を取得する。
 
         Returns:
-            project.ProjectFeatured|None: ユーザーが設定している場合、そのデータ。
+            ProjectFeatured|None: ユーザーが設定している場合、そのデータ。
         """
         response = await self.client.get(f"https://scratch.mit.edu/site-api/users/all/{self.username}/")
-        return project.ProjectFeatured(response.json(),self)
+        return ProjectFeatured(response.json(),self)
     
     async def get_followers(self,limit:int|None=None,offset:int|None=None) -> AsyncGenerator["User", None]:
         """
@@ -89,7 +112,7 @@ class User(base._BaseSiteAPI[str]):
         Yields:
             User: 取得したユーザー
         """
-        async for _u in common.api_iterative(
+        async for _u in api_iterative(
             self.client,f"https://api.scratch.mit.edu/users/{self.username}/followers/",
             limit=limit,offset=offset
         ):
@@ -106,13 +129,13 @@ class User(base._BaseSiteAPI[str]):
         Yields:
             User: 取得したユーザー
         """
-        async for _u in common.api_iterative(
+        async for _u in api_iterative(
             self.client,f"https://api.scratch.mit.edu/users/{self.username}/following/",
             limit=limit,offset=offset
         ):
             yield User._create_from_data(_u["username"],_u,self.client_or_session)
 
-    async def get_projects(self,limit:int|None=None,offset:int|None=None) -> AsyncGenerator["project.Project", None]:
+    async def get_projects(self,limit:int|None=None,offset:int|None=None) -> AsyncGenerator["Project", None]:
         """
         ユーザーが共有しているプロジェクトを取得する。
 
@@ -123,13 +146,13 @@ class User(base._BaseSiteAPI[str]):
         Yields:
             Project: 取得したプロジェクト
         """
-        async for _p in common.api_iterative(
+        async for _p in api_iterative(
             self.client,f"https://api.scratch.mit.edu/users/{self.username}/projects/",
             limit=limit,offset=offset
         ):
-            yield project.Project._create_from_data(_p["id"],_p,self.client_or_session)
+            yield Project._create_from_data(_p["id"],_p,self.client_or_session)
 
-    async def get_favorites(self,limit:int|None=None,offset:int|None=None) -> AsyncGenerator["project.Project", None]:
+    async def get_favorites(self,limit:int|None=None,offset:int|None=None) -> AsyncGenerator["Project", None]:
         """
         ユーザーのお気に入りのプロジェクトを取得する。
 
@@ -140,13 +163,13 @@ class User(base._BaseSiteAPI[str]):
         Yields:
             Project: 取得したプロジェクト
         """
-        async for _p in common.api_iterative(
+        async for _p in api_iterative(
             self.client,f"https://api.scratch.mit.edu/users/{self.username}/favorites/",
             limit=limit,offset=offset
         ):
-            yield project.Project._create_from_data(_p["id"],_p,self.client_or_session)
+            yield Project._create_from_data(_p["id"],_p,self.client_or_session)
 
-    async def get_studios(self,limit:int|None=None,offset:int|None=None) -> AsyncGenerator["studio.Studio", None]:
+    async def get_studios(self,limit:int|None=None,offset:int|None=None) -> AsyncGenerator["Studio", None]:
         """
         ユーザーが参加しているスタジオを取得する。
 
@@ -157,11 +180,11 @@ class User(base._BaseSiteAPI[str]):
         Yields:
             Studio: 取得したスタジオ
         """
-        async for _s in common.api_iterative(
+        async for _s in api_iterative(
             self.client,f"https://api.scratch.mit.edu/users/{self.username}/studios/curate",
             limit=limit,offset=offset
         ):
-            yield studio.Studio._create_from_data(_s["id"],_s,self.client_or_session)
+            yield Studio._create_from_data(_s["id"],_s,self.client_or_session)
 
     async def get_message_count(self) -> int:
         """
@@ -177,7 +200,7 @@ class User(base._BaseSiteAPI[str]):
         data:UserMessageCountPayload = response.json()
         return data.get("count")
 
-    def get_comments(self,start_page:int|None=None,end_page:int|None=None) -> AsyncGenerator["comment.Comment", None]:
+    def get_comments(self,start_page:int|None=None,end_page:int|None=None) -> AsyncGenerator["Comment", None]:
         """
         プロフィールに投稿されたコメントを取得する。
 
@@ -188,16 +211,16 @@ class User(base._BaseSiteAPI[str]):
         Returns:
             Comment: 取得したコメント
         """
-        return comment.get_comment_from_old(self,start_page,end_page)
+        return get_comment_from_old(self,start_page,end_page)
     
     get_comments_from_old = get_comments
 
 
     async def post_comment(
         self,content:str,
-        parent:"comment.Comment|int|None"=None,commentee:"User|int|None"=None,
+        parent:"Comment|int|None"=None,commentee:"User|int|None"=None,
         is_old:bool=True
-    ) -> "comment.Comment":
+    ) -> "Comment":
         """
         コメントを投稿します。
 
@@ -208,9 +231,9 @@ class User(base._BaseSiteAPI[str]):
             is_old (bool, optional): 古いAPIを使用して送信するか この値は使用されず、常に古いAPIが使用されます。
 
         Returns:
-            comment.Comment: 投稿されたコメント
+            Comment: 投稿されたコメント
         """
-        return await comment.Comment.post_comment(self,content,parent,commentee,is_old)
+        return await Comment.post_comment(self,content,parent,commentee,is_old)
     
     async def follow(self):
         """
@@ -237,24 +260,24 @@ class User(base._BaseSiteAPI[str]):
             self,*,
             bio:str|None=None,
             status:str|None=None,
-            featured_project_id:"int|project.Project|None"=None,
+            featured_project_id:"int|Project|None"=None,
             featured_project_label:"ProjectFeaturedLabel|None"=None
-        ) -> "None | project.ProjectFeatured":
+        ) -> "None | ProjectFeatured":
         """
         プロフィール欄を編集する。
 
         Args:
             bio (str | None, optional): 私について欄の内容
             status (str | None, optional): 私が取り組んでいることの内容
-            featured_project_id (int|project.Project|None, optional): 注目のプロジェクト欄に設定したいプロジェクトかそのID
+            featured_project_id (int|Project|None, optional): 注目のプロジェクト欄に設定したいプロジェクトかそのID
             featured_project_label (ProjectFeaturedLabel|None, optional): 注目のプロジェクト欄に使用したいラベル
 
         Returns:
-            None | project.ProjectFeatured: 変更された注目のプロジェクト欄
+            None | ProjectFeatured: 変更された注目のプロジェクト欄
         """
         self.require_session()
         _data = {}
-        if isinstance(featured_project_id,project.Project):
+        if isinstance(featured_project_id,Project):
             featured_project_id = featured_project_id.id
         if bio is not None: _data["bio"] = bio
         if status is not None: _data["status"] = status
@@ -264,8 +287,8 @@ class User(base._BaseSiteAPI[str]):
         response = await self.client.put(f"https://scratch.mit.edu/site-api/users/all/{self.username}/",json=_data)
         data = response.json()
         if data.get("errors"):
-            raise error.ClientError(response,data.get("errors"))
-        return project.ProjectFeatured(data,self)
+            raise ClientError(response,data.get("errors"))
+        return ProjectFeatured(data,self)
 
     async def toggle_comment(self):
         """
@@ -274,7 +297,7 @@ class User(base._BaseSiteAPI[str]):
         self.require_session()
         await self.client.post(f"https://scratch.mit.edu/site-api/comments/user/{self.username}/toggle-comments/")
 
-    async def set_icon(self,icon:file.File|bytes):
+    async def set_icon(self,icon:File|bytes):
         """
         アイコンを変更する。
 
@@ -282,7 +305,7 @@ class User(base._BaseSiteAPI[str]):
             icon (file.File | bytes): アイコンのデータ
         """
         self.require_session()
-        async with file._read_file(icon) as f:
+        async with _read_file(icon) as f:
             self.require_session()
             await self.client.post(
                 f"https://scratch.mit.edu/site-api/users/all/{self.id}/",
@@ -311,7 +334,7 @@ class ProjectFeaturedLabel(Enum):
                 return item
         raise ValueError()
 
-def get_user(username:str,*,_client:client.HTTPClient|None=None) -> common._AwaitableContextManager[User]:
+def get_user(username:str,*,_client:HTTPClient|None=None) -> _AwaitableContextManager[User]:
     """
     ユーザーを取得する。
 
@@ -319,6 +342,6 @@ def get_user(username:str,*,_client:client.HTTPClient|None=None) -> common._Awai
         username (str): 取得したいユーザーのユーザー名
 
     Returns:
-        common._AwaitableContextManager[Studio]: await か async with で取得できるユーザー
+        _AwaitableContextManager[Studio]: await か async with で取得できるユーザー
     """
-    return common._AwaitableContextManager(User._create_from_api(username,_client))
+    return _AwaitableContextManager(User._create_from_api(username,_client))
