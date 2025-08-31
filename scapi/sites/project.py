@@ -1,7 +1,8 @@
+from __future__ import annotations
+
 import datetime
 import json
 from typing import TYPE_CHECKING, Any, AsyncGenerator, Final, Literal
-from ..utils import client, common, error, file
 from ..utils.types import (
     ProjectPayload,
     ProjectLovePayload,
@@ -11,16 +12,46 @@ from ..utils.types import (
     OldProjectPayload,
     OldProjectEditPayload
 )
-from . import user,studio,session,base,comment
+from ..utils.common import (
+    UNKNOWN,
+    MAYBE_UNKNOWN,
+    UNKNOWN_TYPE,
+    api_iterative,
+    dt_from_isoformat,
+    _AwaitableContextManager
+)
+from ..utils.client import HTTPClient
+from ..utils.error import (
+    NoDataError,
+    TooManyRequests
+)
+from ..utils.file import (
+    File,
+    _file
+)
 
-class Project(base._BaseSiteAPI[int]):
+from .base import _BaseSiteAPI
+from .comment import (
+    Comment,
+    get_comment_from_old
+)
+
+if TYPE_CHECKING:
+    from .session import Session
+    from .user import (
+        User,
+        ProjectFeaturedLabel
+    )
+    from .studio import Studio
+
+class Project(_BaseSiteAPI[int]):
     """
     プロジェクトを表す
 
     Attributes:
         id (int): プロジェクトのID
         title (MAYBE_UNKNOWN[str]): プロジェクトのタイトル
-        author (MAYBE_UNKNOWN[user.User]): プロジェクトの作者
+        author (MAYBE_UNKNOWN[User]): プロジェクトの作者
         instructions (MAYBE_UNKNOWN[str]): プロジェクトの使い方欄
         description (MAYBE_UNKNOWN[str]): プロジェクトのメモとクレジット欄
         public (MAYBE_UNKNOWN[bool]): プロジェクトが公開されているか
@@ -44,31 +75,31 @@ class Project(base._BaseSiteAPI[int]):
     def __repr__(self) -> str:
         return f"<Project id:{self.id} author:{self.author} session:{self.session}>"
 
-    def __init__(self,id:int,client_or_session:"client.HTTPClient|session.Session|None"=None):
+    def __init__(self,id:int,client_or_session:"HTTPClient|Session|None"=None):
         super().__init__(client_or_session)
         self.id:Final[int] = id
-        self.title:common.MAYBE_UNKNOWN[str] = common.UNKNOWN
+        self.title:MAYBE_UNKNOWN[str] = UNKNOWN
 
-        self.author:"common.MAYBE_UNKNOWN[user.User]" = common.UNKNOWN
-        self.instructions:common.MAYBE_UNKNOWN[str] = common.UNKNOWN
-        self.description:common.MAYBE_UNKNOWN[str] = common.UNKNOWN
-        self.public:common.MAYBE_UNKNOWN[bool] = common.UNKNOWN
-        self.comments_allowed:common.MAYBE_UNKNOWN[bool] = common.UNKNOWN
-        self.deleted:common.MAYBE_UNKNOWN[bool] = common.UNKNOWN
+        self.author:"MAYBE_UNKNOWN[User]" = UNKNOWN
+        self.instructions:MAYBE_UNKNOWN[str] = UNKNOWN
+        self.description:MAYBE_UNKNOWN[str] = UNKNOWN
+        self.public:MAYBE_UNKNOWN[bool] = UNKNOWN
+        self.comments_allowed:MAYBE_UNKNOWN[bool] = UNKNOWN
+        self.deleted:MAYBE_UNKNOWN[bool] = UNKNOWN
         
-        self._created_at:common.MAYBE_UNKNOWN[str] = common.UNKNOWN
-        self._modified_at:common.MAYBE_UNKNOWN[str|None] = common.UNKNOWN
-        self._shared_at:common.MAYBE_UNKNOWN[str|None] = common.UNKNOWN
+        self._created_at:MAYBE_UNKNOWN[str] = UNKNOWN
+        self._modified_at:MAYBE_UNKNOWN[str|None] = UNKNOWN
+        self._shared_at:MAYBE_UNKNOWN[str|None] = UNKNOWN
 
-        self.view_count:common.MAYBE_UNKNOWN[int] = common.UNKNOWN
-        self.love_count:common.MAYBE_UNKNOWN[int] = common.UNKNOWN
-        self.favorite_count:common.MAYBE_UNKNOWN[int] = common.UNKNOWN
-        self.remix_count:common.MAYBE_UNKNOWN[int] = common.UNKNOWN
+        self.view_count:MAYBE_UNKNOWN[int] = UNKNOWN
+        self.love_count:MAYBE_UNKNOWN[int] = UNKNOWN
+        self.favorite_count:MAYBE_UNKNOWN[int] = UNKNOWN
+        self.remix_count:MAYBE_UNKNOWN[int] = UNKNOWN
 
-        self.remix_parent_id:common.MAYBE_UNKNOWN[int|None] = common.UNKNOWN
-        self.remix_root_id:common.MAYBE_UNKNOWN[int|None] = common.UNKNOWN
+        self.remix_parent_id:MAYBE_UNKNOWN[int|None] = UNKNOWN
+        self.remix_root_id:MAYBE_UNKNOWN[int|None] = UNKNOWN
 
-        self.comment_count:common.MAYBE_UNKNOWN[int|None] = common.UNKNOWN
+        self.comment_count:MAYBE_UNKNOWN[int|None] = UNKNOWN
     
     async def update(self):
         response = await self.client.get(f"https://api.scratch.mit.edu/projects/{self.id}")
@@ -86,8 +117,9 @@ class Project(base._BaseSiteAPI[int]):
         
         _author = data.get("author")
         if _author:
-            if self.author is common.UNKNOWN:
-                self.author = user.User(_author.get("username"),self.client_or_session)
+            if self.author is UNKNOWN:
+                from .user import User
+                self.author = User(_author.get("username"),self.client_or_session)
             self.author._update_from_data(_author)
             
 
@@ -119,8 +151,9 @@ class Project(base._BaseSiteAPI[int]):
         _author = data.get("creator")
 
         if _author:
-            if self.author is common.UNKNOWN:
-                self.author = user.User(_author.get("username"),self.client_or_session)
+            if self.author is UNKNOWN:
+                from .user import User
+                self.author = User(_author.get("username"),self.client_or_session)
             self.author._update_from_old_data(_author)
 
         self._update_to_attributes(
@@ -141,38 +174,38 @@ class Project(base._BaseSiteAPI[int]):
     @property
     def _author_username(self) -> str:
         if not (self.author and self.author.username):
-            raise error.NoDataError(self)
+            raise NoDataError(self)
         return self.author.username
     
     @property
-    def created_at(self) -> datetime.datetime|common.UNKNOWN_TYPE:
+    def created_at(self) -> datetime.datetime|UNKNOWN_TYPE:
         """
         プロジェクトが作成された時間を返す
 
         Returns:
             datetime.datetime|UNKNOWN_TYPE: データがある場合、その時間。
         """
-        return common.dt_from_isoformat(self._created_at)
+        return dt_from_isoformat(self._created_at)
     
     @property
-    def modified_at(self) -> datetime.datetime|common.UNKNOWN_TYPE|None:
+    def modified_at(self) -> datetime.datetime|UNKNOWN_TYPE|None:
         """
         プロジェクトが最後に編集された時間を返す
 
         Returns:
             datetime.datetime|UNKNOWN_TYPE|None: データがある場合、その時間。
         """
-        return common.dt_from_isoformat(self._modified_at)
+        return dt_from_isoformat(self._modified_at)
     
     @property
-    def shared_at(self) -> datetime.datetime|common.UNKNOWN_TYPE|None:
+    def shared_at(self) -> datetime.datetime|UNKNOWN_TYPE|None:
         """
         プロジェクトが共有された時間を返す
 
         Returns:
             datetime.datetime|UNKNOWN_TYPE|None: データがある場合、その時間。
         """
-        return common.dt_from_isoformat(self._shared_at)
+        return dt_from_isoformat(self._shared_at)
     
     async def get_remixes(self,limit:int|None=None,offset:int|None=None) -> AsyncGenerator["Project", None]:
         """
@@ -185,13 +218,13 @@ class Project(base._BaseSiteAPI[int]):
         Yields:
             Project: リミックスされたプロジェクト
         """
-        async for _p in common.api_iterative(
+        async for _p in api_iterative(
             self.client,f"https://api.scratch.mit.edu/projects/{self.id}/remixes",
             limit=limit,offset=offset
         ):
             yield Project._create_from_data(_p["id"],_p,self.client_or_session)
 
-    async def get_studios(self,limit:int|None=None,offset:int|None=None) -> AsyncGenerator["studio.Studio", None]:
+    async def get_studios(self,limit:int|None=None,offset:int|None=None) -> AsyncGenerator["Studio", None]:
         """
         プロジェクトが追加されたスタジオを取得する。
 
@@ -202,13 +235,14 @@ class Project(base._BaseSiteAPI[int]):
         Yields:
             Studio: 追加されたスタジオ。
         """
-        async for _s in common.api_iterative(
+        from .studio import Studio
+        async for _s in api_iterative(
             self.client,f"https://api.scratch.mit.edu/users/{self._author_username}/projects/{self.id}/studios",
             limit=limit,offset=offset
         ):
-            yield studio.Studio._create_from_data(_s["id"],_s,self.client_or_session)
+            yield Studio._create_from_data(_s["id"],_s,self.client_or_session)
 
-    async def get_parent_project(self) -> "Project|None|common.UNKNOWN_TYPE":
+    async def get_parent_project(self) -> "Project|None|UNKNOWN_TYPE":
         """
         プロジェクトの親プロジェクトを取得する。
 
@@ -222,7 +256,7 @@ class Project(base._BaseSiteAPI[int]):
             return await self._create_from_api(self.remix_parent_id,self.client_or_session)
         return self.remix_parent_id
         
-    async def get_root_project(self) -> "Project|None|common.UNKNOWN_TYPE":
+    async def get_root_project(self) -> "Project|None|UNKNOWN_TYPE":
         """
         プロジェクトの元プロジェクトを取得する。
 
@@ -236,7 +270,7 @@ class Project(base._BaseSiteAPI[int]):
             return await self._create_from_api(self.remix_root_id,self.client_or_session)
         return self.remix_root_id
         
-    async def get_comments(self,limit:int|None=None,offset:int|None=None) -> AsyncGenerator["comment.Comment", None]:
+    async def get_comments(self,limit:int|None=None,offset:int|None=None) -> AsyncGenerator["Comment", None]:
         """
         プロジェクトに投稿されたコメントを取得する。
 
@@ -247,13 +281,13 @@ class Project(base._BaseSiteAPI[int]):
         Yields:
             Comment: プロジェクトに投稿されたコメント
         """
-        async for _c in common.api_iterative(
+        async for _c in api_iterative(
             self.client,f"https://api.scratch.mit.edu/users/{self._author_username}/projects/{self.id}/comments",
             limit=limit,offset=offset
         ):
-            yield comment.Comment._create_from_data(_c["id"],_c,place=self)
+            yield Comment._create_from_data(_c["id"],_c,place=self)
 
-    async def get_comment_by_id(self,comment_id:int) -> "comment.Comment":
+    async def get_comment_by_id(self,comment_id:int) -> "Comment":
         """
         コメントIDからコメントを取得する。
 
@@ -266,9 +300,9 @@ class Project(base._BaseSiteAPI[int]):
         Returns:
             Comment: 見つかったコメント
         """
-        return await comment.Comment._create_from_api(comment_id,place=self)
+        return await Comment._create_from_api(comment_id,place=self)
     
-    def get_comments_from_old(self,start_page:int|None=None,end_page:int|None=None) -> AsyncGenerator["comment.Comment", None]:
+    def get_comments_from_old(self,start_page:int|None=None,end_page:int|None=None) -> AsyncGenerator["Comment", None]:
         """
         プロジェクトに投稿されたコメントを古いAPIから取得する。
 
@@ -279,12 +313,12 @@ class Project(base._BaseSiteAPI[int]):
         Returns:
             Comment: プロジェクトに投稿されたコメント
         """
-        return comment.get_comment_from_old(self,start_page,end_page)
+        return get_comment_from_old(self,start_page,end_page)
         
 
 
     async def edit_project(
-            self,project_data:file.File|dict|str|bytes,is_json:bool|None=None
+            self,project_data:File|dict|str|bytes,is_json:bool|None=None
         ):
         """
         プロジェクト本体を更新します。
@@ -301,7 +335,7 @@ class Project(base._BaseSiteAPI[int]):
         elif isinstance(project_data,str):
             is_json = True
 
-        async with file._file(project_data) as f:
+        async with _file(project_data) as f:
             self.require_session()
             content_type = "application/json" if is_json else "application/zip"
             headers = self.client.scratch_headers | {"Content-Type": content_type}
@@ -362,7 +396,7 @@ class Project(base._BaseSiteAPI[int]):
             _modified_at=_data.get("datetime_modified")
         )
 
-    async def set_thumbnail(self,thumbnail:file.File|bytes):
+    async def set_thumbnail(self,thumbnail:File|bytes):
         """
         プロジェクトのサムネイルを変更します。
 
@@ -370,7 +404,7 @@ class Project(base._BaseSiteAPI[int]):
             thumbnail (File | bytes): サムネイルデータ
         """
         self.require_session()
-        async with file._file(thumbnail) as f:
+        async with _file(thumbnail) as f:
             await self.client.post(
                 f"https://scratch.mit.edu/internalapi/project/thumbnail/{self.id}/set/",
                 data=f.fp
@@ -500,16 +534,16 @@ class Project(base._BaseSiteAPI[int]):
         """
         try:
             await self.client.post(f"https://api.scratch.mit.edu/users/{self._author_username}/projects/{self.id}/views/")
-        except error.TooManyRequests:
+        except TooManyRequests:
             return False
         else:
             return True
     
     async def post_comment(
         self,content:str,
-        parent:"comment.Comment|int|None"=None,commentee:"user.User|int|None"=None,
+        parent:"Comment|int|None"=None,commentee:"User|int|None"=None,
         is_old:bool=False
-    ) -> "comment.Comment":
+    ) -> "Comment":
         """
         コメントを投稿する。
 
@@ -520,9 +554,9 @@ class Project(base._BaseSiteAPI[int]):
             is_old (bool, optional): 古いAPIを使用して送信するか
 
         Returns:
-            comment.Comment: 投稿されたコメント
+            Comment: 投稿されたコメント
         """
-        return await comment.Comment.post_comment(self,content,parent,commentee,is_old)
+        return await Comment.post_comment(self,content,parent,commentee,is_old)
 
 class ProjectVisibility:
     """
@@ -566,14 +600,15 @@ class ProjectFeatured:
     def __repr__(self):
         return repr(self.project)
 
-    def __new__(cls,data:UserFeaturedPayload,_user:"user.User"):
+    def __new__(cls,data:UserFeaturedPayload,_user:"User"):
         _project = data.get("featured_project_data")
         if _project is None:
             return
         else:
             return super().__new__(cls)
 
-    def __init__(self,data:UserFeaturedPayload,_user:"user.User"):
+    def __init__(self,data:UserFeaturedPayload,_user:"User"):
+        from .user import ProjectFeaturedLabel
         _project = data.get("featured_project_data")
         _user_payload = data.get("user")
         assert _project
@@ -586,10 +621,10 @@ class ProjectFeatured:
         self.author.id = data.get("id")
         self.author.profile_id = _user_payload.get("pk")
 
-        self.label = user.ProjectFeaturedLabel.get_from_id(data.get("featured_project_label_id"))
+        self.label:ProjectFeaturedLabel = ProjectFeaturedLabel.get_from_id(data.get("featured_project_label_id"))
 
 
-def get_project(project_id:int,*,_client:client.HTTPClient|None=None) -> common._AwaitableContextManager[Project]:
+def get_project(project_id:int,*,_client:HTTPClient|None=None) -> _AwaitableContextManager[Project]:
     """
     プロジェクトを取得する。
 
@@ -597,6 +632,6 @@ def get_project(project_id:int,*,_client:client.HTTPClient|None=None) -> common.
         project_id (int): 取得したいプロジェクトのID
 
     Returns:
-        common._AwaitableContextManager[Project]: await か async with で取得できるプロジェクト
+        _AwaitableContextManager[Project]: await か async with で取得できるプロジェクト
     """
-    return common._AwaitableContextManager(Project._create_from_api(project_id,_client))
+    return _AwaitableContextManager(Project._create_from_api(project_id,_client))

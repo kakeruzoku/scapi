@@ -1,3 +1,5 @@
+from __future__ import annotations
+
 import datetime
 from enum import Enum
 import random
@@ -325,7 +327,7 @@ class ProjectFeaturedLabel(Enum):
     WhyIScratch="4"
 
     @classmethod
-    async def get_from_id(cls,id:int|None) -> "ProjectFeaturedLabel":
+    def get_from_id(cls,id:int|None) -> "ProjectFeaturedLabel":
         if id is None:
             return cls.ProjectFeatured
         _id = str(id)

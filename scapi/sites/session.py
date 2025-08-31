@@ -1,10 +1,10 @@
-from typing import Any, AsyncGenerator, Literal
+from __future__ import annotations
+
+from typing import AsyncGenerator, Literal
 import zlib
 import base64
 import json
 import datetime
-from ..utils import client, common, error, file
-from . import base,project,user,studio
 from ..utils.types import (
     DecodedSessionID,
     SessionStatusPayload,
@@ -13,6 +13,33 @@ from ..utils.types import (
     OldProjectPayload,
     OldStudioPayload
 )
+from ..utils.client import HTTPClient
+from ..utils.common import (
+    UNKNOWN,
+    MAYBE_UNKNOWN,
+    api_iterative,
+    page_api_iterative,
+    dt_from_isoformat,
+    dt_from_timestamp,
+    _AwaitableContextManager,
+    b62decode,
+    try_int,
+    split,
+    empty_project_json
+)
+from ..utils.error import (
+    ClientError,
+    InvalidData,
+    Forbidden,
+    HTTPError,
+    LoginFailure
+)
+from ..utils.file import File,_file
+from .base import _BaseSiteAPI
+
+from .project import Project
+from .studio import Studio
+from .user import User
 
 def decode_session(session_id:str) -> tuple[DecodedSessionID,int]:
     s1,s2,s3 = session_id.strip('".').split(':')
@@ -20,7 +47,7 @@ def decode_session(session_id:str) -> tuple[DecodedSessionID,int]:
     padding = '=' * (-len(s1) % 4)
     compressed = base64.urlsafe_b64decode(s1 + padding)
     decompressed = zlib.decompress(compressed)
-    return json.loads(decompressed.decode('utf-8')),common.b62decode(s2)
+    return json.loads(decompressed.decode('utf-8')),b62decode(s2)
 
 class SessionStatus:
     """
@@ -106,10 +133,10 @@ class SessionStatus:
         Returns:
             datetime.datetime: Scratchに参加した時間
         """
-        return common.dt_from_isoformat(self._joined_at,False)
+        return dt_from_isoformat(self._joined_at,False)
 
 
-class Session(base._BaseSiteAPI[str]):
+class Session(_BaseSiteAPI[str]):
     """
     ログイン済みのアカウントを表す
 
@@ -124,23 +151,23 @@ class Session(base._BaseSiteAPI[str]):
     def __repr__(self) -> str:
         return f"<Session username:{self.username}>"
 
-    def __init__(self,session_id:str,_client:client.HTTPClient|None=None):
-        self.client = _client or client.HTTPClient()
+    def __init__(self,session_id:str,_client:HTTPClient|None=None):
+        self.client = _client or HTTPClient()
 
         super().__init__(self)
         self.session_id:str = session_id
-        self.status:common.MAYBE_UNKNOWN[SessionStatus] = common.UNKNOWN
+        self.status:MAYBE_UNKNOWN[SessionStatus] = UNKNOWN
         
         decoded,login_dt = decode_session(self.session_id)
 
         self.xtoken = decoded.get("token")
         self.username = decoded.get("username")
         self.login_ip = decoded.get("login-ip")
-        self.user_id = common.try_int(decoded.get("_auth_user_id"))
+        self.user_id = try_int(decoded.get("_auth_user_id"))
         self._logged_at = login_dt
 
-        self.user:user.User = user.User(self.username,self)
-        self.user.id = self.user_id or common.UNKNOWN
+        self.user:User = User(self.username,self)
+        self.user.id = self.user_id or UNKNOWN
 
         self.client.scratch_cookies = {
             "scratchsessionsid": session_id,
@@ -155,7 +182,7 @@ class Session(base._BaseSiteAPI[str]):
             data:SessionStatusPayload = response.json()
             self._update_from_data(data)
         except Exception:
-            raise error.ClientError(response)
+            raise ClientError(response)
         self.client.scratch_headers["X-token"] = self.xtoken
     
     def _update_from_data(self, data:SessionStatusPayload):
@@ -165,7 +192,7 @@ class Session(base._BaseSiteAPI[str]):
             self.status.update(data)
         else:
             self.status = SessionStatus(self,data)
-        self.user.id = self.user_id or common.UNKNOWN
+        self.user.id = self.user_id or UNKNOWN
     
     @property
     def logged_at(self) -> datetime.datetime:
@@ -175,7 +202,7 @@ class Session(base._BaseSiteAPI[str]):
         Returns:
             datetime.datetime: ログインした時間
         """
-        return common.dt_from_timestamp(self._logged_at,False)
+        return dt_from_timestamp(self._logged_at,False)
     
     async def logout(self):
         """
@@ -190,12 +217,12 @@ class Session(base._BaseSiteAPI[str]):
     
     async def create_project(
             self,title:str|None=None,
-            project_data:file.File|dict|str|bytes|None=None,
+            project_data:File|dict|str|bytes|None=None,
             *,
             remix_id:int|None=None,
             is_json:bool|None=None
             
-        ) -> "project.Project":
+        ) -> "Project":
         """
         プロジェクトを作成する
 
@@ -218,7 +245,7 @@ class Session(base._BaseSiteAPI[str]):
         if title:
             param["title"] = title
 
-        project_data = project_data or common.empty_project_json
+        project_data = project_data or empty_project_json
         if isinstance(project_data,dict):
             project_data = json.dumps(project_data)
         if isinstance(project_data,(bytes, bytearray, memoryview)):
@@ -226,7 +253,7 @@ class Session(base._BaseSiteAPI[str]):
         elif isinstance(project_data,str):
             is_json = True
 
-        async with file._file(project_data) as f:
+        async with _file(project_data) as f:
             content_type = "application/json" if is_json else "application/zip"
             headers = self.client.scratch_headers | {"Content-Type": content_type}
             response = await self.client.post(
@@ -237,9 +264,9 @@ class Session(base._BaseSiteAPI[str]):
         data:ProjectServerPayload = response.json()
         project_id = data.get("content-name")
         if not project_id:
-            raise error.InvalidData(response)
+            raise InvalidData(response)
         
-        _project = project.Project(int(project_id),self)
+        _project = Project(int(project_id),self)
         _project.author = self.user
         b64_title = data.get("content-title")
         if b64_title:
@@ -254,7 +281,7 @@ class Session(base._BaseSiteAPI[str]):
             type:Literal["all","shared","notshared","trashed"]="all",
             sort:Literal["","view_count","love_count","remixers_count","title"]="",
             descending:bool=True
-        ) -> AsyncGenerator[project.Project]:
+        ) -> AsyncGenerator[Project]:
         """
         自分の所有しているプロジェクトを取得する。
 
@@ -269,12 +296,12 @@ class Session(base._BaseSiteAPI[str]):
             Project: 取得したプロジェクト
         """
         add_params:dict[str,str|int|float] = {"descsort":sort} if descending else {"ascsort":sort}
-        async for _p in common.page_api_iterative(
+        async for _p in page_api_iterative(
             self.client,f"https://scratch.mit.edu/site-api/projects/{type}/",
             start_page,end_page,add_params
         ):
             _p:OldAnyObjectPayload[OldProjectPayload]
-            yield project.Project._create_from_data(_p["pk"],_p["fields"],self,"_update_from_old_data")
+            yield Project._create_from_data(_p["pk"],_p["fields"],self,"_update_from_old_data")
 
     async def get_mystuff_studios(
             self,
@@ -283,7 +310,7 @@ class Session(base._BaseSiteAPI[str]):
             type:Literal["all","owned","curated"]="all",
             sort:Literal["","projecters_count","title"]="",
             descending:bool=True
-        ) -> AsyncGenerator[studio.Studio]:
+        ) -> AsyncGenerator[Studio]:
         """
         自分の所有または参加しているスタジオを取得する。
 
@@ -295,17 +322,17 @@ class Session(base._BaseSiteAPI[str]):
             descending (bool, optional): 降順にするか。デフォルトはTrueです。
 
         Yields:
-            studio.Studio: 取得したスタジオ
+            Studio: 取得したスタジオ
         """
         add_params:dict[str,str|int|float] = {"descsort":sort} if descending else {"ascsort":sort}
-        async for _s in common.page_api_iterative(
+        async for _s in page_api_iterative(
             self.client,f"https://scratch.mit.edu/site-api/galleries/{type}/",
             start_page,end_page,add_params
         ):
             _s:OldAnyObjectPayload[OldStudioPayload]
-            yield studio.Studio._create_from_data(_s["pk"],_s["fields"],self,"_update_from_old_data")
+            yield Studio._create_from_data(_s["pk"],_s["fields"],self,"_update_from_old_data")
     
-    async def get_followings_loves(self,limit:int|None=None,offset:int|None=None) -> AsyncGenerator["project.Project", None]:
+    async def get_followings_loves(self,limit:int|None=None,offset:int|None=None) -> AsyncGenerator["Project", None]:
         """
         フォロー中のユーザーが好きなプロジェクトを取得する。
 
@@ -316,13 +343,13 @@ class Session(base._BaseSiteAPI[str]):
         Yields:
             Project: 取得したプロジェクト
         """
-        async for _p in common.api_iterative(
+        async for _p in api_iterative(
             self.client,f"https://api.scratch.mit.edu/users/{self.username}/following/users/loves",
             limit=limit,offset=offset
         ):
-            yield project.Project._create_from_data(_p["id"],_p,self.client_or_session)
+            yield Project._create_from_data(_p["id"],_p,self.client_or_session)
 
-    async def get_viewed_projects(self,limit:int|None=None,offset:int|None=None) -> AsyncGenerator["project.Project", None]:
+    async def get_viewed_projects(self,limit:int|None=None,offset:int|None=None) -> AsyncGenerator["Project", None]:
         """
         プロジェクトの閲覧履歴を取得する。
 
@@ -333,11 +360,11 @@ class Session(base._BaseSiteAPI[str]):
         Yields:
             Project: 取得したプロジェクト
         """
-        async for _p in common.api_iterative(
+        async for _p in api_iterative(
             self.client,f"https://api.scratch.mit.edu/users/{self.username}/projects/recentlyviewed",
             limit=limit,offset=offset
         ):
-            yield project.Project._create_from_data(_p["id"],_p,self.client_or_session)
+            yield Project._create_from_data(_p["id"],_p,self.client_or_session)
 
     async def empty_trash(self,password:str) -> int:
         """
@@ -355,7 +382,7 @@ class Session(base._BaseSiteAPI[str]):
         )
         return r.json().get("trashed")
     
-    async def get_project(self,project_id:int) -> "project.Project":
+    async def get_project(self,project_id:int) -> "Project":
         """
         プロジェクトを取得する。
 
@@ -365,9 +392,9 @@ class Session(base._BaseSiteAPI[str]):
         Returns:
             Project: 取得したプロジェクト
         """
-        return await project.Project._create_from_api(project_id,self.session)
+        return await Project._create_from_api(project_id,self.session)
     
-    async def get_studio(self,studio_id:int) -> "studio.Studio":
+    async def get_studio(self,studio_id:int) -> "Studio":
         """
         スタジオを取得する。
 
@@ -377,9 +404,9 @@ class Session(base._BaseSiteAPI[str]):
         Returns:
             Studio: 取得したスタジオ
         """
-        return await studio.Studio._create_from_api(studio_id,self.session)
+        return await Studio._create_from_api(studio_id,self.session)
     
-    async def get_user(self,username:str) -> "user.User":
+    async def get_user(self,username:str) -> "User":
         """
         ユーザーを取得する。
 
@@ -389,9 +416,9 @@ class Session(base._BaseSiteAPI[str]):
         Returns:
             User: 取得したユーザー
         """
-        return await user.User._create_from_api(username,self.session)
+        return await User._create_from_api(username,self.session)
     
-def session_login(session_id:str) -> common._AwaitableContextManager[Session]:
+def session_login(session_id:str) -> _AwaitableContextManager[Session]:
     """
     セッションIDからアカウントにログインする。
 
@@ -401,13 +428,13 @@ def session_login(session_id:str) -> common._AwaitableContextManager[Session]:
         session_id (str): _description_
 
     Raises:
-        error.HTTPError: 不明な理由でログインに失敗した。
+        HTTPError: 不明な理由でログインに失敗した。
         ValueError: 無効なセッションID。
 
     Returns:
-        common._AwaitableContextManager[Session]: await か async with で取得できるセッション。
+        _AwaitableContextManager[Session]: await か async with で取得できるセッション。
     """
-    return common._AwaitableContextManager(Session._create_from_api(session_id))
+    return _AwaitableContextManager(Session._create_from_api(session_id))
 
 async def _login(
         username:str,
@@ -416,7 +443,7 @@ async def _login(
         *,
         recaptcha_code:str|None=None
     ):
-    _client = client.HTTPClient()
+    _client = HTTPClient()
     data = {"username":username,"password":password}
     if recaptcha_code:
         login_url = "https://scratch.mit.edu/login_retry/"
@@ -432,24 +459,24 @@ async def _login(
                 "scratchlanguage" : "en",
             }
         )
-    except error.Forbidden as e:
+    except Forbidden as e:
         await _client.close()
-        if type(e) is not error.Forbidden:
+        if type(e) is not Forbidden:
             raise
-        raise error.LoginFailure(e.response) from None
+        raise LoginFailure(e.response) from None
     except:
         await _client.close()
         raise
     set_cookie = response._response.headers.get("Set-Cookie","")
-    session_id = common.split(set_cookie,"scratchsessionsid=\"","\"")
+    session_id = split(set_cookie,"scratchsessionsid=\"","\"")
     if not session_id:
-        raise error.LoginFailure(response)
+        raise LoginFailure(response)
     if load_status:
         return await Session._create_from_api(session_id,_client)
     else:
         return Session(session_id,_client)
     
-def login(username:str,password:str,load_status:bool=True,*,recaptcha_code:str|None=None) -> common._AwaitableContextManager[Session]:
+def login(username:str,password:str,load_status:bool=True,*,recaptcha_code:str|None=None) -> _AwaitableContextManager[Session]:
     """_summary_
 
     _extended_summary_
@@ -461,10 +488,10 @@ def login(username:str,password:str,load_status:bool=True,*,recaptcha_code:str|N
         recaptcha_code (str | None, optional)
 
     Raises:
-        error.LoginFailure: ログインに失敗した。
-        error.HTTPError: 不明な理由でログインに失敗した。
+        LoginFailure: ログインに失敗した。
+        HTTPError: 不明な理由でログインに失敗した。
 
     Returns:
-        common._AwaitableContextManager[Session]: await か async with で取得できるセッション
+        _AwaitableContextManager[Session]: await か async with で取得できるセッション
     """
-    return common._AwaitableContextManager(_login(username,password,load_status,recaptcha_code=recaptcha_code))
+    return _AwaitableContextManager(_login(username,password,load_status,recaptcha_code=recaptcha_code))
