@@ -29,9 +29,9 @@ class _BaseEvent(ABC):
         return func
     
     
-    def _call_event(self,name:str,*args) -> asyncio.Task[Any]:
-        func:async_def_type = getattr(self,name)
-        return asyncio.create_task(func(*args))
+    def _call_event(self,name:str,*args):
+        if self.is_running:
+            asyncio.create_task(getattr(self,name)(*args))
     
     async def _middleware(self,event:asyncio.Event):
         try:
@@ -44,9 +44,7 @@ class _BaseEvent(ABC):
     
     @abstractmethod
     async def _event_monitoring(self,event:asyncio.Event) -> NoReturn:
-        self._call_event("on_ready")
-        while True:
-            await asyncio.sleep(0)
+        ...
 
     async def _cleanup(self):
         pass
@@ -54,10 +52,10 @@ class _BaseEvent(ABC):
     async def _wait(self):
         await self._event.wait()
 
-    
-    async def on_ready(self):
-        pass
 
+    @property
+    def is_running(self):
+        return self._task is not None and self._event.is_set()
 
     def run(self) -> asyncio.Task:
         if self._task is not None:
@@ -81,5 +79,14 @@ class _BaseEvent(ABC):
     def stop(self) -> Awaitable:
         if self._task is None:
             return common.do_nothing()
-        self._task.cancel()
-        return self._task
+        task = self._task
+        self._task = None
+        task.cancel()
+        return task
+    
+    async def __aenter__(self):
+        self.run()
+        return self
+
+    async def __aexit__(self, exc_type, exc, tb):
+        await self.stop()

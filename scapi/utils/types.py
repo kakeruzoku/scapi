@@ -288,3 +288,8 @@ class CommentFailurePayload(TypedDict):
 class CommentFailureOldPayload(TypedDict):
     mute_status:NotRequired[CommentMuteStatusPayload|NoElementsPayload]
     error:str
+
+class WSCloudActivityPayload(TypedDict):
+    method:Literal["set"]
+    name:str
+    value:str
