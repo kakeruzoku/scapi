@@ -1,11 +1,16 @@
+from __future__ import annotations
+
 from enum import Enum
 import string
 import datetime
-from typing import Any, AsyncGenerator, Callable, Coroutine, Generic, Literal, ParamSpec, Protocol, Self, TypeVar, overload,AsyncContextManager
+from typing import TYPE_CHECKING, Any, AsyncGenerator, Callable, Coroutine, Generic, Literal, ParamSpec, Protocol, Self, TypeVar, overload,AsyncContextManager
 import inspect
 from functools import wraps
 
-from . import error,client,config
+from .error import NotFound
+from .config import bypass_checking
+if TYPE_CHECKING:
+    from .client import HTTPClient
 
 __version__ = "3.0.0.dev2"
 
@@ -115,7 +120,7 @@ def dt_from_timestamp(timestamp:float|_T,allow_unknown:bool=True) -> datetime.da
     return datetime.datetime.fromtimestamp(timestamp, tz=datetime.timezone.utc)
 
 async def api_iterative(
-        _client:"client.HTTPClient",
+        _client:"HTTPClient",
         url:str,
         limit:int|None=None,
         offset:int|None=None,
@@ -140,7 +145,7 @@ async def api_iterative(
             return
 
 async def page_api_iterative(
-        _client:"client.HTTPClient",
+        _client:"HTTPClient",
         url:str,
         start_page:int|None=None,
         end_page:int|None=None,
@@ -152,7 +157,7 @@ async def page_api_iterative(
     for i in range(start_page,end_page+1):
         try:
             response = await _client.get(url,params={"page":i}|params)
-        except error.NotFound:
+        except NotFound:
             return
         data = response.json()
         for i in data:
@@ -169,7 +174,7 @@ def _bypass_checking(func:Callable[[_T], Any]) -> Callable[[_T], None]:
         """
         このチェックはデバックモードにすることで回避できます。
         """
-        if config.bypass_checking:
+        if bypass_checking:
             return
         else:
             func(self)

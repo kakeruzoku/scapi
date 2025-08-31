@@ -1,7 +1,7 @@
 from abc import ABC, abstractmethod
 import asyncio
 from typing import Any, Awaitable, Callable, Coroutine, Generic, Literal, NoReturn, TypeVar
-from ..utils import common
+from ..utils.common import do_nothing
 
 async_def_type = Callable[..., Coroutine[Any,Any,Any]]
 _CT = TypeVar("_CT", bound=async_def_type)
@@ -78,7 +78,7 @@ class _BaseEvent(ABC):
 
     def stop(self) -> Awaitable:
         if self._task is None:
-            return common.do_nothing()
+            return do_nothing()
         task = self._task
         self._task = None
         task.cancel()

@@ -1,8 +1,23 @@
+from __future__ import annotations
+
 from typing import Any, Callable, TypedDict, Unpack
 import aiohttp
 import json as _json
 from urllib.parse import urlparse
-from . import error,common,config
+from .config import default_proxy,default_proxy_auth
+from .error import (
+    SessionClosed,
+    ProcessingError,
+    IPBanned,
+    AccountBlocked,
+    Unauthorized,
+    Forbidden,
+    NotFound,
+    TooManyRequests,
+    ClientError,
+    ServerError
+)
+from .common import split,UnknownDict
 
 default_headers = {
     "user-agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/75.0.3770.142 Safari/537.36",
@@ -31,23 +46,23 @@ class Response:
         status_code = self.status_code
         if url.host == "scratch.mit.edu":
             if url.path.startswith("/ip_ban_appeal/"):
-                raise error.IPBanned(self,common.split(url.path,"/ip_ban_appeal/","/"))
+                raise IPBanned(self,split(url.path,"/ip_ban_appeal/","/"))
             elif url.path.startswith("/accounts/banned-response"):
-                raise error.AccountBlocked(self)
+                raise AccountBlocked(self)
             elif url.path.startswith("/accounts/login"):
-                raise error.Unauthorized(self)
+                raise Unauthorized(self)
         if status_code == 401:
-            raise error.Unauthorized(self)
+            raise Unauthorized(self)
         elif status_code == 403:
-            raise error.Forbidden(self)
+            raise Forbidden(self)
         elif status_code == 404:
-            raise error.NotFound(self)
+            raise NotFound(self)
         elif status_code == 429:
-            raise error.TooManyRequests(self)
+            raise TooManyRequests(self)
         elif status_code // 100 == 4:
-            raise error.ClientError(self)
+            raise ClientError(self)
         elif status_code // 100 == 5:
-            raise error.ServerError(self)
+            raise ServerError(self)
 
     @property
     def data(self) -> bytes:
@@ -59,7 +74,7 @@ class Response:
     
     def json(self,loads:Callable[[str], Any]=_json.loads,use_unknown:bool=True,/,**kwargs) -> Any:
         if use_unknown:
-            kwargs["object_hook"] = common.UnknownDict
+            kwargs["object_hook"] = UnknownDict
         return loads(self.text,**kwargs)
     
     def json_or_text(self,loads:Callable[[str], Any]=_json.loads,use_unknown:bool=True,/,**kwargs) -> Any:
@@ -83,8 +98,8 @@ class HTTPClient:
         self.cookies = cookies or {}
         self.scratch_headers = scratch_headers or default_headers
         self.scratch_cookies = scratch_cookies or {}
-        self._proxy = config.default_proxy
-        self._proxy_auth = config.default_proxy_auth
+        self._proxy = default_proxy
+        self._proxy_auth = default_proxy_auth
         self._session:aiohttp.ClientSession = aiohttp.ClientSession()
 
     @staticmethod
@@ -114,13 +129,13 @@ class HTTPClient:
             kwargs["headers"] = kwargs.get("headers") or self.headers
         check = kwargs.pop("check",True)
         if self.closed:
-            raise error.SessionClosed()
+            raise SessionClosed()
         try:
             async with self._session.request(method,url,proxy=self._proxy,proxy_auth=self._proxy_auth,**kwargs) as _response:
                 await _response.read()
             response = Response(_response,self)
         except Exception as e:
-            raise error.ProcessingError(e) from e
+            raise ProcessingError(e) from e
         if check:
             response._check()
         return response

@@ -1,10 +1,12 @@
+from __future__ import annotations
+
 from contextlib import asynccontextmanager
 from typing import IO, Any, AsyncGenerator, Generator
 
 from aiofiles.threadpool.binary import AsyncBufferedReader
 import io
 import aiofiles
-from . import common
+from .common import maybe_coroutine
 
 class File:
     """
@@ -59,11 +61,11 @@ class File:
         return self
     
     async def read(self) -> bytes:
-        return await common.maybe_coroutine(self.fp.read)
+        return await maybe_coroutine(self.fp.read)
     
     async def close(self):
         assert self._fp
-        await common.maybe_coroutine(self._fp.close)
+        await maybe_coroutine(self._fp.close)
         
     @property
     def fp(self) -> IO[bytes] | AsyncBufferedReader:

@@ -1,7 +1,10 @@
 from typing import TYPE_CHECKING, Coroutine, Literal,Any, Self,TypeVar, Generic
 from abc import ABC,abstractmethod
-from ..utils import client,error,common
-from . import session
+from ..utils.client import HTTPClient
+from ..utils.common import UNKNOWN,_bypass_checking
+from ..utils.error import NoSession
+if TYPE_CHECKING:
+    from .session import Session
 
 _T = TypeVar("_T")
 
@@ -10,17 +13,17 @@ class _BaseSiteAPI(ABC,Generic[_T]):
     Scratchの何かしらのオブジェクトを表す。
 
     Attributes:
-        client (client.HTTPClient): 通信に使用するHTTPクライアント。
-        session (session.Session|None): ログインしている場合、そのセッション。
+        client (HTTPClient): 通信に使用するHTTPクライアント。
+        session (Session|None): ログインしている場合、そのセッション。
     """
     @abstractmethod
     def __init__(
             self,
-            client_or_session:"client.HTTPClient|session.Session|None",
+            client_or_session:"HTTPClient|Session|None",
         ) -> None:
         if client_or_session is None:
-            client_or_session = client.HTTPClient()
-        if isinstance(client_or_session,client.HTTPClient):
+            client_or_session = HTTPClient()
+        if isinstance(client_or_session,HTTPClient):
             self.client = client_or_session
             self.session = None
         else:
@@ -28,12 +31,12 @@ class _BaseSiteAPI(ABC,Generic[_T]):
             self.session = client_or_session
 
     @property
-    def client_or_session(self) -> "client.HTTPClient|session.Session":
+    def client_or_session(self) -> "HTTPClient|Session":
         """
         紐づけられているSessionかHTTPClientを返す。
 
         Returns:
-            client.HTTPClient|session.Session
+            HTTPClient|Session
         """
         return self.session or self.client
 
@@ -51,26 +54,26 @@ class _BaseSiteAPI(ABC,Generic[_T]):
     
     def _update_to_attributes(self,**data:Any):
         for k,v in data.items():
-            if v is common.UNKNOWN:
+            if v is UNKNOWN:
                 return
             setattr(self,k,v)
 
     @property
     def _session(self):
         if self.session is None:
-            raise error.NoSession(self)
+            raise NoSession(self)
         return self.session
     
-    @common._bypass_checking
+    @_bypass_checking
     def require_session(self):
         """
         クラスにセッションが紐づけられていない場合、例外を送出する。
 
         Raises:
-            error.NoSession: セッションが紐づけられていない。
+            NoSession: セッションが紐づけられていない。
         """
         if self.session is None:
-            raise error.NoSession(self)
+            raise NoSession(self)
     
     @property
     def client_closed(self) -> bool:
@@ -92,7 +95,7 @@ class _BaseSiteAPI(ABC,Generic[_T]):
     async def _create_from_api(
         cls,
         id:_T,
-        client_or_session:"client.HTTPClient|session.Session|None"=None,
+        client_or_session:"HTTPClient|Session|None"=None,
         **kwargs
     ):
         _cls = cls(id,client_or_session,**kwargs) # type: ignore
@@ -104,7 +107,7 @@ class _BaseSiteAPI(ABC,Generic[_T]):
         cls,
         id:_T,
         data,
-        client_or_session:"client.HTTPClient|session.Session|None"=None,
+        client_or_session:"HTTPClient|Session|None"=None,
         _update_func_name:str|None=None,
         **kwargs
     ):

@@ -41,7 +41,8 @@ from .utils.common import (
     empty_project_json,
     UNKNOWN,
     UNKNOWN_TYPE,
-    MAYBE_UNKNOWN
+    MAYBE_UNKNOWN,
+    __version__
 )
 
 from .utils.file import File

@@ -1,5 +1,7 @@
+from __future__ import annotations
+
 import time
-from typing import Any
+from typing import TYPE_CHECKING, Any
 from .types import (
     NoElementsPayload,
     LoginFailurePayload,
@@ -8,8 +10,11 @@ from .types import (
     CommentFailureOldPayload,
     CommentPostPayload
 )
-from . import client,common
-from ..sites import base,session
+
+if TYPE_CHECKING:
+    from ..sites.base import _BaseSiteAPI
+    from ..sites.session import Session
+    from .client import Response
 
 class HTTPError(Exception):
     pass
@@ -22,7 +27,7 @@ class ProcessingError(HTTPError):
         self.exception = exception
 
 class ResponseError(HTTPError):
-    def __init__(self,response:"client.Response",message:Any=None):
+    def __init__(self,response:"Response",message:Any=None):
         self.response = response
         self.status_code = response.status_code
         self.message = message
@@ -37,17 +42,17 @@ class Forbidden(ClientError):
     pass
 
 class IPBanned(Forbidden):
-    def __init__(self,response:"client.Response",ip:str|None):
+    def __init__(self,response:"Response",ip:str|None):
         super().__init__(response)
         self.ip = ip
 
 class AccountBlocked(Forbidden):
     #TODO 理由とか読み込む
-    def __init__(self,response:"client.Response"):
+    def __init__(self,response:"Response"):
         super().__init__(response)
 
 class LoginFailure(Forbidden):
-    def __init__(self,response:"client.Response"):
+    def __init__(self,response:"Response"):
         super().__init__(response)
         data:LoginFailurePayload = response.json()[0]
         self.username = data.get("username")
@@ -58,8 +63,8 @@ class LoginFailure(Forbidden):
 class CommentFailure(Forbidden):
     def __init__(
             self,
-            response:"client.Response",
-            session:"session.Session",
+            response:"Response",
+            session:"Session",
             content:str,
             type:str,
             status:CommentMuteStatusPayload|NoElementsPayload|None,
@@ -67,7 +72,7 @@ class CommentFailure(Forbidden):
         super().__init__(response)
         self.type = type
         self.session = session
-        if self.session and self.session.status is not common.UNKNOWN and status is not None:
+        if self.session and self.session.status and status is not None:
             self.session.status.mute_status = status
         self.mute_status = status
         self.timestamp:int = int(time.time())
@@ -76,8 +81,8 @@ class CommentFailure(Forbidden):
     @classmethod
     def _from_data(
             cls,
-            response:"client.Response",
-            session:"session.Session",
+            response:"Response",
+            session:"Session",
             content:str,
             data:CommentFailurePayload
         ):
@@ -86,8 +91,8 @@ class CommentFailure(Forbidden):
     @classmethod
     def _from_old_data(
             cls,
-            response:"client.Response",
-            session:"session.Session",
+            response:"Response",
+            session:"Session",
             content:str,
             data:CommentFailureOldPayload
         ):
@@ -122,7 +127,7 @@ class InvalidData(ResponseError):
     pass
 
 class CheckingFailed(Exception):
-    def __init__(self,cls:"base._BaseSiteAPI"):
+    def __init__(self,cls:"_BaseSiteAPI"):
         self.cls = cls
 
 class NoSession(CheckingFailed):
@@ -131,4 +136,4 @@ class NoSession(CheckingFailed):
 class NoDataError(CheckingFailed):
     pass
 
-del LoginFailurePayload,client
+del LoginFailurePayload
