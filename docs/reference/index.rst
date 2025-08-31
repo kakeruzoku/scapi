@@ -8,5 +8,7 @@
 
    utils
    sites
+   event
+   cloud
    error
 

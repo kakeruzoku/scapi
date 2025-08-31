@@ -12,7 +12,7 @@ from .config import bypass_checking
 if TYPE_CHECKING:
     from .client import HTTPClient
 
-__version__ = "3.0.0.dev2"
+__version__ = "3.0.0.dev3"
 
 _KT = TypeVar("_KT")
 _VT = TypeVar("_VT")

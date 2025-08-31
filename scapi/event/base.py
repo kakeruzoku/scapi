@@ -10,12 +10,8 @@ _CT = TypeVar("_CT", bound=async_def_type)
 _P = ParamSpec('_P')
 
 class _BaseEvent(ABC):
-    """_summary_
-
-    _extended_summary_
-
-    Attributes:
-        ABC (_type_): _description_
+    """
+    イベントのベースクラス。
     """
     def __init__(self):
         self._task:asyncio.Task|None = None
@@ -23,6 +19,31 @@ class _BaseEvent(ABC):
         self._on_ready = False
 
     def event(self,func:_CT) -> _CT:
+        """
+        イベントを追加するデコレータ。
+
+        .. code-block:: python
+
+            @event.event
+            async def on_ready():
+                print("ready!")
+
+        クラスを継承することでもイベントを追加できます。
+
+        .. code-block:: python
+
+            class MyEvent(_BaseEvent):
+                async def on_ready(self):
+                    print("ready!")
+        
+        
+        Args:
+            func (_CT): 追加したい関数
+
+        Raises:
+            TypeError: コルーチン関数(async defで定義された関数)ではない
+            ValueError: 関数名が`on_`から始まっていない。
+        """
         if not asyncio.iscoroutinefunction(func):
             raise TypeError("Enter the async def function")
         if not func.__name__.startswith("on_"):
@@ -57,10 +78,25 @@ class _BaseEvent(ABC):
 
 
     @property
-    def is_running(self):
+    def is_running(self) -> bool:
+        """
+        実行中かつポーズしていないか。
+
+        Returns:
+            bool
+        """
         return self._task is not None and self._event.is_set()
 
     def run(self) -> asyncio.Task:
+        """
+        イベントの監視を開始する。
+
+        Raises:
+            ValueError: 既に開始済みです。 stop() するか、 resume() の使用を検討してください。
+
+        Returns:
+            asyncio.Task: 監視のタスク。await run()で監視が終了するまで(つまりstop()が実行されて終了処理が終わるまで)待ちます。
+        """
         if self._task is not None:
             raise ValueError("The event has already started")
         self._event.set()
@@ -74,14 +110,31 @@ class _BaseEvent(ABC):
         asyncio.run(self._asyncio_run())
     
     def pause(self):
+        """
+        監視を一時停止する。
+
+        イベントが送出されなくなりますが、接続の維持のためにバックグラウンドで処理が続行される可能性があります。
+        """
         self._event.clear()
 
     def resume(self):
+        """
+        監視を再開する。
+        """
         self._event.set()
 
-    def stop(self) -> Awaitable:
+    def stop(self) -> asyncio.Task:
+        """
+        監視を終了する。
+
+        Raises:
+            ValueError: 実行中のタスクが見つからない
+
+        Returns:
+            asyncio.Task: 終了処理を含んだ監視のタスク
+        """
         if self._task is None:
-            return do_nothing()
+            raise ValueError("The event has already ended")
         task = self._task
         self._task = None
         task.cancel()

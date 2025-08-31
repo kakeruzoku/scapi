@@ -19,6 +19,19 @@ if TYPE_CHECKING:
 
 
 class _BaseCloud(_BaseEvent):
+    """
+    クラウドサーバーに接続するためのクラス。
+
+    Attributes:
+        url (str): 接続先のURL
+        client (HTTPClient): 接続に使用するHTTPClient
+        session (Session|None): Scratchのセッション
+        header (dict[str,str]): ヘッダーに使用するデータ
+        project_id (str|int): 接続先のプロジェクトID
+        username (str): 接続に使用するユーザー名
+        ws_timeout (aiohttp.ClientWSTimeout): aiohttpライブラリのタイムアウト設定
+        send_timeout (float): データを送信する時のタイムアウトまでの時間
+    """
     max_length:int|None = None
     rate_limit:float|None = None
 
@@ -54,13 +67,22 @@ class _BaseCloud(_BaseEvent):
 
     @property
     def ws(self) -> aiohttp.ClientWebSocketResponse:
+        """
+        接続に使用しているWebsocketを返す
+
+        Raises:
+            ValueError: 現在接続していない。
+
+        Returns:
+            aiohttp.ClientWebSocketResponse
+        """
         if self._ws is None:
             raise ValueError("Websocket is None")
         return self._ws
     
-    async def _send(self,data:list[dict[str,str]],*,username:str|None=None,project_id:str|int|None=None):
+    async def _send(self,data:list[dict[str,str]],*,project_id:str|int|None=None):
         add_param = {
-            "user":self.username if username is None else username,
+            "user":self.username,
             "project_id":str(self.project_id if project_id is None else project_id)
         }
         text = "".join([json.dumps(add_param|i)+"\n" for i in data])
@@ -85,6 +107,7 @@ class _BaseCloud(_BaseEvent):
             method = data.get("method","")
             if method != "set":
                 continue
+            self._data[data.get("name")] = data.get("value")
             self._call_event(self.on_set,CloudActivity._create_from_ws(data,self))
 
     async def _event_monitoring(self,event:asyncio.Event):
@@ -121,22 +144,53 @@ class _BaseCloud(_BaseEvent):
             await event.wait()
 
     async def on_connect(self):
+        """
+        [イベント] サーバーに接続が完了した。
+        """
         pass
 
     async def on_set(self,activity:CloudActivity):
+        """
+        [イベント] 変数の値が変更された。
+
+        Args:
+            activity (CloudActivity): 変更のアクティビティ
+        """
         pass
 
     async def on_disconnect(self,interval:int):
+        """
+        [イベント] サーバーから切断された。
+
+        Args:
+            interval (int): 再接続するまでの時間
+        """
         pass
 
 
     @staticmethod
     def add_cloud(text:str) -> str:
+        """
+        先頭に☁がない場合☁を先頭に挿入する。
+
+        Args:
+            text (str): 変換したいテキスト
+
+        Returns:
+            str: 変換されたテキスト
+        """
         if text.startswith("☁ "):
             return "☁ "+text
         return text
 
-    async def send(self,payload:list[dict[str,str]],*,username:str|None=None,project_id:str|int|None=None):
+    async def send(self,payload:list[dict[str,str]],*,project_id:str|int|None=None):
+        """
+        サーバーにデータを送信する。
+
+        Args:
+            payload (list[dict[str,str]]): 送信したいデータ本体
+            project_id (str | int | None, optional): 変更したい場合、送信先のプロジェクトID
+        """
         await asyncio.wait_for(self._ws_event.wait(),timeout=self.send_timeout)
 
         if self.rate_limit:
@@ -145,21 +199,36 @@ class _BaseCloud(_BaseEvent):
             if self.last_set_time < now:
                 self.last_set_time = now
         
-        await self._send(payload,username=username,project_id=project_id)
+        await self._send(payload,project_id=project_id)
 
-    async def set_var(self,variable:str,value:Any,*,username:str|None=None,project_id:str|int|None=None):
+    async def set_var(self,variable:str,value:Any,*,project_id:str|int|None=None):
+        """
+        クラウド変数を変更する。
+
+        Args:
+            variable (str): 設定したい変数名
+            value (Any): 変数の値
+            project_id (str | int | None, optional): 変更したい場合、送信先のプロジェクトID
+        """
         await self.send([{
             "method":"set",
             "name":self.add_cloud(variable),
             "value":str(value)
-        }],username=username,project_id=project_id)
+        }],project_id=project_id)
 
-    async def set_vars(self,data:dict[str,Any],*,username:str|None=None,project_id:str|int|None=None):
+    async def set_vars(self,data:dict[str,Any],*,project_id:str|int|None=None):
+        """
+        クラウド変数を変更する。
+
+        Args:
+            data (dict[str,Any]): 変数名と値のペア
+            project_id (str | int | None, optional): 変更したい場合、送信先のプロジェクトID
+        """
         await self.send([{
             "method":"set",
             "name":self.add_cloud(k),
             "value":str(v)
-        } for k,v in data],username=username,project_id=project_id)
+        } for k,v in data],project_id=project_id)
 
 turbowarp_cloud_url = "wss://clouddata.turbowarp.org"
 
