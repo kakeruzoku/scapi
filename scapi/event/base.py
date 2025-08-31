@@ -1,10 +1,13 @@
+from __future__ import annotations
+
 from abc import ABC, abstractmethod
 import asyncio
-from typing import Any, Awaitable, Callable, Coroutine, Generic, Literal, NoReturn, TypeVar
+from typing import Any, Awaitable, Callable, Coroutine, Generic, Literal, NoReturn, ParamSpec, TypeVar
 from ..utils.common import do_nothing
 
 async_def_type = Callable[..., Coroutine[Any,Any,Any]]
 _CT = TypeVar("_CT", bound=async_def_type)
+_P = ParamSpec('_P')
 
 class _BaseEvent(ABC):
     """_summary_
@@ -29,9 +32,9 @@ class _BaseEvent(ABC):
         return func
     
     
-    def _call_event(self,name:str,*args):
+    def _call_event(self,func:Callable[_P,Coroutine[Any,Any,Any]],*args:_P.args,**kwargs:_P.kwargs):
         if self.is_running:
-            asyncio.create_task(getattr(self,name)(*args))
+            asyncio.create_task(func(*args,**kwargs))
     
     async def _middleware(self,event:asyncio.Event):
         try:
