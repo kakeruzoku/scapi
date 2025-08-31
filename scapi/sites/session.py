@@ -266,13 +266,13 @@ class Session(_BaseSiteAPI[str]):
         if not project_id:
             raise InvalidData(response)
         
-        _project = Project(int(project_id),self)
-        _project.author = self.user
+        project = Project(int(project_id),self)
+        project.author = self.user
         b64_title = data.get("content-title")
         if b64_title:
-            _project.title = base64.b64decode(b64_title).decode()
+            project.title = base64.b64decode(b64_title).decode()
 
-        return _project
+        return project
     
     async def get_mystuff_projects(
             self,

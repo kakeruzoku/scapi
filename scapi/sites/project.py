@@ -600,24 +600,24 @@ class ProjectFeatured:
     def __repr__(self):
         return repr(self.project)
 
-    def __new__(cls,data:UserFeaturedPayload,_user:"User"):
-        _project = data.get("featured_project_data")
-        if _project is None:
+    def __new__(cls,data:UserFeaturedPayload,user:"User"):
+        _project_payload = data.get("featured_project_data")
+        if _project_payload is None:
             return
         else:
             return super().__new__(cls)
 
-    def __init__(self,data:UserFeaturedPayload,_user:"User"):
+    def __init__(self,data:UserFeaturedPayload,user:"User"):
         from .user import ProjectFeaturedLabel
-        _project = data.get("featured_project_data")
+        _project_payload = data.get("featured_project_data")
         _user_payload = data.get("user")
-        assert _project
+        assert _project_payload
 
-        self.project = Project(int(_project.get("id")),_user.client_or_session)
-        self.project._modified_at = _project.get("datetime_modified") + "Z"
-        self.project.title = _project.get("title")
+        self.project = Project(int(_project_payload.get("id")),user.client_or_session)
+        self.project._modified_at = _project_payload.get("datetime_modified") + "Z"
+        self.project.title = _project_payload.get("title")
 
-        self.author = self.project.author = _user
+        self.author = self.project.author = user
         self.author.id = data.get("id")
         self.author.profile_id = _user_payload.get("pk")
 

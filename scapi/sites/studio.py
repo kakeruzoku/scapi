@@ -294,38 +294,38 @@ class Studio(_BaseSiteAPI[int]):
             params={"usernames":self._session.username}
         )
 
-    async def add_project(self,project_id:"Project|int"):
+    async def add_project(self,project:"Project|int"):
         """
         プロジェクトをスタジオに追加する。
 
         Args:
-            project_id (Project|int): 追加するプロジェクトかそのID
+            project (Project|int): 追加するプロジェクトかそのID
         """
         self.require_session()
-        project_id = project_id.id if isinstance(project_id,Project) else project_id
+        project_id = project.id if isinstance(project,Project) else project
         await self.client.post(f"https://api.scratch.mit.edu/studios/{self.id}/project/{project_id}")
 
-    async def remove_project(self,project_id:"Project|int"):
+    async def remove_project(self,project:"Project|int"):
         """
         プロジェクトをスタジオから削除する。
 
         Args:
-            project_id (Project|int): 削除するプロジェクトかそのID
+            project (Project|int): 削除するプロジェクトかそのID
         """
         self.require_session()
-        project_id = project_id.id if isinstance(project_id,Project) else project_id
+        project_id = project.id if isinstance(project,Project) else project
         await self.client.delete(f"https://api.scratch.mit.edu/studios/{self.id}/project/{project_id}")
 
-    async def invite(self,username:"User|str"):
+    async def invite(self,user:"User|str"):
         """
         スタジオにユーザーを招待する
 
         Args:
-            username (User|str): 招待したいユーザーかそのID
+            user (User|str): 招待したいユーザーかそのID
         """
         self.require_session()
         from .user import User
-        username = username.username if isinstance(username,User) else username
+        username = user.username if isinstance(user,User) else user
         response = await self.client.put(
             f"https://scratch.mit.edu/site-api/users/curators-in/{self.id}/invite_curator/",
             params={"usernames":username}
@@ -343,31 +343,31 @@ class Studio(_BaseSiteAPI[int]):
             params={"usernames":self._session.username}
         )
 
-    async def promote(self,username:"User|str"):
+    async def promote(self,user:"User|str"):
         """
         ユーザーをマネージャーに昇格する
 
         Args:
-            username (User|str): 昇格したいユーザーかそのID
+            user (User|str): 昇格したいユーザーかそのID
         """
         self.require_session()
         from .user import User
-        username = username.username if isinstance(username,User) else username
+        username = user.username if isinstance(user,User) else user
         await self.client.put(
             f"https://scratch.mit.edu/site-api/users/curators-in/{self.id}/promote/",
             params={"usernames":username}
         )
     
-    async def remove_curator(self,username:"User|str"):
+    async def remove_curator(self,user:"User|str"):
         """
         スタジオからユーザーを削除する。
 
         Args:
-            username (User|str): 削除したいユーザーかそのID
+            user (User|str): 削除したいユーザーかそのID
         """
         self.require_session()
         from .user import User
-        username = username.username if isinstance(username,User) else username
+        username = user.username if isinstance(user,User) else user
         await self.client.put(
             f"https://scratch.mit.edu/site-api/users/curators-in/{self.id}/remove/",
             params={"usernames":username}
@@ -379,17 +379,17 @@ class Studio(_BaseSiteAPI[int]):
         """
         await self.remove_curator(self._session.username)
 
-    async def transfer_ownership(self,username:"str|User",password:str):
+    async def transfer_ownership(self,user:"str|User",password:str):
         """
         スタジオの所有権を移行する
 
         Args:
-            username (str|User): 新たな所有者かそのユーザー名
+            user (str|User): 新たな所有者かそのユーザー名
             password (str): このアカウントのパスワード
         """
         self.require_session()
         from .user import User
-        username = username.username if isinstance(username,User) else username
+        username = user.username if isinstance(user,User) else user
         await self.client.put(
             f"https://api.scratch.mit.edu/studios/{self.id}/transfer/{username}",
             json={"password":password}
