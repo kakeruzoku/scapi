@@ -32,6 +32,15 @@ from .sites.base import (
     _BaseSiteAPI
 )
 
+from .event.base import (
+    _BaseEvent
+)
+
+from .event.cloud import (
+    _BaseCloud,
+    TurboWarpCloud
+)
+
 from .utils.client import (
     Response,
     HTTPClient,
