@@ -28,6 +28,12 @@ class _BaseCloud(_BaseEvent):
         session (Session|None): Scratchのセッション
         header (dict[str,str]): ヘッダーに使用するデータ
         project_id (str|int): 接続先のプロジェクトID
+
+    .. note::
+        クラウド変数では、プロジェクトIDとして数字以外の文字列もサポートしています。
+        プロジェクトIDがint|strとなっていることに注意してください。
+
+    Attributes:
         username (str): 接続に使用するユーザー名
         ws_timeout (aiohttp.ClientWSTimeout): aiohttpライブラリのタイムアウト設定
         send_timeout (float): データを送信する時のタイムアウトまでの時間
@@ -233,6 +239,9 @@ class _BaseCloud(_BaseEvent):
 turbowarp_cloud_url = "wss://clouddata.turbowarp.org"
 
 class TurboWarpCloud(_BaseCloud):
+    """
+    turbowarpクラウドサーバー用クラス
+    """
     def __init__(
             self,
             client: HTTPClient,
@@ -244,6 +253,17 @@ class TurboWarpCloud(_BaseCloud):
             timeout:aiohttp.ClientWSTimeout|None=None,
             send_timeout:float|None=None
         ):
+        """
+
+        Args:
+            client (HTTPClient): 接続に使用するHTTPクライアント
+            project_id (int | str): 接続先のプロジェクトID
+            username (str, optional): 接続に使用するユーザー名
+            reason (str, optional): サーバー側に提供する接続する理由
+            url (str, optional): 接続先URL。デフォルトはwss://clouddata.turbowarp.orgです
+            timeout (aiohttp.ClientWSTimeout | None, optional): aiohttp側で使用するタイムアウト
+            send_timeout (float | None, optional): set_var()などを実行してから、送信できるようになるまで待つ最大時間
+        """
         super().__init__(url, client, project_id, username, timeout, send_timeout)
 
         self.header["User-Agent"] = f"Scapi/{__version__} ({reason})"

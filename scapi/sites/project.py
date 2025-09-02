@@ -319,6 +319,16 @@ class Project(_BaseSiteAPI[int]):
         return get_comment_from_old(self,start_page,end_page)
         
     async def get_cloud_logs(self,limit:int|None=None,offset:int|None=None) -> AsyncGenerator["CloudActivity", None]:
+        """
+        クラウド変数のログを取得する。
+
+        Args:
+            limit (int|None, optional): 取得するログの数。初期値は100です。
+            offset (int|None, optional): 取得するログの開始位置。初期値は0です。
+
+        Yields:
+            CloudActivity
+        """
         async for _a in api_iterative(
             self.client,"https://clouddata.scratch.mit.edu/logs",
             limit=limit,offset=offset,max_limit=100,params={"projectid":self.id},

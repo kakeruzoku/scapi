@@ -28,6 +28,10 @@ from .sites.comment import (
     Comment
 )
 
+from .sites.activity import (
+    CloudActivity
+)
+
 from .sites.base import (
     _BaseSiteAPI
 )

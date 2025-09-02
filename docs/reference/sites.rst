@@ -60,3 +60,8 @@
 -------------------------
 
 .. autoclass:: scapi.Comment
+
+アクティビティ
+-------------------------
+
+.. autoclass:: scapi.CloudActivity

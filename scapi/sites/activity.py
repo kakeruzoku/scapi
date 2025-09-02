@@ -38,6 +38,18 @@ class CloudActivityPayload(TypedDict):
 
 
 class CloudActivity(_BaseSiteAPI):
+    """
+    クラウド変数の操作ログを表すクラス。
+
+    Attributes:
+        method (str): 操作の種類
+        variable (str): 操作された変数の名前
+        value (str): 新しい値
+        username (MAYBE_UNKNOWN[str]): 利用できる場合、変更したユーザーのユーザー名
+        project_id (int|str): プロジェクトID
+        datetime (datetime.datetime) ログが実行された時間
+        cloud (_BaseCloud|None) このログに関連付けられているクラウド変数クラス
+    """
     def __repr__(self):
         return f"<CloudActivity method:{self.method} id:{self.project_id} user:{self.username} variable:{self.variable} value:{self.value}>"
 
@@ -54,12 +66,30 @@ class CloudActivity(_BaseSiteAPI):
         self.cloud:"_BaseCloud|None" = payload.get("cloud")
 
     async def get_user(self) -> "User":
+        """
+        ユーザー名からユーザーを取得する。
+
+        Raises:
+            NoDataError: ユーザー名の情報がない。
+
+        Returns:
+            User:
+        """
         from .user import User
         if self.username is UNKNOWN:
             raise NoDataError(self)
         return await User._create_from_api(self.username)
     
     async def get_project(self) -> "Project":
+        """
+        プロジェクトIDからプロジェクトを取得する。
+
+        Raises:
+            ValueError: プロジェクトIDがintに変換できない。
+
+        Returns:
+            Project:
+        """
         from .project import Project
         if isinstance(self.project_id,str) and not self.project_id.isdecimal():
             raise ValueError("Invalid project ID")
