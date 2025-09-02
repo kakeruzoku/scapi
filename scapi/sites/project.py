@@ -35,6 +35,9 @@ from .comment import (
     Comment,
     get_comment_from_old
 )
+from .activity import (
+    CloudActivity
+)
 
 if TYPE_CHECKING:
     from .session import Session
@@ -315,6 +318,12 @@ class Project(_BaseSiteAPI[int]):
         """
         return get_comment_from_old(self,start_page,end_page)
         
+    async def get_cloud_logs(self,limit:int|None=None,offset:int|None=None) -> AsyncGenerator["CloudActivity", None]:
+        async for _a in api_iterative(
+            self.client,"https://clouddata.scratch.mit.edu/logs",
+            limit=limit,offset=offset,max_limit=100,params={"projectid":self.id},
+        ):
+            yield CloudActivity._create_from_log(_a,self)
 
 
     async def edit_project(

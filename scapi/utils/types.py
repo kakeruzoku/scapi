@@ -293,3 +293,10 @@ class WSCloudActivityPayload(TypedDict):
     method:Literal["set"]
     name:str
     value:str
+
+class CloudLogPayload(TypedDict):
+    verb:str
+    name:str
+    value:int|float|str
+    timestamp:int
+    user:str

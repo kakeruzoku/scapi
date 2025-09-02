@@ -8,11 +8,13 @@ import bs4
 
 from .base import _BaseSiteAPI
 from ..utils.types import (
-    WSCloudActivityPayload
+    WSCloudActivityPayload,
+    CloudLogPayload
 )
 from ..utils.common import (
     UNKNOWN,
     MAYBE_UNKNOWN,
+    dt_from_timestamp
 )
 from ..utils.error import (
     NoDataError,
@@ -32,7 +34,7 @@ class CloudActivityPayload(TypedDict):
     username:str|None
     project_id:int|str
     datetime:datetime.datetime
-    cloud:"_BaseCloud"
+    cloud:"_BaseCloud|None"
 
 
 class CloudActivity(_BaseSiteAPI):
@@ -49,7 +51,7 @@ class CloudActivity(_BaseSiteAPI):
         self.username:MAYBE_UNKNOWN[str] = payload.get("username") or UNKNOWN
         self.project_id:int|str = payload.get("project_id")
         self.datetime:datetime.datetime = payload.get("datetime")
-        self.cloud:"_BaseCloud" = payload.get("cloud")
+        self.cloud:"_BaseCloud|None" = payload.get("cloud")
 
     async def get_user(self) -> "User":
         from .user import User
@@ -74,3 +76,16 @@ class CloudActivity(_BaseSiteAPI):
             "value":payload.get("value"),
             "variable":payload.get("name")
         },cloud.session or cloud.client)
+    
+    @classmethod
+    def _create_from_log(cls,payload:CloudLogPayload,project:"Project"):
+        _value = payload.get("value",None)
+        return cls({
+            "method":payload.get("verb").removesuffix("_var"),
+            "cloud":None,
+            "datetime":dt_from_timestamp(payload.get("timestamp")/1000),
+            "project_id":project.id,
+            "username":payload.get("user"),
+            "value":"" if _value is None else str(_value),
+            "variable":payload.get("name")
+        },project.client_or_session)
