@@ -3,6 +3,8 @@ from __future__ import annotations
 import datetime
 import json
 from typing import TYPE_CHECKING, Any, AsyncGenerator, Final, Literal
+
+import aiohttp
 from ..utils.types import (
     ProjectPayload,
     ProjectLovePayload,
@@ -29,6 +31,7 @@ from ..utils.file import (
     File,
     _file
 )
+from ..event.cloud import ScratchCloud
 
 from .base import _BaseSiteAPI
 from .comment import (
@@ -333,7 +336,7 @@ class Project(_BaseSiteAPI[int]):
             self.client,"https://clouddata.scratch.mit.edu/logs",
             limit=limit,offset=offset,max_limit=100,params={"projectid":self.id},
         ):
-            yield CloudActivity._create_from_log(_a,self)
+            yield CloudActivity._create_from_log(_a,self.id,self.client_or_session)
 
 
     async def edit_project(
@@ -576,6 +579,14 @@ class Project(_BaseSiteAPI[int]):
             Comment: 投稿されたコメント
         """
         return await Comment.post_comment(self,content,parent,commentee,is_old)
+
+    def cloud(
+            self,
+            *,
+            timeout:aiohttp.ClientWSTimeout|None=None,
+            send_timeout:float|None=None
+        ) -> ScratchCloud:
+        return self._session.cloud(self.id,timeout=timeout,send_timeout=send_timeout)
 
 class ProjectVisibility:
     """

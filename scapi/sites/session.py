@@ -5,6 +5,8 @@ import zlib
 import base64
 import json
 import datetime
+
+import aiohttp
 from ..utils.types import (
     DecodedSessionID,
     SessionStatusPayload,
@@ -35,6 +37,7 @@ from ..utils.error import (
     LoginFailure
 )
 from ..utils.file import File,_file
+from ..event.cloud import ScratchCloud
 from .base import _BaseSiteAPI
 
 from .project import Project
@@ -417,6 +420,15 @@ class Session(_BaseSiteAPI[str]):
             User: 取得したユーザー
         """
         return await User._create_from_api(username,self.session)
+    
+    def cloud(
+            self,
+            project_id:int|str,
+            *,
+            timeout:aiohttp.ClientWSTimeout|None=None,
+            send_timeout:float|None=None
+        ) -> ScratchCloud:
+        return ScratchCloud(self,project_id,timeout=timeout,send_timeout=send_timeout)
     
 def session_login(session_id:str) -> _AwaitableContextManager[Session]:
     """

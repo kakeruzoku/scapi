@@ -2,7 +2,7 @@ from __future__ import annotations
 
 import asyncio
 import time
-from typing import TYPE_CHECKING, Any, Iterable, Iterator, Literal
+from typing import TYPE_CHECKING, Any, AsyncGenerator, Iterable, Iterator, Literal
 import aiohttp
 import json
 from .base import _BaseEvent
@@ -11,7 +11,10 @@ from ..sites.activity import CloudActivity
 from ..utils.types import (
     WSCloudActivityPayload
 )
-from ..utils.common import __version__
+from ..utils.common import (
+    __version__,
+    api_iterative
+)
 
 if TYPE_CHECKING:
     from ..sites.session import Session
@@ -237,6 +240,7 @@ class _BaseCloud(_BaseEvent):
         } for k,v in data],project_id=project_id)
 
 turbowarp_cloud_url = "wss://clouddata.turbowarp.org"
+scratch_cloud_url = "wss://clouddata.scratch.mit.edu"
 
 class TurboWarpCloud(_BaseCloud):
     """
@@ -267,3 +271,49 @@ class TurboWarpCloud(_BaseCloud):
         super().__init__(url, client, project_id, username, timeout, send_timeout)
 
         self.header["User-Agent"] = f"Scapi/{__version__} ({reason})"
+
+class ScratchCloud(_BaseCloud):
+    max_length = 256
+    rate_limit = 0.1
+    """
+    scratchクラウドサーバー用クラス
+    """
+    def __init__(
+            self,
+            session:"Session",
+            project_id:int|str,
+            *,
+            timeout:aiohttp.ClientWSTimeout|None=None,
+            send_timeout:float|None=None
+        ):
+        """
+
+        Args:
+            session (Session): 接続するアカウントのセッション
+            project_id (int | str): 接続先のプロジェクトID
+            timeout (aiohttp.ClientWSTimeout | None, optional): aiohttp側で使用するタイムアウト
+            send_timeout (float | None, optional): set_var()などを実行してから、送信できるようになるまで待つ最大時間
+        """
+        super().__init__(scratch_cloud_url, session.client, project_id, session.username, timeout, send_timeout)
+        self.session = session
+        self.header = {
+            "Cookie":f'scratchsessionsid="{self.session.session_id}";',
+            "Origin":"https://scratch.mit.edu"
+        }
+
+    async def get_logs(self,limit:int|None=None,offset:int|None=None) -> AsyncGenerator["CloudActivity", None]:
+        """
+        クラウド変数のログを取得する。
+
+        Args:
+            limit (int|None, optional): 取得するログの数。初期値は100です。
+            offset (int|None, optional): 取得するログの開始位置。初期値は0です。
+
+        Yields:
+            CloudActivity
+        """
+        async for _a in api_iterative(
+            self.client,"https://clouddata.scratch.mit.edu/logs",
+            limit=limit,offset=offset,max_limit=100,params={"projectid":self.project_id},
+        ):
+            yield CloudActivity._create_from_log(_a,self.project_id,self.session or self.client)

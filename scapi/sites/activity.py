@@ -108,14 +108,14 @@ class CloudActivity(_BaseSiteAPI):
         },cloud.session or cloud.client)
     
     @classmethod
-    def _create_from_log(cls,payload:CloudLogPayload,project:"Project"):
+    def _create_from_log(cls,payload:CloudLogPayload,id:int|str,client_or_session:"HTTPClient|Session"):
         _value = payload.get("value",None)
         return cls({
             "method":payload.get("verb").removesuffix("_var"),
             "cloud":None,
             "datetime":dt_from_timestamp(payload.get("timestamp")/1000),
-            "project_id":project.id,
+            "project_id":id,
             "username":payload.get("user"),
             "value":"" if _value is None else str(_value),
             "variable":payload.get("name")
-        },project.client_or_session)
+        },client_or_session)

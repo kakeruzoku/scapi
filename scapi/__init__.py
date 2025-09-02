@@ -42,7 +42,8 @@ from .event.base import (
 
 from .event.cloud import (
     _BaseCloud,
-    TurboWarpCloud
+    TurboWarpCloud,
+    ScratchCloud
 )
 
 from .utils.client import (
