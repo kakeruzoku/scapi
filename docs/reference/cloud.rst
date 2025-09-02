@@ -12,3 +12,11 @@
 .. autoclass:: scapi._BaseCloud
 
 .. autoclass:: scapi.TurboWarpCloud
+    :members:
+
+    .. automethod:: __init__
+
+.. autoclass:: scapi.ScratchCloud
+    :members:
+
+    .. automethod:: __init__

@@ -178,7 +178,7 @@ class _BaseCloud(_BaseEvent):
 
 
     @staticmethod
-    def add_cloud(text:str) -> str:
+    def add_cloud_symbol(text:str) -> str:
         """
         先頭に☁がない場合☁を先頭に挿入する。
 
@@ -210,7 +210,7 @@ class _BaseCloud(_BaseEvent):
         
         await self._send(payload,project_id=project_id)
 
-    async def set_var(self,variable:str,value:Any,*,project_id:str|int|None=None):
+    async def set_var(self,variable:str,value:Any,*,project_id:str|int|None=None,add_cloud_symbol:bool=True):
         """
         クラウド変数を変更する。
 
@@ -218,24 +218,26 @@ class _BaseCloud(_BaseEvent):
             variable (str): 設定したい変数名
             value (Any): 変数の値
             project_id (str | int | None, optional): 変更したい場合、送信先のプロジェクトID
+            add_cloud_symbol (bool, optional): 自動的に先頭に☁をつけるか
         """
         await self.send([{
             "method":"set",
-            "name":self.add_cloud(variable),
+            "name":self.add_cloud_symbol(variable) if add_cloud_symbol else variable,
             "value":str(value)
         }],project_id=project_id)
 
-    async def set_vars(self,data:dict[str,Any],*,project_id:str|int|None=None):
+    async def set_vars(self,data:dict[str,Any],*,project_id:str|int|None=None,add_cloud_symbol:bool=True):
         """
         クラウド変数を変更する。
 
         Args:
             data (dict[str,Any]): 変数名と値のペア
             project_id (str | int | None, optional): 変更したい場合、送信先のプロジェクトID
+            add_cloud_symbol (bool, optional): 自動的に先頭に☁をつけるか
         """
         await self.send([{
             "method":"set",
-            "name":self.add_cloud(k),
+            "name":self.add_cloud_symbol(k) if add_cloud_symbol else k,
             "value":str(v)
         } for k,v in data],project_id=project_id)
 
