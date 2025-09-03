@@ -66,3 +66,10 @@
 --------------
 
 .. autoclass:: scapi.CloudActivity
+
+メインページ/統計
+-----------------
+
+.. autofunction:: scapi.get_news
+
+.. autoclass:: scapi.News

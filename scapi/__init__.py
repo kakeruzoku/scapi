@@ -5,6 +5,11 @@ from .sites.session import (
     login
 )
 
+from .sites.other import (
+    News,
+    get_news
+)
+
 from .sites.project import (
     Project,
     ProjectFeatured,

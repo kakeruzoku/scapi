@@ -289,6 +289,14 @@ class CommentFailureOldPayload(TypedDict):
     mute_status:NotRequired[CommentMuteStatusPayload|NoElementsPayload]
     error:str
 
+class ScratchNewsPayload(TypedDict):
+    id:int
+    stamp:str
+    headline:str
+    url:str
+    image:str
+    copy:str
+
 class WSCloudActivityPayload(TypedDict):
     method:Literal["set"]
     name:str
