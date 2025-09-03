@@ -313,12 +313,12 @@ class CommunityFeaturedDesignProjectPayload(CommunityFeaturedRemixProjectPayload
     gallery_title:str
 
 class CommunityFeaturedPayload(TypedDict):
-    community_featured_projects:CommunityFeaturedProjectPayload
-    community_featured_studios:BaseCommunityFeaturedObjectPayload
-    community_most_loved_projects:CommunityFeaturedProjectPayload
-    community_most_remixed_projects:CommunityFeaturedRemixProjectPayload
-    community_newest_projects:CommunityFeaturedProjectPayload
-    scratch_design_studio:CommunityFeaturedDesignProjectPayload
+    community_featured_projects:list[CommunityFeaturedProjectPayload]
+    community_featured_studios:list[BaseCommunityFeaturedObjectPayload]
+    community_most_loved_projects:list[CommunityFeaturedProjectPayload]
+    community_most_remixed_projects:list[CommunityFeaturedRemixProjectPayload]
+    community_newest_projects:list[CommunityFeaturedProjectPayload]
+    scratch_design_studio:list[CommunityFeaturedDesignProjectPayload]
 
 class WSCloudActivityPayload(TypedDict):
     method:Literal["set"]

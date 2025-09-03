@@ -74,4 +74,6 @@
 
 .. autoclass:: scapi.News
 
+.. autoclass:: scapi.CommunityFeaturedResponse
+
 .. autofunction:: scapi.get_community_featured

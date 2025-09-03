@@ -5,7 +5,7 @@ from .sites.session import (
     login
 )
 
-from .sites.other import (
+from .sites.mainpage import (
     News,
     get_news,
     CommunityFeaturedResponse,
