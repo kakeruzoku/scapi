@@ -35,6 +35,15 @@ class _RequestOptions(TypedDict, total=False):
     check: bool
 
 class Response:
+    """
+    リクエストのレスポンスを表すクラス。
+
+    Attributes:
+        client (HTTPClient): 通信に使用したHTTPClient
+        _response (aiohttp.ClientResponse):
+        status_code (int): HTTPステータスコード
+        _body (bytes):
+    """
     def __init__(self,response:aiohttp.ClientResponse,client:"HTTPClient"):
         self.client = client
         self._response = response
@@ -66,24 +75,59 @@ class Response:
 
     @property
     def data(self) -> bytes:
+        """
+        レスポンスの生データ。
+
+        Returns:
+            bytes:
+        """
         return self._body
     
     @property
     def text(self) -> str:
+        """
+        レスポンスのテキスト。
+
+        Returns:
+            str:
+        """
         return self._body.decode(self._response.get_encoding())
     
     def json(self,loads:Callable[[str], Any]=_json.loads,use_unknown:bool=True,/,**kwargs) -> Any:
+        """
+        レスポンスをjsonに変換する。
+
+        Args:
+            loads (Callable[[str], Any], optional): json.loadsの代わりに使うjsonデコーダー
+            use_unknown (bool, optional): .get() を使用した際、キーがないのとnullを区別するためにUNKNOWNを返すdictを使用するか。デフォルトはTrueです。
+        """
         if use_unknown:
             kwargs["object_hook"] = UnknownDict
         return loads(self.text,**kwargs)
     
     def json_or_text(self,loads:Callable[[str], Any]=_json.loads,use_unknown:bool=True,/,**kwargs) -> Any:
+        """
+        jsonをエンコードした結果か、失敗した場合テキストを返す。
+
+        Args:
+            loads (Callable[[str], Any], optional): json.loadsの代わりに使うjsonデコーダー
+            use_unknown (bool, optional): .get() を使用した際、キーがないのとnullを区別するためにUNKNOWNを返すdictを使用するか。デフォルトはTrueです。
+        """
         try:
             return self.json(loads,use_unknown,**kwargs)
         except Exception:
             return self.text
 
 class HTTPClient:
+    """
+    通信を行うためのClient
+
+    Attributes:
+        headers (dict[str,str]):
+        cookies (dict[str,str]):
+        scratch_headers (dict[str,str]): Scratchドメインにリクエストする場合のヘッダー
+        scratch_cookies (dict[str,str]): Scratchドメインにリクエストする場合のクッキー
+    """
     def __repr__(self):
         return f"<HTTPClient proxy:{bool(self._proxy)}>"
 
@@ -104,6 +148,15 @@ class HTTPClient:
 
     @staticmethod
     def is_scratch(url:str) -> bool:
+        """
+        urlがscratch.mit.eduドメインを指しているか検証する。
+
+        Args:
+            url (str): 検証したいURL
+
+        Returns:
+            bool:
+        """
         hostname = urlparse(url).hostname
         if hostname is None:
             return False
@@ -111,17 +164,27 @@ class HTTPClient:
     
     @property
     def proxy(self) -> tuple[str|None,aiohttp.BasicAuth|None]:
+        """
+        プロキシの設定を返す。
+
+        Returns:
+            tuple[str|None,aiohttp.BasicAuth|None]:
+        """
         return self._proxy,self._proxy_auth
     
     def set_proxy(self,url:str|None=None,auth:aiohttp.BasicAuth|None=None):
+        """
+        プロキシを設定する。
+
+        Args:
+            url (str | None, optional): プロキシのURL。Noneでプロキシを使用しません
+            auth (aiohttp.BasicAuth | None, optional): プロキシの認証
+        """
         self._proxy = url
         self._proxy_auth = auth
     
-    def get_cookie(self,url:str) -> dict[str, str]:
-        return self.scratch_cookies if self.is_scratch(url) else self.cookies
-    
     async def _request(self,method:str,url:str,**kwargs:Unpack[_RequestOptions]) -> Response:
-        if self.get_cookie(url):
+        if self.is_scratch(url):
             kwargs["cookies"] = kwargs.get("cookies") or self.scratch_cookies
             kwargs["headers"] = kwargs.get("headers") or self.scratch_headers
         else:
@@ -141,22 +204,89 @@ class HTTPClient:
         return response
 
     async def get(self,url:str,**kwargs:Unpack[_RequestOptions]) -> Response:
+        """
+        GETリクエストを送信する。
+
+        Args:
+            url (str): リクエスト先のURL
+            params (dict[str,str|int|float], optional): URLパラメーター
+            cookies (dict[str,str]|None, optional): クッキーを上書きする
+            headers (dict[str,str]|None, optional): ヘッダーを上書きする
+            check (bool, optional): レスポンスコードなどに基づいて例外を送出するか。デフォルトはTrueです。
+
+        Returns:
+            Response:
+        """
         return await self._request("GET",url,**kwargs)
     
     async def post(self,url:str,**kwargs:Unpack[_RequestOptions]) -> Response:
+        """
+        POSTリクエストを送信する。
+
+        Args:
+            url (str): リクエスト先のURL
+            params (dict[str,str|int|float], optional): URLパラメーター
+            data (Any, optional): リクエスト本文
+            json (Any, optional): リクエスト本文のjson
+            cookies (dict[str,str]|None, optional): クッキーを上書きする
+            headers (dict[str,str]|None, optional): ヘッダーを上書きする
+            check (bool, optional): レスポンスコードなどに基づいて例外を送出するか。デフォルトはTrueです。
+
+        Returns:
+            Response:
+        """
         return await self._request("POST",url,**kwargs)
     
     async def put(self,url:str,**kwargs:Unpack[_RequestOptions]) -> Response:
+        """
+        PUTリクエストを送信する。
+
+        Args:
+            url (str): リクエスト先のURL
+            params (dict[str,str|int|float], optional): URLパラメーター
+            data (Any, optional): リクエスト本文
+            json (Any, optional): リクエスト本文のjson
+            cookies (dict[str,str]|None, optional): クッキーを上書きする
+            headers (dict[str,str]|None, optional): ヘッダーを上書きする
+            check (bool, optional): レスポンスコードなどに基づいて例外を送出するか。デフォルトはTrueです。
+
+        Returns:
+            Response:
+        """
         return await self._request("PUT",url,**kwargs)
     
     async def delete(self,url:str,**kwargs:Unpack[_RequestOptions]) -> Response:
+        """
+        DELETEリクエストを送信する。
+
+        Args:
+            url (str): リクエスト先のURL
+            params (dict[str,str|int|float], optional): URLパラメーター
+            data (Any, optional): リクエスト本文
+            json (Any, optional): リクエスト本文のjson
+            cookies (dict[str,str]|None, optional): クッキーを上書きする
+            headers (dict[str,str]|None, optional): ヘッダーを上書きする
+            check (bool, optional): レスポンスコードなどに基づいて例外を送出するか。デフォルトはTrueです。
+
+        Returns:
+            Response:
+        """
         return await self._request("DELETE",url,**kwargs)
     
     @property
     def closed(self):
+        """
+        クライアントが閉じているか
+
+        Returns:
+            bool:
+        """
         return self._session.closed
     
     async def close(self):
+        """
+        クライアントを閉じる
+        """
         await self._session.close()
     
     async def __aenter__(self):

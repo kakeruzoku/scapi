@@ -21,3 +21,10 @@
 .. autoclass:: scapi.utils.common._AwaitableContextManager
 
 .. autoclass:: scapi.File
+
+クライアント
+-------------------------
+
+.. autoclass:: scapi.HTTPClient
+
+.. autoclass:: scapi.Response
