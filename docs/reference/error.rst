@@ -1,11 +1,11 @@
 例外
-===================
+====
 
 .. contents::
     :depth: 3
 
 例外の階層構造
--------------------------
+--------------
 
 * :class:`HTTPError <scapi.utils.error.HTTPError>`
 
@@ -36,6 +36,6 @@
   * :class:`NoDataError <scapi.utils.error.NoDataError>`
 
 例外
--------------------------
+----
 
 .. automodule:: scapi.utils.error
