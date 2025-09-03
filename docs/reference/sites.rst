@@ -77,3 +77,18 @@
 .. autoclass:: scapi.CommunityFeaturedResponse
 
 .. autofunction:: scapi.get_community_featured
+
+その他
+------
+
+.. autoclass:: scapi.UsernameStatus
+
+.. autofunction:: scapi.check_username
+
+.. autoclass:: scapi.PasswordStatus
+
+.. autofunction:: scapi.check_password
+
+.. autoclass:: scapi.EmailStatus
+
+.. autofunction:: scapi.check_email

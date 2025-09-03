@@ -320,6 +320,9 @@ class CommunityFeaturedPayload(TypedDict):
     community_newest_projects:list[CommunityFeaturedProjectPayload]
     scratch_design_studio:list[CommunityFeaturedDesignProjectPayload]
 
+class CheckAnyPayload(TypedDict):
+    msg:str
+
 class WSCloudActivityPayload(TypedDict):
     method:Literal["set"]
     name:str

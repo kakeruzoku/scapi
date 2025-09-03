@@ -5,6 +5,15 @@ from .sites.session import (
     login
 )
 
+from .sites.other import (
+    UsernameStatus,
+    check_username,
+    PasswordStatus,
+    check_password,
+    EmailStatus,
+    check_email,
+)
+
 from .sites.mainpage import (
     News,
     get_news,

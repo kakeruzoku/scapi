@@ -16,9 +16,8 @@ from ..utils.common import (
     MAYBE_UNKNOWN,
     dt_from_isoformat,
     api_iterative,
-    split
 )
-from ..utils.common import get_client_and_session,_AwaitableContextManager
+from ..utils.common import get_client_and_session
 
 from .user import User
 from .studio import Studio
