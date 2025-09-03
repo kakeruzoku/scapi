@@ -11,6 +11,7 @@ from .error import NotFound
 from .config import bypass_checking
 if TYPE_CHECKING:
     from .client import HTTPClient
+    from ..sites.session import Session
 
 __version__ = "3.0.0.dev3"
 
@@ -164,6 +165,16 @@ async def page_api_iterative(
             yield i
         if not data:
             return
+        
+def get_client_and_session(client_or_session:"HTTPClient|Session|None") -> tuple["HTTPClient","Session|None"]:
+    from .client import HTTPClient
+    if client_or_session is None:
+        return HTTPClient(), None
+    if isinstance(client_or_session,HTTPClient):
+        return client_or_session, None
+    else:
+        return client_or_session.client, client_or_session
+
 
 _T = TypeVar("_T")
 _P = ParamSpec('_P')

@@ -73,3 +73,5 @@
 .. autofunction:: scapi.get_news
 
 .. autoclass:: scapi.News
+
+.. autofunction:: scapi.get_community_featured

@@ -289,13 +289,36 @@ class CommentFailureOldPayload(TypedDict):
     mute_status:NotRequired[CommentMuteStatusPayload|NoElementsPayload]
     error:str
 
-class ScratchNewsPayload(TypedDict):
+class NewsPayload(TypedDict):
     id:int
     stamp:str
     headline:str
     url:str
     image:str
     copy:str
+
+class BaseCommunityFeaturedObjectPayload(TypedDict):
+    id:int
+    title:str
+
+class CommunityFeaturedProjectPayload(BaseCommunityFeaturedObjectPayload):
+    love_count:int
+    creator:str
+
+class CommunityFeaturedRemixProjectPayload(CommunityFeaturedProjectPayload):
+    remixers_count:int
+
+class CommunityFeaturedDesignProjectPayload(CommunityFeaturedRemixProjectPayload):
+    gallery_id:int
+    gallery_title:str
+
+class CommunityFeaturedPayload(TypedDict):
+    community_featured_projects:CommunityFeaturedProjectPayload
+    community_featured_studios:BaseCommunityFeaturedObjectPayload
+    community_most_loved_projects:CommunityFeaturedProjectPayload
+    community_most_remixed_projects:CommunityFeaturedRemixProjectPayload
+    community_newest_projects:CommunityFeaturedProjectPayload
+    scratch_design_studio:CommunityFeaturedDesignProjectPayload
 
 class WSCloudActivityPayload(TypedDict):
     method:Literal["set"]

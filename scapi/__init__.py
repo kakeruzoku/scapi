@@ -7,7 +7,9 @@ from .sites.session import (
 
 from .sites.other import (
     News,
-    get_news
+    get_news,
+    CommunityFeaturedResponse,
+    get_community_featured,
 )
 
 from .sites.project import (

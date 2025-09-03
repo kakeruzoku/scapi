@@ -3,7 +3,7 @@ from __future__ import annotations
 from typing import TYPE_CHECKING, Coroutine, Literal,Any, Self,TypeVar, Generic
 from abc import ABC,abstractmethod
 from ..utils.client import HTTPClient
-from ..utils.common import UNKNOWN,_bypass_checking
+from ..utils.common import UNKNOWN,_bypass_checking,get_client_and_session
 from ..utils.error import NoSession
 if TYPE_CHECKING:
     from .session import Session
@@ -23,14 +23,7 @@ class _BaseSiteAPI(ABC,Generic[_T]):
             self,
             client_or_session:"HTTPClient|Session|None",
         ) -> None:
-        if client_or_session is None:
-            client_or_session = HTTPClient()
-        if isinstance(client_or_session,HTTPClient):
-            self.client = client_or_session
-            self.session = None
-        else:
-            self.client = client_or_session.client
-            self.session = client_or_session
+        self.client,self.session = get_client_and_session(client_or_session)
 
     @property
     def client_or_session(self) -> "HTTPClient|Session":

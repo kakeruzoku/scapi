@@ -1,13 +1,14 @@
 from __future__ import annotations
 
 import datetime
-from typing import TYPE_CHECKING, AsyncGenerator, Final
+from typing import TYPE_CHECKING, AsyncGenerator, Final, Sequence, TypedDict
 
-from scapi.sites.session import Session
-from scapi.utils.client import HTTPClient
 from .base import _BaseSiteAPI
 from ..utils.types import (
-    ScratchNewsPayload
+    NewsPayload,
+    CommunityFeaturedPayload,
+    CommunityFeaturedProjectPayload,
+    CommunityFeaturedRemixProjectPayload
 )
 from ..utils.common import (
     UNKNOWN,
@@ -17,6 +18,12 @@ from ..utils.common import (
     api_iterative,
     split
 )
+from ..utils.common import get_client_and_session,_AwaitableContextManager
+
+from .user import User
+from .studio import Studio
+from .project import Project
+
 if TYPE_CHECKING:
     from .session import Session
     from ..utils.client import HTTPClient
@@ -45,7 +52,7 @@ class News(_BaseSiteAPI):
     def __str__(self) -> str:
         return f"<News id:{self.id} headline:{self.headline}>"
 
-    def _update_from_data(self, data:ScratchNewsPayload):
+    def _update_from_data(self, data:NewsPayload):
         self._created_at = data.get("stamp")
         self.headline = data.get("headline")
         self.url = data.get("url")
@@ -66,7 +73,7 @@ class News(_BaseSiteAPI):
         return dt_from_isoformat(self._created_at)
     
 async def get_news(
-        client:"HTTPClient",
+        client_or_session:"HTTPClient|Session|None",
         limit:int|None=None,offset:int|None=None
         
     ) -> AsyncGenerator[News]:
@@ -81,8 +88,74 @@ async def get_news(
     Yields:
         News:
     """
+    client,_ = get_client_and_session(client_or_session)
+    client_or_session = client_or_session or client
     async for _p in api_iterative(
         client,f"https://api.scratch.mit.edu/news",
         limit=limit,offset=offset
     ):
-        yield News._create_from_data(_p["id"],_p,client)
+        yield News._create_from_data(_p["id"],_p,client_or_session or client)
+
+class CommunityFeaturedResponse(TypedDict):
+    featured_projects:list[Project]
+    featured_studios:list[Studio]
+    most_loved_projects:list[Project]
+    most_remixed_projects:list[Project]
+    newest_projects:list[Project]
+    design_studio_projects:list[Project]
+    design_studio:Studio|None
+
+def _add_community_featured_project(
+        client_or_session:"HTTPClient|Session",
+        list_object:"list[Project]",
+        payload:Sequence[CommunityFeaturedProjectPayload|CommunityFeaturedRemixProjectPayload]
+    ):
+    for data in payload:
+        project = Project(data.get("id"),client_or_session)
+        project.title = data.get("title")
+        project.love_count = data.get("love_count")
+        project.author = User(data.get("creator"),client_or_session)
+        project.remix_count = data.get("remixers_count",UNKNOWN)
+        list_object.append(project)
+
+async def get_community_featured(client_or_session:"HTTPClient|Session") -> CommunityFeaturedResponse:
+    """
+    コミュニティ特集を取得する。
+
+    Args:
+        client_or_session (HTTPClient|Session): 通信に使用するHTTPClientか、セッション
+
+    Returns:
+        CommunityFeaturedResponse:
+    """
+    client,_ = get_client_and_session(client_or_session)
+
+    response = await client.get("https://api.scratch.mit.edu/proxy/featured")
+    data:CommunityFeaturedPayload = response.json()
+
+    _return:CommunityFeaturedResponse = {
+        "featured_projects":[],
+        "featured_studios":[],
+        "most_loved_projects":[],
+        "most_remixed_projects":[],
+        "newest_projects":[],
+        "design_studio_projects":[],
+        "design_studio":None
+    }
+    for _data in data.get("community_featured_studios"):
+        studio = Studio(_data.get("id"),client_or_session)
+        studio.title = _data.get("title",UNKNOWN)
+        _return["featured_studios"].append(studio)
+
+    _add_community_featured_project(client_or_session,_return["featured_projects"],data.get("community_featured_projects"))
+    _add_community_featured_project(client_or_session,_return["most_loved_projects"],data.get("community_most_loved_projects"))
+    _add_community_featured_project(client_or_session,_return["most_remixed_projects"],data.get("community_most_remixed_projects"))
+    _add_community_featured_project(client_or_session,_return["newest_projects"],data.get("community_newest_projects"))
+    _add_community_featured_project(client_or_session,_return["design_studio_projects"],data.get("scratch_design_studio"))
+
+    if data.get("scratch_design_studio"):
+        _payload = data.get("scratch_design_studio")[0]
+        _return["design_studio"] = Studio(_payload.get("gallery_id"))
+        _return["design_studio"].title = _payload.get("gallery_title")
+
+    return _return
