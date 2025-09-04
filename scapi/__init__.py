@@ -12,6 +12,9 @@ from .sites.other import (
     check_password,
     EmailStatus,
     check_email,
+    translation,
+    get_supported_translation_language,
+    tts
 )
 
 from .sites.mainpage import (

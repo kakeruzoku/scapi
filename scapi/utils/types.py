@@ -323,6 +323,16 @@ class CommunityFeaturedPayload(TypedDict):
 class CheckAnyPayload(TypedDict):
     msg:str
 
+class TranslatePayload(TypedDict):
+    result:str
+
+class TranslateSupportedLanguagePayload(TypedDict):
+    code:str
+    name:str
+
+class TranslateSupportedPayload(TypedDict):
+    result:list[TranslateSupportedLanguagePayload]
+
 class WSCloudActivityPayload(TypedDict):
     method:Literal["set"]
     name:str

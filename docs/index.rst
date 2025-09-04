@@ -17,4 +17,4 @@ ScapiはScratch APIを非同期に実行できるPythonモジュールです。
 Scapi2.x.xと3.x.xとでは互換性がほぼありません。
 以下のページから、新しいコードへと置き換えてください。
 
-`バージョン3への移行 <migrating>`
+:doc:`バージョン3への移行 <migrating>`

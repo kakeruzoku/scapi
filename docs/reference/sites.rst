@@ -92,3 +92,9 @@
 .. autoclass:: scapi.EmailStatus
 
 .. autofunction:: scapi.check_email
+
+.. autofunction:: scapi.translation
+
+.. autofunction:: scapi.get_supported_translation_language
+
+.. autofunction:: scapi.tts
