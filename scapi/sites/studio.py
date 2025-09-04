@@ -24,6 +24,8 @@ from ..utils.file import (
     _read_file
 )
 
+from ..event.comment import CommentEvent
+
 from .base import _BaseSiteAPI
 from .comment import (
     Comment,
@@ -240,6 +242,19 @@ class Studio(_BaseSiteAPI[int]):
             Comment: 見つかったコメント
         """
         return await Comment._create_from_api(comment_id,place=self)
+    
+    def comment_event(self,interval:int=30,is_old:bool=False) -> CommentEvent:
+        """
+        コメントイベントを作成する。
+
+        Args:
+            interval (int, optional): コメントの更新間隔。デフォルトは30秒です。
+            is_old (bool, optional): 古いAPIから取得するか。デフォルトはFalseです。
+
+        Returns:
+            CommentEvent:
+        """
+        return CommentEvent(self,interval,is_old)
     
     def get_comments_from_old(self,start_page:int|None=None,end_page:int|None=None) -> AsyncGenerator["Comment", None]:
         """

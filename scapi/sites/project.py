@@ -32,6 +32,7 @@ from ..utils.file import (
     _file
 )
 from ..event.cloud import ScratchCloud
+from ..event.comment import CommentEvent
 
 from .base import _BaseSiteAPI
 from .comment import (
@@ -320,6 +321,19 @@ class Project(_BaseSiteAPI[int]):
             Comment: プロジェクトに投稿されたコメント
         """
         return get_comment_from_old(self,start_page,end_page)
+    
+    def comment_event(self,interval:int=30,is_old:bool=False) -> CommentEvent:
+        """
+        コメントイベントを作成する。
+
+        Args:
+            interval (int, optional): コメントの更新間隔。デフォルトは30秒です。
+            is_old (bool, optional): 古いAPIから取得するか。デフォルトはFalseです。
+
+        Returns:
+            CommentEvent:
+        """
+        return CommentEvent(self,interval,is_old)
         
     async def get_cloud_logs(self,limit:int|None=None,offset:int|None=None) -> AsyncGenerator["CloudActivity", None]:
         """

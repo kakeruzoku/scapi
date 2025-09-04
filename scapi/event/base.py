@@ -76,6 +76,15 @@ class _BaseEvent(ABC):
     async def _wait(self):
         await self._event.wait()
 
+    async def on_error(self,error:Exception):
+        """
+        [イベント] イベントモニター関数内でエラーが発生した。
+
+        Args:
+            error (Exception): 発生したエラー
+        """
+        pass
+
 
     @property
     def is_running(self) -> bool:

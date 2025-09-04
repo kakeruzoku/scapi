@@ -55,14 +55,16 @@ from .sites.base import (
     _BaseSiteAPI
 )
 
-from .event.base import (
-    _BaseEvent
-)
+from .event.comment import CommentEvent
 
 from .event.cloud import (
     _BaseCloud,
     TurboWarpCloud,
     ScratchCloud
+)
+
+from .event.base import (
+    _BaseEvent
 )
 
 from .utils.client import (

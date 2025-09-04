@@ -19,7 +19,8 @@ from ..utils.common import (
 if TYPE_CHECKING:
     from ..sites.session import Session
 
-
+class NormalDisconnection(Exception):
+    pass
 
 class _BaseCloud(_BaseEvent):
     """
@@ -135,17 +136,20 @@ class _BaseCloud(_BaseEvent):
                     wait_count = 0
                     self.last_set_time = max(self.last_set_time,time.time())
                     async for w in ws:
+                        if w.type is aiohttp.WSMsgType.ERROR:
+                            raise w.data
                         if w.type in (
                             aiohttp.WSMsgType.CLOSED,
                             aiohttp.WSMsgType.CLOSING,
-                            aiohttp.WSMsgType.CLOSE,
-                            aiohttp.WSMsgType.ERROR
+                            aiohttp.WSMsgType.CLOSE
                         ):
-                            raise Exception
+                            raise NormalDisconnection
                         if self.is_running:
                             self._received_data(w.data)
-            except Exception:
+            except NormalDisconnection:
                 pass
+            except Exception as e:
+                self._call_event(self.on_error,e)
             self._ws_event.clear()
             self._call_event(self.on_disconnect,wait_count)
             await asyncio.sleep(wait_count)
