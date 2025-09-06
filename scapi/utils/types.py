@@ -289,6 +289,16 @@ class CommentFailureOldPayload(TypedDict):
     mute_status:NotRequired[CommentMuteStatusPayload|NoElementsPayload]
     error:str
 
+class ClassroomPayload(TypedDict):
+    id:int
+    title:str
+    description:str
+    status:str
+    data_start:str
+    data_end:str|None
+    #images
+    educator:UserPayload
+
 class NewsPayload(TypedDict):
     id:int
     stamp:str

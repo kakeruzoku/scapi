@@ -39,6 +39,12 @@ from .sites.user import (
     get_user
 )
 
+from .sites.classroom import (
+    Classroom,
+    get_class,
+    get_class_from_token
+)
+
 from .sites.studio import (
     Studio,
     StudioStatus,

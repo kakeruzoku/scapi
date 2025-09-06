@@ -93,8 +93,14 @@ class _BaseSiteAPI(ABC,Generic[_T]):
         client_or_session:"HTTPClient|Session|None"=None,
         **kwargs
     ):
+        need_close = client_or_session is None
         _cls = cls(id,client_or_session,**kwargs) # type: ignore
-        await _cls.update()
+        try:
+            await _cls.update()
+        except:
+            if need_close:
+                await _cls.client.close()
+            raise
         return _cls
     
     @classmethod

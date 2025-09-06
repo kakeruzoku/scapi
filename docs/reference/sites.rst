@@ -70,6 +70,15 @@
 
 .. autoclass:: scapi.Comment
 
+クラス
+------
+
+.. autofunction:: scapi.get_class
+
+.. autofunction:: scapi.get_class_from_token
+
+.. autoclass:: scapi.Classroom
+
 アクティビティ
 --------------
 
