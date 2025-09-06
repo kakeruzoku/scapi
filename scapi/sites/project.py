@@ -679,3 +679,70 @@ def get_project(project_id:int,*,_client:HTTPClient|None=None) -> _AwaitableCont
         _AwaitableContextManager[Project]: await か async with で取得できるプロジェクト
     """
     return _AwaitableContextManager(Project._create_from_api(project_id,_client))
+
+search_mode = Literal["trending","popular"]
+explore_query = Literal["*","animations","art","games","music","stories","tutorial"]|str
+
+async def explore_projects(
+        client:HTTPClient,
+        query:explore_query="*",
+        mode:search_mode="trending",
+        language:str="en",
+        limit:int|None=None,
+        offset:int|None=None,
+        *,
+        session:Session|None=None
+    ) -> AsyncGenerator[Project]:
+    """
+    プロジェクトの傾向を取得する
+
+    Args:
+        client (HTTPClient): 使用するHTTPClient
+        query (explore_query, optional): 取得するする種類。デフォルトは"*"(all)です。
+        mode (Literal["trending","popular"], optional): 取得するモード。デフォルトは"trending"です。
+        language (str, optional): 取得する言語。デフォルトは"en"です。
+        limit (int|None, optional): 取得するプロジェクトの数。初期値は40です。
+        offset (int|None, optional): 取得するプロジェクトの開始位置。初期値は0です。
+        session (Session | None, optional): セッションを使用したい場合、使用したいセッション
+
+    Yields:
+        Project:
+    """
+    client_or_session = session or client
+    async for _p in api_iterative(
+        client,"https://api.scratch.mit.edu/explore/projects",limit,offset,
+        params={"language":language,"mode":mode,"q":query}
+    ):
+        yield Project._create_from_data(_p["id"],_p,client_or_session)
+
+async def search_projects(
+        client:HTTPClient,
+        query:str,
+        mode:search_mode="trending",
+        language:str="en",
+        limit:int|None=None,
+        offset:int|None=None,
+        *,
+        session:Session|None=None
+    )-> AsyncGenerator[Project]:
+    """
+    プロジェクトを検索する
+
+    Args:
+        client (HTTPClient): 使用するHTTPClient
+        query (str): 検索したい内容
+        mode (Literal["trending","popular"], optional): 取得するモード。デフォルトは"trending"です。
+        language (str, optional): 取得する言語。デフォルトは"en"です。
+        limit (int|None, optional): 取得するプロジェクトの数。初期値は40です。
+        offset (int|None, optional): 取得するプロジェクトの開始位置。初期値は0です。
+        session (Session | None, optional): セッションを使用したい場合、使用したいセッション
+
+    Yields:
+        Project:
+    """
+    client_or_session = session or client
+    async for _p in api_iterative(
+        client,"https://api.scratch.mit.edu/search/projects",limit,offset,
+        params={"language":language,"mode":mode,"q":query}
+    ):
+        yield Project._create_from_data(_p["id"],_p,client_or_session)

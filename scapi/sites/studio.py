@@ -1,7 +1,7 @@
 from __future__ import annotations
 
 import datetime
-from typing import TYPE_CHECKING, AsyncGenerator, Final
+from typing import TYPE_CHECKING, AsyncGenerator, Final, Literal
 
 import aiohttp
 from ..utils.types import (
@@ -507,3 +507,70 @@ def get_studio(studio_id:int,*,_client:HTTPClient|None=None) -> _AwaitableContex
         common._AwaitableContextManager[Studio]: await か async with で取得できるスタジオ
     """
     return _AwaitableContextManager(Studio._create_from_api(studio_id,_client))
+
+search_mode = Literal["trending","popular"]
+explore_query = Literal["*","animations","art","games","music","stories","tutorial"]|str
+
+async def explore_studios(
+        client:HTTPClient,
+        query:explore_query="*",
+        mode:search_mode="trending",
+        language:str="en",
+        limit:int|None=None,
+        offset:int|None=None,
+        *,
+        session:Session|None=None
+    ) -> AsyncGenerator[Studio]:
+    """
+    スタジオの傾向を取得する
+
+    Args:
+        client (HTTPClient): 使用するHTTPClient
+        query (explore_query, optional): 取得するする種類。デフォルトは"*"(all)です。
+        mode (Literal["trending","popular"], optional): 取得するモード。デフォルトは"trending"です。
+        language (str, optional): 取得する言語。デフォルトは"en"です。
+        limit (int|None, optional): 取得するスタジオの数。初期値は40です。
+        offset (int|None, optional): 取得するスタジオの開始位置。初期値は0です。
+        session (Session | None, optional): セッションを使用したい場合、使用したいセッション
+
+    Yields:
+        Studio:
+    """
+    client_or_session = session or client
+    async for _s in api_iterative(
+        client,"https://api.scratch.mit.edu/explore/studios",limit,offset,
+        params={"language":language,"mode":mode,"q":query}
+    ):
+        yield Studio._create_from_data(_s["id"],_s,client_or_session)
+
+async def search_studios(
+        client:HTTPClient,
+        query:str,
+        mode:search_mode="trending",
+        language:str="en",
+        limit:int|None=None,
+        offset:int|None=None,
+        *,
+        session:Session|None=None
+    ) -> AsyncGenerator[Studio]:
+    """
+    スタジオを検索する
+
+    Args:
+        client (HTTPClient): 使用するHTTPClient
+        query (str): 検索したい内容
+        mode (Literal["trending","popular"], optional): 取得するモード。デフォルトは"trending"です。
+        language (str, optional): 取得する言語。デフォルトは"en"です。
+        limit (int|None, optional): 取得するスタジオの数。初期値は40です。
+        offset (int|None, optional): 取得するスタジオの開始位置。初期値は0です。
+        session (Session | None, optional): セッションを使用したい場合、使用したいセッション
+
+    Yields:
+        Studio:
+    """
+    client_or_session = session or client
+    async for _s in api_iterative(
+        client,"https://api.scratch.mit.edu/search/studios",limit,offset,
+        params={"language":language,"mode":mode,"q":query}
+    ):
+        yield Studio._create_from_data(_s["id"],_s,client_or_session)

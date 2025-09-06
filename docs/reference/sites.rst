@@ -29,6 +29,10 @@
 .. autofunction:: scapi.Session.get_project
     :no-index:
 
+.. autofunction:: scapi.explore_projects
+
+.. autofunction:: scapi.search_projects
+
 .. autoclass:: scapi.Project
 
 .. autoclass:: scapi.ProjectFeatured
@@ -42,6 +46,10 @@
 
 .. autofunction:: scapi.Session.get_studio
     :no-index:
+
+.. autofunction:: scapi.explore_studios
+
+.. autofunction:: scapi.search_studios
 
 .. autoclass:: scapi.Studio
 

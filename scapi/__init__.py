@@ -28,7 +28,9 @@ from .sites.project import (
     Project,
     ProjectFeatured,
     ProjectVisibility,
-    get_project
+    get_project,
+    explore_projects,
+    search_projects
 )
 
 from .sites.user import (
@@ -40,7 +42,9 @@ from .sites.user import (
 from .sites.studio import (
     Studio,
     StudioStatus,
-    get_studio
+    get_studio,
+    explore_studios,
+    search_studios
 )
 
 from .sites.comment import (
