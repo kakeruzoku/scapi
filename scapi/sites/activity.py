@@ -1,13 +1,15 @@
 from __future__ import annotations
 
 import datetime
+from enum import Enum
 import json
-from typing import TYPE_CHECKING, AsyncGenerator, Final, Literal, TypedDict
+from typing import TYPE_CHECKING, Any, AsyncGenerator, Final, Literal, TypedDict
 
 import bs4
 
 from .base import _BaseSiteAPI
 from ..utils.types import (
+    ActivityBase,
     WSCloudActivityPayload,
     CloudLogPayload
 )
@@ -16,6 +18,7 @@ from ..utils.common import (
     MAYBE_UNKNOWN,
     dt_from_timestamp
 )
+
 from ..utils.error import (
     NoDataError,
 )
@@ -26,6 +29,9 @@ if TYPE_CHECKING:
     from ..event.cloud import _BaseCloud
     from .user import User
     from .project import Project
+    from .studio import Studio
+    from .user import User
+    from .comment import Comment
 
 class CloudActivityPayload(TypedDict):
     method:str
@@ -35,6 +41,46 @@ class CloudActivityPayload(TypedDict):
     project_id:int|str
     datetime:datetime.datetime
     cloud:"_BaseCloud|None"
+
+class ActivityType(Enum):
+    studio="studio"
+    user="user"
+    message="message"
+    feed="feed"
+
+class ActivityAction(Enum):
+    unknown="unknown"
+
+class Activity:
+    def __init__(
+            self,
+            type:ActivityType,
+            action:ActivityAction,
+            *,
+            id:int|None=None,
+            actor:"User|None"=None,
+            target:"Comment|Studio|Project|User|None"=None,
+            place:"Studio|Project|User|None"=None,
+            datetime:"datetime.datetime|None"=None,
+            other:Any=None,
+            _is_set=True
+        ):
+        if TYPE_CHECKING or _is_set:
+            self.type:ActivityType = type
+            self.action:ActivityAction = action
+            
+        self.id:int|None = id
+        self.actor:"User|None" = actor
+        self.target:"Comment|Studio|Project|User|None" = target
+        self.place:"Studio|Project|User|None" = place
+        self.created_at:"datetime.datetime|None" = datetime
+        self.other:Any = other
+
+    def _setup_from_json(self,data:ActivityBase,client_or_session:"HTTPClient|Session|None"=None):
+        from .user import User
+        self.actor = User(data["actor_username"],client_or_session)
+        self.action = ActivityAction(data["type"])
+
 
 
 class CloudActivity(_BaseSiteAPI):

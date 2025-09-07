@@ -299,6 +299,13 @@ class ClassroomPayload(TypedDict):
     #images
     educator:UserPayload
 
+class ActivityBase(TypedDict):
+    id:int
+    datetime_created:str
+    actor_username:str
+    actor_id:int
+    type:str
+
 class NewsPayload(TypedDict):
     id:int
     stamp:str
