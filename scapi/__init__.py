@@ -61,6 +61,11 @@ from .sites.activity import (
     CloudActivity
 )
 
+from .sites.forum import (
+    ForumCategory,
+    get_forum_categories
+)
+
 from .sites.base import (
     _BaseSiteAPI
 )

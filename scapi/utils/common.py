@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+from contextlib import asynccontextmanager
 from enum import Enum
 import string
 import datetime
@@ -178,6 +179,17 @@ def get_client_and_session(client_or_session:"HTTPClient|Session|None") -> tuple
 
 _T = TypeVar("_T")
 _P = ParamSpec('_P')
+
+@asynccontextmanager
+async def temporary_httpclient(client_or_session:"HTTPClient|Session|None"):
+    need_close = client_or_session is None
+    client,_ = get_client_and_session(client_or_session)
+    try:
+        yield client
+    except:
+        if need_close:
+            await client.close()
+        raise
 
 def _bypass_checking(func:Callable[[_T], Any]) -> Callable[[_T], None]:
     @wraps(func)

@@ -12,7 +12,8 @@ from ..utils.common import (
     UNKNOWN_TYPE,
     get_client_and_session,
     _AwaitableContextManager,
-    dt_from_isoformat
+    dt_from_isoformat,
+    temporary_httpclient
 )
 from ..utils.client import HTTPClient
 
@@ -98,16 +99,10 @@ def get_class(class_id:int,*,_client:HTTPClient|None=None) -> _AwaitableContextM
     return _AwaitableContextManager(Classroom._create_from_api(class_id,_client))
 
 async def _get_class_from_token(token:str,client_or_session:"HTTPClient|Session|None"=None) -> Classroom:
-    need_close = client_or_session is None
-    client,_ = get_client_and_session(client_or_session)
-    try:
+    async with temporary_httpclient(client_or_session) as client:
         response = await client.get(f"https://api.scratch.mit.edu/classtoken/{token}")
         data:ClassroomPayload = response.json()
         return Classroom._create_from_data(data["id"],data,client_or_session,token=token)
-    except:
-        if need_close:
-            await client.close()
-        raise
 
 def get_class_from_token(token:str,*,_client:HTTPClient|None=None) -> _AwaitableContextManager[Classroom]:
     """
