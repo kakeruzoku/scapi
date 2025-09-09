@@ -69,7 +69,7 @@ def split(text:str,before:str,after:str,forced:bool=False) -> str|None:
         return text.split(before)[1].split(after)[0]
     except IndexError:
         if forced:
-            raise ValueError()
+            raise ValueError() from None
     
 def try_int(text:str) -> int | None:
     try:
