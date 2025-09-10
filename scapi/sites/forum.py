@@ -19,6 +19,8 @@ from .base import _BaseSiteAPI
 if TYPE_CHECKING:
     from .session import Session
 
+Tag = bs4.Tag|Any
+
 class ForumCategory(_BaseSiteAPI[int]):
     """
     フォーラムのカテゴリーを表す
@@ -54,8 +56,8 @@ class ForumCategory(_BaseSiteAPI[int]):
         data:bs4.Tag,
         client_or_session:"HTTPClient|Session|None"=None
     ):
-        _title:bs4.Tag|Any = data.find("div",{"class":"tclcon"})
-        _name:bs4.Tag|Any = _title.find("a")
+        _title:Tag = data.find("div",{"class":"tclcon"})
+        _name:Tag = _title.find("a")
         _url:str|Any = _name["href"]
 
         category = cls(int(split(_url,"/discuss/","/",True)),client_or_session)
@@ -64,21 +66,98 @@ class ForumCategory(_BaseSiteAPI[int]):
         _description:bs4.element.NavigableString|Any = _title.contents[-1]
         category.description = _description.string.strip()
         
-        _topic_count:bs4.Tag|Any = data.find("td",{"class":"tc2"})
+        _topic_count:Tag = data.find("td",{"class":"tc2"})
         category.topic_count = int(_topic_count.get_text())
-        _post_count:bs4.Tag|Any = data.find("td",{"class":"tc3"})
+        _post_count:Tag = data.find("td",{"class":"tc3"})
         category.post_count = int(_post_count.get_text())
 
-        if False: #ForumPost実装したら
-            _last_post:bs4.Tag|Any = data.find("td",{"class":"tcr"})
-            _post:bs4.Tag|Any = _last_post.find("a")
-            _post_author:bs4.Tag|Any = _last_post.find("span")
-            last_post_username = _post_author.get_text(strip=True).removeprefix("by ")
-            _last_post_url:str|Any = _post["href"]
-            last_post_id = int(split(_last_post_url,"/discuss/post/","/",True))
-            last_post_datetime = fix_datetime(_post.get_text())
-
         return category
+    
+    async def update(self):
+        response = await self.client.get(f"https://scratch.mit.edu/discuss/{self.id}/")
+        self._update_from_data(bs4.BeautifulSoup(response.text, "html.parser"))
+
+    def _update_from_data(self,data:Tag):
+        _main_block:Tag = data.find("div",{"id":"vf"})
+        _head:Tag = _main_block.find("div",{"class":"box-head"})
+        _name:Tag = _head.find("span")
+        self.name = _name.get_text().strip()
+
+    async def get_topics(self,start_page:int|None=None,end_page:int|None=None) -> AsyncGenerator["ForumTopic"]:
+        if TYPE_CHECKING:
+            _topic:Tag
+        start_page = start_page or 1
+        end_page = end_page or start_page
+        is_first:bool = True
+        for i in range(start_page,end_page+1):
+            response = await self.client.get(f"https://scratch.mit.edu/discuss/{self.id}/",params={"page":i})
+            data = bs4.BeautifulSoup(fix_html(response.text), "html.parser")
+            if is_first:
+                self._update_from_data(data)
+                is_first = False
+            _body:Tag = data.find("tbody")
+            for _topic in _body.find_all("tr"):
+                yield ForumTopic._create_from_category(self,_topic,self.client_or_session)
+
+    
+class ForumTopic(_BaseSiteAPI):
+    """
+    フォーラムのトピックを表す
+
+    Attributes:
+        id (int): トピックのID
+        name (MAYBE_UNKNOWN[str]): トピックの名前
+        category (MAYBE_UNKNOWN[ForumCategory]): トピックが属しているカテゴリー
+
+        is_sticky (MAYBE_UNKNOWN[bool]): ピン留めされているか
+        is_closed (MAYBE_UNKNOWN[bool]): 閉じられているか
+        post_count (MAYBE_UNKNOWN[int]): 投稿されたポストの数
+        view_count (MAYBE_UNKNOWN[int]): トピックが閲覧された回数
+    """
+    def __init__(self,id:int,client_or_session:"HTTPClient|Session|None"=None):
+        super().__init__(client_or_session)
+        self.id:Final[int] = id
+        self.name:MAYBE_UNKNOWN[str] = UNKNOWN
+        self.category:MAYBE_UNKNOWN[ForumCategory] = UNKNOWN
+
+        self.is_sticky:MAYBE_UNKNOWN[bool] = UNKNOWN
+        self.is_closed:MAYBE_UNKNOWN[bool] = UNKNOWN
+        self.post_count:MAYBE_UNKNOWN[int] = UNKNOWN
+        self.view_count:MAYBE_UNKNOWN[int] = UNKNOWN
+
+    @classmethod
+    def _create_from_category(
+        cls,
+        category:ForumCategory,
+        data:bs4.Tag,
+        client_or_session:"HTTPClient|Session|None"=None
+    ):
+        _h3:Tag = data.find("h3")
+        _is_unread = _h3.get("class") is not None
+        _a:Tag = _h3.find("a")
+        _url:str|Any = _a["href"]
+        topic = cls(int(split(_url,"/discuss/topic/","/",True)),client_or_session)
+        topic.category = category
+        topic.name = _a.get_text().strip()
+
+        _post_count:Tag = data.find("td",{"class":"tc2"})
+        topic.post_count = int(_post_count.get_text())
+        _view_count:Tag = data.find("td",{"class":"tc3"})
+        topic.view_count = int(_view_count.get_text())
+
+        if data.find("div",{"class":"forumicon"}) is not None:
+            topic.is_closed, topic.is_sticky = False,False
+        elif data.find("div",{"class":"iclosed"}) is not None:
+            topic.is_closed, topic.is_sticky = True,False
+        elif data.find("div",{"class":"isticky"}) is not None:
+            topic.is_closed, topic.is_sticky = False,True
+        elif data.find("div",{"class":"isticky iclosed"}) is not None:
+            topic.is_closed, topic.is_sticky = True,True
+        else:
+            raise ValueError()
+
+
+        return topic
 
 async def get_forum_categories(client_or_session:"HTTPClient|Session|None"=None) -> dict[str, list[ForumCategory]]:
     """
@@ -91,22 +170,22 @@ async def get_forum_categories(client_or_session:"HTTPClient|Session|None"=None)
         dict[str, list[ForumCategory]]: ボックスの名前と、そこに属しているカテゴリーのペア
     """
     if TYPE_CHECKING:
-        box:bs4.Tag|Any
-        category:bs4.Tag|Any
+        box:Tag
+        category:Tag
     returns:dict[str,list[ForumCategory]] = {}
     async with temporary_httpclient(client_or_session) as client:
         response = await client.get("https://scratch.mit.edu/discuss/")
         soup = bs4.BeautifulSoup(response.text, "html.parser")
-        boxes:bs4.Tag|Any = soup.find("div",{"class":"blocktable"})
+        boxes:Tag = soup.find("div",{"class":"blocktable"})
         for box in boxes.find_all("div",{"class":"box"}):
-            _box_head:bs4.Tag|Any = box.find("h4")
+            _box_head:Tag = box.find("h4")
             box_title = str(_box_head.contents[-1]).strip()
             returns[box_title] = []
 
-            _box_body:bs4.Tag|Any = box.find("tbody")
-            categories:list[bs4.Tag|Any] = _box_body.find_all("tr")
+            _box_body:Tag = box.find("tbody")
+            categories:list[Tag] = _box_body.find_all("tr")
             for category in categories:
-                returns[box_title].append(ForumCategory._create_from_home(box_title,category,client_or_session))
+                returns[box_title].append(ForumCategory._create_from_home(box_title,category,client_or_session or client))
     return returns
 
 month_dict = {
@@ -132,3 +211,19 @@ def fix_datetime(text:str) -> datetime.datetime:
     hour,minute,second = _time.split(":")
     time = datetime.time(int(hour),int(minute),int(second))
     return datetime.datetime.combine(date,time,datetime.timezone.utc)
+
+def fix_html(text:str):
+    "Remove html vandal div tag"
+    return text.replace(
+        "<div class=\"nosize\"><!-- --></div>\n                                    </div>",
+        "<div class=\"nosize\"><!-- --></div>"
+    )
+
+def load_last_post(self:_BaseSiteAPI,data:bs4.Tag):
+    _last_post:Tag = data.find("td",{"class":"tcr"})
+    _post:Tag = _last_post.find("a")
+    _post_author:Tag = _last_post.find("span")
+    last_post_username = _post_author.get_text(strip=True).removeprefix("by ")
+    _last_post_url:str|Any = _post["href"]
+    last_post_id = int(split(_last_post_url,"/discuss/post/","/",True))
+    last_post_datetime = fix_datetime(_post.get_text())
