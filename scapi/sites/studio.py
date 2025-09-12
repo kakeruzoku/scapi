@@ -7,7 +7,8 @@ import aiohttp
 from ..utils.types import (
     StudioPayload,
     StudioRolePayload,
-    OldStudioPayload
+    OldStudioPayload,
+    StudioClassroomPayload
 )
 from ..utils.common import (
     UNKNOWN,
@@ -18,7 +19,10 @@ from ..utils.common import (
     _AwaitableContextManager
 )
 from ..utils.client import HTTPClient
-from ..utils.error import ClientError
+from ..utils.error import (
+    ClientError,
+    NotFound
+)
 from ..utils.file import (
     File,
     _read_file
@@ -36,6 +40,7 @@ from .project import Project
 if TYPE_CHECKING:
     from .session import Session
     from .user import User
+    from .classroom import Classroom
 
 class Studio(_BaseSiteAPI[int]):
     """
@@ -268,6 +273,33 @@ class Studio(_BaseSiteAPI[int]):
             Comment: 取得したコメント
         """
         return get_comment_from_old(self,start_page,end_page)
+    
+    async def get_classroom_id(self) -> int|None:
+        """_
+        スタジオが属しているクラスのIDを返す
+
+        Returns:
+            int|None:
+        """
+        try:
+            response = await self.client.get(f"https://api.scratch.mit.edu/studios/{self.id}/classroom")
+        except NotFound:
+            return
+        data:StudioClassroomPayload = response.json()
+        return data.get("id")
+    
+    async def get_classroom(self) -> "Classroom|None":
+        """_
+        スタジオが属しているクラスを返す
+
+        Returns:
+            Classroom|None:
+        """
+        from .classroom import Classroom
+        classroom_id = await self.get_classroom_id()
+        if classroom_id is None:
+            return
+        return await Classroom._create_from_api(classroom_id,self.client_or_session)
     
 
     async def post_comment(

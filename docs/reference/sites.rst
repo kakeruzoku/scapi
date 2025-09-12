@@ -84,6 +84,15 @@
 
 .. autoclass:: scapi.CloudActivity
 
+フォーラム
+----------
+
+.. autofunction:: scapi.get_forum_categories
+
+.. autoclass:: scapi.ForumCategory
+
+.. autoclass:: scapi.ForumTopic
+
 メインページ/統計
 -----------------
 

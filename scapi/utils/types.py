@@ -251,6 +251,9 @@ class StudioRolePayload(TypedDict):
     invited:bool
     following:bool
 
+class StudioClassroomPayload(TypedDict):
+    id:int
+
 class CommentPayload(TypedDict,total=False):
     id:Required[int]
     parent_id:int|None
