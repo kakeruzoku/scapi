@@ -2,6 +2,7 @@ from __future__ import annotations
 
 import datetime
 from typing import TYPE_CHECKING, Any, AsyncGenerator, Final
+import math
 
 import aiohttp
 import bs4
@@ -15,11 +16,19 @@ from ..utils.common import (
 )
 
 from .base import _BaseSiteAPI
+from .user import User
 
 if TYPE_CHECKING:
     from .session import Session
 
 Tag = bs4.Tag|Any
+
+"""
+TODO
+- ForumPostの実装
+- 検索とか
+- 投稿とかのユーザーアクション
+"""
 
 class ForumCategory(_BaseSiteAPI[int]):
     """
@@ -39,6 +48,7 @@ class ForumCategory(_BaseSiteAPI[int]):
         self.id:Final[int] = id
 
         self.name:MAYBE_UNKNOWN[str] = UNKNOWN
+        self.page_count:MAYBE_UNKNOWN[int] = UNKNOWN
 
         self.box_name:MAYBE_UNKNOWN[str] = UNKNOWN
         self.description:MAYBE_UNKNOWN[str] = UNKNOWN
@@ -70,6 +80,7 @@ class ForumCategory(_BaseSiteAPI[int]):
         category.topic_count = int(_topic_count.get_text())
         _post_count:Tag = data.find("td",{"class":"tc3"})
         category.post_count = int(_post_count.get_text())
+        category.page_count = math.ceil(category.post_count / 25)
 
         return category
     
@@ -82,6 +93,10 @@ class ForumCategory(_BaseSiteAPI[int]):
         _head:Tag = _main_block.find("div",{"class":"box-head"})
         _name:Tag = _head.find("span")
         self.name = _name.get_text().strip()
+
+        _pages:Tag = data.find("div",{"class":"pagination"})
+        _page:Tag = _pages.find_all("a",{"class":"page"})[-1]
+        self.page_count = int(_page.get_text())
 
     async def get_topics(self,start_page:int|None=None,end_page:int|None=None) -> AsyncGenerator["ForumTopic"]:
         if TYPE_CHECKING:
@@ -109,6 +124,7 @@ class ForumTopic(_BaseSiteAPI):
         name (MAYBE_UNKNOWN[str]): トピックの名前
         category (MAYBE_UNKNOWN[ForumCategory]): トピックが属しているカテゴリー
 
+        is_unread (MAYBE_UNKNOWN[bool]): 未読の投稿があるか
         is_sticky (MAYBE_UNKNOWN[bool]): ピン留めされているか
         is_closed (MAYBE_UNKNOWN[bool]): 閉じられているか
         post_count (MAYBE_UNKNOWN[int]): 投稿されたポストの数
@@ -119,7 +135,9 @@ class ForumTopic(_BaseSiteAPI):
         self.id:Final[int] = id
         self.name:MAYBE_UNKNOWN[str] = UNKNOWN
         self.category:MAYBE_UNKNOWN[ForumCategory] = UNKNOWN
+        self.author:MAYBE_UNKNOWN[User] = UNKNOWN
 
+        self.is_unread:MAYBE_UNKNOWN[bool] = UNKNOWN
         self.is_sticky:MAYBE_UNKNOWN[bool] = UNKNOWN
         self.is_closed:MAYBE_UNKNOWN[bool] = UNKNOWN
         self.post_count:MAYBE_UNKNOWN[int] = UNKNOWN
@@ -132,32 +150,42 @@ class ForumTopic(_BaseSiteAPI):
         data:bs4.Tag,
         client_or_session:"HTTPClient|Session|None"=None
     ):
-        _h3:Tag = data.find("h3")
-        _is_unread = _h3.get("class") is not None
+        _tcl:Tag = data.find("td",{"class":"tcl"})
+        _h3:Tag = _tcl.find("h3")
         _a:Tag = _h3.find("a")
         _url:str|Any = _a["href"]
+
         topic = cls(int(split(_url,"/discuss/topic/","/",True)),client_or_session)
         topic.category = category
-        topic.name = _a.get_text().strip()
+        topic.name = _a.get_text(strip=True)
+        topic.is_unread = _h3.get("class") is None
 
         _post_count:Tag = data.find("td",{"class":"tc2"})
         topic.post_count = int(_post_count.get_text())
         _view_count:Tag = data.find("td",{"class":"tc3"})
         topic.view_count = int(_view_count.get_text())
 
-        if data.find("div",{"class":"forumicon"}) is not None:
-            topic.is_closed, topic.is_sticky = False,False
-        elif data.find("div",{"class":"iclosed"}) is not None:
-            topic.is_closed, topic.is_sticky = True,False
-        elif data.find("div",{"class":"isticky"}) is not None:
-            topic.is_closed, topic.is_sticky = False,True
-        elif data.find("div",{"class":"isticky iclosed"}) is not None:
-            topic.is_closed, topic.is_sticky = True,True
-        else:
-            raise ValueError()
+        _user:Tag = _tcl.find("span",{"class":"byuser"})
+        topic.author = User(_user.get_text(strip=True).removeprefix("by "),client_or_session)
 
+        if _tcl.find("div",{"class":"forumicon"}) is not None:
+            topic.is_closed, topic.is_sticky = False,False
+        elif _tcl.find("div",{"class":"iclosed"}) is not None:
+            topic.is_closed, topic.is_sticky = True,False
+        elif _tcl.find("div",{"class":"isticky"}) is not None:
+            topic.is_closed, topic.is_sticky = False,True
+        elif _tcl.find("div",{"class":"isticky iclosed"}) is not None:
+            topic.is_closed, topic.is_sticky = True,True
 
         return topic
+    
+    async def update(self):
+        response = await self.client.get(f"https://scratch.mit.edu/discuss/topic/{self.id}/")
+        self._update_from_data(bs4.BeautifulSoup(response.text, "html.parser"))
+
+    def _update_from_data(self,data:Tag):
+        self.is_unread = False
+        #TODO
 
 async def get_forum_categories(client_or_session:"HTTPClient|Session|None"=None) -> dict[str, list[ForumCategory]]:
     """
@@ -194,7 +222,7 @@ month_dict = {
     'Sep': 9, 'Oct': 10, 'Nov': 11, 'Dec': 12
 }
 
-def fix_datetime(text:str) -> datetime.datetime:
+def decode_datetime(text:str) -> datetime.datetime:
     text = text.strip()
     if text.startswith("Today"):
         date = datetime.date.today()
@@ -226,4 +254,4 @@ def load_last_post(self:_BaseSiteAPI,data:bs4.Tag):
     last_post_username = _post_author.get_text(strip=True).removeprefix("by ")
     _last_post_url:str|Any = _post["href"]
     last_post_id = int(split(_last_post_url,"/discuss/post/","/",True))
-    last_post_datetime = fix_datetime(_post.get_text())
+    last_post_datetime = decode_datetime(_post.get_text())
