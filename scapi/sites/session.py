@@ -217,6 +217,52 @@ class Session(_BaseSiteAPI[str]):
             "https://scratch.mit.edu/accounts/logout/",
             json={"csrfmiddlewaretoken":"a"}
         )
+
+    async def change_country(self,country:str):
+        """
+        アカウントに表示される国を変更する
+
+        Args:
+            country (str): 変更先の国名
+        """
+        await self.client.post(
+            "https://scratch.mit.edu/accounts/settings/",
+            data=aiohttp.FormData({"country":country})
+        )
+
+    async def change_email(self,new_email:str,password:str):
+        """
+        アカウントに登録されているメールアドレスを変更する。
+
+        Args:
+            new_email (str): 新たなメールアドレス
+            password (str): パスワード
+        """
+        await self.client.post(
+            "https://scratch.mit.edu/accounts/email_change/",
+            data=aiohttp.FormData({
+                "email_address": new_email,
+                "password": password
+            })
+        )
+
+    async def change_subscription(self,*,activities:bool=False,teacher_tips:bool=False):
+        """
+        登録しているメールアドレスへの配信を設定する。
+
+        Args:
+            activities (bool, optional): 家庭でScratchを使う活動のアイデアを受け取るか。デフォルトはFalseです。
+            teacher_tips (bool, optional): Scratchを教育現場向け設定にするためのプロダクトアップデートを受け取るか。デフォルトはFalseです。
+        """
+        formdata = aiohttp.FormData({"csrfmiddlewaretoken":"a"})
+        if activities:
+            formdata.add_field("activities","on")
+        if teacher_tips:
+            formdata.add_field("teacher_tips","on")
+        await self.client.post(
+            "https://scratch.mit.edu/accounts/settings/update_subscription/",
+            data=formdata
+        )
     
     async def create_project(
             self,title:str|None=None,
