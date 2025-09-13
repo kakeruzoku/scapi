@@ -4,7 +4,10 @@ import datetime
 from typing import TYPE_CHECKING, Any, AsyncGenerator, Final, Literal
 
 from ..utils.types import (
-    ClassroomPayload
+    ClassroomPayload,
+    OldAllClassroomPayload,
+    OldBaseClassroomPayload,
+    OldIdClassroomPayload
 )
 from ..utils.common import (
     UNKNOWN,
@@ -47,6 +50,10 @@ class Classroom(_BaseSiteAPI[int]):
         self.description:MAYBE_UNKNOWN[str] = UNKNOWN
         self.status:MAYBE_UNKNOWN[str] = UNKNOWN
 
+        self.studio_count:MAYBE_UNKNOWN[int] = UNKNOWN
+        self.student_count:MAYBE_UNKNOWN[int] = UNKNOWN
+        self.unread_alert_count:MAYBE_UNKNOWN[int] = UNKNOWN
+
     async def update(self) -> None:
         response = await self.client.get(f"https://api.scratch.mit.edu/classrooms/{self.id}")
         self._update_from_data(response.json())
@@ -85,6 +92,28 @@ class Classroom(_BaseSiteAPI[int]):
             if self.educator is UNKNOWN:
                 self.educator = User(_educator["username"])
             self.educator._update_from_data(_educator)
+
+    def _update_from_old_data(self, data:OldBaseClassroomPayload):
+        self._update_to_attributes(
+            title=data.get("title"),
+            _started_at=data.get("datetime_created"),
+            token=data.get("token"),
+            studio_count=data.get("gallery_count"),
+            student_count=data.get("student_count"),
+            unread_alert_count=data.get("unread_alert_count")
+        )
+        if self.session is not None:
+            self.educator = self.educator or self.session.user
+
+    def _update_from_all_mystuff_data(self,data:OldAllClassroomPayload):
+        self._update_from_old_data(data)
+
+    def _update_from_id_mystuff_data(self,data:OldIdClassroomPayload):
+        self._update_to_attributes(
+            description=data.get("description"),
+            status=data.get("status"),
+        )
+        self._update_from_old_data(data)
 
 def get_class(class_id:int,*,_client:HTTPClient|None=None) -> _AwaitableContextManager[Classroom]:
     """

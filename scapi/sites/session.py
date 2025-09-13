@@ -13,7 +13,10 @@ from ..utils.types import (
     ProjectServerPayload,
     OldAnyObjectPayload,
     OldProjectPayload,
-    OldStudioPayload
+    OldStudioPayload,
+    ClassCreatedPayload,
+    OldAllClassroomPayload,
+    OldIdClassroomPayload
 )
 from ..utils.client import HTTPClient
 from ..utils.common import (
@@ -40,6 +43,7 @@ from ..utils.file import File,_file
 from ..event.cloud import ScratchCloud
 from .base import _BaseSiteAPI
 
+from .classroom import Classroom
 from .project import Project
 from .studio import Studio
 from .user import User
@@ -323,6 +327,45 @@ class Session(_BaseSiteAPI[str]):
 
         return project
     
+    async def create_class(
+            self,
+            title:str,
+            description:str|None=None,
+            status:str|None=None
+        ) -> Classroom:
+        """
+        クラスを作成する。
+
+        クラスを作成するには教師アカウントが必要です。
+        6カ月に10クラスまで作成できます。
+
+        Args:
+            title (str): 作成したいクラスの名前
+            description (str | None, optional): このクラスについて欄
+            status (str | None, optional): 現在、取り組んでいること欄
+
+        Returns:
+            Classroom: 作成されたクラス
+        """
+        response = await self.client.post(
+            "https://scratch.mit.edu/classes/create_classroom/",
+            json={
+                "title":title,
+                "description":description or "",
+                "status":status or "",
+                "is_robot":False,
+                "csrfmiddlewaretoken":"a"
+            }
+        )
+        data:ClassCreatedPayload = response.json()[0]
+        if not data["success"]:
+            raise 
+        classroom = Classroom(data["id"],self.session)
+        classroom.title = data.get("title")
+        classroom.description = description or ""
+        classroom.status = status or ""
+        return classroom    
+    
     async def get_mystuff_projects(
             self,
             start_page:int|None=None,
@@ -335,8 +378,8 @@ class Session(_BaseSiteAPI[str]):
         自分の所有しているプロジェクトを取得する。
 
         Args:
-            start_page (int|None, optional): 取得するコメントの開始ページ位置。初期値は1です。
-            end_page (int|None, optional): 取得するコメントの終了ページ位置。初期値はstart_pageの値です。
+            start_page (int|None, optional): 取得するプロジェクトの開始ページ位置。初期値は1です。
+            end_page (int|None, optional): 取得するプロジェクトの終了ページ位置。初期値はstart_pageの値です。
             type (Literal["all","shared","notshared","trashed"], optional): 取得したいプロジェクトの種類。デフォルトは"all"です。
             sort (Literal["","view_count","love_count","remixers_count","title"], optional): ソートしたい順。デフォルトは "" (最終更新順)です。
             descending (bool, optional): 降順にするか。デフォルトはTrueです。
@@ -364,8 +407,8 @@ class Session(_BaseSiteAPI[str]):
         自分の所有または参加しているスタジオを取得する。
 
         Args:
-            start_page (int|None, optional): 取得するコメントの開始ページ位置。初期値は1です。
-            end_page (int|None, optional): 取得するコメントの終了ページ位置。初期値はstart_pageの値です。
+            start_page (int|None, optional): 取得するスタジオの開始ページ位置。初期値は1です。
+            end_page (int|None, optional): 取得するスタジオの終了ページ位置。初期値はstart_pageの値です。
             type (Literal["all","owned","curated"], optional): 取得したいスタジオの種類。デフォルトは"all"です。
             sort (Literal["","projecters_count","title"], optional): ソートしたい順。デフォルトは ""です。
             descending (bool, optional): 降順にするか。デフォルトはTrueです。
@@ -380,6 +423,49 @@ class Session(_BaseSiteAPI[str]):
         ):
             _s:OldAnyObjectPayload[OldStudioPayload]
             yield Studio._create_from_data(_s["pk"],_s["fields"],self,"_update_from_old_data")
+
+    async def get_mystuff_classes(
+            self,
+            start_page:int|None=None,
+            end_page:int|None=None,
+            type:Literal["all","closed"]="all",
+            sort:Literal["","student_count","title"]="",
+            descending:bool=True
+        ) -> AsyncGenerator[Classroom]:
+        """
+        自分の所有しているクラスを取得する。
+
+        Args:
+            start_page (int|None, optional): 取得するクラスの開始ページ位置。初期値は1です。
+            end_page (int|None, optional): 取得するクラスの終了ページ位置。初期値はstart_pageの値です。
+            type (Literal["all","closed"], optional): 取得したいクラスの種類。デフォルトは"all"です。
+            sort (Literal["","student_count","title"], optional): ソートしたい順。デフォルトは ""です。
+            descending (bool, optional): 降順にするか。デフォルトはTrueです。
+
+        Yields:
+            Studio: 取得したスタジオ
+        """
+        add_params:dict[str,str|int|float] = {"descsort":sort} if descending else {"ascsort":sort}
+        async for _s in page_api_iterative(
+            self.client,f"https://scratch.mit.edu/site-api/classrooms/{type}/",
+            start_page,end_page,add_params
+        ):
+            _s:OldAnyObjectPayload[OldAllClassroomPayload]
+            yield Classroom._create_from_data(_s["pk"],_s["fields"],self,"_update_from_all_mystuff_data")
+
+    async def get_mystuff_class(self,id:int) -> Classroom:
+        """
+        所有しているクラスの情報を取得する。
+
+        Args:
+            id (int): 取得したいクラスのID
+
+        Returns:
+            Classroom:
+        """
+        response = await self.client.get(f"https://scratch.mit.edu/site-api/classrooms/all/{id}/")
+        data:OldIdClassroomPayload = response.json()
+        return Classroom._create_from_data(id,data,self,"_update_from_id_mystuff_data")
     
     async def get_followings_loves(self,limit:int|None=None,offset:int|None=None) -> AsyncGenerator["Project", None]:
         """

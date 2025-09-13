@@ -292,6 +292,12 @@ class CommentFailureOldPayload(TypedDict):
     mute_status:NotRequired[CommentMuteStatusPayload|NoElementsPayload]
     error:str
 
+class ClassCreatedPayload(TypedDict):
+    msg:str
+    id:int
+    success:bool
+    title:str
+
 class ClassroomPayload(TypedDict):
     id:int
     title:str
@@ -301,6 +307,26 @@ class ClassroomPayload(TypedDict):
     data_end:str|None
     #images
     educator:UserPayload
+
+class OldBaseClassroomPayload(TypedDict):
+    datetime_created:str
+    gallery_count:int
+    student_count:int
+    thumbnail_url:str
+    title:str
+    token:str
+    unread_alert_count:int
+
+class OldAllClassroomPayload(OldBaseClassroomPayload):
+    visibility:Literal["visible"] #TODO それ以外
+    commenters_count:int
+    educator_profile:UserFeaturedPayload
+
+class OldIdClassroomPayload(OldBaseClassroomPayload):
+    id:int
+    description:str
+    status:str
+    educator:UserFeaturedUserPayload
 
 class ActivityBase(TypedDict):
     id:int
