@@ -16,7 +16,8 @@ from ..utils.types import (
     OldStudioPayload,
     ClassCreatedPayload,
     OldAllClassroomPayload,
-    OldIdClassroomPayload
+    OldIdClassroomPayload,
+    StudioCreatedPayload
 )
 from ..utils.client import HTTPClient
 from ..utils.common import (
@@ -327,6 +328,17 @@ class Session(_BaseSiteAPI[str]):
 
         return project
     
+    async def create_studio(self) -> Studio:
+        """
+        スタジオを作成する
+
+        Returns:
+            Studio: 作成されたスタジオ
+        """
+        response = await self.client.post("https://scratch.mit.edu/studios/create/")
+        data:StudioCreatedPayload = response.json()
+        return Studio(int(split(data.get("redirect"),"/studios/","/",True)),self.session)
+    
     async def create_class(
             self,
             title:str,
@@ -621,9 +633,8 @@ async def _login(
         return Session(session_id,_client)
     
 def login(username:str,password:str,load_status:bool=True,*,recaptcha_code:str|None=None) -> _AwaitableContextManager[Session]:
-    """_summary_
-
-    _extended_summary_
+    """
+    Scratchにログインする。
 
     Args:
         username (str): ユーザー名

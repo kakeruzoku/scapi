@@ -3,6 +3,8 @@ from __future__ import annotations
 import datetime
 from typing import TYPE_CHECKING, Any, AsyncGenerator, Final, Literal
 
+import aiohttp
+
 from ..utils.types import (
     ClassroomPayload,
     OldAllClassroomPayload,
@@ -13,12 +15,12 @@ from ..utils.common import (
     UNKNOWN,
     MAYBE_UNKNOWN,
     UNKNOWN_TYPE,
-    get_client_and_session,
     _AwaitableContextManager,
     dt_from_isoformat,
     temporary_httpclient
 )
 from ..utils.client import HTTPClient
+from ..utils.file import File,_read_file
 
 from .base import _BaseSiteAPI
 from .user import User
@@ -43,8 +45,8 @@ class Classroom(_BaseSiteAPI[int]):
 
         self.title:MAYBE_UNKNOWN[str] = UNKNOWN
         self._started_at:MAYBE_UNKNOWN[str] = UNKNOWN
-        self._ended_at:MAYBE_UNKNOWN[str|None] = UNKNOWN
         self.educator:MAYBE_UNKNOWN[User] = UNKNOWN
+        self.closed:MAYBE_UNKNOWN[bool] = UNKNOWN
 
         self.token:MAYBE_UNKNOWN[str] = token or UNKNOWN
         self.description:MAYBE_UNKNOWN[str] = UNKNOWN
@@ -67,24 +69,14 @@ class Classroom(_BaseSiteAPI[int]):
             datetime.datetime|UNKNOWN_TYPE:
         """
         return dt_from_isoformat(self._started_at)
-    
-    @property
-    def ended_at(self) -> datetime.datetime|UNKNOWN_TYPE|None:
-        """
-        クラスが終了した時間。クラスが終了すると、APIから取得できなくなるためこの値は常にNoneになります。
-
-        Returns:
-            datetime.datetime|UNKNOWN_TYPE:
-        """
-        return dt_from_isoformat(self._ended_at)
 
     def _update_from_data(self, data:ClassroomPayload):
+        self.closed = False #closeしてたらapiから取得できない
         self._update_to_attributes(
             title=data.get("title"),
             description=data.get("description"),
             status=data.get("status"),
             _started_at=data.get("data_start"),
-            _ended_at=data.get("data_end"),
         )
 
         _educator = data.get("educator")
@@ -106,6 +98,7 @@ class Classroom(_BaseSiteAPI[int]):
             self.educator = self.educator or self.session.user
 
     def _update_from_all_mystuff_data(self,data:OldAllClassroomPayload):
+        self.closed = data.get("visibility") == "closed"
         self._update_from_old_data(data)
 
     def _update_from_id_mystuff_data(self,data:OldIdClassroomPayload):
@@ -114,6 +107,46 @@ class Classroom(_BaseSiteAPI[int]):
             status=data.get("status"),
         )
         self._update_from_old_data(data)
+
+    async def edit(
+            self,
+            title:str|None=None,
+            description:str|None=None,
+            status:str|None=None,
+            open:bool|None=None
+        ):
+        """
+        クラスを編集する。
+
+        Args:
+            title (str | None, optional): クラスのタイトル
+            description (str | None, optional): このクラスについて
+            status (str | None, optional): 現在、取り組んでいること
+            open (bool | None, optional): クラスを開けるか
+        """
+        data = {}
+        self.require_session()
+        if title is not None: data["title"] = title
+        if description is not None: data["description"] = description
+        if status is not None: data["status"] = status
+        if open is not None: data["visibility"] = "visible" if open else "closed"
+        response = await self.client.put(f"https://scratch.mit.edu/site-api/classrooms/all/{self.id}/",json=data)
+        self._update_from_id_mystuff_data(response.json())
+
+    async def set_icon(self,icon:File|bytes):
+        """
+        アイコンを変更する。
+
+        Args:
+            icon (file.File | bytes): アイコンのデータ
+        """
+        self.require_session()
+        async with _read_file(icon) as f:
+            self.require_session()
+            await self.client.post(
+                f"https://scratch.mit.edu/site-api/classrooms/all/{self.id}/",
+                data=aiohttp.FormData({"file":f})
+            )
 
 def get_class(class_id:int,*,_client:HTTPClient|None=None) -> _AwaitableContextManager[Classroom]:
     """

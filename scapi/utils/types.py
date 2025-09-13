@@ -19,6 +19,9 @@ class OldAnyObjectPayload(TypedDict,Generic[_T]):
     model:str
     pk:int
 
+class AnySuccessPayload(TypedDict):
+    success:bool
+
 class SessionStatusUserPayload(TypedDict):
     id:int
     banned:bool
@@ -222,6 +225,9 @@ class StudioStatsPayload(TypedDict):
     managers:int
     projects:int
 
+class StudioCreatedPayload(AnySuccessPayload):
+    redirect:str
+
 class StudioPayload(TypedDict,total=False):
     id:Required[int]
     title:str
@@ -292,10 +298,9 @@ class CommentFailureOldPayload(TypedDict):
     mute_status:NotRequired[CommentMuteStatusPayload|NoElementsPayload]
     error:str
 
-class ClassCreatedPayload(TypedDict):
+class ClassCreatedPayload(AnySuccessPayload):
     msg:str
     id:int
-    success:bool
     title:str
 
 class ClassroomPayload(TypedDict):
@@ -318,7 +323,7 @@ class OldBaseClassroomPayload(TypedDict):
     unread_alert_count:int
 
 class OldAllClassroomPayload(OldBaseClassroomPayload):
-    visibility:Literal["visible"] #TODO それ以外
+    visibility:Literal["visible","closed"]
     commenters_count:int
     educator_profile:UserFeaturedPayload
 
