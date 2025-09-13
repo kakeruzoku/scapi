@@ -1,6 +1,6 @@
 from __future__ import annotations
 
-from typing import TYPE_CHECKING, Coroutine, Literal,Any, Self,TypeVar, Generic
+from typing import TYPE_CHECKING, Any, Callable, Self, TypeVar, Generic, ParamSpec, Coroutine
 from abc import ABC,abstractmethod
 from ..utils.client import HTTPClient
 from ..utils.common import UNKNOWN,_bypass_checking,get_client_and_session
@@ -9,6 +9,7 @@ if TYPE_CHECKING:
     from .session import Session
 
 _T = TypeVar("_T")
+_P = TypeVar("_P")
 
 class _BaseSiteAPI(ABC,Generic[_T]):
     """
@@ -107,16 +108,16 @@ class _BaseSiteAPI(ABC,Generic[_T]):
     def _create_from_data(
         cls,
         id:_T,
-        data,
+        data:_P,
         client_or_session:"HTTPClient|Session|None"=None,
-        _update_func_name:str|None=None,
+        _update_func:Callable[[Self,_P],None]|None=None,
         **kwargs
     ):
         _cls = cls(id,client_or_session,**kwargs) # type: ignore
-        if _update_func_name is None:
+        if _update_func is None:
             _cls._update_from_data(data)
         else:
-            getattr(_cls,_update_func_name)(data)
+            _update_func(_cls,data)
         return _cls
 
     

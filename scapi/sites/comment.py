@@ -2,7 +2,7 @@ from __future__ import annotations
 
 import datetime
 import json
-from typing import TYPE_CHECKING, AsyncGenerator, Final
+from typing import TYPE_CHECKING, Any, AsyncGenerator, Final
 
 import bs4
 from .base import _BaseSiteAPI
@@ -25,6 +25,8 @@ from ..utils.error import (
     NoDataError,
     CommentFailure
 )
+
+Tag = bs4.Tag|Any
 
 if TYPE_CHECKING:
     from .session import Session
@@ -259,12 +261,12 @@ class Comment(_BaseSiteAPI[int]):
                 ))
                 raise CommentFailure._from_old_data(response,place._session,_data["content"],error_data)
             soup = bs4.BeautifulSoup(response.text, "html.parser")
-            tag = soup.find("div")
+            tag:Tag = soup.find("div")
             
             comment = Comment._create_from_data(
                 int(tag["data-comment-id"]), # type: ignore
                 tag,place.client_or_session,
-                "_update_from_html",
+                Comment._update_from_html,
                 place=place,
                 _reply=[]
             )
@@ -369,13 +371,14 @@ async def get_comment_from_old(
         
         soup = bs4.BeautifulSoup(response.text, "html.parser")
         _comments = soup.find_all("li", {"class": "top-level-reply"})
+        if TYPE_CHECKING: _comment:Tag
         for _comment_outside in _comments:
             _comment = _comment_outside.find("div") # type: ignore
             c = Comment._create_from_data(
                 int(_comment["data-comment-id"]), # type: ignore
                 _comment,
                 place.client_or_session,
-                "_update_from_html",
+                Comment._update_from_html,
                 place=place,
                 _parent=None,
                 _reply=[]
@@ -383,12 +386,13 @@ async def get_comment_from_old(
             assert c._cached_reply is not None
             _comment_replies = _comment_outside.find("ul", {"class":"replies"}) # type: ignore
             _replies = _comment_replies.find_all("div", {"class": "comment"}) # type: ignore
+            if TYPE_CHECKING: _reply:Tag
             for _reply in _replies:
                 c._cached_reply.append(Comment._create_from_data(
                     int(_reply["data-comment-id"]), # type: ignore
                     _reply,
                     place.client_or_session,
-                    "_update_from_html",
+                    Comment._update_from_html,
                     place=place,
                     _parent=c,
                     _reply=[]

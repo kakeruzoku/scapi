@@ -393,7 +393,7 @@ class Session(_BaseSiteAPI[str]):
             start_page,end_page,add_params
         ):
             _p:OldAnyObjectPayload[OldProjectPayload]
-            yield Project._create_from_data(_p["pk"],_p["fields"],self,"_update_from_old_data")
+            yield Project._create_from_data(_p["pk"],_p["fields"],self,Project._update_from_old_data)
 
     async def get_mystuff_studios(
             self,
@@ -422,7 +422,7 @@ class Session(_BaseSiteAPI[str]):
             start_page,end_page,add_params
         ):
             _s:OldAnyObjectPayload[OldStudioPayload]
-            yield Studio._create_from_data(_s["pk"],_s["fields"],self,"_update_from_old_data")
+            yield Studio._create_from_data(_s["pk"],_s["fields"],self,Studio._update_from_old_data)
 
     async def get_mystuff_classes(
             self,
@@ -451,7 +451,7 @@ class Session(_BaseSiteAPI[str]):
             start_page,end_page,add_params
         ):
             _s:OldAnyObjectPayload[OldAllClassroomPayload]
-            yield Classroom._create_from_data(_s["pk"],_s["fields"],self,"_update_from_all_mystuff_data")
+            yield Classroom._create_from_data(_s["pk"],_s["fields"],self,Classroom._update_from_all_mystuff_data)
 
     async def get_mystuff_class(self,id:int) -> Classroom:
         """
@@ -465,7 +465,7 @@ class Session(_BaseSiteAPI[str]):
         """
         response = await self.client.get(f"https://scratch.mit.edu/site-api/classrooms/all/{id}/")
         data:OldIdClassroomPayload = response.json()
-        return Classroom._create_from_data(id,data,self,"_update_from_id_mystuff_data")
+        return Classroom._create_from_data(id,data,self,Classroom._update_from_id_mystuff_data)
     
     async def get_followings_loves(self,limit:int|None=None,offset:int|None=None) -> AsyncGenerator["Project", None]:
         """
