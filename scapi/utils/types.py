@@ -250,6 +250,7 @@ class OldStudioPayload(TypedDict):
     projecters_count:int
     thumbnail_url:str
     title:str
+    description:NotRequired[str]
 
 class StudioRolePayload(TypedDict):
     manager:bool
@@ -337,6 +338,11 @@ class ClassTokenGeneratePayload(AnySuccessPayload):
     reg_link:str
     expires_at:str
     error:str
+
+class ClassStudioCreatePayload(AnySuccessPayload):
+    msg:str
+    gallery_id:int
+    gallery_title:str
 
 class ActivityBase(TypedDict):
     id:int

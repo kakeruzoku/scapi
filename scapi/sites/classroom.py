@@ -10,7 +10,10 @@ from ..utils.types import (
     OldAllClassroomPayload,
     OldBaseClassroomPayload,
     OldIdClassroomPayload,
-    ClassTokenGeneratePayload
+    ClassTokenGeneratePayload,
+    ClassStudioCreatePayload,
+    OldAnyObjectPayload,
+    OldStudioPayload
 )
 from ..utils.common import (
     UNKNOWN,
@@ -19,6 +22,7 @@ from ..utils.common import (
     _AwaitableContextManager,
     dt_from_isoformat,
     temporary_httpclient,
+    page_api_iterative,
     split
 )
 from ..utils.client import HTTPClient
@@ -26,6 +30,7 @@ from ..utils.file import File,_read_file
 from ..utils.error import Forbidden
 
 from .base import _BaseSiteAPI
+from .studio import Studio
 from .user import User
 
 if TYPE_CHECKING:
@@ -150,6 +155,57 @@ class Classroom(_BaseSiteAPI[int]):
                 f"https://scratch.mit.edu/site-api/classrooms/all/{self.id}/",
                 data=aiohttp.FormData({"file":f})
             )
+
+    async def create_class_studio(self,title:str,description:str|None=None) -> Studio:
+        """
+        クラスのスタジオを作成する
+
+        Args:
+            title (str): スタジオのタイトル
+            description (str | None, optional): スタジオの説明欄
+
+        Returns:
+            Studio: 作成されたスタジオ
+        """
+        self.require_session()
+        response = await self.client.post(
+            "https://scratch.mit.edu/classes/create_classroom_gallery/",
+            json={
+                "classroom_id":str(self.id),
+                "classroom_token":self.token,
+                "title":title,
+                "description":description or "",
+                "csrfmiddlewaretoken":"a"
+            }
+        )
+        data:ClassStudioCreatePayload = response.json()[0]
+        if not data["msg"]:
+            raise Forbidden(response,data.get("msg"))
+        studio = Studio(data["gallery_id"],self.client_or_session)
+        studio.title = data.get("gallery_title")
+        return studio
+    
+    async def get_class_studios(
+            self,
+            start_page:int|None=None,
+            end_page:int|None=None,
+        ) -> AsyncGenerator[Studio]:
+        """
+        クラスのスタジオを取得する。
+
+        Args:
+            start_page (int|None, optional): 取得するスタジオの開始ページ位置。初期値は1です。
+            end_page (int|None, optional): 取得するスタジオの終了ページ位置。初期値はstart_pageの値です。
+
+        Yields:
+            Studio: 取得したスタジオ
+        """
+        async for _s in page_api_iterative(
+            self.client,f"https://scratch.mit.edu/site-api/classrooms/studios/{self.id}/",
+            start_page,end_page
+        ):
+            _s:OldAnyObjectPayload[OldStudioPayload]
+            yield Studio._create_from_data(_s["pk"],_s["fields"],self.client_or_session,Studio._update_from_old_data)
 
     async def get_token(self,generate:bool=True) -> tuple[str,datetime.datetime]:
         """

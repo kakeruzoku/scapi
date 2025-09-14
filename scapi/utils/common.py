@@ -14,7 +14,7 @@ if TYPE_CHECKING:
     from .client import HTTPClient
     from ..sites.session import Session
 
-__version__ = "3.0.0.dev3"
+__version__ = "3.0.0.dev4"
 
 _KT = TypeVar("_KT")
 _VT = TypeVar("_VT")

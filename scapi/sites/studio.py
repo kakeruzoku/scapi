@@ -131,6 +131,8 @@ class Studio(_BaseSiteAPI[int]):
             comment_count=data.get("commenters_count"),
             curator_count=data.get("curators_count"),
             project_count=data.get("projecters_count"),
+
+            description=data.get("description")
         )
     
     @property
