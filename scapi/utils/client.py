@@ -144,7 +144,9 @@ class HTTPClient:
         self.scratch_cookies = scratch_cookies or {}
         self._proxy = default_proxy
         self._proxy_auth = default_proxy_auth
-        self._session:aiohttp.ClientSession = aiohttp.ClientSession()
+        self._session:aiohttp.ClientSession = aiohttp.ClientSession(
+            cookie_jar=aiohttp.DummyCookieJar()
+        )
 
     @staticmethod
     def is_scratch(url:str) -> bool:

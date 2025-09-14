@@ -333,6 +333,11 @@ class OldIdClassroomPayload(OldBaseClassroomPayload):
     status:str
     educator:UserFeaturedUserPayload
 
+class ClassTokenGeneratePayload(AnySuccessPayload):
+    reg_link:str
+    expires_at:str
+    error:str
+
 class ActivityBase(TypedDict):
     id:int
     datetime_created:str

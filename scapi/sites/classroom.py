@@ -9,7 +9,8 @@ from ..utils.types import (
     ClassroomPayload,
     OldAllClassroomPayload,
     OldBaseClassroomPayload,
-    OldIdClassroomPayload
+    OldIdClassroomPayload,
+    ClassTokenGeneratePayload
 )
 from ..utils.common import (
     UNKNOWN,
@@ -17,10 +18,12 @@ from ..utils.common import (
     UNKNOWN_TYPE,
     _AwaitableContextManager,
     dt_from_isoformat,
-    temporary_httpclient
+    temporary_httpclient,
+    split
 )
 from ..utils.client import HTTPClient
 from ..utils.file import File,_read_file
+from ..utils.error import Forbidden
 
 from .base import _BaseSiteAPI
 from .user import User
@@ -147,6 +150,29 @@ class Classroom(_BaseSiteAPI[int]):
                 f"https://scratch.mit.edu/site-api/classrooms/all/{self.id}/",
                 data=aiohttp.FormData({"file":f})
             )
+
+    async def get_token(self,generate:bool=True) -> tuple[str,datetime.datetime]:
+        """
+        生徒アカウントを作成するためのトークンを取得する。
+        新たにトークンを生成した場合、過去のトークンは無効になります。
+
+        Args:
+            generate (bool, optional): 新たにトークン生成するか。デフォルトはTrueです。
+
+        Returns:
+            tuple[str,datetime.datetime]: 取得したトークンと、そのトークンの有効期限
+        """
+        self.require_session()
+        if generate:
+            response = await self.client.post(f"https://scratch.mit.edu/site-api/classrooms/generate_registration_link/{self.id}/")
+        else:
+            response = await self.client.get(f"https://scratch.mit.edu/site-api/classrooms/generate_registration_link/{self.id}/")
+        data:ClassTokenGeneratePayload = response.json()
+        if not data["success"]:
+            raise Forbidden(response,data.get("error"))
+        
+        self.token = split(data.get("reg_link"),"/signup/","/",True)
+        return self.token,dt_from_isoformat(data.get("expires_at"))
 
 def get_class(class_id:int,*,_client:HTTPClient|None=None) -> _AwaitableContextManager[Classroom]:
     """
