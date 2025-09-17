@@ -12,7 +12,8 @@ from ..utils.common import (
     MAYBE_UNKNOWN,
     _AwaitableContextManager,
     temporary_httpclient,
-    split
+    split,
+    Tag
 )
 
 from .base import _BaseSiteAPI
@@ -20,8 +21,6 @@ from .user import User
 
 if TYPE_CHECKING:
     from .session import Session
-
-Tag = bs4.Tag|Any
 
 """
 TODO

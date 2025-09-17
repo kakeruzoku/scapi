@@ -6,6 +6,7 @@ import random
 from typing import TYPE_CHECKING, AsyncGenerator, Final
 
 import aiohttp
+import bs4
 from ..utils.types import (
     UserPayload,
     UserMessageCountPayload,
@@ -18,9 +19,10 @@ from ..utils.common import (
     UNKNOWN_TYPE,
     api_iterative,
     dt_from_isoformat,
-    _AwaitableContextManager
+    _AwaitableContextManager,
+    Tag
 )
-from ..utils.error import ClientError
+from ..utils.error import ClientError,NotFound
 from ..utils.file import File,_read_file
 
 from ..event.comment import CommentEvent
@@ -191,6 +193,31 @@ class User(_BaseSiteAPI[str]):
         ):
             yield Studio._create_from_data(_s["id"],_s,self.client_or_session)
 
+    async def get_loves(self,start_page:int|None=None,end_page:int|None=None) -> AsyncGenerator["Project",None]:
+        """
+       ユーザーの好きなプロジェクトを取得する。
+
+        Args:
+            start_page (int|None, optional): 取得するプロジェクトの開始ページ位置。初期値は1です。
+            end_page (int|None, optional): 取得するプロジェクトの終了ページ位置。初期値はstart_pageの値です。
+
+        Yields:
+            Project: 取得したプロジェクト
+        """
+        start_page = start_page or 1
+        end_page = end_page or start_page
+        if TYPE_CHECKING: _p:Tag
+        for i in range(start_page,end_page+1):
+            try:
+                response = await self.client.get(f"https://scratch.mit.edu/projects/all/{self.username}/loves/",params={"page":i})
+            except NotFound:
+                return
+            data = bs4.BeautifulSoup(response.text, "html.parser")
+            content:Tag = data.find("div",{"class":"box-content"})
+            for _p in content.find_all("li",{"class":"project thumb item"}):
+                yield Project._create_from_html(_p,self.client_or_session)
+
+
     async def get_message_count(self) -> int:
         """
         ユーザーのメッセージの未読数を取得する。
@@ -213,7 +240,7 @@ class User(_BaseSiteAPI[str]):
             start_page (int|None, optional): 取得するコメントの開始ページ位置。初期値は1です。
             end_page (int|None, optional): 取得するコメントの終了ページ位置。初期値はstart_pageの値です。
 
-        Returns:
+        Yields:
             Comment: 取得したコメント
         """
         return get_comment_from_old(self,start_page,end_page)

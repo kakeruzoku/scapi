@@ -5,6 +5,7 @@ import json
 from typing import TYPE_CHECKING, Any, AsyncGenerator, Final, Literal
 
 import aiohttp
+import bs4
 from ..utils.types import (
     ProjectPayload,
     ProjectLovePayload,
@@ -20,7 +21,9 @@ from ..utils.common import (
     UNKNOWN_TYPE,
     api_iterative,
     dt_from_isoformat,
-    _AwaitableContextManager
+    _AwaitableContextManager,
+    Tag,
+    split
 )
 from ..utils.client import HTTPClient
 from ..utils.error import (
@@ -177,6 +180,20 @@ class Project(_BaseSiteAPI[int]):
             remix_count=data.get("remixers_count"),
             love_count=data.get("love_count")
         )
+
+    @classmethod
+    def _create_from_html(cls, data:bs4.Tag, client_or_session:"HTTPClient|Session"):
+        from .user import User
+        _a:Tag = data.find("a")
+        id = int(split(str(_a["href"]),"projects/","/",True))
+        project = cls(id,client_or_session)
+        _title_span:Tag = data.find("span",{"class":"title"})
+        _title_a:Tag = _title_span.find("a")
+        project.title = _title_a.get_text()
+        _author_span:Tag = data.find("span",{"class":"owner"})
+        _author_name:Tag = _author_span.find("a")
+        project.author = User(_author_name.get_text(),client_or_session)
+        return project
 
     @property
     def _author_username(self) -> str:

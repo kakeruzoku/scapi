@@ -17,7 +17,8 @@ from ..utils.common import (
     MAYBE_UNKNOWN,
     dt_from_isoformat,
     api_iterative,
-    split
+    split,
+    Tag
 )
 from ..utils.error import (
     ServerError,
@@ -25,8 +26,6 @@ from ..utils.error import (
     NoDataError,
     CommentFailure
 )
-
-Tag = bs4.Tag|Any
 
 if TYPE_CHECKING:
     from .session import Session

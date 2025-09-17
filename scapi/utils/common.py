@@ -8,6 +8,8 @@ from typing import TYPE_CHECKING, Any, AsyncGenerator, Callable, Coroutine, Gene
 import inspect
 from functools import wraps
 
+import bs4
+
 from .error import NotFound
 from .config import bypass_checking
 if TYPE_CHECKING:
@@ -21,6 +23,8 @@ _VT = TypeVar("_VT")
 _T = TypeVar("_T")
 
 BASE62_ALPHABET = string.digits + string.ascii_uppercase + string.ascii_lowercase
+
+Tag = bs4.Tag|Any
 
 class _Special(Enum):
     UNKNOWN = "UNKNOWN"
