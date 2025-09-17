@@ -1,7 +1,9 @@
 from __future__ import annotations
 
 import datetime
-from typing import TYPE_CHECKING, Any, AsyncGenerator, Final, Literal
+from typing import TYPE_CHECKING, Any, AsyncGenerator, Final, Literal, overload
+import csv
+import io
 
 import aiohttp
 
@@ -13,7 +15,8 @@ from ..utils.types import (
     ClassTokenGeneratePayload,
     ClassStudioCreatePayload,
     OldAnyObjectPayload,
-    OldStudioPayload
+    OldStudioPayload,
+    StudentPayload
 )
 from ..utils.common import (
     UNKNOWN,
@@ -27,7 +30,7 @@ from ..utils.common import (
 )
 from ..utils.client import HTTPClient
 from ..utils.file import File,_read_file
-from ..utils.error import Forbidden
+from ..utils.error import Forbidden,InvalidData,NoDataError
 
 from .base import _BaseSiteAPI
 from .studio import Studio
@@ -185,11 +188,7 @@ class Classroom(_BaseSiteAPI[int]):
         studio.title = data.get("gallery_title")
         return studio
     
-    async def get_class_studios(
-            self,
-            start_page:int|None=None,
-            end_page:int|None=None,
-        ) -> AsyncGenerator[Studio]:
+    async def get_class_studios(self,start_page:int|None=None,end_page:int|None=None) -> AsyncGenerator[Studio]:
         """
         クラスのスタジオを取得する。
 
@@ -200,12 +199,119 @@ class Classroom(_BaseSiteAPI[int]):
         Yields:
             Studio: 取得したスタジオ
         """
+        self.require_session()
         async for _s in page_api_iterative(
             self.client,f"https://scratch.mit.edu/site-api/classrooms/studios/{self.id}/",
             start_page,end_page
         ):
             _s:OldAnyObjectPayload[OldStudioPayload]
             yield Studio._create_from_data(_s["pk"],_s["fields"],self.client_or_session,Studio._update_from_old_data)
+
+    async def get_class_students(self,start_page:int|None=None,end_page:int|None=None) -> AsyncGenerator[User]:
+        """
+        クラスの生徒を取得する。
+
+        Args:
+            start_page (int|None, optional): 取得するユーザーの開始ページ位置。初期値は1です。
+            end_page (int|None, optional): 取得するユーザーの終了ページ位置。初期値はstart_pageの値です。
+
+        Yields:
+            User: 取得したユーザー
+        """
+        self.require_session()
+        async for _u in page_api_iterative(
+            self.client,f"https://scratch.mit.edu/site-api/classrooms/students/{self.id}/",
+            start_page,end_page
+        ):
+            _u:OldAnyObjectPayload[StudentPayload]
+            yield User._create_from_data(_u["fields"]["user"]["username"],_u["fields"],self.client_or_session,User._update_from_student_data)
+
+    @overload
+    async def create_student_account(
+        self,username:str,*,load_status:bool=True
+    ) -> "Session":
+        ...
+    
+    @overload
+    async def create_student_account(
+        self,username:str,password:str,birth_day:datetime.date,gender:str,country:str,
+        *,load_status:bool=True
+    ) -> "Session":
+        ...
+
+    async def create_student_account(
+        self,username:str,
+        password:str|None=None,
+        birth_day:datetime.date|None=None,
+        gender:str|None=None,
+        country:str|None=None,
+        *,
+        load_status:bool=True
+    ) -> "Session":
+        """
+        tokenから生徒アカウントを作成する。
+        ユーザー名のみを指定して作成することもできます。
+
+        Args:
+            username (str): アカウントのユーザー名
+            password (str | None, optional): アカウントのパスワード
+            birth_day (datetime.date | None, optional): 登録したい誕生日
+            gender (str | None, optional): 登録したい性別
+            country (str | None, optional): 登録したい国
+            load_status (bool, optional): アカウントのステータスを取得するか。デフォルトはTrueです。
+
+        Returns:
+            Session: 作成されたアカウント
+        """
+        if self.token is None:
+            raise NoDataError(self)
+        data = aiohttp.FormData({
+            "classroom_id":self.id,
+            "classroom_token": self.token,
+            "username": username,
+            "is_robot": False
+        })
+        if password and birth_day and gender and country:
+            data.add_fields({
+                "password": password,
+                "birth_month": birth_day.month,
+                "birth_year": birth_day.year,
+                "gender": gender,
+                "country": country,
+            })
+        response = await self.client.post(
+            "https://scratch.mit.edu/classes/register_new_student/",data=data,
+            cookies={"scratchcsrftoken": 'a'}
+        )
+        set_cookie = response._response.headers.get("Set-Cookie","")
+        session_id = split(set_cookie,"scratchsessionsid=\"","\"")
+        if not session_id:
+            raise InvalidData(response)
+        if load_status:
+            return await Session._create_from_api(session_id)
+        else:
+            return Session(session_id)
+        
+    async def create_student_accounts(self,data:dict[str,str]):
+        """
+        教師アカウントから生徒アカウントを作成します。
+        同時に40アカウントまで作成できます。
+
+        Args:
+            data (dict[str,str]): 作成したいアカウントのユーザー名とパスワードのペア
+        """
+        self.require_session()
+        temp_stream = io.StringIO(newline="")
+        csv.writer(temp_stream).writerows(data.items())
+        temp_stream.seek(0)
+        csv_data = temp_stream.getvalue()
+        form_data = aiohttp.FormData(default_to_multipart=True)
+        form_data.add_field("csrfmiddlewaretoken","a")
+        form_data.add_field("csv_file",csv_data.encode(),content_type="text/plain")
+        form_data.add_field("piiConfirm","on")
+
+        await self.client.post(f"https://scratch.mit.edu/classes/{self.id}/student_upload/",data=form_data)
+
 
     async def get_token(self,generate:bool=True) -> tuple[str,datetime.datetime]:
         """

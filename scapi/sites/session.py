@@ -67,7 +67,7 @@ class SessionStatus:
         should_vpn (bool)
         thumbnail_url (str): アカウントのアイコンのURL
         email (str): アカウントのメールアドレス
-        birthday (datetime.date): アカウントに登録された誕生日。日付は常に`1`です
+        birthday (datetime.date|None): アカウントに登録された誕生日。日付は常に`1`です
         gender (str): アカウントに登録された性別
         classroom_id (int|None): 生徒アカウントの場合、所属しているクラス
 
@@ -107,7 +107,12 @@ class SessionStatus:
         self.thumbnail_url = _user.get("thumbnailUrl")
         self._joined_at = _user.get("dateJoined")
         self.email = _user.get("email")
-        self.birthday = datetime.date(_user.get("birthYear"),_user.get("birthMonth"),1)
+        birth_year = _user.get("birthYear")
+        birth_month = _user.get("birthMonth")
+        if birth_year and birth_month:
+            self.birthday = datetime.date(birth_year,birth_month,1)
+        else:
+            self.birthday = None
         self.gender = _user.get("gender")
         self.classroom_id = _user.get("classroomId")
 

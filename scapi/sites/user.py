@@ -10,7 +10,8 @@ import bs4
 from ..utils.types import (
     UserPayload,
     UserMessageCountPayload,
-    OldUserPayload
+    OldUserPayload,
+    StudentPayload
 )
 from ..utils.client import HTTPClient
 from ..utils.common import (
@@ -43,6 +44,21 @@ if TYPE_CHECKING:
     from .session import Session
 
 class User(_BaseSiteAPI[str]):
+    """
+    ユーザーを表す
+
+    Attributes:
+        username (str): ユーザー名
+        id (MAYBE_UNKNOWN[int]): ユーザーID
+        profile_id (MAYBE_UNKNOWN[int]): プロフィールID。ユーザーIDとは異なります。
+        bio (MAYBE_UNKNOWN[str]): 私について欄
+        status (MAYBE_UNKNOWN[str]): 私が取り組んでいること欄
+        country (MAYBE_UNKNOWN[str]): 国
+        scratchteam (MAYBE_UNKNOWN[bool]): アカウントがScratchTeamとしてマークされているか
+
+        educator_can_unban (MAYBE_UNKNOWN[bool]):
+        is_banned (MAYBE_UNKNOWN[bool]):
+    """
     def __repr__(self) -> str:
         return f"<User username:{self.username} id:{self.id} session:{self.session}>"
 
@@ -58,6 +74,10 @@ class User(_BaseSiteAPI[str]):
         self.status:MAYBE_UNKNOWN[str] = UNKNOWN
         self.country:MAYBE_UNKNOWN[str] = UNKNOWN
         self.scratchteam:MAYBE_UNKNOWN[bool] = UNKNOWN
+
+        #teacher only
+        self.educator_can_unban:MAYBE_UNKNOWN[bool] = UNKNOWN
+        self.is_banned:MAYBE_UNKNOWN[bool] = UNKNOWN
 
     async def update(self):
         response = await self.client.get(f"https://api.scratch.mit.edu/users/{self.username}")
@@ -86,6 +106,13 @@ class User(_BaseSiteAPI[str]):
             id=data.get("pk"),
             scratchteam=data.get("admin")
         )
+
+    def _update_from_student_data(self,data:StudentPayload):
+        self._update_to_attributes(
+            educator_can_unban=data.get("educator_can_unban"),
+            is_banned=data.get("is_banned")
+        )
+        self._update_from_old_data(data["user"])
     
     @property
     def joined_at(self) -> datetime.datetime|UNKNOWN_TYPE:

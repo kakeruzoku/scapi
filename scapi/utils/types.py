@@ -31,8 +31,8 @@ class SessionStatusUserPayload(TypedDict):
     thumbnailUrl:str
     dateJoined:str
     email:str
-    birthYear:int
-    birthMonth:int
+    birthYear:int|None
+    birthMonth:int|None
     gender:str
     classroomId:NotRequired[int]
 
@@ -106,6 +106,12 @@ class OldUserPayload(TypedDict):
     pk:int
     thumbnail_url:str
     admin:bool
+
+class StudentPayload(TypedDict):
+    educator_can_unban:bool
+    is_banned:bool
+    thumbnail_url:str
+    user:OldUserPayload
 
 class UserFeaturedProjectPayload(TypedDict):
     creator:str
