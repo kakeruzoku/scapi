@@ -113,6 +113,9 @@ class StudentPayload(TypedDict):
     thumbnail_url:str
     user:OldUserPayload
 
+class StudentPasswordRestPayliad(AnySuccessPayload):
+    user:OldUserPayload
+
 class UserFeaturedProjectPayload(TypedDict):
     creator:str
     thumbnail_url:str

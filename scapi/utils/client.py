@@ -15,7 +15,9 @@ from .error import (
     NotFound,
     TooManyRequests,
     ClientError,
-    ServerError
+    ServerError,
+    RegistrationRequested,
+    ResetPasswordReqested
 )
 from .common import split,UnknownDict
 
@@ -60,6 +62,10 @@ class Response:
                 raise AccountBlocked(self)
             elif url.path.startswith("/accounts/login"):
                 raise Unauthorized(self)
+            elif url.path.startswith("/classes/complete_registration"):
+                raise RegistrationRequested(self)
+            elif url.path.startswith("/classes/student_password_reset"):
+                raise ResetPasswordReqested(self)
         if status_code == 401:
             raise Unauthorized(self)
         elif status_code == 403:

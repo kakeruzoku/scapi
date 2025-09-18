@@ -40,6 +40,7 @@ from ..utils.error import (
     HTTPError,
     LoginFailure
 )
+from ..utils.config import bypass_checking
 from ..utils.file import File,_file
 from ..event.cloud import ScratchCloud
 from .base import _BaseSiteAPI
@@ -239,6 +240,42 @@ class Session(_BaseSiteAPI[str]):
             "https://scratch.mit.edu/accounts/settings/",
             data=aiohttp.FormData({"country":country})
         )
+
+    async def change_password(self,old_password:str|None,new_password:str,is_reset:bool=False):
+        """
+        アカウントのパスワードを変更します。
+
+        Args:
+            old_password (str | None): 現在のパスワード(通常のパスワード変更の場合はstrのみ使用できます。)
+            new_password (str): 新しいパスワード
+            is_reset (bool, optional): 生徒アカウントのパスワードリセットの場合、Trueにしてください。
+
+        Raises:
+            Forbidden: _description_
+        """
+        if (not bypass_checking) and self.status and self.status.must_reset_password:
+            is_reset = True
+        if is_reset:
+            req_url = "https://scratch.mit.edu/classes/student_password_reset/"
+            data = aiohttp.FormData({
+                "csrfmiddlewaretoken":"a",
+                "new_password1":new_password,
+                "new_password2":new_password
+            })
+        else:
+            if old_password is None:
+                raise ValueError()
+            req_url = "https://scratch.mit.edu/accounts/password_change/"
+            data = aiohttp.FormData({
+                "csrfmiddlewaretoken":"a",
+                "old_password": old_password,
+                "new_password1":new_password,
+                "new_password2":new_password
+            })
+        response = await self.client.post(req_url,data=data,check=False)
+        if str(response._response.url) == req_url:
+            raise Forbidden(response)
+        response._check()
 
     async def change_email(self,new_email:str,password:str):
         """

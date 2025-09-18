@@ -51,6 +51,12 @@ class AccountBlocked(Forbidden):
     def __init__(self,response:"Response"):
         super().__init__(response)
 
+class RegistrationRequested(Forbidden):
+    pass
+
+class ResetPasswordReqested(Forbidden):
+    pass
+
 class LoginFailure(Forbidden):
     def __init__(self,response:"Response"):
         super().__init__(response)

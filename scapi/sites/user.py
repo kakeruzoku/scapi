@@ -11,7 +11,8 @@ from ..utils.types import (
     UserPayload,
     UserMessageCountPayload,
     OldUserPayload,
-    StudentPayload
+    StudentPayload,
+    StudentPasswordRestPayliad
 )
 from ..utils.client import HTTPClient
 from ..utils.common import (
@@ -382,6 +383,29 @@ class User(_BaseSiteAPI[str]):
             await self.client.post(
                 f"https://scratch.mit.edu/site-api/users/all/{self.id}/",
                 data=aiohttp.FormData({"file":f})
+            )
+    
+    async def reset_student_password(self,password:str|None=None):
+        """
+        生徒アカウントのパスワードを変更します。
+        この生徒の教師である必要があります。
+
+        Args:
+            password (str | None, optional): 新しいパスワード。Noneで初期値にセットされます。
+        """
+        self.require_session()
+        if password is None:
+            response = await self.client.post(f"https://scratch.mit.edu/site-api/classrooms/reset_student_password/{self.username}/")
+            data:StudentPasswordRestPayliad = response.json()
+            self._update_from_old_data(data["user"])
+        else:
+            await self.client.post(
+                f"https://scratch.mit.edu/classes/student_password_change/{self.username}/",
+                data=aiohttp.FormData({
+                    "csrfmiddlewaretoken":"a",
+                    "new_password1":password,
+                    "new_password2":password
+                })
             )
 
 
