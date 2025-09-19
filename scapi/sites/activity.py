@@ -9,14 +9,19 @@ import bs4
 
 from .base import _BaseSiteAPI
 from ..utils.types import (
-    ActivityBase,
     WSCloudActivityPayload,
     CloudLogPayload
+)
+from ..utils.activity_types import (
+    ActivityBase,
+    ClassAnyActivity,
+    ClassBaseActivity
 )
 from ..utils.common import (
     UNKNOWN,
     MAYBE_UNKNOWN,
-    dt_from_timestamp
+    dt_from_timestamp,
+    dt_from_isoformat
 )
 
 from ..utils.error import (
@@ -47,27 +52,26 @@ class ActivityType(Enum):
     user="user"
     message="message"
     feed="feed"
+    classroom="classroom"
 
 class ActivityAction(Enum):
-    unknown="unknown"
+    Unknown="unknown"
 
 class Activity:
     def __init__(
             self,
             type:ActivityType,
-            action:ActivityAction,
+            action:ActivityAction=ActivityAction.Unknown,
             *,
             id:int|None=None,
             actor:"User|None"=None,
             target:"Comment|Studio|Project|User|None"=None,
             place:"Studio|Project|User|None"=None,
             datetime:"datetime.datetime|None"=None,
-            other:Any=None,
-            _is_set=True
+            other:Any=None
         ):
-        if TYPE_CHECKING or _is_set:
-            self.type:ActivityType = type
-            self.action:ActivityAction = action
+        self.type:ActivityType = type
+        self.action:ActivityAction = action
             
         self.id:int|None = id
         self.actor:"User|None" = actor
@@ -76,10 +80,20 @@ class Activity:
         self.created_at:"datetime.datetime|None" = datetime
         self.other:Any = other
 
-    def _setup_from_json(self,data:ActivityBase,client_or_session:"HTTPClient|Session|None"=None):
+    def _setup_from_json(self,data:ActivityBase,client_or_session:"HTTPClient|Session"):
         from .user import User
         self.actor = User(data["actor_username"],client_or_session)
+        self.actor.id = data.get("actor_id")
         self.action = ActivityAction(data["type"])
+        self.created_at = dt_from_isoformat(data.get("datetime_created",None))
+
+    @classmethod
+    def _create_from_data(cls,data:ClassAnyActivity,client_or_session:"HTTPClient|Session"):
+        activity = cls(ActivityType.classroom)
+        _actor = data["actor"]
+        activity.actor = User._create_from_data(_actor["username"],_actor,client_or_session,User._update_from_old_data)
+        #TODO
+        return activity
 
 
 
