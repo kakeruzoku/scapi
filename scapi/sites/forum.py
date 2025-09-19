@@ -186,6 +186,18 @@ class ForumTopic(_BaseSiteAPI):
         self.is_unread = False
         #TODO
 
+    async def follow(self):
+        """
+        このトピックをフォローする
+        """
+        await self.client.post(f"https://scratch.mit.edu/discuss/subscription/topic/{self.id}/add/")
+
+    async def unfollow(self):
+        """
+        このトピックのフォローを外す
+        """
+        await self.client.post(f"https://scratch.mit.edu/discuss/subscription/topic/{self.id}/remove/")
+
 async def get_forum_categories(client_or_session:"HTTPClient|Session|None"=None) -> dict[str, list[ForumCategory]]:
     """
     フォーラムのカテゴリー一覧を取得する。
