@@ -69,8 +69,18 @@ def setup(app):
     app.connect("autodoc-skip-member", skip_enum_members)
 
 rst_epilog = """
-.. |User| replace:: :class:`User <scapi.User>`
-.. |Project| replace:: :class:`Project <scapi.Project>`
-.. |Studio| replace:: :class:`Studio <scapi.Studio>`
-.. |Comment| replace:: :class:`Comment <scapi.Comment>`
+.. _oldwiki: https://kakeruzoku.github.io/scapi
 """
+
+def _make_rst_epilog(name:str,type:str="class",place:str|None=None):
+    global rst_epilog
+    place = place or name
+    rst_epilog += f"\n.. |{name}| replace:: :{type}:`{name} <scapi.{place}>`"
+
+_make_rst_epilog("User")
+_make_rst_epilog("Project")
+_make_rst_epilog("Studio")
+_make_rst_epilog("Comment")
+_make_rst_epilog("HTTPClient")
+_make_rst_epilog("Response")
+_make_rst_epilog("UNKNOWN","const")

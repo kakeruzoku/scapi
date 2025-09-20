@@ -16,6 +16,29 @@ if TYPE_CHECKING:
     from ..sites.session import Session
     from .client import Response
 
+__all__ = [
+    "HTTPError",
+    "SessionClosed",
+    "ProcessingError",
+    "ResponseError",
+    "ClientError",
+    "Unauthorized",
+    "Forbidden",
+    "IPBanned",
+    "AccountBlocked",
+    "RegistrationRequested",
+    "ResetPasswordRequested",
+    "LoginFailure",
+    "CommentFailure",
+    "NotFound",
+    "TooManyRequests",
+    "ServerError",
+    "InvalidData",
+    "CheckingFailed",
+    "NoSession",
+    "NoDataError",
+]
+
 class HTTPError(Exception):
     pass
 
@@ -54,7 +77,7 @@ class AccountBlocked(Forbidden):
 class RegistrationRequested(Forbidden):
     pass
 
-class ResetPasswordReqested(Forbidden):
+class ResetPasswordRequested(Forbidden):
     pass
 
 class LoginFailure(Forbidden):
@@ -141,5 +164,3 @@ class NoSession(CheckingFailed):
 
 class NoDataError(CheckingFailed):
     pass
-
-del LoginFailurePayload

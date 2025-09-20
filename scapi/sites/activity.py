@@ -78,7 +78,7 @@ class ActivityAction(Enum):
     行動の内容を表します。
 
     .. warning::
-        この欄に表示されているデータは必ず使用できるとは保証されず、場合によってNoneになる可能性があります。 `isinstance()` や `is not None` などでデータが正しいものであるか確認するようにしてください。
+        この欄に表示されているデータは必ず使用できるとは保証されず、場合によってNoneになる可能性があります。 ``isinstance()`` や ``is not None`` などでデータが正しいものであるか確認するようにしてください。
     
     Attributes:
         Unknown:
@@ -114,7 +114,7 @@ class ActivityAction(Enum):
             | |actor| : |User| 前の所有者
             | |place| : |Studio| 所有権が移ったスタジオ
             | |target| : |User| 新しい所有者
-            | |activity_other| : bool? `actor_admin` の値(不明)
+            | |activity_other| : bool? ``actor_admin`` の値(不明)
         StudioRemoveCurator:
             | ユーザーがキュレーターかマネージャーから削除された
             | |actor| : |User| 削除された人
@@ -159,7 +159,7 @@ class Activity:
         このクラスは :class:`_BaseSiteAPI <scapi._BaseSiteAPI>` を継承していません。
 
     .. note::
-        このクラスの属性値は `.action` の値によって変わります。
+        このクラスの属性値は ``.action`` の値によって変わります。
         どのアクションのときにどんなデータがセットされるかについては、:class:`ActivityAction <scapi.ActivityAction>` を確認してください。
 
     Attributes:

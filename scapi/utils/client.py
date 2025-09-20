@@ -17,7 +17,7 @@ from .error import (
     ClientError,
     ServerError,
     RegistrationRequested,
-    ResetPasswordReqested
+    ResetPasswordRequested
 )
 from .common import split,UnknownDict
 
@@ -65,7 +65,7 @@ class Response:
             elif url.path.startswith("/classes/complete_registration"):
                 raise RegistrationRequested(self)
             elif url.path.startswith("/classes/student_password_reset"):
-                raise ResetPasswordReqested(self)
+                raise ResetPasswordRequested(self)
         if status_code == 401:
             raise Unauthorized(self)
         elif status_code == 403:

@@ -107,4 +107,4 @@ from .utils.config import (
     set_debug
 )
 
-from .utils import error
+from .utils import error as exceptions

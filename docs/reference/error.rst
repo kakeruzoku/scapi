@@ -1,4 +1,4 @@
-例外
+HTTPError例外
 ====
 
 .. contents::
@@ -7,35 +7,74 @@
 例外の階層構造
 --------------
 
-* :class:`HTTPError <scapi.utils.error.HTTPError>`
+* :class:`HTTPError <scapi.exceptions.HTTPError>`
 
-  * :class:`SessionClosed <scapi.utils.error.SessionClosed>`
-  * :class:`ProcessingError <scapi.utils.error.ProcessingError>`
-  * :class:`ResponseError <scapi.utils.error.ResponseError>`
+  * :class:`SessionClosed <scapi.exceptions.SessionClosed>`
+  * :class:`ProcessingError <scapi.exceptions.ProcessingError>`
+  * :class:`ResponseError <scapi.exceptions.ResponseError>`
 
-    * :class:`ClientError <scapi.utils.error.ClientError>` 
+    * :class:`ClientError <scapi.exceptions.ClientError>` 
 
-      * :class:`Unauthorized <scapi.utils.error.Unauthorized>`
-      * :class:`Forbidden <scapi.utils.error.Forbidden>`
+      * :class:`Unauthorized <scapi.exceptions.Unauthorized>`
+      * :class:`Forbidden <scapi.exceptions.Forbidden>`
 
-        * :class:`IPBanned <scapi.utils.error.IPBanned>`
-        * :class:`AccountBlocked <scapi.utils.error.AccountBlocked>`
-        * :class:`LoginFailure <scapi.utils.error.LoginFailure>`
-        * :class:`CommentFailure <scapi.utils.error.CommentFailure>`
+        * :class:`IPBanned <scapi.exceptions.IPBanned>`
+        * :class:`AccountBlocked <scapi.exceptions.AccountBlocked>`
+        * :class:`RegistrationRequested <scapi.exceptions.RegistrationRequested>`
+        * :class:`ResetPasswordRequested <scapi.exceptions.ResetPasswordRequested>`
+        * :class:`LoginFailure <scapi.exceptions.LoginFailure>`
+        * :class:`CommentFailure <scapi.exceptions.CommentFailure>`
 
-      * :class:`NotFound <scapi.utils.error.NotFound>`
-      * :class:`TooManyRequests <scapi.utils.error.TooManyRequests>`
+      * :class:`NotFound <scapi.exceptions.NotFound>`
+      * :class:`TooManyRequests <scapi.exceptions.TooManyRequests>`
 
-    * :class:`ServerError <scapi.utils.error.ServerError>`
-    * :class:`InvalidData <scapi.utils.error.InvalidData>`
+    * :class:`ServerError <scapi.exceptions.ServerError>`
+    * :class:`InvalidData <scapi.exceptions.InvalidData>`
 
-* :class:`CheckingFailed <scapi.utils.error.CheckingFailed>`
+* :class:`CheckingFailed <scapi.exceptions.CheckingFailed>`
 
-  * :class:`NoSession <scapi.utils.error.NoSession>`
-  * :class:`NoPermission <scapi.utils.error.NoPermission>`
-  * :class:`NoDataError <scapi.utils.error.NoDataError>`
+  * :class:`NoSession <scapi.exceptions.NoSession>`
+  * :class:`NoDataError <scapi.exceptions.NoDataError>`
 
 例外
 ----
 
-.. automodule:: scapi.utils.error
+.. autoclass:: scapi.exceptions.HTTPError
+
+.. autoclass:: scapi.exceptions.SessionClosed
+
+.. autoclass:: scapi.exceptions.ProcessingError
+
+.. autoclass:: scapi.exceptions.ResponseError
+
+.. autoclass:: scapi.exceptions.ClientError
+
+.. autoclass:: scapi.exceptions.Unauthorized
+
+.. autoclass:: scapi.exceptions.Forbidden
+
+.. autoclass:: scapi.exceptions.IPBanned
+
+.. autoclass:: scapi.exceptions.AccountBlocked
+
+.. autoclass:: scapi.exceptions.RegistrationRequested
+
+.. autoclass:: scapi.exceptions.ResetPasswordRequested
+
+.. autoclass:: scapi.exceptions.LoginFailure
+
+.. autoclass:: scapi.exceptions.CommentFailure
+
+.. autoclass:: scapi.exceptions.NotFound
+
+.. autoclass:: scapi.exceptions.TooManyRequests
+
+.. autoclass:: scapi.exceptions.ServerError
+
+.. autoclass:: scapi.exceptions.InvalidData
+
+.. autoclass:: scapi.exceptions.CheckingFailed
+
+.. autoclass:: scapi.exceptions.NoSession
+
+.. autoclass:: scapi.exceptions.NoDataError
