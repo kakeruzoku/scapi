@@ -74,15 +74,68 @@ class ActivityType(Enum):
     Classroom="classroom"
 
 class ActivityAction(Enum):
+    """
+    行動の内容を表します。
+
+    .. warning::
+        この欄に表示されているデータは必ず使用できるとは保証されず、場合によってNoneになる可能性があります。 `isinstance()` や `is not None` などでデータが正しいものであるか確認するようにしてください。
+    
+    Attributes:
+        Unknown:
+            不明なアクティビティ。
+        
+        StudioFollow:
+            | スタジオをフォローした。
+            | |actor| : |User| フォローした人
+            | |place| |target| : |Studio| フォローされたスタジオ
+        StudioAddProject:
+            | スタジオにプロジェクトを追加した。
+            | |actor| : |User| プロジェクトを追加した人
+            | |place| : |Studio| 追加されたスタジオ
+            | |target| : |Project| 追加されたプロジェクト
+        StudioRemoveProject:
+            | スタジオからプロジェクトを削除した。
+            | |actor| : |User| プロジェクトを削除した人
+            | |place| : |Studio| 削除されたスタジオ
+            | |target| : |Project| 削除されたプロジェクト
+        StudioBecomeCurator:
+            | ユーザーがスタジオのキュレーターの招待を承認した。
+            | |actor| : |User| キュレーターになった人
+            | |place| : |Studio| キュレーターになったスタジオ
+            | |target| : |User| キュレーターに招待した人
+        StudioBecomaManager:
+            | ユーザーがマネージャーに昇格した。
+            | |actor| : |User| マネージャーに昇格させた人
+            | |place| : |Studio| マネージャーに昇格したスタジオ
+            | |target| : |User| マネージャーに昇格した人
+        StudioBecomeHost:
+            | 所有権がユーザーに移った (またはスタジオが作成された)
+            | |actor| と |target| が同じ場合、スタジオが作成されたということになります。
+            | |actor| : |User| 前の所有者
+            | |place| : |Studio| 所有権が移ったスタジオ
+            | |target| : |User| 新しい所有者
+            | |activity_other| : bool? `actor_admin` の値(不明)
+        StudioRemoveCurator:
+            | ユーザーがキュレーターかマネージャーから削除された
+            | |actor| : |User| 削除された人
+            | |place| : |Studio| 削除されたスタジオ
+            | |target| : |User| 削除昇格した人
+        StudioUpdate:
+            | スタジオが更新された。
+            | |actor| : |User| スタジオを更新した人(すなわち所有者)
+            | |place| |target| : |Studio| 更新されたスタジオ
+
+    """
     Unknown="unknown"
 
     #studio
     StudioFollow="studio_follow"
     StudioAddProject="studio_add_project"
     StudioRemoveProject="studio_remove_project"
-    StudioBecomeCurator="studio_become_curetor" #なった人がactor それを実行した人がtarget
+    StudioBecomeCurator="studio_become_curetor"
     StudioBecomeManager="studio_become_manager"
     StudioBecomeHost="studio_become_host"
+    StudioRemoveCurator="studio_remove_curator"
     StudioUpdate="studio_update"
 
     #project
@@ -106,16 +159,19 @@ class Activity:
         このクラスは :class:`_BaseSiteAPI <scapi._BaseSiteAPI>` を継承していません。
 
     .. note::
-        このクラスの属性値は`.action`の値によって変わります。
+        このクラスの属性値は `.action` の値によって変わります。
         どのアクションのときにどんなデータがセットされるかについては、:class:`ActivityAction <scapi.ActivityAction>` を確認してください。
 
     Attributes:
+        type (ActivityType): アクティビティデータの場所
+        action (ActivityAction): 実行されたアクティビティの種類
         id (int|None): アクティビティのID
         actor (User|None): アクティビティを実行したユーザー
         target (Comment|Studio|Project|User): 適用したオブジェクトまたは、このアクティビティによってできたオブジェクト
-        place (Studio|Project|User): アクティビティがじっこうされた場所
+        place (Studio|Project|User): アクティビティが実行された場所
+        other (Any): 追加の(上記に振り分けられない)追加データ
     """
-    def __str__(self) -> str:
+    def __repr__(self) -> str:
         return f"<Acticity type:{self.type} action:{self.action}>"
 
     def __init__(
@@ -156,6 +212,38 @@ class Activity:
         self.actor = User(data["actor_username"],client_or_session)
         self.actor.id = data.get("actor_id")
         self._created_at = data.get("datetime_created",None)
+
+    @classmethod
+    def _create_from_studio(cls,data:StudioAnyActivity,studio:Studio):
+        client_or_session = studio.client_or_session
+        activity = cls(ActivityType.Studio)
+        activity.place = studio
+        activity._setup_from_json(data,client_or_session)
+        match data["type"]:
+            case "updatestudio":
+                activity.action = ActivityAction.StudioUpdate
+                activity.target = activity.place
+            case "becomecurator":
+                activity.action = ActivityAction.StudioBecomeCurator
+                activity.target = User(data["username"],client_or_session)
+            case "removecuratorstudio":
+                activity.action = ActivityAction.StudioRemoveCurator
+                activity.target = User(data["username"],client_or_session)
+            case "becomehoststudio":
+                activity.action = ActivityAction.StudioBecomeHost
+                activity.target = User(data["recipient_username"],client_or_session)
+            case "addprojecttostudio":
+                activity.action = ActivityAction.StudioAddProject
+                activity.target = Project(data["project_id"],client_or_session)
+                activity.target.title = data["project_title"]
+            case "removeprojectstudio":
+                activity.action = ActivityAction.StudioRemoveProject
+                activity.target = Project(data["project_id"],client_or_session)
+                activity.target.title = data["project_title"]
+            case "becomeownerstudio":
+                activity.action = ActivityAction.StudioBecomeManager
+                activity.target = User(data["recipient_username"],client_or_session)
+        return activity
 
     @staticmethod
     def _load_user(data:OldUserPayload,client_or_session:"HTTPClient|Session"):

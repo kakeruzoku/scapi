@@ -10,6 +10,7 @@ from ..utils.types import (
     OldStudioPayload,
     StudioClassroomPayload
 )
+from ..utils.activity_types import StudioAnyActivity
 from ..utils.common import (
     UNKNOWN,
     MAYBE_UNKNOWN,
@@ -36,6 +37,7 @@ from .comment import (
     get_comment_from_old
 )
 from .project import Project
+from .activity import Activity
 
 if TYPE_CHECKING:
     from .session import Session
@@ -303,6 +305,45 @@ class Studio(_BaseSiteAPI[int]):
             return
         return await Classroom._create_from_api(classroom_id,self.client_or_session)
     
+    async def get_activities(self,limit:int|None=None,offset_dt:datetime.datetime|None=None) -> AsyncGenerator[Activity]:
+        """
+        スタジオのアクティビティを取得する。
+
+        Args:
+            limit (int | None, optional): 取得するアクティビティの数。初期値は40です。
+            offset_dt (datetime.datetime | None, optional): 取得したい最初のアクティビティの時間
+
+        Yields:
+            Activity:
+        """
+        if offset_dt is not None:
+            if offset_dt.tzinfo is None:
+                offset_dt = offset_dt.replace(tzinfo=datetime.timezone.utc)
+            else:
+                offset_dt = offset_dt.astimezone(datetime.timezone.utc)
+            
+            offset:dict[str,str|int|float] = {"dateLimit":offset_dt.strftime('%Y-%m-%dT%H:%M:%S.000Z')}
+        else:
+            offset = {}
+
+        limit = limit or 40
+        for i in range(0,limit,40):
+            response = await self.client.get(
+                f"https://api.scratch.mit.edu/studios/{self.id}/activity/",
+                params={"limit":min(40,limit-i)}|offset
+            )
+            data:list[StudioAnyActivity] = response.json()
+            last = None
+            for i in data:
+                last = Activity._create_from_studio(i,self)
+                yield last
+            if not data:
+                return
+            created_at = last and last.created_at
+            if created_at is None:
+                return
+            offset_dt = created_at+datetime.timedelta(seconds=1)
+            offset = {"dateLimit":offset_dt.strftime('%Y-%m-%dT%H:%M:%S.000Z')}
 
     async def post_comment(
         self,content:str,

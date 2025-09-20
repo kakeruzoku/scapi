@@ -48,7 +48,7 @@ class News(_BaseSiteAPI):
         self.image:MAYBE_UNKNOWN[str] = UNKNOWN
         self.copy:MAYBE_UNKNOWN[str] = UNKNOWN
 
-    def __str__(self) -> str:
+    def __repr__(self) -> str:
         return f"<News id:{self.id} headline:{self.headline}>"
 
     def _update_from_data(self, data:NewsPayload):

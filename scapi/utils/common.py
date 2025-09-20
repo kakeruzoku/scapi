@@ -140,7 +140,7 @@ async def api_iterative(
         response = await _client.get(
             url,
             params={
-                "limit":min(max_limit,limit-i),
+                "limit":min(max_limit,offset+limit-i),
                 "offset":i,
             }|params
         )

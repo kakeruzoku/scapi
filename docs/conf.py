@@ -67,3 +67,10 @@ def skip_enum_members(app, what, name, obj, skip, options):
 
 def setup(app):
     app.connect("autodoc-skip-member", skip_enum_members)
+
+rst_epilog = """
+.. |User| replace:: :class:`User <scapi.User>`
+.. |Project| replace:: :class:`Project <scapi.Project>`
+.. |Studio| replace:: :class:`Studio <scapi.Studio>`
+.. |Comment| replace:: :class:`Comment <scapi.Comment>`
+"""

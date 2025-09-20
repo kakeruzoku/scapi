@@ -82,6 +82,11 @@
 アクティビティ
 --------------
 
+.. |actor| replace:: :attr:`actor <scapi.Activity.actor>`
+.. |place| replace:: :attr:`place <scapi.Activity.place>`
+.. |target| replace:: :attr:`target <scapi.Activity.target>`
+.. |activity_other| replace:: :attr:`other <scapi.Activity.other>`
+
 .. autoclass:: scapi.ActivityType
 
 .. autoclass:: scapi.ActivityAction
