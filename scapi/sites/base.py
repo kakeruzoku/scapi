@@ -51,7 +51,7 @@ class _BaseSiteAPI(ABC,Generic[_T]):
     def _update_to_attributes(self,**data:Any):
         for k,v in data.items():
             if v is UNKNOWN:
-                return
+                continue
             setattr(self,k,v)
 
     @property

@@ -36,6 +36,7 @@ from .sites.project import (
 from .sites.user import (
     User,
     ProjectFeaturedLabel,
+    OcularStatus,
     get_user
 )
 

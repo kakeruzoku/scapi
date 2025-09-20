@@ -408,3 +408,19 @@ class CloudLogPayload(TypedDict):
     value:int|float|str
     timestamp:int
     user:str
+
+class OcularNotFoundPayload(TypedDict):
+    error:str
+
+class OcularMetaPayload(TypedDict):
+    updated:str
+    updatedBy:str
+
+class OcularFoundPayload(TypedDict):
+    _id:int
+    name:str
+    status:str
+    color:str
+    meta:OcularMetaPayload
+    
+OcularPayload = OcularNotFoundPayload|OcularFoundPayload

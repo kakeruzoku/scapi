@@ -12,7 +12,8 @@ from ..utils.types import (
     UserMessageCountPayload,
     OldUserPayload,
     StudentPayload,
-    StudentPasswordRestPayliad
+    StudentPasswordRestPayliad,
+    OcularPayload
 )
 from ..utils.client import HTTPClient
 from ..utils.common import (
@@ -287,6 +288,15 @@ class User(_BaseSiteAPI[str]):
             CommentEvent:
         """
         return CommentEvent(self,interval,is_old)
+    
+    async def get_ocular_status(self) -> "OcularStatus":
+        """
+        Ocularのステータスを取得します。
+
+        Returns:
+            OcularStatus:
+        """
+        return await OcularStatus._create_from_api(self,self.client_or_session)
 
 
     async def post_comment(
@@ -408,6 +418,60 @@ class User(_BaseSiteAPI[str]):
                 })
             )
 
+class OcularStatus(_BaseSiteAPI[User]):
+    """
+    Ocularでのユーザーのステータス
+
+    Attributes:
+        user (User): Scratch上でのユーザー
+        name (str): ユーザー名
+        status (MAYBE_UNKNOWN[str]): ステータス
+        color (MAYBE_UNKNOWN[str|None]): 表示している色
+        updated_by (MAYBE_UNKNOWN[str]): 最後に編集したユーザー
+    """
+    def __init__(self,user:User,client_or_session:"HTTPClient|Session|None"=None):
+        super().__init__(client_or_session)
+
+        self.user:Final[User] = user
+        self.name:str = user.username
+        self.status:MAYBE_UNKNOWN[str] = UNKNOWN
+        self.color:MAYBE_UNKNOWN[str|None] = UNKNOWN
+        self._updated_at:MAYBE_UNKNOWN[str] = UNKNOWN
+        self.updated_by:MAYBE_UNKNOWN[str] = UNKNOWN
+
+    async def update(self) -> None:
+        response = await self.client.get(f"https://my-ocular.jeffalo.net/api/user/{self.user.username}")
+        self._update_from_data(response.json())
+
+    @property
+    def updated_at(self) -> datetime.datetime|UNKNOWN_TYPE:
+        """
+        最後にステータスを更新した時間を返す
+
+        Returns:
+            datetime.datetime|UNKNOWN_TYPE:
+        """
+        return dt_from_isoformat(self._updated_at)
+
+    def _update_from_data(self, data:OcularPayload):
+        if "error" in data:
+            return
+        color = data.get("color")
+        if color == "null":
+            color = None
+        
+        self._update_to_attributes(
+            name=data.get("name"),
+            status=data.get("status"),
+            color=color,
+        )
+
+        meta = data.get("meta")
+        if meta:
+            self._update_to_attributes(
+                _updated_at=meta.get("updated"),
+                update_by=meta.get("updatedBy")
+            )
 
 class ProjectFeaturedLabel(Enum):
     """

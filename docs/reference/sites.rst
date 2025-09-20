@@ -65,6 +65,8 @@
 
 .. autoclass:: scapi.User
 
+.. autoclass:: scapi.OcularStatus
+
 コメント
 --------
 
