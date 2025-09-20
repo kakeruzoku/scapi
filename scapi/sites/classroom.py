@@ -362,7 +362,7 @@ def get_class(class_id:int,*,_client:HTTPClient|None=None) -> _AwaitableContextM
         class_id (int): 取得したいクラスのID
 
     Returns:
-        _AwaitableContextManager[Project]: await か async with で取得できるクラス
+        _AwaitableContextManager[Classroom]: await か async with で取得できるクラス
     """
     return _AwaitableContextManager(Classroom._create_from_api(class_id,_client))
 
@@ -380,6 +380,6 @@ def get_class_from_token(token:str,*,_client:HTTPClient|None=None) -> _Awaitable
         token (str): 取得したいクラスのtoken
 
     Returns:
-        _AwaitableContextManager[Project]: await か async with で取得できるクラス
+        _AwaitableContextManager[Classroom]: await か async with で取得できるクラス
     """
     return _AwaitableContextManager(_get_class_from_token(token,_client))

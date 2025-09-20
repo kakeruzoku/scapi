@@ -23,6 +23,7 @@ from ..utils.client import HTTPClient
 from ..utils.common import (
     UNKNOWN,
     MAYBE_UNKNOWN,
+    UNKNOWN_TYPE,
     api_iterative,
     page_api_iterative,
     dt_from_isoformat,
@@ -45,10 +46,11 @@ from ..utils.file import File,_file
 from ..event.cloud import ScratchCloud
 from .base import _BaseSiteAPI
 
-from .classroom import Classroom
+from .classroom import Classroom,_get_class_from_token
 from .project import Project
 from .studio import Studio
 from .user import User
+from .forum import ForumCategory,get_forum_categories
 
 def decode_session(session_id:str) -> tuple[DecodedSessionID,int]:
     s1,s2,s3 = session_id.strip('".').split(':')
@@ -115,7 +117,7 @@ class SessionStatus:
         else:
             self.birthday = None
         self.gender = _user.get("gender")
-        self.classroom_id = _user.get("classroomId")
+        self.classroom_id = _user.get("classroomId",None)
 
         _permission = data.get("permissions")
         self.admin = _permission.get("admin")
@@ -249,9 +251,6 @@ class Session(_BaseSiteAPI[str]):
             old_password (str | None): 現在のパスワード(通常のパスワード変更の場合はstrのみ使用できます。)
             new_password (str): 新しいパスワード
             is_reset (bool, optional): 生徒アカウントのパスワードリセットの場合、Trueにしてください。
-
-        Raises:
-            Forbidden: _description_
         """
         if (not bypass_checking) and self.status and self.status.must_reset_password:
             is_reset = True
@@ -310,6 +309,26 @@ class Session(_BaseSiteAPI[str]):
             "https://scratch.mit.edu/accounts/settings/update_subscription/",
             data=formdata
         )
+
+    async def register_info(self,password:str,birth_day:datetime.date,gender:str,country:str):
+        """
+        新しい生徒アカウントに個人情報を登録する。
+
+        Args:
+            password (str): 新しいパスワード
+            birth_day (datetime.date): 誕生日
+            gender (str): 性別
+            country (str): 国
+        """
+        data = aiohttp.FormData({
+            "birth_month":str(birth_day.month),
+            "birth_year":str(birth_day.year),
+            "gender":gender,
+            "country":country,
+            "is_robot":"false",
+            "password":password
+        })
+        await self.client.post("https://scratch.mit.edu/classes/student_update_registration/",data=data)
     
     async def create_project(
             self,title:str|None=None,
@@ -418,7 +437,20 @@ class Session(_BaseSiteAPI[str]):
         classroom.title = data.get("title")
         classroom.description = description or ""
         classroom.status = status or ""
-        return classroom    
+        return classroom
+    
+    async def get_my_classroom(self) -> Classroom|None|UNKNOWN_TYPE:
+        """
+        生徒アカウントの場合、参加しているクラスを取得する。
+
+        Returns:
+            Classroom|None|UNKNOWN_TYPE:
+        """
+        if self.status is UNKNOWN:
+            return UNKNOWN
+        if self.status.classroom_id is None:
+            return
+        return await Classroom._create_from_api(self.status.classroom_id,self)
     
     async def get_mystuff_projects(
             self,
@@ -581,7 +613,7 @@ class Session(_BaseSiteAPI[str]):
         Returns:
             Project: 取得したプロジェクト
         """
-        return await Project._create_from_api(project_id,self.session)
+        return await Project._create_from_api(project_id,self)
     
     async def get_studio(self,studio_id:int) -> "Studio":
         """
@@ -593,7 +625,7 @@ class Session(_BaseSiteAPI[str]):
         Returns:
             Studio: 取得したスタジオ
         """
-        return await Studio._create_from_api(studio_id,self.session)
+        return await Studio._create_from_api(studio_id,self)
     
     async def get_user(self,username:str) -> "User":
         """
@@ -605,8 +637,41 @@ class Session(_BaseSiteAPI[str]):
         Returns:
             User: 取得したユーザー
         """
-        return await User._create_from_api(username,self.session)
+        return await User._create_from_api(username,self)
     
+    async def get_classroom(self,class_id:int) -> Classroom:
+        """
+        クラスを取得する。
+
+        Args:
+            class_id (int): 取得したいクラスのID
+
+        Returns:
+            Classroom:
+        """
+        return await Classroom._create_from_api(class_id,self)
+    
+    async def get_classroom_from_token(self,token:str) -> Classroom:
+        """
+        classtokenからクラスを取得する。
+
+        Args:
+            token (str): 取得したいクラスのtoken
+
+        Returns:
+            Classroom:
+        """
+        return await _get_class_from_token(token,self)
+    
+    async def get_forum_categories(self) -> dict[str, list[ForumCategory]]:
+        """
+        フォーラムのカテゴリー一覧を取得する。
+
+        Returns:
+            dict[str, list[ForumCategory]]: ボックスの名前と、そこに属しているカテゴリーのペア
+        """
+        return await get_forum_categories(self)
+
     def cloud(
             self,
             project_id:int|str,
