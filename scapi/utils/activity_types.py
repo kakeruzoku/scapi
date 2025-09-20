@@ -81,7 +81,7 @@ class ClassStudioBecomeManagerActivity(_ClassBaseActivity):
     gallery_title:str
     gallery:int
     actor_username:str
-    recipient:OldUserPayload
+    recipient:OldUserPayload|None
     recipient_username:str
 
 class ClassEditProfileActivity(_ClassBaseActivity):
@@ -90,7 +90,7 @@ class ClassEditProfileActivity(_ClassBaseActivity):
 
 class ClassCommentActivity(_ClassBaseActivity):
     type:Literal[27]
-    comment_type:int
+    comment_type:Literal[0,1,2]
     comment_fragment:str
     comment_id:int
     comment_obj_id:int

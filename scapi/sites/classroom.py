@@ -35,6 +35,7 @@ from ..utils.error import Forbidden,InvalidData,NoDataError
 from .base import _BaseSiteAPI
 from .studio import Studio
 from .user import User
+from .activity import Activity
 
 if TYPE_CHECKING:
     from .session import Session
@@ -225,6 +226,23 @@ class Classroom(_BaseSiteAPI[int]):
         ):
             _u:OldAnyObjectPayload[StudentPayload]
             yield User._create_from_data(_u["fields"]["user"]["username"],_u["fields"],self.client_or_session,User._update_from_student_data)
+
+    async def get_class_activity(
+            self,
+            start_page:int|None=None,
+            end_page:int|None=None,
+            student:str|User|None=None,
+            sort:Literal["","username"]="",
+            descending:bool=True
+        ) -> AsyncGenerator[Activity]:
+        self.require_session()
+        add_params:dict[str,str|int|float] = {"descsort":sort} if descending else {"ascsort":sort}
+        student = student.username if isinstance(student,User) else (student or "all")
+        async for _a in page_api_iterative(
+            self.client,f"https://scratch.mit.edu/site-api/classrooms/activity/{self.id}/{student}/",
+            start_page,end_page,add_params
+        ):
+            yield Activity._create_from_class(_a,self.client_or_session)
 
     @overload
     async def create_student_account(
