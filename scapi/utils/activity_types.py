@@ -1,13 +1,6 @@
 from typing import TypedDict,Literal,Union
 from .types import OldUserPayload
 
-class ActivityBase(TypedDict):
-    id:int
-    datetime_created:str
-    actor_username:str
-    actor_id:int
-    type:str
-
 class _ClassBaseActivity(TypedDict):
     actor:OldUserPayload
     datetime_created:str
@@ -113,4 +106,56 @@ ClassAnyActivity = Union[
     ClassStudioBecomeManagerActivity,
     ClassEditProfileActivity,
     ClassCommentActivity
+]
+
+class _BaseActivity(TypedDict):
+    datetime_created:str
+    id:str
+    actor_id:int
+    actor_username:str
+
+class BaseActivity(_BaseActivity):
+    type:str
+
+class StudioUpdateActivity(_BaseActivity):
+    type:Literal["updatestudio"]
+
+class StudioBecomeCuratorActivity(_BaseActivity):
+    type:Literal["becomecurator"]
+    username:str
+
+class StudioRemoveCuratorActivity(_BaseActivity):
+    type:Literal["removecuratorstudio"]
+    username:str
+
+class StudioBecomeHostActivity(_BaseActivity):
+    type:Literal["becomehoststudio"]
+    admin_actor:bool
+    former_host_username:str
+    recipient_username:str
+
+class StudioAddProjectActivity(_BaseActivity):
+    type:Literal["addprojecttostudio"]
+    project_id:int
+    project_title:str
+
+class StudioRemoveProjectActivity(_BaseActivity):
+    type:Literal["removeprojectstudio"]
+    project_id:int
+    project_title:str
+
+class StudioBecomeManagerActivity(_BaseActivity):
+    type:Literal["becomeownerstudio"]
+    recipient_username:str
+
+
+
+StudioAnyActivity = Union[
+    StudioUpdateActivity,
+    StudioBecomeCuratorActivity,
+    StudioRemoveCuratorActivity,
+    StudioBecomeHostActivity,
+    StudioAddProjectActivity,
+    StudioRemoveProjectActivity,
+    StudioBecomeManagerActivity
 ]

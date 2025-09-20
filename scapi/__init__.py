@@ -58,6 +58,9 @@ from .sites.comment import (
 )
 
 from .sites.activity import (
+    ActivityType,
+    ActivityAction,
+    Activity,
     CloudActivity
 )
 

@@ -82,6 +82,12 @@
 アクティビティ
 --------------
 
+.. autoclass:: scapi.ActivityType
+
+.. autoclass:: scapi.ActivityAction
+
+.. autoclass:: scapi.Activity
+
 .. autoclass:: scapi.CloudActivity
 
 フォーラム

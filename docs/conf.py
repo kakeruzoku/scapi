@@ -56,3 +56,14 @@ autodoc_default_options = {
 }
 
 todo_include_todos = True
+
+from enum import Enum
+
+def skip_enum_members(app, what, name, obj, skip, options):
+    # Enum クラスのメンバーをスキップする
+    if isinstance(obj, Enum):
+        return True  # 出力しない
+    return None  # それ以外はデフォルトの動作に任せる
+
+def setup(app):
+    app.connect("autodoc-skip-member", skip_enum_members)

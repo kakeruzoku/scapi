@@ -14,9 +14,9 @@ from ..utils.types import (
     OldUserPayload
 )
 from ..utils.activity_types import (
-    ActivityBase,
+    _BaseActivity,
     ClassAnyActivity,
-    ClassBaseActivity
+    StudioAnyActivity
 )
 from ..utils.common import (
     UNKNOWN,
@@ -55,11 +55,23 @@ class CloudActivityPayload(TypedDict):
     cloud:"_BaseCloud|None"
 
 class ActivityType(Enum):
-    studio="studio"
-    user="user"
-    message="message"
-    feed="feed"
-    classroom="classroom"
+    """
+    アクティビティのデータ元を表します。
+
+    Attributes:
+        Unknown: 不明
+        Studio: スタジオの活動履歴
+        User: ユーザーまたはクラスの公開アクティビティ
+        Message: メッセージ
+        Feed: 最新の情報
+        Classroom: クラスのプライベートアクティビティ
+    """
+    Unknown="unkown"
+    Studio="studio"
+    User="user"
+    Message="message"
+    Feed="feed"
+    Classroom="classroom"
 
 class ActivityAction(Enum):
     Unknown="unknown"
@@ -87,6 +99,22 @@ class ActivityAction(Enum):
     Comment="comment"
 
 class Activity:
+    """
+    ユーザーの行動を表す。
+
+    .. warning::
+        このクラスは :class:`_BaseSiteAPI <scapi._BaseSiteAPI>` を継承していません。
+
+    .. note::
+        このクラスの属性値は`.action`の値によって変わります。
+        どのアクションのときにどんなデータがセットされるかについては、:class:`ActivityAction <scapi.ActivityAction>` を確認してください。
+
+    Attributes:
+        id (int|None): アクティビティのID
+        actor (User|None): アクティビティを実行したユーザー
+        target (Comment|Studio|Project|User): 適用したオブジェクトまたは、このアクティビティによってできたオブジェクト
+        place (Studio|Project|User): アクティビティがじっこうされた場所
+    """
     def __str__(self) -> str:
         return f"<Acticity type:{self.type} action:{self.action}>"
 
@@ -99,7 +127,7 @@ class Activity:
             actor:"User|None"=None,
             target:"Comment|Studio|Project|User|None"=None,
             place:"Studio|Project|User|None"=None,
-            datetime:"datetime.datetime|None"=None,
+            datetime:"str|None"=None,
             other:Any=None
         ):
         self.type:ActivityType = type
@@ -109,15 +137,25 @@ class Activity:
         self.actor:"User|None" = actor
         self.target:"Comment|Studio|Project|User|None" = target
         self.place:"Studio|Project|User|None" = place
-        self.created_at:"datetime.datetime|None" = datetime
+        self._created_at:"str|None" = datetime
         self.other:Any = other
 
-    def _setup_from_json(self,data:ActivityBase,client_or_session:"HTTPClient|Session"):
+    @property
+    def created_at(self) -> datetime.datetime | None:
+        """
+        アクションが実行された時間を返す
+
+        Returns:
+            datetime.datetime|None:
+        """
+        return dt_from_isoformat(self._created_at)
+
+    
+    def _setup_from_json(self,data:_BaseActivity,client_or_session:"HTTPClient|Session"):
         _import()
         self.actor = User(data["actor_username"],client_or_session)
         self.actor.id = data.get("actor_id")
-        self.action = ActivityAction(data["type"])
-        self.created_at = dt_from_isoformat(data.get("datetime_created",None))
+        self._created_at = data.get("datetime_created",None)
 
     @staticmethod
     def _load_user(data:OldUserPayload,client_or_session:"HTTPClient|Session"):
@@ -126,10 +164,10 @@ class Activity:
     @classmethod
     def _create_from_class(cls,data:ClassAnyActivity,client_or_session:"HTTPClient|Session"):
         _import()
-        activity = cls(ActivityType.classroom)
+        activity = cls(ActivityType.Classroom)
         _actor = data["actor"]
         activity.actor = User._create_from_data(_actor["username"],_actor,client_or_session,User._update_from_old_data)
-        activity.created_at = dt_from_isoformat(data["datetime_created"])
+        activity._created_at = data["datetime_created"]
         match data["type"]:
             case 0:
                 activity.action = ActivityAction.UserFollow
