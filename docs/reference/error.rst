@@ -1,4 +1,4 @@
-HTTPError例外
+例外
 ====
 
 .. contents::

@@ -77,6 +77,7 @@ def _make_rst_epilog(name:str,type:str="class",place:str|None=None):
     place = place or name
     rst_epilog += f"\n.. |{name}| replace:: :{type}:`{name} <scapi.{place}>`"
 
+_make_rst_epilog("Session")
 _make_rst_epilog("User")
 _make_rst_epilog("Project")
 _make_rst_epilog("Studio")
