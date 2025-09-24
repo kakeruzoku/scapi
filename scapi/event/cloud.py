@@ -13,7 +13,8 @@ from ..utils.types import (
 )
 from ..utils.common import (
     __version__,
-    api_iterative
+    api_iterative,
+    wait_all_event
 )
 
 if TYPE_CHECKING:
@@ -68,7 +69,8 @@ class _BaseCloud(_BaseEvent):
         self.project_id = project_id
         self.username = username
 
-        self.last_set_time:float = 0
+        self._send_queue:asyncio.Queue[tuple[asyncio.Future,int,str]] = asyncio.Queue()
+        self._send_next:tuple[asyncio.Future,int,str]|None = None
 
         self._data:dict[str,str] = {}
 
@@ -90,16 +92,34 @@ class _BaseCloud(_BaseEvent):
             raise ValueError("Websocket is None")
         return self._ws
     
-    async def _send(self,data:list[dict[str,str]],*,project_id:str|int|None=None):
+    def send(self,payload:list[dict[str,str]],*,project_id:str|int|None=None) -> asyncio.Future:
+        """
+        サーバーにデータを送信する。
+
+        Args:
+            payload (list[dict[str,str]]): 送信したいデータ本体
+            project_id (str | int | None, optional): 変更したい場合、送信先のプロジェクトID
+
+        Returns:
+            asyncio.Future: データの送信が完了するまで待つFuture
+        """
         add_param = {
             "user":self.username,
             "project_id":str(self.project_id if project_id is None else project_id)
         }
-        text = "".join([json.dumps(add_param|i)+"\n" for i in data])
-        await self.ws.send_str(text)
+        text = "".join([json.dumps(add_param|i)+"\n" for i in payload])
+        future = asyncio.Future()
+        self._send_queue.put_nowait((future,len(payload),text))
+        return future
 
-    async def _handshake(self):
-        await self._send([{"method":"handshake"}])
+    async def handshake(self):
+        await self.ws.send_str(json.dumps({
+            "method":"handshake",
+            "user":self.username,
+            "project_id":str(self.project_id)
+        })+"\n")
+        if self.rate_limit is not None:
+            await asyncio.sleep(self.rate_limit)
 
     def _received_data(self,datas):
         if isinstance(datas,bytes):
@@ -121,40 +141,92 @@ class _BaseCloud(_BaseEvent):
             self._call_event(self.on_set,CloudActivity._create_from_ws(data,self))
 
     async def _event_monitoring(self,event:asyncio.Event):
+        await asyncio.gather(self._connecter(),self._sender(),self._reader())
+        if TYPE_CHECKING: raise #NoReturn
+
+    async def _cleanup(self):
+        self.clear_queue()
+
+    async def _connecter(self):
         wait_count = 0
         while True:
             try:
                 async with self.client._session.ws_connect(
                     self.url,
                     headers=self.header,
-                    timeout=self.ws_timeout
+                    timeout=self.ws_timeout,
+                    proxy=self.client._proxy,
+                    proxy_auth=self.client._proxy_auth
                 ) as ws:
                     self._ws = ws
-                    await self._handshake()
-                    self._call_event(self.on_connect)
+                    await self.handshake()
                     self._ws_event.set()
+                    self._call_event(self.on_connect)
                     wait_count = 0
-                    self.last_set_time = max(self.last_set_time,time.time())
-                    async for w in ws:
-                        if w.type is aiohttp.WSMsgType.ERROR:
-                            raise w.data
-                        if w.type in (
-                            aiohttp.WSMsgType.CLOSED,
-                            aiohttp.WSMsgType.CLOSING,
-                            aiohttp.WSMsgType.CLOSE
-                        ):
-                            raise NormalDisconnection
-                        if self.is_running:
-                            self._received_data(w.data)
-            except NormalDisconnection:
-                pass
+                    await asyncio.Future()
             except Exception as e:
                 self._call_event(self.on_error,e)
             self._ws_event.clear()
             self._call_event(self.on_disconnect,wait_count)
             await asyncio.sleep(wait_count)
             wait_count += 2
-            await event.wait()
+            await self._event.wait()
+
+    async def _reader(self):
+        while True:
+            try:
+                async for w in self.ws:
+                    match w.type:
+                        case aiohttp.WSMsgType.ERROR:
+                            raise w.data
+                        case aiohttp.WSMsgType.TEXT:
+                            ws_data:str = w.data
+                        case aiohttp.WSMsgType.BINARY:
+                            ws_data:str = w.data.decode()
+                        case aiohttp.WSMsgType.CLOSED|aiohttp.WSMsgType.CLOSING|aiohttp.WSMsgType.CLOSE:
+                            raise NormalDisconnection
+                        case _:
+                            continue
+                    if not self.is_running:
+                        continue
+                    for raw_data in ws_data.split("\n"):
+                        try:
+                            data:WSCloudActivityPayload = json.loads(raw_data,parse_constant=str,parse_float=str,parse_int=str)
+                        except json.JSONDecodeError:
+                            continue
+                        if not isinstance(data,dict):
+                            continue
+                        method = data.get("method","")
+                        if method != "set":
+                            continue
+                        self._data[data.get("name")] = data.get("value")
+                        self._call_event(self.on_set,CloudActivity._create_from_ws(data,self))
+            except NormalDisconnection:
+                pass
+            except Exception as e:
+                self._call_event(self.on_error,e)
+            await wait_all_event(self._event,self._ws_event)
+
+    async def _sender(self):
+        self._send_next = None
+        while True:
+            send_count = 1
+            try:
+                if self._send_next is None:
+                    self._send_next = await self._send_queue.get()
+                if not all((self._event.is_set(),self._ws_event.is_set())):
+                    raise NormalDisconnection
+                await self.ws.send_str(self._send_next[2])
+                self._send_next[0].set_result(None)
+                send_count = self._send_next[1]
+                self._send_next = None
+            except NormalDisconnection:
+                pass
+            except Exception as e:
+                self._call_event(self.on_error,e)
+            if self.rate_limit is not None:
+                await asyncio.sleep(self.rate_limit*(min(1,send_count)))
+            await wait_all_event(self._event,self._ws_event)
 
     async def on_connect(self):
         """
@@ -192,29 +264,11 @@ class _BaseCloud(_BaseEvent):
         Returns:
             str: 変換されたテキスト
         """
-        if text.startswith("☁ "):
+        if not text.startswith("☁ "):
             return "☁ "+text
         return text
 
-    async def send(self,payload:list[dict[str,str]],*,project_id:str|int|None=None):
-        """
-        サーバーにデータを送信する。
-
-        Args:
-            payload (list[dict[str,str]]): 送信したいデータ本体
-            project_id (str | int | None, optional): 変更したい場合、送信先のプロジェクトID
-        """
-        await asyncio.wait_for(self._ws_event.wait(),timeout=self.send_timeout)
-
-        if self.rate_limit:
-            now = time.time()
-            await asyncio.sleep(self.last_set_time+(self.rate_limit*len(payload)) - now)
-            if self.last_set_time < now:
-                self.last_set_time = now
-        
-        await self._send(payload,project_id=project_id)
-
-    async def set_var(self,variable:str,value:Any,*,project_id:str|int|None=None,add_cloud_symbol:bool=True):
+    def set_var(self,variable:str,value:Any,*,project_id:str|int|None=None,add_cloud_symbol:bool=True):
         """
         クラウド変数を変更する。
 
@@ -223,14 +277,17 @@ class _BaseCloud(_BaseEvent):
             value (Any): 変数の値
             project_id (str | int | None, optional): 変更したい場合、送信先のプロジェクトID
             add_cloud_symbol (bool, optional): 自動的に先頭に☁をつけるか
+
+        Returns:
+            asyncio.Future: データの送信が完了するまで待つFuture
         """
-        await self.send([{
+        return self.send([{
             "method":"set",
             "name":self.add_cloud_symbol(variable) if add_cloud_symbol else variable,
             "value":str(value)
         }],project_id=project_id)
 
-    async def set_vars(self,data:dict[str,Any],*,project_id:str|int|None=None,add_cloud_symbol:bool=True):
+    def set_vars(self,data:dict[str,Any],*,project_id:str|int|None=None,add_cloud_symbol:bool=True):
         """
         クラウド変数を変更する。
 
@@ -238,12 +295,26 @@ class _BaseCloud(_BaseEvent):
             data (dict[str,Any]): 変数名と値のペア
             project_id (str | int | None, optional): 変更したい場合、送信先のプロジェクトID
             add_cloud_symbol (bool, optional): 自動的に先頭に☁をつけるか
+
+        Returns:
+            asyncio.Future: データの送信が完了するまで待つFuture
         """
-        await self.send([{
+        return self.send([{
             "method":"set",
             "name":self.add_cloud_symbol(k) if add_cloud_symbol else k,
             "value":str(v)
         } for k,v in data],project_id=project_id)
+
+    def clear_queue(self):
+        """
+        待機中の送信処理を全てキャンセルする
+        """
+        try:
+            while True:
+                event,_,_ = self._send_queue.get_nowait()
+                event.set_exception(asyncio.CancelledError)
+        except asyncio.QueueEmpty:
+            pass
 
 turbowarp_cloud_url = "wss://clouddata.turbowarp.org"
 scratch_cloud_url = "wss://clouddata.scratch.mit.edu"

@@ -1,10 +1,11 @@
 from __future__ import annotations
 
+import asyncio
 from contextlib import asynccontextmanager
 from enum import Enum
 import string
 import datetime
-from typing import TYPE_CHECKING, Any, AsyncGenerator, Callable, Coroutine, Generic, Literal, ParamSpec, Protocol, Self, TypeVar, overload,AsyncContextManager
+from typing import TYPE_CHECKING, Any, AsyncGenerator, Callable, Coroutine, Generic, Literal, ParamSpec, Protocol, Self, Sequence, TypeVar, overload,AsyncContextManager
 import inspect
 from functools import wraps
 
@@ -194,6 +195,12 @@ async def temporary_httpclient(client_or_session:"HTTPClient|Session|None"):
         if need_close:
             await client.close()
         raise
+
+async def wait_all_event(*events:asyncio.Event):
+    while True:
+        if all(event.is_set() for event in events):
+            return
+        await asyncio.gather(*[event.wait() for event in events])
 
 def _bypass_checking(func:Callable[[_T], Any]) -> Callable[[_T], None]:
     @wraps(func)
