@@ -192,12 +192,12 @@ class HTTPClient:
         self._proxy_auth = auth
     
     async def _request(self,method:str,url:str,**kwargs:Unpack[_RequestOptions]) -> Response:
-        if self.is_scratch(url):
-            kwargs["cookies"] = kwargs.get("cookies") or self.scratch_cookies
-            kwargs["headers"] = kwargs.get("headers") or self.scratch_headers
-        else:
-            kwargs["cookies"] = kwargs.get("cookies") or self.cookies
-            kwargs["headers"] = kwargs.get("headers") or self.headers
+        kwargs["cookies"] = kwargs.get("cookies")
+        kwargs["headers"] = kwargs.get("headers")
+
+        if kwargs["cookies"] is None: kwargs["cookies"] = self.scratch_cookies if self.is_scratch(url) else self.cookies
+        if kwargs["headers"] is None: kwargs["headers"] = self.scratch_headers if self.is_scratch(url) else self.headers
+        
         check = kwargs.pop("check",True)
         if self.closed:
             raise SessionClosed()
