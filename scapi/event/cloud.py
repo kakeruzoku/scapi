@@ -69,8 +69,9 @@ class _BaseCloud(_BaseEvent):
         self.project_id = project_id
         self.username = username
 
-        self._send_queue:asyncio.Queue[tuple[asyncio.Future,int,str]] = asyncio.Queue()
+        self._send_queue:asyncio.PriorityQueue[tuple[int,int,tuple[asyncio.Future,int,str]]] = asyncio.PriorityQueue()
         self._send_next:tuple[asyncio.Future,int,str]|None = None
+        self._count:int = 0
 
         self._data:dict[str,str] = {}
 
@@ -92,13 +93,14 @@ class _BaseCloud(_BaseEvent):
             raise ValueError("Websocket is None")
         return self._ws
     
-    def send(self,payload:list[dict[str,str]],*,project_id:str|int|None=None) -> asyncio.Future:
+    def send(self,payload:list[dict[str,str]],*,project_id:str|int|None=None,priority:int=10) -> asyncio.Future:
         """
         サーバーにデータを送信する。
 
         Args:
             payload (list[dict[str,str]]): 送信したいデータ本体
             project_id (str | int | None, optional): 変更したい場合、送信先のプロジェクトID
+            priority (int, optional): 送信の優先度。小さいほど優先され、初期値は10です。
 
         Returns:
             asyncio.Future: データの送信が完了するまで待つFuture
@@ -109,10 +111,23 @@ class _BaseCloud(_BaseEvent):
         }
         text = "".join([json.dumps(add_param|i)+"\n" for i in payload])
         future = asyncio.Future()
-        self._send_queue.put_nowait((future,len(payload),text))
+        self._count += 1
+        self._send_queue.put_nowait((priority,self._count,(future,len(payload),text)))
         return future
+    
+    def queue_len(self) -> int:
+        """
+        キューの長さを取得する。
+
+        Returns:
+            int:
+        """
+        return self._send_queue.qsize()
 
     async def handshake(self):
+        """
+        ハンドシェイクを送信する
+        """
         await self.ws.send_str(json.dumps({
             "method":"handshake",
             "user":self.username,
@@ -213,7 +228,7 @@ class _BaseCloud(_BaseEvent):
             send_count = 1
             try:
                 if self._send_next is None:
-                    self._send_next = await self._send_queue.get()
+                    _,_,self._send_next = await self._send_queue.get()
                 if not all((self._event.is_set(),self._ws_event.is_set())):
                     raise NormalDisconnection
                 await self.ws.send_str(self._send_next[2])
@@ -268,7 +283,7 @@ class _BaseCloud(_BaseEvent):
             return "☁ "+text
         return text
 
-    def set_var(self,variable:str,value:Any,*,project_id:str|int|None=None,add_cloud_symbol:bool=True):
+    def set_var(self,variable:str,value:Any,*,project_id:str|int|None=None,add_cloud_symbol:bool=True,priority:int=10):
         """
         クラウド変数を変更する。
 
@@ -277,6 +292,7 @@ class _BaseCloud(_BaseEvent):
             value (Any): 変数の値
             project_id (str | int | None, optional): 変更したい場合、送信先のプロジェクトID
             add_cloud_symbol (bool, optional): 自動的に先頭に☁をつけるか
+            priority (int, optional): 送信の優先度。小さいほど優先され、初期値は10です。
 
         Returns:
             asyncio.Future: データの送信が完了するまで待つFuture
@@ -285,9 +301,9 @@ class _BaseCloud(_BaseEvent):
             "method":"set",
             "name":self.add_cloud_symbol(variable) if add_cloud_symbol else variable,
             "value":str(value)
-        }],project_id=project_id)
+        }],project_id=project_id,priority=priority)
 
-    def set_vars(self,data:dict[str,Any],*,project_id:str|int|None=None,add_cloud_symbol:bool=True):
+    def set_vars(self,data:dict[str,Any],*,project_id:str|int|None=None,add_cloud_symbol:bool=True,priority:int=10):
         """
         クラウド変数を変更する。
 
@@ -295,6 +311,7 @@ class _BaseCloud(_BaseEvent):
             data (dict[str,Any]): 変数名と値のペア
             project_id (str | int | None, optional): 変更したい場合、送信先のプロジェクトID
             add_cloud_symbol (bool, optional): 自動的に先頭に☁をつけるか
+            priority (int, optional): 送信の優先度。小さいほど優先され、初期値は10です。
 
         Returns:
             asyncio.Future: データの送信が完了するまで待つFuture
@@ -303,7 +320,7 @@ class _BaseCloud(_BaseEvent):
             "method":"set",
             "name":self.add_cloud_symbol(k) if add_cloud_symbol else k,
             "value":str(v)
-        } for k,v in data],project_id=project_id)
+        } for k,v in data],project_id=project_id,priority=priority)
 
     def clear_queue(self):
         """
@@ -311,8 +328,8 @@ class _BaseCloud(_BaseEvent):
         """
         try:
             while True:
-                event,_,_ = self._send_queue.get_nowait()
-                event.set_exception(asyncio.CancelledError)
+                _,_,data = self._send_queue.get_nowait()
+                data[0].set_exception(asyncio.CancelledError)
         except asyncio.QueueEmpty:
             pass
 

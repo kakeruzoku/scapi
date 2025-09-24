@@ -500,7 +500,16 @@ class Studio(_BaseSiteAPI[int]):
         response = await self.client.get(f"https://api.scratch.mit.edu/studios/{self.id}/users/{self._session.username}")
         return StudioStatus(response.json(),self)
     
-    async def report(self,type:Literal["title","description","thumbnail"]):
+    async def report(self,type:Literal["title","description","thumbnail"]) -> str:
+        """
+        スタジオを報告する
+
+        Args:
+            type (Literal["title","description","thumbnail"]): 報告の理由
+
+        Returns:
+            str: このスタジオのステータス
+        """
         response = await self.client.post(
             f"https://scratch.mit.edu/site-api/galleries/all/{self.id}/report/",
             data=aiohttp.FormData({"selected_field":type})
