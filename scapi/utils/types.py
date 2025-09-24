@@ -66,6 +66,16 @@ class SessionStatusPayload(TypedDict):
     permissions:SessionStatusPermissionsPayload
     flags:SessionStatusFlagsPayload
 
+class MessageCountPayload(TypedDict):
+    count:int
+
+class ScratcherInvitePayload(TypedDict):
+    id:int
+    datetime_created:str
+    unread:int
+    actor_id:int
+    invitee_id:int
+
 class LoginFailurePayload(TypedDict):
     username:str
     num_tries:NotRequired[int]
@@ -424,3 +434,6 @@ class OcularFoundPayload(TypedDict):
     meta:OcularMetaPayload
     
 OcularPayload = OcularNotFoundPayload|OcularFoundPayload
+
+search_mode = Literal["trending","popular"]
+explore_query = Literal["*","animations","art","games","music","stories","tutorial"]|str

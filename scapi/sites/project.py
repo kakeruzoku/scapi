@@ -13,7 +13,9 @@ from ..utils.types import (
     ProjectVisibilityPayload,
     UserFeaturedPayload,
     OldProjectPayload,
-    OldProjectEditPayload
+    OldProjectEditPayload,
+    search_mode,
+    explore_query
 )
 from ..utils.common import (
     UNKNOWN,
@@ -696,9 +698,6 @@ def get_project(project_id:int,*,_client:HTTPClient|None=None) -> _AwaitableCont
         _AwaitableContextManager[Project]: await か async with で取得できるプロジェクト
     """
     return _AwaitableContextManager(Project._create_from_api(project_id,_client))
-
-search_mode = Literal["trending","popular"]
-explore_query = Literal["*","animations","art","games","music","stories","tutorial"]|str
 
 async def explore_projects(
         client:HTTPClient,

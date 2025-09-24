@@ -8,7 +8,9 @@ from ..utils.types import (
     StudioPayload,
     StudioRolePayload,
     OldStudioPayload,
-    StudioClassroomPayload
+    StudioClassroomPayload,
+    search_mode,
+    explore_query
 )
 from ..utils.activity_types import StudioAnyActivity
 from ..utils.common import (
@@ -582,9 +584,6 @@ def get_studio(studio_id:int,*,_client:HTTPClient|None=None) -> _AwaitableContex
         common._AwaitableContextManager[Studio]: await か async with で取得できるスタジオ
     """
     return _AwaitableContextManager(Studio._create_from_api(studio_id,_client))
-
-search_mode = Literal["trending","popular"]
-explore_query = Literal["*","animations","art","games","music","stories","tutorial"]|str
 
 async def explore_studios(
         client:HTTPClient,

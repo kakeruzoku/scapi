@@ -17,7 +17,13 @@ from ..utils.types import (
     ClassCreatedPayload,
     OldAllClassroomPayload,
     OldIdClassroomPayload,
-    StudioCreatedPayload
+    StudioCreatedPayload,
+    MessageCountPayload,
+    ScratcherInvitePayload,
+    NoElementsPayload,
+    AnySuccessPayload,
+    search_mode,
+    explore_query
 )
 from ..utils.client import HTTPClient
 from ..utils.common import (
@@ -47,8 +53,8 @@ from ..event.cloud import ScratchCloud
 from .base import _BaseSiteAPI
 
 from .classroom import Classroom,_get_class_from_token
-from .project import Project
-from .studio import Studio
+from .project import Project, search_projects, explore_projects
+from .studio import Studio, search_studios, explore_studios
 from .user import User
 from .forum import ForumCategory,get_forum_categories
 
@@ -439,6 +445,37 @@ class Session(_BaseSiteAPI[str]):
         classroom.status = status or ""
         return classroom
     
+    async def clear_message(self):
+        await self.client.post("https://scratch.mit.edu/site-api/messages/messages-clear/")
+
+    async def get_message_count(self) -> int:
+        """
+        アカウントのメッセージ数を取得する。
+
+        Returns:
+            int:
+        """
+        response = await self.client.get("https://api.scratch.mit.edu/users/fas/messages/count")
+        data:MessageCountPayload = response.json()
+        return data.get("count",0)
+    
+    async def get_invite_status(self) -> ScratcherInvitePayload|None:
+        """
+        Scratcherへの招待への詳細データ
+
+        Returns:
+            ScratcherInvitePayload|None: 招待がある場合、Scratchからの生データ
+        """
+        response = await self.client.get(f"https://api.scratch.mit.edu/users/{self.username}/invites")
+        data:ScratcherInvitePayload|None = response.json() # NoElementsPayloadのほうが適切
+        return data or None
+    
+    async def become_scratcher(self):
+        """
+        Scratcherに昇格する。
+        """
+        await self.client.get(f"https://scratch.mit.edu/users/{self.username}/promote-to-scratcher/")
+    
     async def get_my_classroom(self) -> Classroom|None|UNKNOWN_TYPE:
         """
         生徒アカウントの場合、参加しているクラスを取得する。
@@ -603,6 +640,26 @@ class Session(_BaseSiteAPI[str]):
         )
         return r.json().get("trashed")
     
+    async def check_password(self,password:str):
+        """
+        アカウントのパスワードを確認する
+
+        Args:
+            password (str): アカウントのパスワード
+
+        Returns:
+            bool: パスワードが正しいかどうか
+        """
+        response = await self.client.post(
+            "https://scratch.mit.edu/accounts/check_password/",
+            data=aiohttp.FormData({
+                "csrfmiddlewaretoken":"a",
+                "password":password
+            })
+        )
+        data:AnySuccessPayload = response.json()
+        return bool(data.get("success"))
+    
     async def get_project(self,project_id:int) -> "Project":
         """
         プロジェクトを取得する。
@@ -671,6 +728,102 @@ class Session(_BaseSiteAPI[str]):
             dict[str, list[ForumCategory]]: ボックスの名前と、そこに属しているカテゴリーのペア
         """
         return await get_forum_categories(self)
+    
+    def explore_projects(
+            self,
+            query: explore_query = "*",
+            mode: search_mode = "trending",
+            language: str = "en",
+            limit: int | None = None,
+            offset: int | None = None,
+        ) -> AsyncGenerator[Project, None]:
+        """
+        プロジェクトの傾向を取得する。
+        この関数は ``async for`` から使用してください。
+
+        Args:
+            query (explore_query, optional): 取得するする種類。デフォルトは"*"(all)です。
+            mode (Literal["trending","popular"], optional): 取得するモード。デフォルトは"trending"です。
+            language (str, optional): 取得する言語。デフォルトは"en"です。
+            limit (int|None, optional): 取得するプロジェクトの数。初期値は40です。
+            offset (int|None, optional): 取得するプロジェクトの開始位置。初期値は0です。
+
+        Returns:
+            AsyncGenerator[Project, None]:
+        """
+        return explore_projects(self.client,query,mode,language,limit,offset)
+    
+    def search_projects(
+            self,
+            query: str,
+            mode: search_mode = "trending",
+            language: str = "en",
+            limit: int | None = None,
+            offset: int | None = None,
+        ) -> AsyncGenerator[Project, None]:
+        """
+        プロジェクトを検索する
+        この関数は ``async for`` から使用してください。
+
+        Args:
+            query (str): 検索したい内容
+            mode (Literal["trending","popular"], optional): 取得するモード。デフォルトは"trending"です。
+            language (str, optional): 取得する言語。デフォルトは"en"です。
+            limit (int|None, optional): 取得するプロジェクトの数。初期値は40です。
+            offset (int|None, optional): 取得するプロジェクトの開始位置。初期値は0です。
+
+        Returns:
+            AsyncGenerator[Project, None]:
+        """
+        return search_projects(self.client,query,mode,language,limit,offset)
+    
+    def explore_studios(
+            self,
+            query: explore_query = "*",
+            mode: search_mode = "trending",
+            language: str = "en",
+            limit: int | None = None,
+            offset: int | None = None,
+        ) -> AsyncGenerator[Studio, None]:
+        """
+        スタジオの傾向を取得する
+        この関数は ``async for`` から使用してください。
+
+        Args:
+            query (explore_query, optional): 取得するする種類。デフォルトは"*"(all)です。
+            mode (Literal["trending","popular"], optional): 取得するモード。デフォルトは"trending"です。
+            language (str, optional): 取得する言語。デフォルトは"en"です。
+            limit (int|None, optional): 取得するスタジオの数。初期値は40です。
+            offset (int|None, optional): 取得するスタジオの開始位置。初期値は0です。
+
+        Returns:
+            AsyncGenerator[Studio, None]:
+        """
+        return explore_studios(self.client,query,mode,language,limit,offset)
+    
+    def search_studios(
+            self,
+            query: str,
+            mode: search_mode = "trending",
+            language: str = "en",
+            limit: int | None = None,
+            offset: int | None = None,
+        ) -> AsyncGenerator[Studio, None]:
+        """
+        スタジオを検索する
+        この関数は ``async for`` から使用してください。
+
+        Args:
+            query (str): 検索したい内容
+            mode (Literal["trending","popular"], optional): 取得するモード。デフォルトは"trending"です。
+            language (str, optional): 取得する言語。デフォルトは"en"です。
+            limit (int|None, optional): 取得するスタジオの数。初期値は40です。
+            offset (int|None, optional): 取得するスタジオの開始位置。初期値は0です。
+
+        Returns:
+            AsyncGenerator[Studio, None]:
+        """
+        return search_studios(self.client,query,mode,language,limit,offset)
 
     def cloud(
             self,
