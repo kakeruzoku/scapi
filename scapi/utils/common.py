@@ -12,7 +12,7 @@ from functools import wraps
 import bs4
 
 from .error import NotFound
-from .config import bypass_checking
+from .config import _config
 if TYPE_CHECKING:
     from .client import HTTPClient
     from ..sites.session import Session
@@ -208,7 +208,7 @@ def _bypass_checking(func:Callable[[_T], Any]) -> Callable[[_T], None]:
         """
         このチェックはデバックモードにすることで回避できます。
         """
-        if bypass_checking:
+        if _config.bypass_checking:
             return
         else:
             func(self)

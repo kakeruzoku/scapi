@@ -4,7 +4,7 @@ from typing import Any, Callable, TypedDict, Unpack
 import aiohttp
 import json as _json
 from urllib.parse import urlparse
-from .config import default_proxy,default_proxy_auth
+from .config import _config
 from .error import (
     SessionClosed,
     ProcessingError,
@@ -148,8 +148,8 @@ class HTTPClient:
         self.cookies = cookies or {}
         self.scratch_headers = scratch_headers or default_headers
         self.scratch_cookies = scratch_cookies or {}
-        self._proxy = default_proxy
-        self._proxy_auth = default_proxy_auth
+        self._proxy = _config.default_proxy
+        self._proxy_auth = _config.default_proxy_auth
         self._session:aiohttp.ClientSession = aiohttp.ClientSession(
             cookie_jar=aiohttp.DummyCookieJar()
         )

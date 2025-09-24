@@ -41,7 +41,7 @@ from ..utils.error import (
     HTTPError,
     LoginFailure
 )
-from ..utils.config import bypass_checking
+from ..utils.config import _config
 from ..utils.file import File,_file
 from ..event.cloud import ScratchCloud
 from .base import _BaseSiteAPI
@@ -252,7 +252,7 @@ class Session(_BaseSiteAPI[str]):
             new_password (str): 新しいパスワード
             is_reset (bool, optional): 生徒アカウントのパスワードリセットの場合、Trueにしてください。
         """
-        if (not bypass_checking) and self.status and self.status.must_reset_password:
+        if (not _config.bypass_checking) and self.status and self.status.must_reset_password:
             is_reset = True
         if is_reset:
             req_url = "https://scratch.mit.edu/classes/student_password_reset/"

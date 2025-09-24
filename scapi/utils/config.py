@@ -1,14 +1,15 @@
 import aiohttp
 
+class Config:
+    def __init__(self) -> None:
+        self.default_proxy:str|None = None
+        self.default_proxy_auth:aiohttp.BasicAuth|None = None
+        self.bypass_checking:bool = False
 
-bypass_checking:bool = False
+_config = Config()
 
 def set_debug(mode:bool):
-    global bypass_checking
-    bypass_checking = mode
-
-default_proxy:str|None=None
-default_proxy_auth:aiohttp.BasicAuth|None=None
+    _config.bypass_checking = mode
 
 def set_default_proxy(url:str|None=None,auth:aiohttp.BasicAuth|None=None):
     """
@@ -18,6 +19,5 @@ def set_default_proxy(url:str|None=None,auth:aiohttp.BasicAuth|None=None):
         url (str | None, optional): 使用するプロキシのURL。
         auth (aiohttp.BasicAuth | None, optional): プロキシの認証情報。
     """
-    global default_proxy,default_proxy_auth
-    default_proxy = url
-    default_proxy_auth = auth
+    _config.default_proxy = url
+    _config.default_proxy_auth = auth
