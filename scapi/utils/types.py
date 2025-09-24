@@ -234,6 +234,9 @@ class ProjectVisibilityPayload(TypedDict):
     reshareable:bool
     message:str
 
+class ReportPayload(AnySuccessPayload):
+    moderation_status:str
+
 class StudioHistoryPayload(TypedDict):
     created:str
     modified:str

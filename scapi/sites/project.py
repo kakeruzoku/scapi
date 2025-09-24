@@ -14,6 +14,7 @@ from ..utils.types import (
     UserFeaturedPayload,
     OldProjectPayload,
     OldProjectEditPayload,
+    ReportPayload,
     search_mode,
     explore_query
 )
@@ -30,7 +31,8 @@ from ..utils.common import (
 from ..utils.client import HTTPClient
 from ..utils.error import (
     NoDataError,
-    TooManyRequests
+    TooManyRequests,
+    InvalidData
 )
 from ..utils.file import (
     File,
@@ -620,6 +622,32 @@ class Project(_BaseSiteAPI[int]):
             send_timeout:float|None=None
         ) -> ScratchCloud:
         return self._session.cloud(self.id,timeout=timeout,send_timeout=send_timeout)
+    
+    async def report(self,category:int,message:str) -> str:
+        """
+        プロジェクトを報告する。
+
+        Args:
+            category (int): 報告のカテゴリー
+            message (str): 追加のメッセージ
+
+        Returns:
+            str: このプロジェクトのステータス
+        """
+        response = await self.client.post(
+            f"https://api.scratch.mit.edu/proxy/projects/{self.id}/report",
+            json={
+                "notes":message,
+                "report_category":str(category),
+                "thumbnail":""
+            }
+        )
+        data:ReportPayload|Literal[""] = response.json_or_text()
+        if data == "":
+            raise InvalidData(response)
+        if not data.get("success"):
+            raise InvalidData(response)
+        return data.get("moderation_status")
 
 class ProjectVisibility:
     """

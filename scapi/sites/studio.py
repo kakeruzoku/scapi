@@ -9,6 +9,7 @@ from ..utils.types import (
     StudioRolePayload,
     OldStudioPayload,
     StudioClassroomPayload,
+    ReportPayload,
     search_mode,
     explore_query
 )
@@ -24,7 +25,8 @@ from ..utils.common import (
 from ..utils.client import HTTPClient
 from ..utils.error import (
     ClientError,
-    NotFound
+    NotFound,
+    InvalidData
 )
 from ..utils.file import (
     File,
@@ -498,6 +500,17 @@ class Studio(_BaseSiteAPI[int]):
         response = await self.client.get(f"https://api.scratch.mit.edu/studios/{self.id}/users/{self._session.username}")
         return StudioStatus(response.json(),self)
     
+    async def report(self,type:Literal["title","description","thumbnail"]):
+        response = await self.client.post(
+            f"https://scratch.mit.edu/site-api/galleries/all/{self.id}/report/",
+            data=aiohttp.FormData({"selected_field":type})
+        )
+        data:ReportPayload|Literal[""] = response.json_or_text()
+        if data == "":
+            raise InvalidData(response)
+        if not data.get("success"):
+            raise InvalidData(response)
+        return data.get("moderation_status")
 
     async def edit(
             self,
