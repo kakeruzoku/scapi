@@ -68,6 +68,7 @@ from .sites.activity import (
 from .sites.forum import (
     ForumCategory,
     ForumTopic,
+    ForumPost,
     get_forum_categories
 )
 

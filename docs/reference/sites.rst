@@ -106,6 +106,8 @@
 
 .. autoclass:: scapi.ForumTopic
 
+.. autoclass:: scapi.ForumPost
+
 メインページ/統計
 -----------------
 
