@@ -7,7 +7,6 @@ import math
 import aiohttp
 import bs4
 
-from scapi.sites.session import Session
 from ..utils.client import HTTPClient
 from ..utils.common import (
     UNKNOWN,
@@ -242,7 +241,7 @@ class ForumTopic(_BaseSiteAPI):
                 yield ForumPost._create_from_data(id,_post,self.client_or_session)
 
 class ForumPost(_BaseSiteAPI):
-    def __init__(self,id:int,client_or_session:HTTPClient|Session|None) -> None:
+    def __init__(self,id:int,client_or_session:"HTTPClient|Session|None") -> None:
         super().__init__(client_or_session)
         self.id:Final[int] = id
 
@@ -254,7 +253,37 @@ class ForumPost(_BaseSiteAPI):
         self.content:MAYBE_UNKNOWN[bs4.Tag] = UNKNOWN
 
     def _update_from_data(self, data:bs4.Tag):
-        pass
+        _head:Tag = data.find("div",{"class":"box-head"})
+        _head_span:Tag = _head.find("span")
+        self.number = int(_head_span.get_text().removeprefix("#"))
+        _head_a:Tag = _head.find("a")
+        self.created_at = decode_datetime(_head_a.get_text())
+
+        _post_left:Tag = data.find("div",{"class":"postleft"})
+
+        _author:Tag = _post_left.find("dd",{"class":"postavatar"})
+        _author_a:Tag = _author.find("a")
+
+        if self.author is UNKNOWN:
+            self.author = User(split(str(_author_a["href"]),"/users/","/",True),self.client_or_session)
+        
+        _author_img:Tag = _author.find("img")
+        self.author.id = int(split(str(_author_img["src"]),"/user/","_",True))
+
+        # TODO rank+post count
+
+        _content:Tag = data.find("div",{"class":"postmsg"})
+        self.content = _content
+
+        _edit:Tag|None = _content.find("em",{"class":"posteditmessage"})
+        if _edit is None:
+            self.modified_at = None
+            self.modified_by = None
+        else:
+            _edited_by = split(str(_edit.get_text()),"by "," ",True)
+            if (not isinstance(self.modified_by,User)) or _edited_by.lower() != self.modified_by.username.lower():
+                self.modified_by = User(_edited_by)
+            self.modified_at = decode_datetime(split(str(_edit.get_text()),"(",")",True))
 
 async def get_forum_categories(client_or_session:"HTTPClient|Session|None"=None) -> dict[str, list[ForumCategory]]:
     """
