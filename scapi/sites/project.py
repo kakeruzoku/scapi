@@ -6,6 +6,7 @@ from typing import TYPE_CHECKING, Any, AsyncGenerator, Final, Literal
 
 import aiohttp
 import bs4
+
 from ..utils.types import (
     ProjectPayload,
     ProjectLovePayload,
@@ -15,6 +16,8 @@ from ..utils.types import (
     OldProjectPayload,
     OldProjectEditPayload,
     ReportPayload,
+    RemixTreePayload,
+    RemixTreeDatetimePayload,
     search_mode,
     explore_query
 )
@@ -24,6 +27,7 @@ from ..utils.common import (
     UNKNOWN_TYPE,
     api_iterative,
     dt_from_isoformat,
+    dt_from_timestamp,
     _AwaitableContextManager,
     Tag,
     split
@@ -32,7 +36,8 @@ from ..utils.client import HTTPClient
 from ..utils.error import (
     NoDataError,
     TooManyRequests,
-    InvalidData
+    InvalidData,
+    NotFound
 )
 from ..utils.file import (
     File,
@@ -183,6 +188,30 @@ class Project(_BaseSiteAPI[int]):
             favorite_count=data.get("favorite_count"),
             remix_count=data.get("remixers_count"),
             love_count=data.get("love_count")
+        )
+
+    @staticmethod
+    def _get_time_from_remixtree(data:MAYBE_UNKNOWN[RemixTreeDatetimePayload|None]) -> str|UNKNOWN_TYPE:
+        if data is UNKNOWN: return UNKNOWN
+        if data is None: return UNKNOWN
+        dt = data.get("$date")
+        if dt is UNKNOWN: return UNKNOWN
+        return str(dt_from_timestamp(dt/1000))
+
+    def _update_from_remixtree(self, data:RemixTreePayload):
+        self._update_to_attributes(
+            title=data.get("title"),
+            deleted=(data.get("visibility") == "notvisible"),
+            public=data.get("is_published"),
+
+            _created_at=self._get_time_from_remixtree(data.get("datetime_created")),
+            _modified_at=self._get_time_from_remixtree(data.get("datetime_modified") or data.get("mtime")),
+            _shared_at=self._get_time_from_remixtree(data.get("datetime_shared")),
+
+            favorite_count=data.get("favorite_count"),
+            love_count=data.get("love_count"),
+
+            remix_parent_id=data.get("parent_id")
         )
 
     @classmethod
@@ -648,6 +677,29 @@ class Project(_BaseSiteAPI[int]):
         if not data.get("success"):
             raise InvalidData(response)
         return data.get("moderation_status")
+    
+    async def get_remixtree(self) -> RemixTree:
+        response = await self.client.get(f"https://scratch.mit.edu/projects/{self.id}/remixtree/bare/")
+        data:dict[str,RemixTreePayload]|str = response.json_or_text()
+        if isinstance(data,str):
+            raise NotFound(response)
+        _all_remixtree:dict[int,"RemixTree"] = {}
+        client_or_session = self.client_or_session
+
+        root_id = int(data.pop("root_id")) # pyright: ignore[reportArgumentType]
+        for k,v in data.items():
+            k = int(k)
+            project = self if k == self.id else None
+            v["id"] = k
+            remixtree = RemixTree(v,client_or_session,project=project)
+            remixtree.root_id = root_id
+            remixtree.project.remix_root_id = root_id
+            _all_remixtree[k] = remixtree
+        
+        for r in _all_remixtree.values():
+            r._all_remixtree = _all_remixtree
+
+        return _all_remixtree[self.id]
 
 class ProjectVisibility:
     """
@@ -714,6 +766,95 @@ class ProjectFeatured:
 
         self.label:ProjectFeaturedLabel = ProjectFeaturedLabel.get_from_id(data.get("featured_project_label_id"))
 
+class RemixTree(_BaseSiteAPI):
+    """
+    プロジェクトのリミックスツリーを表す
+
+    Attributes:
+        id (int): プロジェクトのID
+        project (Project): プロジェクトのProject
+        moderation_status (str): プロジェクトのステータス
+        root_id (int): この木の根プロジェクトのID
+    """
+    moderation_status:str
+    _ctime:str
+    _children:list[int]
+    _all_remixtree:dict[int,"RemixTree"]
+    root_id:int
+
+    def __init__(
+            self,
+            data:RemixTreePayload,
+            client_or_session:HTTPClient|Session|None,
+            *,
+            project:Project|None=None
+        ) -> None:
+        super().__init__(client_or_session)
+
+        self.id:Final[int] = data["id"]
+        self.project:Project = project or Project(data["id"],client_or_session)
+        self._update_from_data(data)
+
+    def _update_from_data(self, data:RemixTreePayload):
+        if self.project.author is UNKNOWN:
+            from .user import User
+            self.project.author = User(data["username"],self.client_or_session)
+
+        self.project._update_from_remixtree(data)
+
+        self._update_to_attributes(
+            moderation_status=data.get("moderation_status"),
+            _ctime=self.project._get_time_from_remixtree(data.get("ctime")),
+            _children=data.get("children")
+        )
+
+    @property
+    def parent(self) -> "RemixTree|None":
+        """
+        プロジェクトの親プロジェクトのRemixTree
+
+        Returns:
+            RemixTree|None:
+        """
+        parent_id = self.project.remix_parent_id
+        if parent_id is UNKNOWN: raise ValueError()
+        if parent_id is None: return
+        return self._all_remixtree[parent_id]
+    
+    @property
+    def root(self) -> "RemixTree":
+        """
+        プロジェクトの根プロジェクトのRemixTree
+
+        Returns:
+            RemixTree:
+        """
+        return self._all_remixtree[self.root_id]
+    
+    @property
+    def children(self) -> list[RemixTree]:
+        """
+        このプロジェクトの子プロジェクトのRemixTree
+
+        Returns:
+            list[RemixTree]:
+        """
+        children:list["RemixTree"] = []
+        for i in self._children:
+            remixtree = self._all_remixtree.get(i)
+            if remixtree is not None:
+                children.append(remixtree)
+        return children
+    
+    @property
+    def all_remixtree(self)  -> list["RemixTree"]:
+        """
+        このプロジェクトのリミックスツリーに関連付けられている全てのRemixTree
+
+        Returns:
+            list[RemixTree]:
+        """
+        return list(self._all_remixtree.values())
 
 def get_project(project_id:int,*,_client:HTTPClient|None=None) -> _AwaitableContextManager[Project]:
     """

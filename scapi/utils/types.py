@@ -237,6 +237,28 @@ class ProjectVisibilityPayload(TypedDict):
 class ReportPayload(AnySuccessPayload):
     moderation_status:str
 
+RemixTreeDatetimePayload = TypedDict(
+    "RemixTreeDatetimePayload",
+    {"$date":int}
+)
+
+class RemixTreePayload(TypedDict):
+    username:str
+    favorite_count:str
+    moderation_status:str
+    ctime:NotRequired[RemixTreeDatetimePayload]
+    title:str
+    datetime_created:RemixTreeDatetimePayload
+    children:list[int]
+    parent_id:int|None
+    visibility:str
+    love_count:int
+    datetime_modified:NotRequired[RemixTreeDatetimePayload]
+    mtime:NotRequired[RemixTreeDatetimePayload]
+    id:int
+    datetime_shared:NotRequired[RemixTreeDatetimePayload]
+    is_published:bool
+
 class StudioHistoryPayload(TypedDict):
     created:str
     modified:str
