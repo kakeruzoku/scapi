@@ -264,6 +264,16 @@ class Project(_BaseSiteAPI[int]):
         """
         return dt_from_isoformat(self._shared_at)
     
+    @property
+    def url(self) -> str:
+        """
+        プロジェクトのURLを取得する
+
+        Returns:
+            str:
+        """
+        return f"https://scratch.mit.edu/projects/{self.id}"
+    
     async def get_remixes(self,limit:int|None=None,offset:int|None=None) -> AsyncGenerator["Project", None]:
         """
         リミックスされたプロジェクトを取得する。

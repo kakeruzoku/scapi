@@ -161,6 +161,16 @@ class Studio(_BaseSiteAPI[int]):
         """
         return dt_from_isoformat(self._modified_at)
     
+    @property
+    def url(self) -> str:
+        """
+        スタジオのURLを取得する
+
+        Returns:
+            str:
+        """
+        return f"https://scratch.mit.edu/studios/{self.id}"
+    
     
     async def get_projects(self,limit:int|None=None,offset:int|None=None) -> AsyncGenerator["Project", None]:
         """

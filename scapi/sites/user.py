@@ -126,6 +126,16 @@ class User(_BaseSiteAPI[str]):
         """
         return dt_from_isoformat(self._joined_at)
     
+    @property
+    def url(self) -> str:
+        """
+        ユーザーページのリンクを取得する
+
+        Returns:
+            str:
+        """
+        return f"https://scratch.mit.edu/users/{self.username}"
+    
 
     async def get_featured(self) -> "ProjectFeatured|None":
         """
