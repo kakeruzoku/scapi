@@ -94,7 +94,7 @@ class ForumCategory(_BaseSiteAPI[int]):
         self.name = _name.get_text().strip()
 
         _pages:Tag = data.find("div",{"class":"pagination"})
-        _page:Tag = _pages.find_all("a",{"class":"page"})[-1]
+        _page = _pages.select("span.current.page, a.page")[-1]
         self.page_count = int(_page.get_text())
 
     async def get_topics(self,start_page:int|None=None,end_page:int|None=None) -> AsyncGenerator["ForumTopic"]:
@@ -106,6 +106,9 @@ class ForumCategory(_BaseSiteAPI[int]):
         for i in range(start_page,end_page+1):
             response = await self.client.get(f"https://scratch.mit.edu/discuss/{self.id}/",params={"page":i})
             data = bs4.BeautifulSoup(fix_html(response.text), "html.parser")
+            empty_tag:Tag|None = data.find("td",{"class":"djangobbcon1"})
+            if empty_tag is not None:
+                return #empty
             if is_first:
                 self._update_from_data(data)
                 is_first = False
@@ -122,6 +125,7 @@ class ForumTopic(_BaseSiteAPI):
         id (int): トピックのID
         name (MAYBE_UNKNOWN[str]): トピックの名前
         category (MAYBE_UNKNOWN[ForumCategory]): トピックが属しているカテゴリー
+        page_count (MAYBE_UNKNOWN[int]): ページの数
 
         is_unread (MAYBE_UNKNOWN[bool]): 未読の投稿があるか
         is_sticky (MAYBE_UNKNOWN[bool]): ピン留めされているか
@@ -134,6 +138,7 @@ class ForumTopic(_BaseSiteAPI):
         self.id:Final[int] = id
         self.name:MAYBE_UNKNOWN[str] = UNKNOWN
         self.category:MAYBE_UNKNOWN[ForumCategory] = UNKNOWN
+        self.page_count:MAYBE_UNKNOWN[int] = UNKNOWN
         self.author:MAYBE_UNKNOWN[User] = UNKNOWN
 
         self.is_unread:MAYBE_UNKNOWN[bool] = UNKNOWN
@@ -161,6 +166,7 @@ class ForumTopic(_BaseSiteAPI):
 
         _post_count:Tag = data.find("td",{"class":"tc2"})
         topic.post_count = int(_post_count.get_text())
+        topic.page_count = math.ceil(topic.post_count / 20)
         _view_count:Tag = data.find("td",{"class":"tc3"})
         topic.view_count = int(_view_count.get_text())
 
@@ -184,7 +190,20 @@ class ForumTopic(_BaseSiteAPI):
 
     def _update_from_data(self,data:Tag):
         self.is_unread = False
-        #TODO
+        _linkst:Tag = data.find("div",{"class":"linkst"})
+        _place:Tag = _linkst.find("ul")
+        _places:bs4.ResultSet[Tag] = _place.find_all("li")
+        
+        _category_a:Tag = _places[1].find("a")
+        if self.category is UNKNOWN:
+            self.category = ForumCategory(int(split(str(_category_a["href"]),"/discuss/","/",True)),self.client_or_session)
+        self.category.name = _category_a.get_text()
+
+        self.name = str(_places[2].next_element).removeprefix("»").strip()
+
+        _pages:Tag = data.find("div",{"class":"pagination"})
+        _page = _pages.select("span.current.page, a.page")[-1]
+        self.page_count = int(_page.get_text())
 
     async def follow(self):
         """
