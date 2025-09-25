@@ -6,6 +6,8 @@ import math
 
 import aiohttp
 import bs4
+
+from scapi.sites.session import Session
 from ..utils.client import HTTPClient
 from ..utils.common import (
     UNKNOWN,
@@ -53,7 +55,7 @@ class ForumCategory(_BaseSiteAPI[int]):
         self.description:MAYBE_UNKNOWN[str] = UNKNOWN
         self.topic_count:MAYBE_UNKNOWN[int] = UNKNOWN
         self.post_count:MAYBE_UNKNOWN[int] = UNKNOWN
-        #self.last_post:MAYBE_UNKNOWN
+        self.last_post:MAYBE_UNKNOWN[ForumPost] = UNKNOWN
 
     def __repr__(self) -> str:
         return f"<ForumCategory id:{self.id} name:{self.name}>"
@@ -80,6 +82,7 @@ class ForumCategory(_BaseSiteAPI[int]):
         _post_count:Tag = data.find("td",{"class":"tc3"})
         category.post_count = int(_post_count.get_text())
         category.page_count = math.ceil(category.post_count / 25)
+        category.last_post = load_last_post(category,data)
 
         return category
     
@@ -146,6 +149,7 @@ class ForumTopic(_BaseSiteAPI):
         self.is_closed:MAYBE_UNKNOWN[bool] = UNKNOWN
         self.post_count:MAYBE_UNKNOWN[int] = UNKNOWN
         self.view_count:MAYBE_UNKNOWN[int] = UNKNOWN
+        self.last_post:MAYBE_UNKNOWN[ForumPost] = UNKNOWN
 
     @classmethod
     def _create_from_category(
@@ -182,6 +186,8 @@ class ForumTopic(_BaseSiteAPI):
         elif _tcl.find("div",{"class":"isticky iclosed"}) is not None:
             topic.is_closed, topic.is_sticky = True,True
 
+        topic.last_post = load_last_post(topic,data)
+
         return topic
     
     async def update(self):
@@ -216,6 +222,39 @@ class ForumTopic(_BaseSiteAPI):
         このトピックのフォローを外す
         """
         await self.client.post(f"https://scratch.mit.edu/discuss/subscription/topic/{self.id}/remove/")
+
+    async def get_posts(self,start_page:int|None=None,end_page:int|None=None) -> AsyncGenerator["ForumPost"]:
+        start_page = start_page or 1
+        end_page = end_page or start_page
+        is_first:bool = True
+        for i in range(start_page,end_page+1):
+            response = await self.client.get(f"https://scratch.mit.edu/discuss/topic/{self.id}/",params={"page":i})
+            data = bs4.BeautifulSoup(fix_html(response.text), "html.parser")
+            not_empty_tag:Tag|None = data.find("div",{"class":"pagination"})
+            if not_empty_tag is None:
+                return #empty
+            if is_first:
+                self._update_from_data(data)
+                is_first = False
+            _posts:bs4.ResultSet[Tag] = data.find_all("div",{"class":"blockpost roweven firstpost"})
+            for _post in _posts:
+                id = int(str(_post["id"]).removeprefix("p"))
+                yield ForumPost._create_from_data(id,_post,self.client_or_session)
+
+class ForumPost(_BaseSiteAPI):
+    def __init__(self,id:int,client_or_session:HTTPClient|Session|None) -> None:
+        super().__init__(client_or_session)
+        self.id:Final[int] = id
+
+        self.number:MAYBE_UNKNOWN[int] = UNKNOWN
+        self.author:MAYBE_UNKNOWN[User] = UNKNOWN
+        self.created_at:MAYBE_UNKNOWN[datetime.datetime] = UNKNOWN
+        self.modified_at:MAYBE_UNKNOWN[datetime.datetime|None] = UNKNOWN
+        self.modified_by:MAYBE_UNKNOWN[User|None] = UNKNOWN
+        self.content:MAYBE_UNKNOWN[bs4.Tag] = UNKNOWN
+
+    def _update_from_data(self, data:bs4.Tag):
+        pass
 
 async def get_forum_categories(client_or_session:"HTTPClient|Session|None"=None) -> dict[str, list[ForumCategory]]:
     """
@@ -265,23 +304,25 @@ def decode_datetime(text:str) -> datetime.datetime:
         _,_,text = text.partition(" ")
         day,_,text = text.partition(", ")
         year,_,_time = text.partition(" ")
-        date = datetime.datetime(int(year),int(month),int(day))
+        date = datetime.date(int(year),int(month),int(day))
     hour,minute,second = _time.split(":")
     time = datetime.time(int(hour),int(minute),int(second))
     return datetime.datetime.combine(date,time,datetime.timezone.utc)
 
 def fix_html(text:str):
-    "Remove html vandal div tag"
+    "Remove html vandal /div tag"
     return text.replace(
         "<div class=\"nosize\"><!-- --></div>\n                                    </div>",
         "<div class=\"nosize\"><!-- --></div>"
     )
 
-def load_last_post(self:_BaseSiteAPI,data:bs4.Tag):
+def load_last_post(self:_BaseSiteAPI,data:bs4.Tag) -> ForumPost:
     _last_post:Tag = data.find("td",{"class":"tcr"})
     _post:Tag = _last_post.find("a")
     _post_author:Tag = _last_post.find("span")
-    last_post_username = _post_author.get_text(strip=True).removeprefix("by ")
     _last_post_url:str|Any = _post["href"]
-    last_post_id = int(split(_last_post_url,"/discuss/post/","/",True))
-    last_post_datetime = decode_datetime(_post.get_text())
+    
+    post = ForumPost(int(split(_last_post_url,"/discuss/post/","/",True)),self.client_or_session)
+    post.author = User(_post_author.get_text(strip=True).removeprefix("by "))
+    post.created_at = decode_datetime(_post.get_text())
+    return post
