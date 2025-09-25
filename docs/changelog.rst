@@ -14,7 +14,6 @@
 
 - :const:`scapi.UNKNOWN`: 「不明」を表す定数
 - :class:`scapi.File`: ファイルローダーツール
-- 
 
 それ以前の更新
 --------------

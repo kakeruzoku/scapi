@@ -22,3 +22,8 @@ Scapi2.x.xと3.x.xとでは互換性がほぼありません。
 以下のページから、新しいコードへと置き換えてください。
 
 :doc:`バージョン3への移行 <migrating>`
+
+貢献する
+--------
+
+`Github <https://github.com/kakeruzoku/scapi>`_ の ``main`` ブランチにプルリクエストを送信してください
