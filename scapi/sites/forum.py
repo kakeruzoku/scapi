@@ -290,6 +290,14 @@ class ForumPost(_BaseSiteAPI):
         self.modified_by:MAYBE_UNKNOWN[User|None] = UNKNOWN
         self.content:MAYBE_UNKNOWN[bs4.Tag] = UNKNOWN
 
+    async def update(self):
+        response = await self.client.get(f"https://scratch.mit.edu/discuss/post/{self.id}/")
+        data = bs4.BeautifulSoup(response.text, "html.parser")
+        post:Tag = data.find("div",{"id":f"p{self.id}"})
+        self._update_from_data(post)
+        assert self.topic is not UNKNOWN
+        self.topic._update_from_data(data)
+
     def _update_from_data(self, data:bs4.Tag):
         _head:Tag = data.find("div",{"class":"box-head"})
         _head_span:Tag = _head.find("span")
@@ -362,6 +370,42 @@ async def get_forum_categories(client_or_session:"HTTPClient|Session|None"=None)
             for category in categories:
                 returns[box_title].append(ForumCategory._create_from_home(box_title,category,client_or_session or client))
     return returns
+
+def get_forum_category(category_id:int,*,_client:"HTTPClient|None"=None) -> _AwaitableContextManager[ForumCategory]:
+    """
+    フォーラムカテゴリーを取得する。
+
+    Args:
+        category_id (int): 取得したいカテゴリーのID
+
+    Returns:
+        common._AwaitableContextManager[ForumCategory]: await か async with で取得できるカテゴリー
+    """
+    return _AwaitableContextManager(ForumCategory._create_from_api(category_id,_client))
+
+def get_forum_topic(topic_id:int,*,_client:"HTTPClient|None"=None) -> _AwaitableContextManager[ForumTopic]:
+    """
+    フォーラムトピックを取得する。
+
+    Args:
+        topic_id (int): 取得したいスタジオのID
+
+    Returns:
+        common._AwaitableContextManager[ForumTopic]: await か async with で取得できるトピック
+    """
+    return _AwaitableContextManager(ForumTopic._create_from_api(topic_id,_client))
+
+def get_forum_post(post_id:int,*,_client:"HTTPClient|None"=None) -> _AwaitableContextManager[ForumPost]:
+    """
+    フォーラムの投稿を取得する。
+
+    Args:
+        post_id (int): 取得したい投稿のID
+
+    Returns:
+        common._AwaitableContextManager[ForumPost]: await か async with で取得できる投稿
+    """
+    return _AwaitableContextManager(ForumPost._create_from_api(post_id,_client))
 
 month_dict = {
     'Jan': 1, 'Feb': 2, 'Mar': 3, 'Apr': 4,

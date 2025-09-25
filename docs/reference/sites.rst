@@ -102,9 +102,15 @@
 
 .. autofunction:: scapi.get_forum_categories
 
+.. autofunction:: scapi.get_forum_category
+
 .. autoclass:: scapi.ForumCategory
 
+.. autofunction:: scapi.get_forum_topic
+
 .. autoclass:: scapi.ForumTopic
+
+.. autofunction:: scapi.get_forum_post
 
 .. autoclass:: scapi.ForumPost
 

@@ -3,7 +3,7 @@ from __future__ import annotations
 from typing import TYPE_CHECKING, Any, Callable, Self, TypeVar, Generic, ParamSpec, Coroutine
 from abc import ABC,abstractmethod
 from ..utils.client import HTTPClient
-from ..utils.common import UNKNOWN,_bypass_checking,get_client_and_session
+from ..utils.common import UNKNOWN,_bypass_checking,get_client_and_session,temporary_httpclient
 from ..utils.error import NoSession
 if TYPE_CHECKING:
     from .session import Session
@@ -94,14 +94,9 @@ class _BaseSiteAPI(ABC,Generic[_T]):
         client_or_session:"HTTPClient|Session|None"=None,
         **kwargs
     ):
-        need_close = client_or_session is None
-        _cls = cls(id,client_or_session,**kwargs) # type: ignore
-        try:
+        async with temporary_httpclient(client_or_session) as client:
+            _cls = cls(id,client_or_session or client,**kwargs) # type: ignore
             await _cls.update()
-        except:
-            if need_close:
-                await _cls.client.close()
-            raise
         return _cls
     
     @classmethod

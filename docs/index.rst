@@ -7,7 +7,7 @@ Scapi ドキュメント
 ScapiはScratch APIを非同期に実行できるPythonモジュールです。
 
 .. toctree::
-   :maxdepth: 2
+   :maxdepth: 1
 
    changelog
    reference/index

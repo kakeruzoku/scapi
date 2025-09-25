@@ -56,7 +56,7 @@ from .classroom import Classroom,_get_class_from_token
 from .project import Project, search_projects, explore_projects
 from .studio import Studio, search_studios, explore_studios
 from .user import User
-from .forum import ForumCategory,get_forum_categories
+from .forum import ForumCategory,get_forum_categories,ForumTopic,ForumPost
 
 def decode_session(session_id:str) -> tuple[DecodedSessionID,int]:
     s1,s2,s3 = session_id.strip('".').split(':')
@@ -728,6 +728,42 @@ class Session(_BaseSiteAPI[str]):
             dict[str, list[ForumCategory]]: ボックスの名前と、そこに属しているカテゴリーのペア
         """
         return await get_forum_categories(self)
+    
+    async def get_forum_category(self,category_id:int) -> ForumCategory:
+        """
+        フォーラムカテゴリーを取得する
+
+        Args:
+            category_id (int): 取得したいカテゴリーのID
+
+        Returns:
+            ForumCategory:
+        """
+        return await ForumCategory._create_from_api(category_id,self)
+    
+    async def get_forum_topic(self,topic_id:int) -> ForumTopic:
+        """
+        フォーラムトピックを取得する
+
+        Args:
+            topic_id (int): 取得したいトピックのID
+
+        Returns:
+            ForumTopic:
+        """
+        return await ForumTopic._create_from_api(topic_id,self)
+    
+    async def get_forum_post(self,post_id:int) -> ForumPost:
+        """
+        フォーラムの投稿を取得する
+
+        Args:
+            post_id (int): 取得したい投稿のID
+
+        Returns:
+            ForumPost:
+        """
+        return await ForumPost._create_from_api(post_id,self)
     
     def explore_projects(
             self,

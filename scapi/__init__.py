@@ -69,7 +69,9 @@ from .sites.forum import (
     ForumCategory,
     ForumTopic,
     ForumPost,
-    get_forum_categories
+    get_forum_categories,
+    get_forum_topic,
+    get_forum_post
 )
 
 from .sites.base import (
