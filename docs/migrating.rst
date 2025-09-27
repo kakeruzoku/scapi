@@ -5,6 +5,9 @@
 | Scapiバージョン3は完全な書き直しが行われたため、バージョン2(v2.3.1以前)との互換性はほぼありません。
 | このページでScapiを3.0.0に移行してください。
 
+.. warning::
+    3.0.0はベータ版です。削除されていないと書いていないのにも関わらず実装されていない関数/属性が存在します。
+
 .. contents::
     :depth: 3
 
@@ -23,6 +26,8 @@ Scapiをアップデートする
 
 全体に関わる変更
 ----------------
+
+個別の変更のBase も確認してみてください。
 
 完全な型ヒントサポート
 ^^^^^^^^^^^^^^^^^^^^^^
@@ -50,8 +55,23 @@ UNKNOWNは==の比較で常に ``False`` を返します。
     def hogehoge() -> scapi.UNKNOWN_TYPE:
         return unknown
 
+名称の変更
+^^^^^^^^^^
+
+多くの関数/属性名を変更しました。
+
+- 「データを取得する」関数は先頭に ``get_`` がつくようになりました。
+  - ex) ``Project.remixes`` -> :func:`Project.get_remixes <scapi.Project.get_remixes>`
+- 「オン/オフの設定をする」関数は2つに分離されました。
+  - ex) ``Project.love`` -> :func:`Project.add_love <scapi.Project.add_love>` / :func:`Project.remove_love <scapi.Project.remove_love>`
+  - ただし、APIで「切り替える」のみ (``toggle_`` など)の関数は分離されません。
+
+変数名や属性名の変更は省略します。型ヒントチェッカーのエラーを確認して、ドキュメントで適切な関数を確認してください。
+
 個別の変更
 ----------
+
+型ヒントチェッカーを使用することを推奨します。
 
 utils
 ^^^^^
@@ -77,15 +97,6 @@ Response
 ****
 
 一部の例外の名称が変更されました
-
-================ ===================
-旧               新                 
-================ ===================
-HTTPFetchError   |ProcessingError|
-BadRequest       |ClientError|
-HTTPNotFound     |NotFound|
-BadResponse      |InvalidData|
-================ ===================
 
 - |Forbidden| / |CheckingFailed| の追加
 - |IPBanned| / |AccountBrocked| / |CommentFailure| / |LoginFailure| は |Forbidden| を継承します
@@ -138,20 +149,40 @@ session_close()     :func:`client_close() <scapi._BaseSiteAPI.client_close>`
 
     asyncio.run(run())
 
-
+- オブジェクトの比較は ``==`` のみのサポートになりました。
 
 session
 *******
 クラスが作成された際に自動的にアカウント情報を ``session_id`` からロードします。
 
-一部の属性の名称が変更されました
+以下の属性が削除されました。
 
-=================== =========================================================
-旧                  新                 
-=================== =========================================================
-=================== =========================================================
+- ``Session.is_email_verified``
+- ``Session.email``
+- ``Session.scratcher``
+- ``Session.mute_status``
+- ``Session.banned``
 
+これらの情報にアクセスしたい場合は、 :attr:`Session.status <scapi.Session.status>` からアクセスしてください。
 
+以下の関数が削除されました。
+
+- ``Session.session_decode()`` クラス作成時に自動的にデコードされ、属性に保存されます。
+- ``Session.me()`` :attr:`Session.user <scapi.Session.user>`.:func:`update() <scapi.User.update>` を使用してください。
+- ``Session.create_Partial_myself()`` :attr:`Session.user <scapi.Session.user>` を使用してください。
+- 
+
+大半の属性の名称が変更されました。
+
+Project
+*******
+
+- プロジェクトサーバー上の問題から ``Project.download`` 及び ``Project.load_json`` を削除しました。この関数は将来再実装される予定です。
+
+Forum
+*****
+
+フォーラムのカテゴリーはEnumからクラスでの実装になります。
 
 .. |IPBanned| replace:: :class:`IPBanned <scapi.exceptions.IPBanned>`
 .. |AccountBrocked| replace:: :class:`AccountBrocked <scapi.exceptions.AccountBrocked>`
@@ -159,7 +190,3 @@ session
 .. |CommentFailure| replace:: :class:`CommentFailure <scapi.exceptions.CommentFailure>`
 .. |LoginFailure| replace:: :class:`LoginFailure <scapi.exceptions.LoginFailure>`
 .. |CheckingFailed| replace:: :class:`CheckingFailed <scapi.exceptions.CheckingFailed>`
-.. |ProcessingError| replace:: :class:`ProcessingError <scapi.exceptions.ProcessingError>`
-.. |ClientError| replace:: :class:`ClientError <scapi.exceptions.ClientError>`
-.. |NotFound| replace:: :class:`NotFound <scapi.exceptions.NotFound>`
-.. |InvalidData| replace:: :class:`InvalidData <scapi.exceptions.InvalidData>`

@@ -39,6 +39,11 @@
 
 .. autoclass:: scapi.ProjectVisibility
 
+.. autofunction:: scapi.get_remixtree
+
+.. autoclass:: scapi.RemixTree
+
+
 スタジオ
 --------
 

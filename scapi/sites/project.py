@@ -30,7 +30,8 @@ from ..utils.common import (
     dt_from_timestamp,
     _AwaitableContextManager,
     Tag,
-    split
+    split,
+    temporary_httpclient
 )
 from ..utils.client import HTTPClient
 from ..utils.error import (
@@ -666,6 +667,31 @@ class Project(_BaseSiteAPI[int]):
         """
         プロジェクトを報告する。
 
+        カテゴリーは以下を参照してください:
+
+        .. code-block:
+
+            0 他のプロジェクトの完全なコピー
+            1 クレジットせずに画像や音楽を流用している
+            2 過度に暴力的だったり恐怖心をあおる
+            3 不適切な表現が含まれる
+            4 不適切な音楽が使用されている
+            5 個人的な連絡先情報が公開されている
+            6 その他
+            7 ???
+            8 不適切な画像
+            9 このプロジェクトはミスリードしているか、コミュニティーをだましています
+            10 これは顔写真を公開するプロジェクトだったり、だれかの写真を見せようとしています
+            11 このプロジェクトをリミックスすることが禁止されています
+            12 このプロジェクトの作者の安全が心配です
+            13 その他
+            14 怖い画像
+            15 ジャンプスケア
+            16 暴力的な出来事
+            17 現実的な武器の使用
+            18 他のScratcherに対する脅迫やいじめ
+            19 Scratcherやグループに対して意地悪だったり失礼である
+
         Args:
             category (int): 報告のカテゴリー
             message (str): 追加のメッセージ
@@ -877,6 +903,22 @@ def get_project(project_id:int,*,_client:HTTPClient|None=None) -> _AwaitableCont
         _AwaitableContextManager[Project]: await か async with で取得できるプロジェクト
     """
     return _AwaitableContextManager(Project._create_from_api(project_id,_client))
+
+async def _get_remixtree(project_id:int,*,client_or_session:"Session|HTTPClient|None"=None) -> RemixTree:
+    async with temporary_httpclient(client_or_session) as client:
+        return await Project(project_id,client_or_session or client).get_remixtree()
+    
+def get_remixtree(project_id:int,*,client_or_session:"Session|HTTPClient|None"=None) -> _AwaitableContextManager[RemixTree]:
+    """
+    リミックスツリーを取得する。
+
+    Args:
+        project_id (int): 取得したいリミックスツリーのID
+
+    Returns:
+        _AwaitableContextManager[RemixTree]: await か async with で取得できるリミックスツリー
+    """
+    return _AwaitableContextManager(_get_remixtree(project_id,client_or_session=client_or_session))
 
 async def explore_projects(
         client:HTTPClient,
