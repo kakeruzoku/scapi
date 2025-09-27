@@ -125,6 +125,35 @@ class ActivityAction(Enum):
             | スタジオが更新された。
             | |actor| : |User| スタジオを更新した人(すなわち所有者)
             | |place| |target| : |Studio| 更新されたスタジオ
+        ProjectLove:
+            | プロジェクトに好きが押された
+            | |actor| : |User| 好きを押した人
+            | |place| |target| : |Project| 好きを押されたプロジェクト
+        ProjectFavorite:
+            | プロジェクトにお気に入りが押された
+            | |actor| : |User| お気に入りを押した人
+            | |place| |target| : |Project| お気に入りを押されたプロジェクト
+        ProjectShare:
+            | プロジェクトが共有された
+            | |actor| : |User| 共有した人
+            | |place| |target| : |Project| 共有されたプロジェクト
+        ProjectRemix:
+            | プロジェクトがリミックスされた
+            | |actor| : |User| 共有した人
+            | |place| : |Project| 共有されたプロジェクト
+            | |target| : |Project| リミックス元のプロジェクト
+        UserFollow:
+            | ユーザーがフォローした
+            | |actor| : |User| フォローした人
+            | |place| |target| : |User| フォローされた人
+        UserEditProfile:
+            | ユーザーがプロフィール欄を編集した
+            | |actor| |place| |target| : |User| 編集したユーザー
+        Comment:
+            | コメントをした
+            | |actor| : |User| コメントをした人
+            | |place| : |Project| |Studio| |User| コメントされた場所
+            | |target| : |Comment| そのコメント
 
     """
     Unknown="unknown"
@@ -382,6 +411,12 @@ class Activity:
                 activity.action = ActivityAction.StudioFollow
                 activity.target = activity.place = Studio(data["gallery_id"],session)
                 activity.target.title = data["title"]
+            case "remixproject":
+                activity.action = ActivityAction.ProjectRemix
+                activity.target = Project(data["parent_id"],session)
+                activity.target.title = data["title"]
+                activity.place = Project(data["project_id"],session)
+                activity.place.title = data["parent_title"]
         return activity
 
 class CloudActivity(_BaseSiteAPI):

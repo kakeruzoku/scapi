@@ -57,6 +57,7 @@ from .project import Project, search_projects, explore_projects
 from .studio import Studio, search_studios, explore_studios
 from .user import User
 from .forum import ForumCategory,get_forum_categories,ForumTopic,ForumPost
+from .activity import Activity
 
 def decode_session(session_id:str) -> tuple[DecodedSessionID,int]:
     s1,s2,s3 = session_id.strip('".').split(':')
@@ -444,6 +445,23 @@ class Session(_BaseSiteAPI[str]):
         classroom.description = description or ""
         classroom.status = status or ""
         return classroom
+    
+    async def get_feed(self,limit:int|None,offset:int|None=None) -> AsyncGenerator[Activity]:
+        """
+        最新の情報欄を取得する。
+
+        Args:
+            limit (int|None, optional): 取得するアクティビティの数。初期値は40です。
+            offset (int|None, optional): 取得するアクティビティの開始位置。初期値は0です。
+
+        Yields:
+            Activity: 取得したアクティビティ
+        """
+        async for _a in api_iterative(
+            self.client,f"https://api.scratch.mit.edu/users/{self.username}/following/users/activity",
+            limit=limit,offset=offset
+        ):
+            yield Activity._create_from_feed(_a,self)
     
     async def clear_message(self):
         await self.client.post("https://scratch.mit.edu/site-api/messages/messages-clear/")

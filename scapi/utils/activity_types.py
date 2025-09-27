@@ -184,6 +184,13 @@ class StudioFollowActivity(_BaseActivity): #F
     gallery_id:int
     title:str
 
+class ProjectRemixActivity(_BaseActivity): #F
+    type:Literal["remixproject"]
+    project_id:int
+    title:str
+    parent_id:int
+    parent_title:str
+
 
 StudioAnyActivity = Union[
     StudioUpdateActivity,
@@ -201,5 +208,6 @@ FeedAnyActivity = Union[
     ProjectFavoriteActivity,
     StudioBecomeManagerFeedActivity,
     StudioBecomeCuratorFeedActivity,
-    StudioFollowActivity
+    StudioFollowActivity,
+    ProjectRemixActivity
 ]

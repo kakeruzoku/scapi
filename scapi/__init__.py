@@ -71,7 +71,8 @@ from .sites.forum import (
     ForumPost,
     get_forum_categories,
     get_forum_topic,
-    get_forum_post
+    get_forum_post,
+    get_forum_category
 )
 
 from .sites.base import (
