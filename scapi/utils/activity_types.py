@@ -108,54 +108,98 @@ ClassAnyActivity = Union[
     ClassCommentActivity
 ]
 
+"""
+S: studio
+F: feed
+M: message
+U: user
+"""
+
 class _BaseActivity(TypedDict):
     datetime_created:str
-    id:str
+    id:str|int
     actor_id:int
     actor_username:str
 
 class BaseActivity(_BaseActivity):
     type:str
 
-class StudioUpdateActivity(_BaseActivity):
+class StudioUpdateActivity(_BaseActivity): #S
     type:Literal["updatestudio"]
 
-class StudioBecomeCuratorActivity(_BaseActivity):
+class StudioBecomeCuratorStudioActivity(_BaseActivity): #S
     type:Literal["becomecurator"]
     username:str
 
-class StudioRemoveCuratorActivity(_BaseActivity):
+class StudioBecomeCuratorFeedActivity(StudioBecomeCuratorStudioActivity): #F
+    gallery_id:int
+    gallery_title:str
+
+class StudioRemoveCuratorActivity(_BaseActivity): #S
     type:Literal["removecuratorstudio"]
     username:str
 
-class StudioBecomeHostActivity(_BaseActivity):
+class StudioBecomeHostActivity(_BaseActivity): #S
     type:Literal["becomehoststudio"]
     admin_actor:bool
     former_host_username:str
     recipient_username:str
 
-class StudioAddProjectActivity(_BaseActivity):
+class StudioAddProjectActivity(_BaseActivity): #S
     type:Literal["addprojecttostudio"]
     project_id:int
     project_title:str
 
-class StudioRemoveProjectActivity(_BaseActivity):
+class StudioRemoveProjectActivity(_BaseActivity): #S
     type:Literal["removeprojectstudio"]
     project_id:int
     project_title:str
 
-class StudioBecomeManagerActivity(_BaseActivity):
+class StudioBecomeManagerStudioActivity(_BaseActivity): #S
     type:Literal["becomeownerstudio"]
     recipient_username:str
 
+class StudioBecomeManagerFeedActivity(StudioBecomeManagerStudioActivity): #F
+    gallery_id:int
+    gallery_title:str
+    recipient_id:int
+
+class ProjectShareActivity(_BaseActivity): #F
+    type:Literal["shareproject"]
+    project_id:int
+    title:str
+
+class ProjectLoveActivity(_BaseActivity): #F
+    type:Literal["loveproject"]
+    project_id:int
+    title:str
+
+class ProjectFavoriteActivity(_BaseActivity): #F
+    type:Literal["favoriteproject"]
+    project_id:int
+    project_title:str
+
+class StudioFollowActivity(_BaseActivity): #F
+    type:Literal["followstudio"]
+    gallery_id:int
+    title:str
 
 
 StudioAnyActivity = Union[
     StudioUpdateActivity,
-    StudioBecomeCuratorActivity,
+    StudioBecomeCuratorStudioActivity,
     StudioRemoveCuratorActivity,
     StudioBecomeHostActivity,
     StudioAddProjectActivity,
     StudioRemoveProjectActivity,
-    StudioBecomeManagerActivity
+    StudioBecomeManagerStudioActivity
+]
+
+FeedAnyActivity = Union[
+    ProjectShareActivity,
+    ProjectLoveActivity,
+    ProjectFavoriteActivity,
+    StudioBecomeManagerFeedActivity,
+    StudioBecomeCuratorFeedActivity,
+    StudioFollowActivity
 ]

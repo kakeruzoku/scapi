@@ -3,7 +3,7 @@ from __future__ import annotations
 import datetime
 from enum import Enum
 import json
-from typing import TYPE_CHECKING, Any, AsyncGenerator, Final, Literal, TypedDict
+from typing import TYPE_CHECKING, Any, AsyncGenerator, Final, Literal, Self, TypedDict
 
 import bs4
 
@@ -16,7 +16,8 @@ from ..utils.types import (
 from ..utils.activity_types import (
     _BaseActivity,
     ClassAnyActivity,
-    StudioAnyActivity
+    StudioAnyActivity,
+    FeedAnyActivity
 )
 from ..utils.common import (
     UNKNOWN,
@@ -214,11 +215,12 @@ class Activity:
         self._created_at = data.get("datetime_created",None)
 
     @classmethod
-    def _create_from_studio(cls,data:StudioAnyActivity,studio:Studio):
+    def _create_from_studio(cls,data:StudioAnyActivity,studio:Studio) -> Self:
         client_or_session = studio.client_or_session
         activity = cls(ActivityType.Studio)
         activity.place = studio
         activity._setup_from_json(data,client_or_session)
+        activity.id = int(str(data["id"]).split("-")[1]) #(type)-(id)
         match data["type"]:
             case "updatestudio":
                 activity.action = ActivityAction.StudioUpdate
@@ -250,7 +252,7 @@ class Activity:
         return User._create_from_data(data["username"],data,client_or_session,User._update_from_old_data)
 
     @classmethod
-    def _create_from_class(cls,data:ClassAnyActivity,client_or_session:"HTTPClient|Session"):
+    def _create_from_class(cls,data:ClassAnyActivity,client_or_session:"HTTPClient|Session") -> Self:
         _import()
         activity = cls(ActivityType.Classroom)
         _actor = data["actor"]
@@ -340,7 +342,47 @@ class Activity:
 
         return activity
 
+    @classmethod
+    def _create_from_message(cls,data,session:"Session") -> Self:
+        activity = cls(ActivityType.Message)
+        activity._setup_from_json(data,session)
+        return activity
 
+    @classmethod
+    def _create_from_feed(cls,data:FeedAnyActivity,session:"Session") -> Self:
+        activity = cls(ActivityType.Feed)
+        activity._setup_from_json(data,session)
+        activity.id = int(data["id"]) #int
+        match data["type"]:
+            case "becomeownerstudio":
+                activity.action = ActivityAction.StudioBecomeManager
+                activity.target = User(data["recipient_username"],session)
+                activity.target.id = data["recipient_id"]
+                activity.place = Studio(data["gallery_id"],session)
+                activity.place.title = data["gallery_title"]
+            case "becomecurator":
+                activity.action = ActivityAction.StudioBecomeCurator
+                activity.target = User(data["username"],session)
+                activity.place = Studio(data["gallery_id"],session)
+                activity.place.title = data["gallery_title"]
+            case "loveproject":
+                activity.action = ActivityAction.ProjectLove
+                activity.target = activity.place = Project(data["project_id"],session)
+                activity.target.title = data["title"]
+            case "favoriteproject":
+                activity.action = ActivityAction.ProjectLove
+                activity.target = activity.place = Project(data["project_id"],session)
+                activity.target.title = data["project_title"]
+            case "shareproject":
+                activity.action = ActivityAction.ProjectShare
+                activity.target = activity.place = Project(data["project_id"],session)
+                activity.target.title = data["title"]
+                activity.target.author = activity.actor or UNKNOWN
+            case "followstudio":
+                activity.action = ActivityAction.StudioFollow
+                activity.target = activity.place = Studio(data["gallery_id"],session)
+                activity.target.title = data["title"]
+        return activity
 
 class CloudActivity(_BaseSiteAPI):
     """
