@@ -267,6 +267,30 @@ class _BaseCloud(_BaseEvent):
         """
         pass
 
+    def get_vars(self) -> dict[str, str]:
+        """
+        全てのクラウド変数を読み込む
+
+        Returns:
+            dict[str, str]: 変数名と値のペア
+        """
+        return self._data.copy()
+    
+    def get_var(self,var:str,*,add_cloud_symbol:bool=True) -> str | None:
+        """
+        クラウド変数を読み込む
+
+        Args:
+            var (str): 取得したい変数の名前
+            add_cloud_symbol (bool, optional): ☁マークを先頭に追加するか
+
+        Returns:
+            str|None: 存在する場合、その変数の値。
+        """
+        if add_cloud_symbol:
+            var = self.add_cloud_symbol(var)
+        return self._data.get(var)
+
     async def wait_connect(self,timeout:float|None=None):
         """
         サーバーに接続するまで待機します。
@@ -275,6 +299,10 @@ class _BaseCloud(_BaseEvent):
             timeout (float|None, optional): タイムアウトさせたい場合、その時間
         """
         await asyncio.wait_for(self._ws_event.wait(),timeout)
+
+    @property
+    def is_connect(self) -> bool:
+        return self._ws_event.is_set()
 
     @staticmethod
     def add_cloud_symbol(text:str) -> str:
