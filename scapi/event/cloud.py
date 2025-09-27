@@ -267,6 +267,14 @@ class _BaseCloud(_BaseEvent):
         """
         pass
 
+    async def wait_connect(self,timeout:float|None=None):
+        """
+        サーバーに接続するまで待機します。
+
+        Args:
+            timeout (float|None, optional): タイムアウトさせたい場合、その時間
+        """
+        await asyncio.wait_for(self._ws_event.wait(),timeout)
 
     @staticmethod
     def add_cloud_symbol(text:str) -> str:

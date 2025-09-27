@@ -16,7 +16,6 @@ class _BaseEvent(ABC):
     def __init__(self):
         self._task:asyncio.Task|None = None
         self._event:asyncio.Event = asyncio.Event()
-        self._on_ready = False
 
     def event(self,func:_CT) -> _CT:
         """
