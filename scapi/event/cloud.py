@@ -371,6 +371,9 @@ class ScratchCloud(_BaseCloud):
     rate_limit = 0.1
     """
     scratchクラウドサーバー用クラス
+
+    Attributes:
+        session (Session): Scratchのセッション
     """
     def __init__(
             self,

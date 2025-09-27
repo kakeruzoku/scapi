@@ -812,11 +812,12 @@ class RemixTree(_BaseSiteAPI):
         moderation_status (str): プロジェクトのステータス
         root_id (int): この木の根プロジェクトのID
     """
-    moderation_status:str
-    _ctime:str
-    _children:list[int]
-    _all_remixtree:dict[int,"RemixTree"]
-    root_id:int
+    if TYPE_CHECKING:
+        moderation_status:str
+        _ctime:str
+        _children:list[int]
+        _all_remixtree:dict[int,"RemixTree"]
+        root_id:int
 
     def __init__(
             self,
@@ -856,6 +857,16 @@ class RemixTree(_BaseSiteAPI):
         if parent_id is UNKNOWN: raise ValueError()
         if parent_id is None: return
         return self._all_remixtree[parent_id]
+    
+    @property
+    def is_root(self) -> bool:
+        """
+        一番下のプロジェクトか
+
+        Returns:
+            bool:
+        """
+        return self.project.remix_parent_id is None
     
     @property
     def root(self) -> "RemixTree":

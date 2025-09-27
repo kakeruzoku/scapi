@@ -1,6 +1,6 @@
 from __future__ import annotations
 
-from typing import AsyncGenerator, Literal
+from typing import AsyncGenerator, Final, Literal
 import zlib
 import base64
 import json
@@ -178,7 +178,7 @@ class Session(_BaseSiteAPI[str]):
         self.client = _client or HTTPClient()
 
         super().__init__(self)
-        self.session_id:str = session_id
+        self.session_id:Final[str] = session_id
         self.status:MAYBE_UNKNOWN[SessionStatus] = UNKNOWN
         
         decoded,login_dt = decode_session(self.session_id)

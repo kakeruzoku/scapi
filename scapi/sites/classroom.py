@@ -46,10 +46,16 @@ class Classroom(_BaseSiteAPI[int]):
 
     Attributes:
         id (int): クラスのID
+        title (MAYBE_UNKNOWN[str]): クラスの名前
         educator (MAYBE_UNKNOWN[User]): クラスの所有者
+        closed (MAYBE_UNKNOWN[bool]): クラスが閉じられているか
         description (MAYBE_UNKNOWN[str]): このクラスについて欄
         status (MAYBE_UNKNOWN[str]): 現在、取り組んでいること
+
         token (MAYBE_UNKNOWN[str]): クラスのtoken
+        studio_count (MAYBE_UNKNOWN[int]): スタジオの数
+        student_count (MAYBE_UNKNOWN[int]): 生徒の数
+        unread_alert_count (MAYBE_UNKNOWN[int]): アラートの数
     """
     def __init__(self,id:int,client_or_session:"HTTPClient|Session|None"=None,*,token:str|None=None):
         super().__init__(client_or_session)

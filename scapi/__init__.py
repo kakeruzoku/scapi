@@ -28,6 +28,7 @@ from .sites.project import (
     Project,
     ProjectFeatured,
     ProjectVisibility,
+    RemixTree,
     get_project,
     explore_projects,
     search_projects,

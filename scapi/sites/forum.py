@@ -147,6 +147,7 @@ class ForumTopic(_BaseSiteAPI):
         is_closed (MAYBE_UNKNOWN[bool]): 閉じられているか
         post_count (MAYBE_UNKNOWN[int]): 投稿されたポストの数
         view_count (MAYBE_UNKNOWN[int]): トピックが閲覧された回数
+        last_post (MAYBE_UNKNOWN[ForumPost]): 最後に投稿された投稿
     """
     def __init__(self,id:int,client_or_session:"HTTPClient|Session|None"=None):
         super().__init__(client_or_session)
