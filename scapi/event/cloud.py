@@ -1,8 +1,9 @@
 from __future__ import annotations
 
 import asyncio
+import datetime
 import time
-from typing import TYPE_CHECKING, Any, AsyncGenerator, Iterable, Iterator, Literal
+from typing import TYPE_CHECKING, Any, AsyncGenerator, Callable, Coroutine, Iterable, Iterator, Literal, NoReturn
 import aiohttp
 import json
 from .base import _BaseEvent
@@ -14,7 +15,8 @@ from ..utils.types import (
 from ..utils.common import (
     __version__,
     api_iterative,
-    wait_all_event
+    wait_all_event,
+    get_client_and_session
 )
 
 if TYPE_CHECKING:
@@ -403,14 +405,15 @@ class TurboWarpCloud(_BaseCloud):
         self.header["User-Agent"] = f"Scapi/{__version__} ({reason})"
 
 class ScratchCloud(_BaseCloud):
-    max_length = 256
-    rate_limit = 0.1
     """
     scratchクラウドサーバー用クラス
 
     Attributes:
         session (Session): Scratchのセッション
     """
+
+    max_length = 256
+    rate_limit = 0.1
     def __init__(
             self,
             session:"Session",
@@ -443,7 +446,117 @@ class ScratchCloud(_BaseCloud):
             offset (int|None, optional): 取得するログの開始位置。初期値は0です。
 
         Yields:
-            CloudActivity
+            CloudActivity:
+        """
+        async for _a in api_iterative(
+            self.client,"https://clouddata.scratch.mit.edu/logs",
+            limit=limit,offset=offset,max_limit=100,params={"projectid":self.project_id},
+        ):
+            yield CloudActivity._create_from_log(_a,self.project_id,self.session or self.client)
+
+class CloudLogEvent(_BaseEvent):
+    """
+    クラウドログイベント
+
+    Attributes:
+        client (HTTPClient):
+        Session (Session|None):
+        interval (float):
+        lastest_update_time (datetime.datetime):
+    """
+    def __init__(self,project_id:str|int,interval:float=0.1,client_or_session:"HTTPClient|Session|None"=None):
+        super().__init__()
+
+        self.client,self.session = get_client_and_session(client_or_session)
+        self.project_id = str(project_id)
+        self.interval = interval
+
+        self.lastest_update_time:datetime.datetime = datetime.datetime.now(tz=datetime.timezone.utc)
+
+    async def _event_monitoring(self, event: asyncio.Event):
+        while True:
+            try:
+                logs = [i async for i in self.get_logs()]
+                logs.reverse()
+                lastest_update_time = self.lastest_update_time
+                for log in logs:
+                    created_at = log.datetime
+                    if created_at and created_at > self.lastest_update_time:
+                        self._call_event(self.on_change,log)
+                        match log.method:
+                            case "set":
+                                self._call_event(self.on_set,log)
+                            case "create":
+                                self._call_event(self.on_create,log)
+                            case "rename":
+                                self._call_event(self.on_rename,log)
+                            case "delete":
+                                self._call_event(self.on_delete,log)
+                        if created_at > lastest_update_time:
+                            lastest_update_time = created_at
+                if lastest_update_time > self.lastest_update_time:
+                    self.lastest_update_time = lastest_update_time
+            except Exception as e:
+                self._call_event(self.on_error,e)
+            await asyncio.sleep(self.interval)
+            await event.wait()
+
+    async def on_change(self,activity:CloudActivity):
+        """
+        [イベント] 変数が編集された。
+        これは全てのログに対して呼び出されます。
+
+        Args:
+            activity (CloudActivity):
+        """
+        pass
+
+    async def on_set(self,activity:CloudActivity):
+        """
+        [イベント] 変数がセットされた。
+
+        Args:
+            activity (CloudActivity):
+        """
+        pass
+
+    async def on_create(self,activity:CloudActivity):
+        """
+        [イベント] 変数が作成された。
+
+        Args:
+            activity (CloudActivity):
+        """
+        pass
+
+    async def on_rename(self,activity:CloudActivity):
+        """
+        [イベント] 変数名が変更された。
+
+        Args:
+            activity (CloudActivity):
+        """
+        pass
+
+    async def on_delete(self,activity:CloudActivity):
+        """
+        [イベント] 変数が削除された。
+
+        Args:
+            activity (CloudActivity):
+        """
+        pass
+
+    async def get_logs(self,limit:int|None=None,offset:int|None=None) -> AsyncGenerator["CloudActivity", None]:
+        """
+        クラウド変数のログを取得する。
+
+        Args:
+            limit (int|None, optional): 取得するログの数。初期値は100です。
+            offset (int|None, optional): 取得するログの開始位置。初期値は0です。
+
+        Yields:
+            CloudActivity:
         """
         async for _a in api_iterative(
             self.client,"https://clouddata.scratch.mit.edu/logs",

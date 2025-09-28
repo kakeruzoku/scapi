@@ -91,7 +91,8 @@ from .event.comment import CommentEvent
 from .event.cloud import (
     _BaseCloud,
     TurboWarpCloud,
-    ScratchCloud
+    ScratchCloud,
+    CloudLogEvent
 )
 
 from .event.base import (

@@ -20,3 +20,8 @@
     :members:
 
     .. automethod:: __init__
+
+.. autoclass:: scapi.CloudLogEvent
+    :members:
+
+    .. automethod:: __init__
