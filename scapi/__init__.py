@@ -77,6 +77,11 @@ from .sites.forum import (
     get_forum_category
 )
 
+from .sites.asset import (
+    BackpackType,
+    Backpack
+)
+
 from .sites.base import (
     _BaseSiteAPI
 )

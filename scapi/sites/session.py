@@ -58,6 +58,7 @@ from .studio import Studio, search_studios, explore_studios
 from .user import User
 from .forum import ForumCategory,get_forum_categories,ForumTopic,ForumPost
 from .activity import Activity
+from .asset import Backpack
 
 def decode_session(session_id:str) -> tuple[DecodedSessionID,int]:
     s1,s2,s3 = session_id.strip('".').split(':')
@@ -678,6 +679,23 @@ class Session(_BaseSiteAPI[str]):
         data:AnySuccessPayload = response.json()
         return bool(data.get("success"))
     
+    async def get_backpacks(self,limit:int|None=None,offset:int|None=None) -> AsyncGenerator[Backpack]:
+        """
+        バックパックを取得する。
+
+        Args:
+            limit (int|None, optional): 取得するバックパックの数。初期値は40です。
+            offset (int|None, optional): 取得するバックパックの開始位置。初期値は0です。
+
+        Yields:
+            Backpack: 取得したバックパック
+        """
+        async for _b in api_iterative(
+            self.client,f"https://backpack.scratch.mit.edu/{self.username}",
+            limit=limit,offset=offset
+        ):
+            yield Backpack._create_from_data(_b["id"],_b,self)
+
     async def get_project(self,project_id:int) -> "Project":
         """
         プロジェクトを取得する。

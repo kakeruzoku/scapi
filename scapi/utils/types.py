@@ -460,5 +460,13 @@ class OcularFoundPayload(TypedDict):
     
 OcularPayload = OcularNotFoundPayload|OcularFoundPayload
 
+class BackpackPayload(TypedDict):
+    type:str
+    mime:str
+    name:str
+    body:str
+    thumbnail:str
+    id:str
+
 search_mode = Literal["trending","popular"]
 explore_query = Literal["*","animations","art","games","music","stories","tutorial"]|str
