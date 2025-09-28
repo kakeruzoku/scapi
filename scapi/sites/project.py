@@ -90,6 +90,8 @@ class Project(_BaseSiteAPI[int]):
         remix_parent_id (MAYBE_UNKNOWN[int|None]): プロジェクトの親プロジェクトID
         remix_root_id (MAYBE_UNKNOWN[int|None]): プロジェクトの元プロジェクトID
 
+        project_token (MAYBE_UNKNOWN[str]): プロジェクトのアクセストークン
+
         comment_count (MAYBE_UNKNOWN[int|None]): コメントの数。Session.get_mystuff_projects()からでのみ取得できます。
     """
     def __repr__(self) -> str:
@@ -119,6 +121,8 @@ class Project(_BaseSiteAPI[int]):
         self.remix_parent_id:MAYBE_UNKNOWN[int|None] = UNKNOWN
         self.remix_root_id:MAYBE_UNKNOWN[int|None] = UNKNOWN
 
+        self.project_token:MAYBE_UNKNOWN[str] = UNKNOWN
+
         self.comment_count:MAYBE_UNKNOWN[int|None] = UNKNOWN
     
     async def update(self):
@@ -132,7 +136,8 @@ class Project(_BaseSiteAPI[int]):
             description=data.get("description"),
             public=data.get("public"),
             comments_allowed=data.get("comments_allowed"),
-            deleted=(data.get("visibility") == "notvisible")
+            deleted=(data.get("visibility") == "notvisible"),
+            project_token=data.get("project_token")
         )
         
         _author = data.get("author")
@@ -274,6 +279,16 @@ class Project(_BaseSiteAPI[int]):
             str:
         """
         return f"https://scratch.mit.edu/projects/{self.id}"
+    
+    @property
+    def thumbnail_url(self) -> str:
+        """
+        サムネイルURLを返す。
+
+        Returns:
+            str:
+        """
+        return f"https://uploads.scratch.mit.edu/get_image/project/{self.id}_480x360.png"
     
     async def get_remixes(self,limit:int|None=None,offset:int|None=None) -> AsyncGenerator["Project", None]:
         """
