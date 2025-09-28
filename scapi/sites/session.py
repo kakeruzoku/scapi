@@ -595,6 +595,24 @@ class Session(_BaseSiteAPI[str]):
             _s:OldAnyObjectPayload[OldAllClassroomPayload]
             yield Classroom._create_from_data(_s["pk"],_s["fields"],self,Classroom._update_from_all_mystuff_data)
 
+    async def get_mystuff_students(self,start_page:int|None=None,end_page:int|None=None) -> AsyncGenerator[User]:
+        """
+        このアカウントの生徒を取得する。
+
+        Args:
+            start_page (int|None, optional): 取得するユーザーの開始ページ位置。初期値は1です。
+            end_page (int|None, optional): 取得するユーザーの終了ページ位置。初期値はstart_pageの値です。
+
+        Yields:
+            User: 取得したユーザー
+        """
+        self.require_session()
+        async for _u in page_api_iterative(
+            self.client,f"https://scratch.mit.edu/site-api/classrooms/students/of/{self.username}/",
+            start_page,end_page
+        ):
+            yield User._create_from_data(_u["fields"]["user"]["username"],_u["fields"],self.client_or_session,User._update_from_student_data)
+
     async def get_mystuff_class(self,id:int) -> Classroom:
         """
         所有しているクラスの情報を取得する。

@@ -1,7 +1,8 @@
-from enum import Enum
-from typing import Final
+from __future__ import annotations
 
-from .session import Session
+from enum import Enum
+from typing import Final,TYPE_CHECKING
+
 from ..utils.client import HTTPClient
 
 from ..utils.common import (
@@ -13,6 +14,9 @@ from .base import _BaseSiteAPI
 from ..utils.types import (
     BackpackPayload
 )
+
+if TYPE_CHECKING:
+    from .session import Session
 
 class BackpackType(Enum):
     Unknown=0
