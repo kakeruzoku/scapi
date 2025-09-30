@@ -3,7 +3,7 @@ from __future__ import annotations
 import asyncio
 import datetime
 import time
-from typing import TYPE_CHECKING, Any, AsyncGenerator, Callable, Coroutine, Iterable, Iterator, Literal, NoReturn
+from typing import TYPE_CHECKING, Any, AsyncGenerator, Callable, Coroutine, Iterable, Iterator, Literal, NoReturn, Self
 import aiohttp
 import json
 from .base import _BaseEvent
@@ -21,6 +21,7 @@ from ..utils.common import (
 
 if TYPE_CHECKING:
     from ..sites.session import Session
+    from ..sites.project import Project
 
 class NormalDisconnection(Exception):
     pass
@@ -383,8 +384,8 @@ class TurboWarpCloud(_BaseCloud):
             client: HTTPClient,
             project_id:int|str,
             username:str="scapi",
-            reason:str="Unknown",
             *,
+            reason:str="Unknown",
             url:str=turbowarp_cloud_url,
             timeout:aiohttp.ClientWSTimeout|None=None,
             send_timeout:float|None=None
@@ -453,6 +454,18 @@ class ScratchCloud(_BaseCloud):
             limit=limit,offset=offset,max_limit=100,params={"projectid":self.project_id},
         ):
             yield CloudActivity._create_from_log(_a,self.project_id,self.session or self.client)
+
+    def log_event(self,*,interval:float=0.1) -> CloudLogEvent:
+        """
+        :class:`CloudLogEvent` を作成する。
+
+        Args:
+            interval (float, optional): 更新間隔
+
+        Returns:
+            CloudLogEvent:
+        """
+        return CloudLogEvent(self.project_id,interval,self.session)
 
 class CloudLogEvent(_BaseEvent):
     """

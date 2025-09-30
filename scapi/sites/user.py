@@ -3,7 +3,7 @@ from __future__ import annotations
 import datetime
 from enum import Enum
 import random
-from typing import TYPE_CHECKING, AsyncGenerator, Final
+from typing import TYPE_CHECKING, AsyncGenerator, Final, NamedTuple, Sequence
 
 import aiohttp
 import bs4
@@ -23,7 +23,8 @@ from ..utils.common import (
     api_iterative,
     dt_from_isoformat,
     _AwaitableContextManager,
-    Tag
+    Tag,
+    split
 )
 from ..utils.error import ClientError,NotFound
 from ..utils.file import File,_read_file
@@ -44,6 +45,12 @@ from .comment import (
 
 if TYPE_CHECKING:
     from .session import Session
+
+class UserWebsiteData(NamedTuple):
+    exist:bool
+    scratcher:MAYBE_UNKNOWN[bool] = UNKNOWN
+    classroom_id:MAYBE_UNKNOWN[int|None] = UNKNOWN
+    comments_allowed:bool = False
 
 class User(_BaseSiteAPI[str]):
     """
@@ -80,6 +87,8 @@ class User(_BaseSiteAPI[str]):
         #teacher only
         self.educator_can_unban:MAYBE_UNKNOWN[bool] = UNKNOWN
         self.is_banned:MAYBE_UNKNOWN[bool] = UNKNOWN
+
+        self._loaded_website:MAYBE_UNKNOWN[UserWebsiteData] = UNKNOWN
 
     async def update(self):
         response = await self.client.get(f"https://api.scratch.mit.edu/users/{self.username}")
@@ -134,7 +143,7 @@ class User(_BaseSiteAPI[str]):
         Returns:
             str:
         """
-        return f"https://scratch.mit.edu/users/{self.username}"
+        return f"https://scratch.mit.edu/users/{self.username}/"
     
     @property
     def icon_url(self) -> str:
@@ -157,6 +166,76 @@ class User(_BaseSiteAPI[str]):
             MAYBE_UNKNOWN[bool]:
         """
         return self.username.lower() == self._session.username.lower()
+    
+    async def load_website(self):
+        """
+        ユーザーページをロードして、html上からのみ取得できるデータをを読み込む。
+        """
+        try:
+            response = await self.client.get(self.url)
+        except NotFound:
+            self._loaded_website = UserWebsiteData(False)
+            return 
+        soup = bs4.BeautifulSoup(response.text,"html.parser")
+        header_text:Tag = soup.find("div",{"class":"header-text"})
+        scratcher_text:Tag = header_text.find_all("span",{"class":"group"})[-1]
+        is_scratcher = scratcher_text.get_text().strip() != "New Scratcher"
+        class_url:Tag|None = header_text.find("a")
+
+        comments:Tag = soup.find("div",{"id":"comment-form"})
+        comments_allowed = comments.find("div",{"class":"template-feature-off comments-off"}) is None
+        if class_url is None:
+            self._loaded_website = UserWebsiteData(True,is_scratcher,None,comments_allowed)
+        else:
+            self._loaded_website = UserWebsiteData(
+                True,is_scratcher,
+                int(split(str(class_url["href"]),"/classes/","/",True)),
+                comments_allowed
+            )
+    
+    @property
+    def exist(self) -> MAYBE_UNKNOWN[bool]:
+        """
+        アカウントが削除(サイト上から隠された)状態かを返す。
+        事前に :func:`User.load_website` を実行しておく必要があります。
+
+        Returns:
+            MAYBE_UNKNOWN[bool]:
+        """
+        return self._loaded_website and self._loaded_website.exist
+    
+    @property
+    def is_scratcher(self) -> MAYBE_UNKNOWN[bool]:
+        """
+        アカウントがScratcherであるかを返す。ScratchTeamはScratcherとしてカウントされます。
+        事前に :func:`User.load_website` を実行しておく必要があります。
+
+        Returns:
+            MAYBE_UNKNOWN[bool]:
+        """
+        return self._loaded_website and self._loaded_website.scratcher
+    
+    @property
+    def classroom_id(self) -> MAYBE_UNKNOWN[int|None]:
+        """
+        アカウントの所属しているクラスのIDを返す。
+        事前に :func:`User.load_website` を実行しておく必要があります。
+
+        Returns:
+            MAYBE_UNKNOWN[int|None]:
+        """
+        return self._loaded_website and self._loaded_website.classroom_id
+    
+    @property
+    def comments_allowed(self) -> MAYBE_UNKNOWN[bool]:
+        """
+        ユーザーページにコメントができるか
+        事前に :func:`User.load_website` を実行しておく必要があります。
+
+        Returns:
+            MAYBE_UNKNOWN[bool]:
+        """
+        return self._loaded_website and self._loaded_website.comments_allowed
 
     async def get_featured(self) -> "ProjectFeatured|None":
         """
