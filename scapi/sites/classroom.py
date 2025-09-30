@@ -88,6 +88,39 @@ class Classroom(_BaseSiteAPI[int]):
         """
         return dt_from_isoformat(self._started_at)
 
+    @property
+    def url(self) -> str:
+        """
+        クラスページのリンクを取得する
+
+        Returns:
+            str:
+        """
+        return f"https://scratch.mit.edu/classrooms/{self.id}"
+    
+    @property
+    def thumbnail_url(self) -> str:
+        """
+        サムネイルURLを返す。
+
+        Returns:
+            str:
+        """
+        return f"https://cdn2.scratch.mit.edu/get_image/classroom/{self.id}_250x150.png"
+
+    @property
+    def is_educator(self) -> MAYBE_UNKNOWN[bool]:
+        """
+        紐づけられている |Session| がクラスの教師かどうか
+        :attr:`Classroom.educator` が |UNKNOWN| の場合は |UNKNOWN| が返されます。
+        
+        Returns:
+            MAYBE_UNKNOWN[bool]:
+        """
+        if self.educator is UNKNOWN:
+            return UNKNOWN
+        return self.educator.username.lower() == self._session.username.lower()
+
     def _update_from_data(self, data:ClassroomPayload):
         self.closed = False #closeしてたらapiから取得できない
         self._update_to_attributes(

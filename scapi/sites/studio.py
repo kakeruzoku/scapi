@@ -130,6 +130,7 @@ class Studio(_BaseSiteAPI[int]):
         
         self._update_to_attributes(
             title=data.get("title"),
+            host_id=self._host and self._host.id,
 
             _created_at=data.get("datetime_created"),
             _modified_at=data.get("datetime_modified"),
@@ -171,6 +172,28 @@ class Studio(_BaseSiteAPI[int]):
         """
         return f"https://scratch.mit.edu/studios/{self.id}"
     
+    @property
+    def thumbnail_url(self) -> str:
+        """
+        サムネイルURLを返す。
+
+        Returns:
+            str:
+        """
+        return f"https://uploads.scratch.mit.edu/get_image/gallery/{self.id}_170x100.png"
+
+    @property
+    def is_host(self) -> MAYBE_UNKNOWN[bool]:
+        """
+        紐づけられている |Session| がスタジオの所有者かどうか
+        :attr:`Studio.host_id` が |UNKNOWN| の場合は |UNKNOWN| が返されます。
+        
+        Returns:
+            MAYBE_UNKNOWN[bool]:
+        """
+        if self.host_id is UNKNOWN:
+            return UNKNOWN
+        return self._session.user_id == self.host_id
     
     async def get_projects(self,limit:int|None=None,offset:int|None=None) -> AsyncGenerator["Project", None]:
         """

@@ -290,6 +290,19 @@ class Project(_BaseSiteAPI[int]):
         """
         return f"https://uploads.scratch.mit.edu/get_image/project/{self.id}_480x360.png"
     
+    @property
+    def is_author(self) -> MAYBE_UNKNOWN[bool]:
+        """
+        紐づけられている |Session| がプロジェクトの作者かどうか
+        :attr:`Project.author` が |UNKNOWN| の場合は |UNKNOWN| が返されます。
+        
+        Returns:
+            MAYBE_UNKNOWN[bool]:
+        """
+        if self.author is UNKNOWN:
+            return UNKNOWN
+        return self._session.username.lower() == self.author.username.lower()
+
     async def get_remixes(self,limit:int|None=None,offset:int|None=None) -> AsyncGenerator["Project", None]:
         """
         リミックスされたプロジェクトを取得する。

@@ -136,6 +136,27 @@ class User(_BaseSiteAPI[str]):
         """
         return f"https://scratch.mit.edu/users/{self.username}"
     
+    @property
+    def icon_url(self) -> str:
+        """
+        アイコンURLを返す。
+
+        Returns:
+            str:
+        """
+        if self.id is UNKNOWN:
+            raise ValueError()
+        return f"https://cdn2.scratch.mit.edu/get_image/user/{self.id}_90x90.png"
+    
+    @property
+    def is_myself(self) -> bool:
+        """
+        紐づけられている |Session| がこのユーザーかどうか
+        
+        Returns:
+            MAYBE_UNKNOWN[bool]:
+        """
+        return self.username.lower() == self._session.username.lower()
 
     async def get_featured(self) -> "ProjectFeatured|None":
         """
