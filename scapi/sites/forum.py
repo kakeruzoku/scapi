@@ -486,6 +486,10 @@ class OcularReactions(_BaseSiteAPI):
         rocket (list[str]): 🚀をリアクションしたユーザー一覧
         eyes (list[str]): 👀をリアクションしたユーザー一覧
     """
+
+    def __eq__(self, value:object) -> bool:
+        return isinstance(value,OcularReactions) and self.id == value.id
+
     def __repr__(self):
         return f"<OcularReactions id:{self.id} 👍:{len(self.thumbs_up)} 👎:{len(self.thumbs_down)} 😄:{len(self.smile)} 🎉:{len(self.tada)} 😕:{len(self.confused)} ❤️:{len(self.heart)} 🚀:{len(self.rocket)} 👀:{len(self.eyes)}>"
     

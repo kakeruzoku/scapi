@@ -5,8 +5,8 @@
 | Scapiバージョン3は完全な書き直しが行われたため、バージョン2(v2.3.1以前)との互換性はほぼありません。
 | このページでScapiを3.0.0に移行してください。
 
-.. warning::
-    3.0.0はベータ版です。削除されていないと書いていないのにも関わらず実装されていない関数/属性が存在します。
+.. note::
+    作者の書く気がなかったので、困ったことあれば `issue <https://github.com/kakeruzoku/scapi/issues>`_ か `discussion <https://github.com/kakeruzoku/scapi/discussions>`_ か `discordサーバー <https://discord.gg/Q4tkxFVzUX>`_ までお願いします
 
 .. contents::
     :depth: 3
@@ -81,9 +81,9 @@ utils
 HTTPClient (旧ClientSession)
 ****************************
 
-- 名前が ``ClientSession`` から |HTTPClient| に変更されました。
-- ``aiohttp.ClientSession`` を継承しなくなり、 :attr:`<scapi.HTTPClient._session>` に移動されました。
-- ``protect`` が削除され、その代わりに ``scratch_header`` と ``scratch_cookie`` が追加されました。
+- 名前が ``ClientSession`` から |HTTPClient| に変更。
+- ``aiohttp.ClientSession`` を継承しなくなり、 :attr:`<scapi.HTTPClient._session>` に移動。
+- ``protect`` が削除。その代わりに ``scratch_header`` と ``scratch_cookie`` が追加。
 
 Response
 ********
@@ -155,7 +155,7 @@ session
 *******
 クラスが作成された際に自動的にアカウント情報を ``session_id`` からロードします。
 
-以下の属性が削除されました。
+削除:
 
 - ``Session.is_email_verified``
 - ``Session.email``
@@ -163,9 +163,9 @@ session
 - ``Session.mute_status``
 - ``Session.banned``
 
-これらの情報にアクセスしたい場合は、 :attr:`Session.status <scapi.Session.status>` からアクセスしてください。
+:attr:`Session.status <scapi.Session.status>`からアクセスしてください。
 
-以下の関数が削除されました。
+削除:
 
 - ``Session.session_decode()`` クラス作成時に自動的にデコードされ、属性に保存されます。
 - ``Session.me()`` :attr:`Session.user <scapi.Session.user>`.:func:`update() <scapi.User.update>` を使用してください。
@@ -183,6 +183,27 @@ Forum
 *****
 
 フォーラムのカテゴリーはEnumからクラスでの実装になります。
+
+Activity
+********
+
+htmlから読み込むタイプのアクティビティが未実装 (ユーザーページとクラスページのやつ)
+
+classroom
+*********
+
+公開アクティビティの取得が未実装
+
+cloud
+^^^^^
+
+- ``CloudWebsocketEvent`` が削除。通常のクラウドクラスでイベントが使用できるようになりました。
+- クラウドサーバーは未実装です。
+
+event
+^^^^^
+
+でかく変わったことはないと信じてます
 
 .. |IPBanned| replace:: :class:`IPBanned <scapi.exceptions.IPBanned>`
 .. |AccountBrocked| replace:: :class:`AccountBrocked <scapi.exceptions.AccountBrocked>`
