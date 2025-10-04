@@ -82,6 +82,9 @@ class Comment(_BaseSiteAPI[int]):
         self._cached_parent:"Comment|None" = _parent or None
         self._cached_reply:"list[Comment]|None" = _reply
 
+    def __eq__(self, value:object) -> bool:
+        return isinstance(value,Comment) and self.place.__class__ == value.place.__class__ and self.id == value.id
+
     @staticmethod
     def _root_url(place:"Project|Studio|User"):
         from .studio import Studio

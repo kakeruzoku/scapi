@@ -92,6 +92,9 @@ class User(_BaseSiteAPI[str]):
 
         self._loaded_website:MAYBE_UNKNOWN[UserWebsiteData] = UNKNOWN
 
+    def __eq__(self, value:object) -> bool:
+        return isinstance(value,User) and self.username == value.username
+
     async def update(self):
         response = await self.client.get(f"https://api.scratch.mit.edu/users/{self.username}")
         self._update_from_data(response.json())

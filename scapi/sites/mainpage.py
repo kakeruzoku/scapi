@@ -50,6 +50,9 @@ class News(_BaseSiteAPI):
 
     def __repr__(self) -> str:
         return f"<News id:{self.id} headline:{self.headline}>"
+    
+    def __eq__(self, value:object) -> bool:
+        return isinstance(value,News) and self.id == value.id
 
     def _update_from_data(self, data:NewsPayload):
         self._created_at = data.get("stamp")

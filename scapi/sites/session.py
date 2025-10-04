@@ -110,6 +110,9 @@ class SessionStatus:
         self.session = session
         self.update(data)
 
+    def __eq__(self, value:object) -> bool:
+        return isinstance(value,SessionStatus) and self.session == value.session
+
     def update(self,data:SessionStatusPayload):
         _user = data.get("user")
         self.session.user_id = _user.get("id")
@@ -176,6 +179,9 @@ class Session(_BaseSiteAPI[str]):
     """
     def __repr__(self) -> str:
         return f"<Session username:{self.username}>"
+    
+    def __eq__(self, value:object) -> bool:
+        return isinstance(value,Session) and self.user == value.user
 
     def __init__(self,session_id:str,_client:HTTPClient|None=None):
         self.client = _client or HTTPClient()

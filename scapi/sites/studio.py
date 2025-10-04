@@ -90,6 +90,9 @@ class Studio(_BaseSiteAPI[int]):
         self.project_count:MAYBE_UNKNOWN[int] = UNKNOWN
 
         self._host:MAYBE_UNKNOWN["User"] = UNKNOWN
+
+    def __eq__(self, value:object) -> bool:
+        return isinstance(value,Studio) and self.id == value.id
     
     async def update(self):
         response = await self.client.get(f"https://api.scratch.mit.edu/studios/{self.id}")

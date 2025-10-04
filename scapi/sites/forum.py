@@ -61,6 +61,9 @@ class ForumCategory(_BaseSiteAPI[int]):
         self.post_count:MAYBE_UNKNOWN[int] = UNKNOWN
         self.last_post:MAYBE_UNKNOWN[ForumPost] = UNKNOWN
 
+    def __eq__(self, value:object) -> bool:
+        return isinstance(value,ForumCategory) and self.id == value.id
+
     def __repr__(self) -> str:
         return f"<ForumCategory id:{self.id} name:{self.name}>"
 
@@ -166,6 +169,9 @@ class ForumTopic(_BaseSiteAPI):
         self.post_count:MAYBE_UNKNOWN[int] = UNKNOWN
         self.view_count:MAYBE_UNKNOWN[int] = UNKNOWN
         self.last_post:MAYBE_UNKNOWN[ForumPost] = UNKNOWN
+
+    def __eq__(self, value:object) -> bool:
+        return isinstance(value,ForumTopic) and self.id == value.id
 
     @classmethod
     def _create_from_category(
@@ -293,6 +299,9 @@ class ForumPost(_BaseSiteAPI):
         self.modified_at:MAYBE_UNKNOWN[datetime.datetime|None] = UNKNOWN
         self.modified_by:MAYBE_UNKNOWN[User|None] = UNKNOWN
         self.content:MAYBE_UNKNOWN[bs4.Tag] = UNKNOWN
+
+    def __eq__(self, value:object) -> bool:
+        return isinstance(value,ForumPost) and self.id == value.id
 
     async def update(self):
         response = await self.client.get(f"https://scratch.mit.edu/discuss/post/{self.id}/")

@@ -46,6 +46,9 @@ class Backpack(_BaseSiteAPI[str]):
         self.body:MAYBE_UNKNOWN[str] = UNKNOWN
         self.thumbnail:MAYBE_UNKNOWN[str] = UNKNOWN
 
+    def __eq__(self, value:object) -> bool:
+        return isinstance(value,Backpack) and self.id == value.id
+
     def _update_from_data(self, data:BackpackPayload):
         self.type = mime_to_type.get((data.get("type"),data.get("mime")),BackpackType.Unknown)
         self._update_to_attributes(

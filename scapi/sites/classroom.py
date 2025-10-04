@@ -76,6 +76,9 @@ class Classroom(_BaseSiteAPI[int]):
         self.student_count:MAYBE_UNKNOWN[int] = UNKNOWN
         self.unread_alert_count:MAYBE_UNKNOWN[int] = UNKNOWN
 
+    def __eq__(self, value:object) -> bool:
+        return isinstance(value,Classroom) and self.id == value.id
+
     async def update(self) -> None:
         response = await self.client.get(f"https://api.scratch.mit.edu/classrooms/{self.id}")
         self._update_from_data(response.json())

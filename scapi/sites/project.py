@@ -124,6 +124,9 @@ class Project(_BaseSiteAPI[int]):
         self.project_token:MAYBE_UNKNOWN[str] = UNKNOWN
 
         self.comment_count:MAYBE_UNKNOWN[int|None] = UNKNOWN
+
+    def __eq__(self, value:object) -> bool:
+        return isinstance(value,Project) and self.id == value.id
     
     async def update(self):
         response = await self.client.get(f"https://api.scratch.mit.edu/projects/{self.id}")
@@ -798,6 +801,9 @@ class ProjectVisibility:
         self.reshareble = data.get("reshareable")
         self.message = data.get("message")
 
+    def __eq__(self, value:object) -> bool:
+        return isinstance(value,ProjectVisibility) and self.id == value.id
+
 class ProjectFeatured:
     """
     注目のプロジェクト欄を表す。
@@ -809,6 +815,9 @@ class ProjectFeatured:
     """
     def __repr__(self):
         return repr(self.project)
+    
+    def __eq__(self, value:object) -> bool:
+        return isinstance(value,ProjectFeatured) and self.author == value.author
 
     def __new__(cls,data:UserFeaturedPayload,user:"User"):
         _project_payload = data.get("featured_project_data")
@@ -862,6 +871,9 @@ class RemixTree(_BaseSiteAPI):
         self.id:Final[int] = data["id"]
         self.project:Project = project or Project(data["id"],client_or_session)
         self._update_from_data(data)
+
+    def __eq__(self, value:object) -> bool:
+        return isinstance(value,RemixTree) and self.id == value.id
 
     def _update_from_data(self, data:RemixTreePayload):
         if self.project.author is UNKNOWN:
