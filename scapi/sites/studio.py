@@ -1,7 +1,7 @@
 from __future__ import annotations
 
 import datetime
-from typing import TYPE_CHECKING, AsyncGenerator, Final, Literal
+from typing import TYPE_CHECKING, AsyncGenerator, Final, Literal, Self
 
 import aiohttp
 from ..utils.types import (
@@ -20,7 +20,9 @@ from ..utils.common import (
     UNKNOWN_TYPE,
     api_iterative,
     dt_from_isoformat,
-    _AwaitableContextManager
+    _AwaitableContextManager,
+    Tag,
+    split
 )
 from ..utils.client import HTTPClient
 from ..utils.error import (
@@ -141,6 +143,17 @@ class Studio(_BaseSiteAPI[int]):
 
             description=data.get("description")
         )
+
+    @classmethod
+    def _create_from_html(cls,data:Tag,client_or_session:"HTTPClient|Session",*,host:"User|None|UNKNOWN_TYPE"=None) -> Self:
+        _span:Tag = data.find("span",{"class":"title"})
+        _a:Tag = _span.find("a")
+        studio = cls(int(split(str(_a["href"]),"/studios/","/",True)),client_or_session)
+        studio.title = _a.get_text().strip()
+        if host:
+            studio._host = host
+            studio.host_id = host.id
+        return studio
     
     @property
     def created_at(self) -> datetime.datetime|UNKNOWN_TYPE:

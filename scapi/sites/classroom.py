@@ -26,6 +26,7 @@ from ..utils.common import (
     dt_from_isoformat,
     temporary_httpclient,
     page_api_iterative,
+    page_html_iterative,
     split
 )
 from ..utils.client import HTTPClient
@@ -228,45 +229,60 @@ class Classroom(_BaseSiteAPI[int]):
         studio.title = data.get("gallery_title")
         return studio
     
-    async def get_class_studios(self,start_page:int|None=None,end_page:int|None=None) -> AsyncGenerator[Studio]:
+    async def get_class_studios(self,start_page:int|None=None,end_page:int|None=None,*,use_api:bool=False) -> AsyncGenerator[Studio]:
         """
         クラスのスタジオを取得する。
 
         Args:
             start_page (int|None, optional): 取得するスタジオの開始ページ位置。初期値は1です。
             end_page (int|None, optional): 取得するスタジオの終了ページ位置。初期値はstart_pageの値です。
+            use_api (bool, optional): 教師向けAPIを使用するか。教師の場合のみ使用できます。
 
         Yields:
             Studio: 取得したスタジオ
         """
-        self.require_session()
-        async for _s in page_api_iterative(
-            self.client,f"https://scratch.mit.edu/site-api/classrooms/studios/{self.id}/",
-            start_page,end_page
-        ):
-            _s:OldAnyObjectPayload[OldStudioPayload]
-            yield Studio._create_from_data(_s["pk"],_s["fields"],self.client_or_session,Studio._update_from_old_data)
+        if use_api:
+            self.require_session()
+            async for _s in page_api_iterative(
+                self.client,f"https://scratch.mit.edu/site-api/classrooms/studios/{self.id}/",
+                start_page,end_page
+            ):
+                yield Studio._create_from_data(_s["pk"],_s["fields"],self.client_or_session,Studio._update_from_old_data)
+        else:
+            async for _t in page_html_iterative(
+                self.client,f"https://scratch.mit.edu/classes/{self.id}/studios/",
+                start_page,end_page,list_class="gallery thumb item"
+            ):
+                yield Studio._create_from_html(_t,self.client_or_session,host=self.educator)
 
-    async def get_class_students(self,start_page:int|None=None,end_page:int|None=None) -> AsyncGenerator[User]:
+    async def get_students(self,start_page:int|None=None,end_page:int|None=None,*,use_api:bool=False) -> AsyncGenerator[User]:
         """
         クラスの生徒を取得する。
 
         Args:
             start_page (int|None, optional): 取得するユーザーの開始ページ位置。初期値は1です。
             end_page (int|None, optional): 取得するユーザーの終了ページ位置。初期値はstart_pageの値です。
+            use_api (bool, optional): 教師向けAPIを使用するか。教師の場合のみ使用できます。
 
         Yields:
             User: 取得したユーザー
         """
-        self.require_session()
-        async for _u in page_api_iterative(
-            self.client,f"https://scratch.mit.edu/site-api/classrooms/students/{self.id}/",
-            start_page,end_page
-        ):
-            _u:OldAnyObjectPayload[StudentPayload]
-            yield User._create_from_data(_u["fields"]["user"]["username"],_u["fields"],self.client_or_session,User._update_from_student_data)
+        if use_api:
+            self.require_session()
+            async for _u in page_api_iterative(
+                self.client,f"https://scratch.mit.edu/site-api/classrooms/students/{self.id}/",
+                start_page,end_page
+            ):
+                _u:OldAnyObjectPayload[StudentPayload]
+                yield User._create_from_data(_u["fields"]["user"]["username"],_u["fields"],self.client_or_session,User._update_from_student_data)
+        else:
+            async for _t in page_html_iterative(
+                self.client,f"https://scratch.mit.edu/classes/{self.id}/students/",
+                start_page,end_page,list_class="user thumb item"
+            ):
+                yield User._create_from_html(_t,self.client_or_session)
 
-    async def get_class_activity(
+    async def get_privete_activity(
             self,
             start_page:int|None=None,
             end_page:int|None=None,

@@ -172,6 +172,33 @@ async def page_api_iterative(
         if not data:
             return
         
+async def page_html_iterative(
+        _client:"HTTPClient",
+        url:str,
+        start_page:int|None=None,
+        end_page:int|None=None,
+        params:dict[str,str|int|float]|None=None,
+        *,
+        outside_class:str|None="media-grid",
+        list_class:str,
+        list_name:str|None="li"
+    ) -> AsyncGenerator[Tag]:
+    params = params or {}
+    start_page = start_page or 1
+    end_page = end_page or start_page
+    for i in range(start_page,end_page+1):
+        try:
+            response = await _client.get(url,params={"page":i}|params)
+        except NotFound:
+            return
+        data:Tag = bs4.BeautifulSoup(response.text, "html.parser")
+        if outside_class is not None:
+            data = data.find("div",{"class":outside_class})
+        
+        objs:Sequence[Tag] = data.find_all(list_name,{"class":list_class}) # pyright: ignore[reportArgumentType]
+        for obj in objs:
+            yield obj
+        
 def get_client_and_session(client_or_session:"HTTPClient|Session|None") -> tuple["HTTPClient","Session|None"]:
     from .client import HTTPClient
     if client_or_session is None:

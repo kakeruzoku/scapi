@@ -3,7 +3,7 @@ from __future__ import annotations
 import datetime
 from enum import Enum
 import random
-from typing import TYPE_CHECKING, AsyncGenerator, Final, NamedTuple, Sequence
+from typing import TYPE_CHECKING, AsyncGenerator, Final, NamedTuple, Self, Sequence
 
 import aiohttp
 import bs4
@@ -21,6 +21,7 @@ from ..utils.common import (
     MAYBE_UNKNOWN,
     UNKNOWN_TYPE,
     api_iterative,
+    page_html_iterative,
     dt_from_isoformat,
     _AwaitableContextManager,
     Tag,
@@ -124,6 +125,16 @@ class User(_BaseSiteAPI[str]):
             is_banned=data.get("is_banned")
         )
         self._update_from_old_data(data["user"])
+
+    @classmethod
+    def _create_from_html(cls,data:Tag,client_or_session:"HTTPClient|Session") -> Self:
+        _a:Tag = data.find("a")
+        _img:Tag = data.find("img")
+        user = cls(split(str(_a["href"]),"/users/","/",True),client_or_session)
+        user_id = split(str(_img["data-original"]),"/user/","_") or ""
+        if user_id.isdecimal():
+            user.id = int(user_id)
+        return user
     
     @property
     def joined_at(self) -> datetime.datetime|UNKNOWN_TYPE:
@@ -343,18 +354,12 @@ class User(_BaseSiteAPI[str]):
         Yields:
             Project: 取得したプロジェクト
         """
-        start_page = start_page or 1
-        end_page = end_page or start_page
-        if TYPE_CHECKING: _p:Tag
-        for i in range(start_page,end_page+1):
-            try:
-                response = await self.client.get(f"https://scratch.mit.edu/projects/all/{self.username}/loves/",params={"page":i})
-            except NotFound:
-                return
-            data = bs4.BeautifulSoup(response.text, "html.parser")
-            content:Tag = data.find("div",{"class":"box-content"})
-            for _p in content.find_all("li",{"class":"project thumb item"}):
-                yield Project._create_from_html(_p,self.client_or_session)
+
+        async for _t in page_html_iterative(
+            self.client,f"https://scratch.mit.edu/projects/all/{self.username}/loves/",
+            start_page=start_page,end_page=end_page,list_class="project thumb item"
+        ):
+            yield Project._create_from_html(_t,self.client_or_session)
 
 
     async def get_message_count(self) -> int:
