@@ -323,7 +323,7 @@ class _BaseCloud(_BaseEvent):
             return "☁ "+text
         return text
 
-    def set_var(self,variable:str,value:Any,*,project_id:str|int|None=None,add_cloud_symbol:bool=True,priority:int=10):
+    def set_var(self,variable:str,value:Any,*,project_id:str|int|None=None,add_cloud_symbol:bool=True,priority:int=10) -> asyncio.Future:
         """
         クラウド変数を変更する。
 
@@ -343,7 +343,7 @@ class _BaseCloud(_BaseEvent):
             "value":str(value)
         }],project_id=project_id,priority=priority)
 
-    def set_vars(self,data:dict[str,Any],*,project_id:str|int|None=None,add_cloud_symbol:bool=True,priority:int=10):
+    def set_vars(self,data:dict[str,Any],*,project_id:str|int|None=None,add_cloud_symbol:bool=True,priority:int=10) -> asyncio.Future:
         """
         クラウド変数を変更する。
 
@@ -361,6 +361,64 @@ class _BaseCloud(_BaseEvent):
             "name":self.add_cloud_symbol(k) if add_cloud_symbol else k,
             "value":str(v)
         } for k,v in data],project_id=project_id,priority=priority)
+    
+    def create_var(self,variable:str,value:Any=0,*,project_id:str|int|None=None,add_cloud_symbol:bool=True,priority:int=10) -> asyncio.Future:
+        """
+        クラウド変数を作成する。
+
+        Args:
+            variable (str): 作成したい変数名
+            value (Any, optional): 変数の値
+            project_id (str | int | None, optional): 変更したい場合、送信先のプロジェクトID
+            add_cloud_symbol (bool, optional): 自動的に先頭に☁をつけるか
+            priority (int, optional): 送信の優先度。小さいほど優先され、初期値は10です。
+
+        Returns:
+            asyncio.Future: データの送信が完了するまで待つFuture
+        """
+        return self.send([{
+            "method":"create",
+            "name":self.add_cloud_symbol(variable) if add_cloud_symbol else variable,
+            "value":str(value)
+        }],project_id=project_id,priority=priority)
+    
+    def rename_var(self,old:str,new:str,*,project_id:str|int|None=None,add_cloud_symbol:bool=True,priority:int=10) -> asyncio.Future:
+        """
+        クラウド変数名を変更する。
+
+        Args:
+            old (str): 変更前の変数名
+            new (str): 変更後の変数名
+            project_id (str | int | None, optional): 変更したい場合、送信先のプロジェクトID
+            add_cloud_symbol (bool, optional): 自動的に先頭に☁をつけるか
+            priority (int, optional): 送信の優先度。小さいほど優先され、初期値は10です。
+
+        Returns:
+            asyncio.Future: データの送信が完了するまで待つFuture
+        """
+        return self.send([{
+            "method":"rename",
+            "name":self.add_cloud_symbol(old) if add_cloud_symbol else old,
+            "new_name":self.add_cloud_symbol(new) if add_cloud_symbol else new
+        }],project_id=project_id,priority=priority)
+    
+    def delete_var(self,name:str,*,project_id:str|int|None=None,add_cloud_symbol:bool=True,priority:int=10) -> asyncio.Future:
+        """
+        クラウド変数を削除する。
+
+        Args:
+            name (str): 削除したい変数
+            project_id (str | int | None, optional): 変更したい場合、送信先のプロジェクトID
+            add_cloud_symbol (bool, optional): 自動的に先頭に☁をつけるか
+            priority (int, optional): 送信の優先度。小さいほど優先され、初期値は10です。
+
+        Returns:
+            asyncio.Future: データの送信が完了するまで待つFuture
+        """
+        return self.send([{
+            "method":"delete",
+            "name":self.add_cloud_symbol(name) if add_cloud_symbol else name,
+        }],project_id=project_id,priority=priority)
 
     def clear_queue(self):
         """
