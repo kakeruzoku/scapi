@@ -460,6 +460,17 @@ class OcularFoundPayload(TypedDict):
     
 OcularPayload = OcularNotFoundPayload|OcularFoundPayload
 
+class OcularReactionUserPayload(TypedDict):
+    _id:str
+    post:str
+    user:str
+    emoji:str
+
+class OcularReactionPayload(TypedDict):
+    emoji:str
+    reactions:list[OcularReactionUserPayload]
+
+
 class BackpackPayload(TypedDict):
     type:str
     mime:str

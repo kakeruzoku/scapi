@@ -119,6 +119,8 @@
 
 .. autoclass:: scapi.ForumPost
 
+.. autoclass:: scapi.OcularReactions
+
 メインページ/統計
 -----------------
 

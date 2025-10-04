@@ -16,6 +16,9 @@ from ..utils.common import (
     split,
     Tag
 )
+from ..utils.types import (
+    OcularReactionPayload
+)
 
 from .base import _BaseSiteAPI
 from .user import User
@@ -343,6 +346,15 @@ class ForumPost(_BaseSiteAPI):
                 self.modified_by = User(_edited_by)
             self.modified_at = decode_datetime(split(str(_edit.get_text()),"(",")",True))
 
+    async def get_ocular_reactions(self) -> "OcularReactions":
+        """
+        この投稿にたいするOcularでのリアクションを取得する。
+
+        Returns:
+            OcularReactions:
+        """
+        return await OcularReactions._create_from_api(self.id,self.client_or_session)
+
 async def get_forum_categories(client_or_session:"HTTPClient|Session|None"=None) -> dict[str, list[ForumCategory]]:
     """
     フォーラムのカテゴリー一覧を取得する。
@@ -449,3 +461,51 @@ def load_last_post(self:_BaseSiteAPI,data:bs4.Tag) -> ForumPost:
     post.author = User(_post_author.get_text(strip=True).removeprefix("by "))
     post.created_at = decode_datetime(_post.get_text())
     return post
+
+class OcularReactions(_BaseSiteAPI):
+    """
+    投稿に対する Ocular のリアクション
+
+    Attributes:
+        id (int): 投稿のID
+        thumbs_up (list[str]): 👍をリアクションしたユーザー一覧
+        thumbs_down (list[str]): 👎をリアクションしたユーザー一覧
+        smile (list[str]): 😄をリアクションしたユーザー一覧
+        tada (list[str]): 🎉をリアクションしたユーザー一覧
+        confused (list[str]): 😕をリアクションしたユーザー一覧
+        heart (list[str]): ❤️をリアクションしたユーザー一覧
+        rocket (list[str]): 🚀をリアクションしたユーザー一覧
+        eyes (list[str]): 👀をリアクションしたユーザー一覧
+    """
+    def __repr__(self):
+        return f"<OcularReactions id:{self.id} 👍:{len(self.thumbs_up)} 👎:{len(self.thumbs_down)} 😄:{len(self.smile)} 🎉:{len(self.tada)} 😕:{len(self.confused)} ❤️:{len(self.heart)} 🚀:{len(self.rocket)} 👀:{len(self.eyes)}>"
+    
+    def __init__(self, id:int, client_or_session:HTTPClient|Session|None) -> None:
+        super().__init__(client_or_session)
+        self.id:Final[int] = id
+
+        self.thumbs_up:list[str] = []
+        self.thumbs_down:list[str] = []
+        self.smile:list[str] = []
+        self.tada:list[str] = []
+        self.confused:list[str] = []
+        self.heart:list[str] = []
+        self.rocket:list[str] = []
+        self.eyes:list[str] = []
+
+    async def update(self) -> None:
+        response = await self.client.get(f"https://my-ocular.jeffalo.net/api/reactions/{self.id}")
+        self._update_from_data(response.json())
+
+    def _update_from_data(self, data:list[OcularReactionPayload]):
+        def get_list(data:OcularReactionPayload) -> list[str]:
+            return [i.get("user") for i in data.get("reactions")]
+        
+        self.thumbs_up = get_list(data[0])
+        self.thumbs_down = get_list(data[1])
+        self.smile = get_list(data[2])
+        self.tada = get_list(data[3])
+        self.confused = get_list(data[4])
+        self.heart = get_list(data[5])
+        self.rocket = get_list(data[6])
+        self.eyes = get_list(data[7])

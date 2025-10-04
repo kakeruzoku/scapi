@@ -74,7 +74,8 @@ from .sites.forum import (
     get_forum_categories,
     get_forum_topic,
     get_forum_post,
-    get_forum_category
+    get_forum_category,
+    OcularReactions
 )
 
 from .sites.asset import (

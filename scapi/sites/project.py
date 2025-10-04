@@ -441,7 +441,7 @@ class Project(_BaseSiteAPI[int]):
         ):
             yield CloudActivity._create_from_log(_a,self.id,self.client_or_session)
     
-    def cloud_log_event(self,interval:float=0.1) -> CloudLogEvent:
+    def cloud_log_event(self,interval:float=1) -> CloudLogEvent:
         return CloudLogEvent(self.id,interval,self.client_or_session)
 
 

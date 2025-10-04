@@ -456,7 +456,7 @@ class ScratchCloud(_BaseCloud):
         ):
             yield CloudActivity._create_from_log(_a,self.project_id,self.session or self.client)
 
-    def log_event(self,*,interval:float=0.1) -> CloudLogEvent:
+    def log_event(self,*,interval:float=1) -> CloudLogEvent:
         """
         :class:`CloudLogEvent` を作成する。
 
@@ -478,7 +478,7 @@ class CloudLogEvent(_TemporalEvent[CloudActivity]):
         interval (float):
         lastest_time (datetime.datetime):
     """
-    def __init__(self,project_id:str|int,interval:float=0.1,client_or_session:"HTTPClient|Session|None"=None):
+    def __init__(self,project_id:str|int,interval:float=1,client_or_session:"HTTPClient|Session|None"=None):
         super().__init__(interval,self.get_logs,"datetime")
 
         self.client,self.session = get_client_and_session(client_or_session)
