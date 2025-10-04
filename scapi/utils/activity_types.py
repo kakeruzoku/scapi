@@ -159,7 +159,7 @@ class StudioBecomeManagerStudioActivity(_BaseActivity): #S
     type:Literal["becomeownerstudio"]
     recipient_username:str
 
-class StudioBecomeManagerFeedActivity(StudioBecomeManagerStudioActivity): #F
+class StudioBecomeManagerFeedActivity(StudioBecomeManagerStudioActivity): #FM
     gallery_id:int
     gallery_title:str
     recipient_id:int
@@ -169,12 +169,12 @@ class ProjectShareActivity(_BaseActivity): #F
     project_id:int
     title:str
 
-class ProjectLoveActivity(_BaseActivity): #F
+class ProjectLoveActivity(_BaseActivity): #FM
     type:Literal["loveproject"]
     project_id:int
     title:str
 
-class ProjectFavoriteActivity(_BaseActivity): #F
+class ProjectFavoriteActivity(_BaseActivity): #FM
     type:Literal["favoriteproject"]
     project_id:int
     project_title:str
@@ -184,12 +184,44 @@ class StudioFollowActivity(_BaseActivity): #F
     gallery_id:int
     title:str
 
-class ProjectRemixActivity(_BaseActivity): #F
+class ProjectRemixActivity(_BaseActivity): #FM
     type:Literal["remixproject"]
     project_id:int
     title:str
     parent_id:int
     parent_title:str
+
+class UserJoinActivity(_BaseActivity): #M
+    type:Literal["userjoin"]
+
+class UserFollowActiviy(_BaseActivity): #MF
+    type:Literal["followuser"]
+    followed_user_id:int
+    followed_username:str
+
+class UserCommentActivity(_BaseActivity): #M
+    type:Literal["addcomment"]
+    comment_type:Literal[0,1,2]
+    comment_fragment:str
+    comment_id:int
+    comment_obj_id:int
+    comment_obj_title:str
+    commentee_username:str|None
+
+class StudioInviteCuratorActivity(_BaseActivity): #M
+    type:Literal["curatorinvite"]
+    gallery_id:int
+    title:str
+
+class ForumPostActivity(_BaseActivity): #M
+    type:Literal["forumpost"]
+    topic_id:int
+    topic_title:str
+
+class StudioActivityAcitivity(_BaseActivity): #M
+    type:Literal["studioactivity"]
+    gallery_id:int
+    title:str
 
 
 StudioAnyActivity = Union[
@@ -209,5 +241,19 @@ FeedAnyActivity = Union[
     StudioBecomeManagerFeedActivity,
     StudioBecomeCuratorFeedActivity,
     StudioFollowActivity,
-    ProjectRemixActivity
+    ProjectRemixActivity,
+    UserFollowActiviy
+]
+
+MessageAnyActivity = Union[
+    UserJoinActivity,
+    ProjectFavoriteActivity,
+    ProjectLoveActivity,
+    ProjectRemixActivity,
+    UserFollowActiviy,
+    StudioInviteCuratorActivity,
+    StudioBecomeManagerFeedActivity,
+    UserCommentActivity,
+    ForumPostActivity,
+    StudioActivityAcitivity
 ]

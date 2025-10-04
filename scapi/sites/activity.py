@@ -17,7 +17,8 @@ from ..utils.activity_types import (
     _BaseActivity,
     ClassAnyActivity,
     StudioAnyActivity,
-    FeedAnyActivity
+    FeedAnyActivity,
+    MessageAnyActivity
 )
 from ..utils.common import (
     UNKNOWN,
@@ -38,13 +39,15 @@ if TYPE_CHECKING:
     from .project import Project
     from .studio import Studio
     from .comment import Comment
+    from .forum import ForumTopic
 
 def _import():
-    global User,Project,Studio,Comment
+    global User,Project,Studio,Comment,ForumTopic
     from .user import User
     from .project import Project
     from .studio import Studio
     from .comment import Comment
+    from .forum import ForumTopic
 
 class CloudActivityPayload(TypedDict):
     method:str
@@ -99,6 +102,11 @@ class ActivityAction(Enum):
             | |actor| : |User| プロジェクトを削除した人
             | |place| : |Studio| 削除されたスタジオ
             | |target| : |Project| 削除されたプロジェクト
+        StudioInviteCurator:
+            | ユーザーがスタジオのキュレーターの招待を受け取った
+            | |actor| : |User| キュレーターに招待した人
+            | |place| : |Studio| キュレーターに招待されたスタジオ
+            | |target| : |User| キュレーターに招待された人(つまり自分自身)
         StudioBecomeCurator:
             | ユーザーがスタジオのキュレーターの招待を承認した。
             | |actor| : |User| キュレーターになった人
@@ -125,6 +133,10 @@ class ActivityAction(Enum):
             | スタジオが更新された。
             | |actor| : |User| スタジオを更新した人(すなわち所有者)
             | |place| |target| : |Studio| 更新されたスタジオ
+        StudioActivity:
+            | スタジオで活動があった。
+            | |actor| : ``None`` API上の理由から明示的にNoneになります。
+            | |place| |target| : |Studio| 活動があったスタジオ
         ProjectLove:
             | プロジェクトに好きが押された
             | |actor| : |User| 好きを押した人
@@ -149,11 +161,18 @@ class ActivityAction(Enum):
         UserEditProfile:
             | ユーザーがプロフィール欄を編集した
             | |actor| |place| |target| : |User| 編集したユーザー
+        UserJoin:
+            | ユーザーがScratchに参加した
+            | |actor| |place| |target| : |User| 参加したユーザー
         Comment:
             | コメントをした
             | |actor| : |User| コメントをした人
             | |place| : |Project| |Studio| |User| コメントされた場所
             | |target| : |Comment| そのコメント
+        ForumPost:
+            | フォーラムで新規投稿があった
+            | |actor| : |User| 投稿した人
+            | |place| |target| : |ForumTopic| 投稿された場所
 
     """
     Unknown="unknown"
@@ -162,11 +181,13 @@ class ActivityAction(Enum):
     StudioFollow="studio_follow"
     StudioAddProject="studio_add_project"
     StudioRemoveProject="studio_remove_project"
+    StudioInviteCurator="studio_invite_curetor"
     StudioBecomeCurator="studio_become_curetor"
     StudioBecomeManager="studio_become_manager"
     StudioBecomeHost="studio_become_host"
     StudioRemoveCurator="studio_remove_curator"
     StudioUpdate="studio_update"
+    StudioActivity="studio_activity"
 
     #project
     ProjectLove="project_love"
@@ -176,10 +197,12 @@ class ActivityAction(Enum):
 
     #user
     UserFollow="user_follow"
-    UserEditProfile="UserEditProfile"
+    UserEditProfile="user_edit_profile"
+    UserJoin="user_join"
 
     #other
     Comment="comment"
+    ForumPost="forum_post"
 
 class Activity:
     """
@@ -211,8 +234,8 @@ class Activity:
             *,
             id:int|None=None,
             actor:"User|None"=None,
-            target:"Comment|Studio|Project|User|None"=None,
-            place:"Studio|Project|User|None"=None,
+            target:"Comment|Studio|Project|User|ForumTopic|None"=None,
+            place:"Studio|Project|User|ForumTopic|None"=None,
             datetime:"str|None"=None,
             other:Any=None
         ):
@@ -221,8 +244,8 @@ class Activity:
             
         self.id:int|None = id
         self.actor:"User|None" = actor
-        self.target:"Comment|Studio|Project|User|None" = target
-        self.place:"Studio|Project|User|None" = place
+        self.target:"Comment|Studio|Project|User|ForumTopic|None" = target
+        self.place:"Studio|Project|User|ForumTopic|None" = place
         self._created_at:"str|None" = datetime
         self.other:Any = other
 
@@ -372,9 +395,71 @@ class Activity:
         return activity
 
     @classmethod
-    def _create_from_message(cls,data,session:"Session") -> Self:
+    def _create_from_message(cls,data:MessageAnyActivity,session:"Session") -> Self:
         activity = cls(ActivityType.Message)
         activity._setup_from_json(data,session)
+        activity.id = int(data["id"]) #int
+        match data["type"]:
+            case "userjoin":
+                activity.action = ActivityAction.UserJoin
+                activity.target = activity.place = activity.actor = session.user
+            case "favoriteproject":
+                activity.action = ActivityAction.ProjectLove
+                activity.target = activity.place = Project(data["project_id"],session)
+                activity.target.title = data["project_title"]
+                activity.target.author = session.user
+            case "loveproject":
+                activity.action = ActivityAction.ProjectLove
+                activity.target = activity.place = Project(data["project_id"],session)
+                activity.target.title = data["title"]
+                activity.target.author = session.user
+            case "remixproject":
+                activity.action = ActivityAction.ProjectRemix
+                activity.target = Project(data["parent_id"],session)
+                activity.target.title = data["title"]
+                activity.target.author = activity.actor or UNKNOWN
+                activity.place = Project(data["project_id"],session)
+                activity.place.title = data["parent_title"]
+                activity.place.author = session.user
+            case "followuser":
+                activity.action = ActivityAction.UserFollow
+                activity.target = activity.place = User(data["followed_username"],session)
+                activity.target.id = data["followed_user_id"]
+            case "curatorinvite":
+                activity.action = ActivityAction.StudioInviteCurator
+                activity.target = session.user
+                activity.place = Studio(data["gallery_id"],session)
+                activity.place.title = data["title"]
+            case "becomeownerstudio":
+                activity.action = ActivityAction.StudioBecomeManager
+                activity.target = session.user
+                activity.place = Studio(data["gallery_id"],session)
+                activity.place.title = data["gallery_title"]
+            case "addcomment":
+                activity.action = ActivityAction.Comment
+                match data["comment_type"]:
+                    case 0:
+                        activity.place = Project(data["comment_obj_id"],session)
+                        activity.place.title = data["comment_obj_title"]
+                    case 1:
+                        activity.place = User(data["comment_obj_title"],session)
+                        activity.place.id = data["comment_obj_id"]
+                    case 2:
+                        activity.place = Studio(data["comment_obj_id"],session)
+                        activity.place.title = data["comment_obj_title"]
+                activity.target = Comment(data["comment_id"],session,place=activity.place)
+                activity.target.content = data["comment_fragment"]
+                activity.other = data["commentee_username"]
+            case "forumpost":
+                activity.action = ActivityAction.ForumPost
+                activity.target = activity.place = ForumTopic(data["topic_id"],session)
+                activity.target.name = data["topic_title"]
+            case "studioactivity":
+                activity.action = ActivityAction.StudioActivity
+                activity.actor = None
+                activity.target = activity.place = Studio(data["gallery_id"],session)
+                activity.target.title = data["title"]
+
         return activity
 
     @classmethod
@@ -415,8 +500,13 @@ class Activity:
                 activity.action = ActivityAction.ProjectRemix
                 activity.target = Project(data["parent_id"],session)
                 activity.target.title = data["title"]
+                activity.target.author = activity.actor or UNKNOWN
                 activity.place = Project(data["project_id"],session)
                 activity.place.title = data["parent_title"]
+            case "followuser":
+                activity.action = ActivityAction.UserFollow
+                activity.target = activity.place = User(data["followed_username"],session)
+                activity.target.id = data["followed_user_id"]
         return activity
 
 class CloudActivity(_BaseSiteAPI):

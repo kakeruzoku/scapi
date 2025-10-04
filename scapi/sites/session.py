@@ -464,7 +464,27 @@ class Session(_BaseSiteAPI[str]):
         ):
             yield Activity._create_from_feed(_a,self)
     
+    async def get_messages(self,limit:int|None,offset:int|None=None) -> AsyncGenerator[Activity]:
+        """
+        メッセージを取得する。
+
+        Args:
+            limit (int|None, optional): 取得するメッセージの数。初期値は40です。
+            offset (int|None, optional): 取得するメッセージの開始位置。初期値は0です。
+
+        Yields:
+            Activity: 取得したメッセージ
+        """
+        async for _a in api_iterative(
+            self.client,f"https://api.scratch.mit.edu/users/{self.username}/messages",
+            limit=limit,offset=offset
+        ):
+            yield Activity._create_from_message(_a,self)
+
     async def clear_message(self):
+        """
+        メッセージをすべて既読する。
+        """
         await self.client.post("https://scratch.mit.edu/site-api/messages/messages-clear/")
 
     async def get_message_count(self) -> int:
