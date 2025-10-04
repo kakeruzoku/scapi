@@ -29,7 +29,7 @@ from ..utils.common import (
 from ..utils.error import ClientError,NotFound
 from ..utils.file import File,_read_file
 
-from ..event.comment import CommentEvent
+from ..event.temporal import CommentEvent
 
 from .base import _BaseSiteAPI
 

@@ -7,6 +7,7 @@ from typing import TYPE_CHECKING, Any, AsyncGenerator, Callable, Coroutine, Iter
 import aiohttp
 import json
 from .base import _BaseEvent
+from .temporal import _TemporalEvent
 from ..utils.client import HTTPClient
 from ..sites.activity import CloudActivity
 from ..utils.types import (
@@ -467,7 +468,7 @@ class ScratchCloud(_BaseCloud):
         """
         return CloudLogEvent(self.project_id,interval,self.session)
 
-class CloudLogEvent(_BaseEvent):
+class CloudLogEvent(_TemporalEvent[CloudActivity]):
     """
     クラウドログイベント
 
@@ -475,44 +476,25 @@ class CloudLogEvent(_BaseEvent):
         client (HTTPClient):
         Session (Session|None):
         interval (float):
-        lastest_update_time (datetime.datetime):
+        lastest_time (datetime.datetime):
     """
     def __init__(self,project_id:str|int,interval:float=0.1,client_or_session:"HTTPClient|Session|None"=None):
-        super().__init__()
+        super().__init__(interval,self.get_logs,"datetime")
 
         self.client,self.session = get_client_and_session(client_or_session)
         self.project_id = str(project_id)
-        self.interval = interval
 
-        self.lastest_update_time:datetime.datetime = datetime.datetime.now(tz=datetime.timezone.utc)
-
-    async def _event_monitoring(self, event: asyncio.Event):
-        while True:
-            try:
-                logs = [i async for i in self.get_logs()]
-                logs.reverse()
-                lastest_update_time = self.lastest_update_time
-                for log in logs:
-                    created_at = log.datetime
-                    if created_at and created_at > self.lastest_update_time:
-                        self._call_event(self.on_change,log)
-                        match log.method:
-                            case "set":
-                                self._call_event(self.on_set,log)
-                            case "create":
-                                self._call_event(self.on_create,log)
-                            case "rename":
-                                self._call_event(self.on_rename,log)
-                            case "delete":
-                                self._call_event(self.on_delete,log)
-                        if created_at > lastest_update_time:
-                            lastest_update_time = created_at
-                if lastest_update_time > self.lastest_update_time:
-                    self.lastest_update_time = lastest_update_time
-            except Exception as e:
-                self._call_event(self.on_error,e)
-            await asyncio.sleep(self.interval)
-            await event.wait()
+    def _make_event(self, obj:CloudActivity):
+        self._call_event(self.on_change,obj)
+        match obj.method:
+            case "set":
+                self._call_event(self.on_set,obj)
+            case "create":
+                self._call_event(self.on_create,obj)
+            case "rename":
+                self._call_event(self.on_rename,obj)
+            case "delete":
+                self._call_event(self.on_delete,obj)
 
     async def on_change(self,activity:CloudActivity):
         """

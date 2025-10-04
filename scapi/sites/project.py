@@ -44,8 +44,8 @@ from ..utils.file import (
     File,
     _file
 )
-from ..event.cloud import ScratchCloud
-from ..event.comment import CommentEvent
+from ..event.cloud import ScratchCloud,CloudLogEvent
+from ..event.temporal import CommentEvent
 
 from .base import _BaseSiteAPI
 from .comment import (
@@ -440,6 +440,9 @@ class Project(_BaseSiteAPI[int]):
             limit=limit,offset=offset,max_limit=100,params={"projectid":self.id},
         ):
             yield CloudActivity._create_from_log(_a,self.id,self.client_or_session)
+    
+    def cloud_log_event(self,interval:float=0.1) -> CloudLogEvent:
+        return CloudLogEvent(self.id,interval,self.client_or_session)
 
 
     async def edit_project(

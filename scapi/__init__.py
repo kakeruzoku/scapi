@@ -86,7 +86,10 @@ from .sites.base import (
     _BaseSiteAPI
 )
 
-from .event.comment import CommentEvent
+from .event.temporal import (
+    _TemporalEvent,
+    CommentEvent
+)
 
 from .event.cloud import (
     _BaseCloud,

@@ -9,6 +9,8 @@
 
 .. autoclass:: scapi._BaseEvent
 
+.. autoclass:: scapi._TemporalEvent
+
 コメントイベント
 ----------------
 

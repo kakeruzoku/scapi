@@ -33,7 +33,7 @@ from ..utils.file import (
     _read_file
 )
 
-from ..event.comment import CommentEvent
+from ..event.temporal import CommentEvent
 
 from .base import _BaseSiteAPI
 from .comment import (
