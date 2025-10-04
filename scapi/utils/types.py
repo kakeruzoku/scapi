@@ -432,6 +432,40 @@ class TranslateSupportedLanguagePayload(TypedDict):
 class TranslateSupportedPayload(TypedDict):
     result:list[TranslateSupportedLanguagePayload]
 
+class TotalSiteStatusPayload(TypedDict):
+    PROJECT_COUNT:int
+    USER_COUNT:int
+    STUDIO_COMMENT_COUNT:int
+    PROFILE_COMMENT_COUNT:int
+    STUDIO_COUNT:int
+    COMMENT_COUNT:int
+    PROJECT_COMMENT_COUNT:int
+    _TS:float
+
+class MonthlySiteTrafficPayload(TypedDict):
+    pageviews:int
+    users:int
+    sessions:int
+    _TS:float
+
+class MonthlyActivityGraphValuePayload(TypedDict):
+    x:int
+    y:int
+
+class MonthlyActivityGraphPayload(TypedDict):
+    values:list[MonthlyActivityGraphValuePayload]
+    key:str
+    color:NotRequired[str]
+
+class MonthlyActivityPayload(TypedDict):
+    comment_data:list[MonthlyActivityGraphPayload]
+    _TS:float
+    activity_data:list[MonthlyActivityGraphPayload]
+    active_user_data:list[MonthlyActivityGraphPayload]
+    project_data:list[MonthlyActivityGraphPayload]
+    age_distribution_data:list[MonthlyActivityGraphPayload]
+    country_distribution:dict[str,int]
+
 class WSCloudActivityPayload(TypedDict):
     method:Literal["set"]
     name:str

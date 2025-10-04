@@ -14,7 +14,13 @@ from .sites.other import (
     check_email,
     translation,
     get_supported_translation_language,
-    tts
+    tts,
+    TotalSiteStats,
+    get_total_site_stats,
+    MonthlySiteTraffic,
+    get_monthly_site_traffic,
+    MonthlyActivity,
+    get_monthly_activity,
 )
 
 from .sites.mainpage import (

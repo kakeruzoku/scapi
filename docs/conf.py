@@ -61,7 +61,7 @@ from enum import Enum
 
 def skip_enum_members(app, what, name, obj, skip, options):
     # Enum クラスのメンバーをスキップする
-    if isinstance(obj, Enum):
+    if isinstance(obj, Enum) and obj.__doc__ is not None:
         return True  # 出力しない
     return None  # それ以外はデフォルトの動作に任せる
 

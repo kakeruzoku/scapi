@@ -1,16 +1,22 @@
 from __future__ import annotations
 
-from enum import Enum
-from typing import TYPE_CHECKING, Literal
+from dataclasses import dataclass
+from enum import Enum, StrEnum
+from typing import TYPE_CHECKING, Literal, TypedDict
 
 from ..utils.types import (
     CheckAnyPayload,
     TranslatePayload,
-    TranslateSupportedPayload
+    TranslateSupportedPayload,
+    TotalSiteStatusPayload,
+    MonthlySiteTrafficPayload,
+    MonthlyActivityGraphPayload,
+    MonthlyActivityPayload
 )
 from ..utils.common import (
     UNKNOWN,
     MAYBE_UNKNOWN,
+    dt_from_timestamp
 )
 
 if TYPE_CHECKING:
@@ -145,3 +151,170 @@ async def tts(client:"HTTPClient",language:str,type:Literal["male","female"],tex
         }
     )
     return response.data
+
+@dataclass
+class TotalSiteStats:
+    project_count:int
+    user_count:int
+    studio_comment_count:int
+    profile_comment_count:int
+    studio_count:int
+    comment_count:int
+    project_comment_count:int
+    _timestamp:float
+
+async def get_total_site_stats(client:HTTPClient) -> TotalSiteStats:
+    """
+    全体の統計情報を取得する
+
+    Args:
+        client (HTTPClient): 通信に使用するHTTPClient
+
+    Returns:
+        TotalSiteStats:
+    """
+    response = await client.get("https://scratch.mit.edu/statistics/data/daily/")
+    data:TotalSiteStatusPayload = response.json()
+    return TotalSiteStats(
+        project_count=data.get("PROJECT_COUNT"),
+        user_count=data.get("USER_COUNT"),
+        studio_comment_count=data.get("STUDIO_COMMENT_COUNT"),
+        profile_comment_count=data.get("PROFILE_COMMENT_COUNT"),
+        studio_count=data.get("STUDIO_COUNT"),
+        comment_count=data.get("COMMENT_COUNT"),
+        project_comment_count=data.get("PROJECT_COMMENT_COUNT"),
+        _timestamp=data.get("_TS")
+    )
+
+@dataclass
+class MonthlySiteTraffic:
+    pageviews:int
+    users:int
+    sessions:int
+    _timestamp:float
+
+async def get_monthly_site_traffic(client:HTTPClient) -> MonthlySiteTraffic:
+    """
+    月のアクティビティ数を取得する。
+
+    Args:
+        client (HTTPClient): 通信に使用するHTTPClient
+
+    Returns:
+        MonthlySiteTraffic:
+    """
+    response = await client.get("https://scratch.mit.edu/statistics/data/monthly-ga/")
+    data:MonthlySiteTrafficPayload = response.json()
+    return MonthlySiteTraffic(
+        pageviews=data.get("pageviews"),
+        users=data.get("users"),
+        sessions=data.get("sessions"),
+        _timestamp=data.get("_TS")
+    )
+
+
+
+GraphData = list[tuple[int, int]]
+
+@dataclass
+class CommentData:
+    """コメント統計データ"""
+    project: GraphData
+    studio: GraphData
+    profile: GraphData
+
+@dataclass
+class ActivityData:
+    """アクティビティ統計データ"""
+    new_projects: GraphData
+    new_users: GraphData
+    new_comments: GraphData
+
+@dataclass
+class ActiveUserData:
+    """アクティブユーザー統計データ"""
+    project_creators: GraphData
+    comment_creators: GraphData
+
+@dataclass
+class ProjectData:
+    """プロジェクト統計データ"""
+    new_projects: GraphData
+    remix_projects: GraphData
+
+@dataclass
+class AgeDistributionData:
+    """年齢分布データ"""
+    registration_age: GraphData
+
+@dataclass
+class MonthlyActivity:
+    """
+    月間アクティビティ統計情報を表す
+    """
+    _timestamp: float
+    comment_data: CommentData
+    activity_data: ActivityData
+    active_user_data: ActiveUserData
+    project_data: ProjectData
+    age_distribution_data: AgeDistributionData
+    country_distribution: dict[str,int]
+
+def _parse_graph_data(raw_data: list[MonthlyActivityGraphPayload], index: int) -> GraphData:
+    if index < len(raw_data) and "values" in raw_data[index]:
+        return [(d["x"], d["y"]) for d in raw_data[index]["values"]]
+    return []
+
+async def get_monthly_activity(client: HTTPClient) -> MonthlyActivity:
+    """
+    月間アクティビティ統計情報を取得する。
+
+    Args:
+        client (HTTPClient): 通信に使用するHTTPClient
+
+    Returns:
+        MonthlyActivity:
+    """
+    response = await client.get("https://scratch.mit.edu/statistics/data/monthly/")
+    data:MonthlyActivityPayload = response.json()
+
+    raw_comment_data = data.get("comment_data", [])
+    comment_data = CommentData(
+        project=_parse_graph_data(raw_comment_data, 0),
+        studio=_parse_graph_data(raw_comment_data, 1),
+        profile=_parse_graph_data(raw_comment_data, 2),
+    )
+
+    raw_activity_data = data.get("activity_data", [])
+    activity_data = ActivityData(
+        new_projects=_parse_graph_data(raw_activity_data, 0),
+        new_users=_parse_graph_data(raw_activity_data, 1),
+        new_comments=_parse_graph_data(raw_activity_data, 2),
+    )
+
+    raw_active_user_data = data.get("active_user_data", [])
+    active_user_data = ActiveUserData(
+        project_creators=_parse_graph_data(raw_active_user_data, 0),
+        comment_creators=_parse_graph_data(raw_active_user_data, 1),
+    )
+
+    raw_project_data = data.get("project_data", [])
+    project_data = ProjectData(
+        new_projects=_parse_graph_data(raw_project_data, 0),
+        remix_projects=_parse_graph_data(raw_project_data, 1),
+    )
+
+    raw_age_distribution_data = data.get("age_distribution_data", [])
+    age_distribution_data = AgeDistributionData(
+        registration_age=_parse_graph_data(raw_age_distribution_data, 0)
+    )
+
+    return MonthlyActivity(
+        _timestamp=data.get("_TS", 0.0),
+        comment_data=comment_data,
+        activity_data=activity_data,
+        active_user_data=active_user_data,
+        project_data=project_data,
+        country_distribution=data.get("country_distribution", {}),
+        age_distribution_data=age_distribution_data,
+    )

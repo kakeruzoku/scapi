@@ -132,6 +132,18 @@
 
 .. autofunction:: scapi.get_community_featured
 
+.. autoclass:: scapi.TotalSiteStats
+
+.. autofunction:: scapi.get_total_site_stats
+
+.. autoclass:: scapi.MonthlySiteTraffic
+
+.. autofunction:: scapi.get_monthly_site_traffic
+
+.. autoclass:: scapi.MonthlyActivity
+
+.. autofunction:: scapi.get_monthly_activity
+
 その他
 ------
 
