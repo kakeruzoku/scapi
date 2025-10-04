@@ -340,6 +340,27 @@ class Session(_BaseSiteAPI[str]):
         })
         await self.client.post("https://scratch.mit.edu/classes/student_update_registration/",data=data)
     
+    async def delete_account(self,password:str,delete_project:bool):
+        """
+        アカウントを削除してログアウトする。
+        2日間ログインがなければ、アカウントにログインできなくなります。
+
+        Args:
+            password (str): アカウントのパスワード
+            delete_project (bool): プロジェクトも削除するか
+        """
+        response = await self.client.post(
+            "https://scratch.mit.edu/accounts/settings/delete_account/",
+            data=aiohttp.FormData({
+                "csrfmiddlewaretoken":"a",
+                "password":password,
+                "delete_state":"delbyusrwproj" if delete_project else "delbyusr"
+            })
+        )
+        data:AnySuccessPayload = response.json()
+        if not data.get("success"):
+            raise InvalidData(response,data.get("errors"))
+
     async def create_project(
             self,title:str|None=None,
             project_data:File|dict|str|bytes|None=None,
