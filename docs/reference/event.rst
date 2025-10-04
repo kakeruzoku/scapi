@@ -18,3 +18,8 @@
     :members:
 
     .. automethod:: __init__
+
+.. autoclass:: scapi.MessageEvent
+    :members:
+
+    .. automethod:: __init__

@@ -2,6 +2,8 @@ from abc import abstractmethod
 import asyncio
 import datetime
 from typing import TYPE_CHECKING, AsyncGenerator, Callable, Generic, NoReturn,TypeVar
+
+from scapi.sites.activity import Activity
 from .base import _BaseEvent
 from ..utils.common import UNKNOWN_TYPE
 
@@ -11,6 +13,7 @@ if TYPE_CHECKING:
     from ..sites.project import Project
     from ..sites.comment import Comment
     from ..sites.activity import Activity
+    from ..sites.session import Session
 
 _T = TypeVar("_T")
 
@@ -65,7 +68,6 @@ class CommentEvent(_TemporalEvent["Comment"]):
 
     Attributes:
         place (User|Project|Studio): 監視する場所
-        interval (int): コメントの更新間隔
         is_old (bool): 古いAPIから取得するか
     """
     def __init__(self,place:"User|Project|Studio",interval:int=30,is_old:bool=False):
@@ -78,6 +80,8 @@ class CommentEvent(_TemporalEvent["Comment"]):
         """
         if is_old:
             super().__init__(interval,place.get_comments_from_old,"created_at")
+        else:
+            super().__init__(interval,place.get_comments,"created_at")
         
         self.place = place
         self.is_old = is_old
@@ -128,3 +132,25 @@ class CommentEvent(_TemporalEvent["Comment"]):
         self.is_old = self._is_old
     '''
 
+class MessageEvent(_TemporalEvent["Activity"]):
+    """
+    メッセージイベントクラス
+
+    Attributes:
+        session (Session): メッセージを監視しているアカウント
+    """
+    def __init__(self,session:"Session",interval:float=30):
+        super().__init__(interval,session.get_messages,"created_at")
+        self.session = session
+
+    def _make_event(self, obj:Activity):
+        self._call_event(self.on_message,obj)
+
+    async def on_message(self,message:Activity):
+        """
+        [イベント] メッセージを受信した。
+
+        Args:
+            message (Activity):
+        """
+        pass

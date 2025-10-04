@@ -88,7 +88,8 @@ from .sites.base import (
 
 from .event.temporal import (
     _TemporalEvent,
-    CommentEvent
+    CommentEvent,
+    MessageEvent
 )
 
 from .event.cloud import (

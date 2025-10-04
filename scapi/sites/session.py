@@ -51,6 +51,7 @@ from ..utils.error import (
 from ..utils.config import _config
 from ..utils.file import File,_file,_read_file
 from ..event.cloud import ScratchCloud
+from ..event.temporal import MessageEvent
 from .base import _BaseSiteAPI
 
 from .classroom import Classroom,_get_class_from_token
@@ -448,7 +449,7 @@ class Session(_BaseSiteAPI[str]):
         classroom.status = status or ""
         return classroom
     
-    async def get_feed(self,limit:int|None,offset:int|None=None) -> AsyncGenerator[Activity]:
+    async def get_feed(self,limit:int|None=None,offset:int|None=None) -> AsyncGenerator[Activity]:
         """
         最新の情報欄を取得する。
 
@@ -465,7 +466,7 @@ class Session(_BaseSiteAPI[str]):
         ):
             yield Activity._create_from_feed(_a,self)
     
-    async def get_messages(self,limit:int|None,offset:int|None=None) -> AsyncGenerator[Activity]:
+    async def get_messages(self,limit:int|None=None,offset:int|None=None) -> AsyncGenerator[Activity]:
         """
         メッセージを取得する。
 
@@ -481,6 +482,18 @@ class Session(_BaseSiteAPI[str]):
             limit=limit,offset=offset
         ):
             yield Activity._create_from_message(_a,self)
+
+    def message_event(self,interval:float=30) -> MessageEvent:
+        """
+        メッセージイベントを作成する。
+
+        Args:
+            interval (float, optional): 更新間隔
+
+        Returns:
+            MessageEvent:
+        """
+        return MessageEvent(self,interval)
 
     async def clear_message(self):
         """
