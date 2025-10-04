@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+import hashlib
 from typing import AsyncGenerator, Final, Literal
 import zlib
 import base64
@@ -48,7 +49,7 @@ from ..utils.error import (
     LoginFailure
 )
 from ..utils.config import _config
-from ..utils.file import File,_file
+from ..utils.file import File,_file,_read_file
 from ..event.cloud import ScratchCloud
 from .base import _BaseSiteAPI
 
@@ -733,6 +734,23 @@ class Session(_BaseSiteAPI[str]):
             limit=limit,offset=offset
         ):
             yield Backpack._create_from_data(_b["id"],_b,self)
+
+    async def upload_asset(self,data:File|bytes,file_ext:str) -> str:
+        """
+        アセットサーバーにファイルをアップロードする。
+
+        Args:
+            data (File | bytes): ファイルの本体
+            file_ext (str): 使用する拡張子 (svg,wav,pngなど)
+
+        Returns:
+            str: アセットID
+        """
+        async with _read_file(data) as f:
+            asset_id = hashlib.md5(f).hexdigest()
+            await self.client.post(f"https://assets.scratch.mit.edu/{asset_id}.{file_ext}",data=f)
+        return f"{asset_id}.{file_ext}"
+
 
     async def get_project(self,project_id:int) -> "Project":
         """
