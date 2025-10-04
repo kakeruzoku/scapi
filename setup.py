@@ -7,7 +7,7 @@ with open('scapi/utils/common.py', 'r', encoding='utf-8') as fp:
     init = fp.read()
 
 with open('requirements.txt', 'r', encoding='utf-8') as fp:
-    requirements = fp.readlines()
+    requirements = fp.read().splitlines()
 
 var = init.replace(" ","").split("__version__=\"")[1].split("\"")[0]
 
