@@ -27,7 +27,8 @@ from ..utils.common import (
     temporary_httpclient,
     page_api_iterative,
     page_html_iterative,
-    split
+    split,
+    get_any_count
 )
 from ..utils.client import HTTPClient
 from ..utils.file import File,_read_file
@@ -229,6 +230,15 @@ class Classroom(_BaseSiteAPI[int]):
         studio.title = data.get("gallery_title")
         return studio
     
+    async def get_class_studio_count(self) -> int:
+        """
+        クラススタジオの数を取得する
+
+        Returns:
+            int:
+        """
+        return await get_any_count(self.client,f"https://scratch.mit.edu/classes/{self.id}/studios/","Class Studios (")
+    
     async def get_class_studios(self,start_page:int|None=None,end_page:int|None=None,*,use_api:bool=False) -> AsyncGenerator[Studio]:
         """
         クラスのスタジオを取得する。
@@ -254,6 +264,15 @@ class Classroom(_BaseSiteAPI[int]):
                 start_page,end_page,list_class="gallery thumb item"
             ):
                 yield Studio._create_from_html(_t,self.client_or_session,host=self.educator)
+
+    async def get_student_count(self) -> int:
+        """
+        生徒の数を取得する
+
+        Returns:
+            int:
+        """
+        return await get_any_count(self.client,f"https://scratch.mit.edu/classes/{self.id}/students/","Students (")
 
     async def get_students(self,start_page:int|None=None,end_page:int|None=None,*,use_api:bool=False) -> AsyncGenerator[User]:
         """

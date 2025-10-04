@@ -75,7 +75,13 @@ def split(text:str,before:str,after:str,forced:bool=False) -> str|None:
     except IndexError:
         if forced:
             raise ValueError() from None
-    
+        
+async def get_any_count(client:HTTPClient,url:str,before:str,after:str=")") -> int:
+    response = await client.get(url)
+    soup = bs4.BeautifulSoup(response.text, "html.parser")
+    _head:Tag = soup.find("div",{"class":"box-head"})
+    return int(split(str(_head.find("h2")),before,after,True))
+
 def try_int(text:str) -> int | None:
     try:
         return int(text)

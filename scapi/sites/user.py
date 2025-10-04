@@ -25,7 +25,8 @@ from ..utils.common import (
     dt_from_isoformat,
     _AwaitableContextManager,
     Tag,
-    split
+    split,
+    get_any_count
 )
 from ..utils.error import ClientError,NotFound
 from ..utils.file import File,_read_file
@@ -258,6 +259,15 @@ class User(_BaseSiteAPI[str]):
         response = await self.client.get(f"https://scratch.mit.edu/site-api/users/all/{self.username}/")
         return ProjectFeatured(response.json(),self)
     
+    async def get_follower_count(self) -> int:
+        """
+        フォロワーの数を取得する
+
+        Returns:
+            int:
+        """
+        return await get_any_count(self.client,f"https://scratch.mit.edu/users/{self.username}/followers/","Followers (")
+
     async def get_followers(self,limit:int|None=None,offset:int|None=None) -> AsyncGenerator["User", None]:
         """
         ユーザーのフォロワーを取得する。
@@ -274,6 +284,15 @@ class User(_BaseSiteAPI[str]):
             limit=limit,offset=offset
         ):
             yield User._create_from_data(_u["username"],_u,self.client_or_session)
+
+    async def get_following_count(self) -> int:
+        """
+        フォロー中の数を取得する
+
+        Returns:
+            int:
+        """
+        return await get_any_count(self.client,f"https://scratch.mit.edu/users/{self.username}/following/","Following (")
 
     async def get_followings(self,limit:int|None=None,offset:int|None=None) -> AsyncGenerator["User", None]:
         """
@@ -292,6 +311,15 @@ class User(_BaseSiteAPI[str]):
         ):
             yield User._create_from_data(_u["username"],_u,self.client_or_session)
 
+    async def get_project_count(self) -> int:
+        """
+        共有中のプロジェクトの数を取得する
+
+        Returns:
+            int:
+        """
+        return await get_any_count(self.client,f"https://scratch.mit.edu/users/{self.username}/projects/","Shared Projects (")
+
     async def get_projects(self,limit:int|None=None,offset:int|None=None) -> AsyncGenerator["Project", None]:
         """
         ユーザーが共有しているプロジェクトを取得する。
@@ -308,6 +336,15 @@ class User(_BaseSiteAPI[str]):
             limit=limit,offset=offset
         ):
             yield Project._create_from_data(_p["id"],_p,self.client_or_session)
+
+    async def get_favorite_count(self) -> int:
+        """
+        お気に入りのプロジェクトの数を取得する
+
+        Returns:
+            int:
+        """
+        return await get_any_count(self.client,f"https://scratch.mit.edu/users/{self.username}/favorites/","Favorites (")
 
     async def get_favorites(self,limit:int|None=None,offset:int|None=None) -> AsyncGenerator["Project", None]:
         """
@@ -326,6 +363,15 @@ class User(_BaseSiteAPI[str]):
         ):
             yield Project._create_from_data(_p["id"],_p,self.client_or_session)
 
+    async def get_studio_count(self) -> int:
+        """
+        ユーザーが参加しているスタジオの数を取得する
+
+        Returns:
+            int:
+        """
+        return await get_any_count(self.client,f"https://scratch.mit.edu/users/{self.username}/studios/","Studios I Curate (")
+
     async def get_studios(self,limit:int|None=None,offset:int|None=None) -> AsyncGenerator["Studio", None]:
         """
         ユーザーが参加しているスタジオを取得する。
@@ -342,6 +388,15 @@ class User(_BaseSiteAPI[str]):
             limit=limit,offset=offset
         ):
             yield Studio._create_from_data(_s["id"],_s,self.client_or_session)
+
+    async def get_love_count(self) -> int:
+        """
+        好きなプロジェクトの数を取得する
+
+        Returns:
+            int:
+        """
+        return await get_any_count(self.client,f"https://scratch.mit.edu/projects/all/{self.username}/loves/","(")
 
     async def get_loves(self,start_page:int|None=None,end_page:int|None=None) -> AsyncGenerator["Project",None]:
         """
