@@ -17,6 +17,8 @@
 
 .. autofunction:: scapi.session_login
 
+.. autofunction:: scapi.send_password_reset_email
+
 .. autoclass:: scapi.Session
 
 .. autoclass:: scapi.SessionStatus

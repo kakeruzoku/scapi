@@ -1,7 +1,7 @@
 from __future__ import annotations
 
 import hashlib
-from typing import AsyncGenerator, Final, Literal
+from typing import AsyncGenerator, Final, Literal, overload
 import zlib
 import base64
 import json
@@ -1072,3 +1072,34 @@ def login(username:str,password:str,load_status:bool=True,*,recaptcha_code:str|N
         _AwaitableContextManager[Session]: await か async with で取得できるセッション
     """
     return _AwaitableContextManager(_login(username,password,load_status,recaptcha_code=recaptcha_code))
+
+@overload
+def send_password_reset_email(client:HTTPClient,*,username:str):
+    pass
+
+@overload
+def send_password_reset_email(client:HTTPClient,*,email:str):
+    pass
+
+async def send_password_reset_email(client:HTTPClient,*,username:str|None=None,email:str|None=None):
+    """
+    パスワードリセットメールを送信する。
+    ユーザー名とメールアドレスはどちらかのみ指定できます。
+
+    Args:
+        client (HTTPClient): 通信に使用するHTTPClient
+        username (str | None, optional): ユーザー名
+        email (str | None, optional): メールアドレス
+    """
+    data = aiohttp.FormData({"csrfmiddlewaretoken":"a"})
+    if username is not None:
+        if email is not None:
+            raise ValueError()
+        data.add_field("username",username)
+    else:
+        if email is None:
+            raise ValueError()
+        data.add_field("email",email)
+    response = await client.post("https://scratch.mit.edu/accounts/password_reset/",data=data)
+    if response._response.url == "https://scratch.mit.edu/accounts/password_reset/":
+        raise InvalidData(response)

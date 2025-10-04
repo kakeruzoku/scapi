@@ -2,7 +2,8 @@ from .sites.session import (
     Session,
     SessionStatus,
     session_login,
-    login
+    login,
+    send_password_reset_email
 )
 
 from .sites.other import (
