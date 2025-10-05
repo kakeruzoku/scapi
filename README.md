@@ -15,5 +15,8 @@
 # インストール
 `pip install -U scapi`
 
+3.0.0は現在開発中です。 wikiページは: https://scapipy.readthedocs.io/ja/latest/
+
 Wikiページ: https://scapi.kakeru.f5.si
+
 公式Scratchフォーラム: https://scratch.mit.edu/discuss/topic/800025/

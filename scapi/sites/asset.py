@@ -1,92 +1,71 @@
-import datetime
-from enum import Enum
-import re
-from typing import TYPE_CHECKING
-import warnings
+from __future__ import annotations
 
-import bs4
-from . import base
-from ..others import common,error as exception
+from enum import Enum
+from typing import Final,TYPE_CHECKING
+
+from ..utils.client import HTTPClient
+
+from ..utils.common import (
+    MAYBE_UNKNOWN,
+    UNKNOWN,
+    UNKNOWN_TYPE
+)
+from .base import _BaseSiteAPI
+from ..utils.types import (
+    BackpackPayload
+)
 
 if TYPE_CHECKING:
     from .session import Session
 
-class Backpacktype(Enum):
-    unknown=0
+class BackpackType(Enum):
+    Unknown=0
     Sprite=1
     Script=2
     BitmapCostume=3
     VectorCostume=4
     Sound=5
 
-_backpacktype = {
-    Backpacktype.Sprite:("sprite","application/zip"),
-    Backpacktype.Script:("script","application/json"),
-    Backpacktype.BitmapCostume:("costume","image/png"),
-    Backpacktype.VectorCostume:("costume","image/svg+xml"),
-    Backpacktype.Sound:("sound","audio/x-wav"),
+type_to_mime = {
+    BackpackType.Sprite:("sprite","application/zip"),
+    BackpackType.Script:("script","application/json"),
+    BackpackType.BitmapCostume:("costume","image/png"),
+    BackpackType.VectorCostume:("costume","image/svg+xml"),
+    BackpackType.Sound:("sound","audio/x-wav"),
 }
 
+mime_to_type = {v:k for k,v in type_to_mime.items()}
 
-class Backpack(base._BaseSiteAPI):
-    id_name = "id"
+class Backpack(_BaseSiteAPI[str]):
+    def __init__(self,id:str,client_or_session: HTTPClient | Session | None) -> None:
+        super().__init__(client_or_session)
 
-    def __repr__(self):
-        return f"<Backpack id:{self.id} name:{self.name} session:{self.Session}>"
+        self.id:Final[str] = id
+        self.type:MAYBE_UNKNOWN[BackpackType] = UNKNOWN
+        self.name:MAYBE_UNKNOWN[str] = UNKNOWN
+        self.body:MAYBE_UNKNOWN[str] = UNKNOWN
+        self.thumbnail:MAYBE_UNKNOWN[str] = UNKNOWN
 
-    def __init__(
-        self,
-        ClientSession:common.ClientSession,
-        id:str,
-        scratch_session:"Session|None"=None,
-        **entries
-    ):
-        super().__init__("get","",ClientSession,scratch_session)
+    def __eq__(self, value:object) -> bool:
+        return isinstance(value,Backpack) and self.id == value.id
 
-        self.id:str=id
-        self.type:Backpacktype=Backpacktype.unknown
-        self.name:str=None
-        self._body:str=None
-        self._thumbnail:str=None
+    def _update_from_data(self, data:BackpackPayload):
+        self.type = mime_to_type.get((data.get("type"),data.get("mime")),BackpackType.Unknown)
+        self._update_to_attributes(
+            name=data.get("name"),
+            body=data.get("body"),
+            thumbnail=data.get("thumbnail")
+        )
 
-    async def update(self):
-        self.has_session_raise()
-        async for i in self.Session.backpack():
-            if i.id == self.id:
-                self.type,self.name,self._body,self._thumbnail = i.type,i.name,i._body,i._thumbnail
-                return
-        raise exception.ObjectNotFound(Backpack)
-    
-    def _update_from_dict(self, data:dict):
-        self.id = data.get("id",self.id)
-        self.name = data.get("name",self.name)
-        self._body = data.get("body",self._body)
-        self._thumbnail = data.get("thumbnail",self._thumbnail)
-        if data.get("type",None) == "sprite": self.type = Backpacktype.Sprite
-        elif data.get("type",None) == "script": self.type = Backpacktype.Script
-        elif data.get("type",None) == "costume" and data.get("mime",None) == "image/svg+xml":
-            self.type = Backpacktype.VectorCostume
-        elif data.get("type",None) == "costume" and data.get("mime",None) == "image/png":
-            self.type = Backpacktype.BitmapCostume
-        elif data.get("type",None) == "sound": self.type = Backpacktype.Sound
-        else: self.type = Backpacktype.unknown
+    @property
+    def body_url(self) -> str:
+        assert self.body is not UNKNOWN
+        return f"https://backpack.scratch.mit.edu/{self.body}"
     
     @property
-    def download_url(self) -> str:
-        return "https://backpack.scratch.mit.edu/" + self._body
-    
-    @property
-    def thumbnail_url(self) -> str:
-        return "https://backpack.scratch.mit.edu/" + self._thumbnail
-    
-    async def download(self,path:str) -> None:
-        await common.downloader(self.ClientSession,self.download_url,path)
+    def thumbnail_url(self):
+        assert self.thumbnail is not UNKNOWN
+        return f"https://backpack.scratch.mit.edu/{self.thumbnail}"
 
-    async def delete(self) -> None:
-        self.has_session_raise()
-        r = await self.ClientSession.delete(f"https://backpack.scratch.mit.edu/{self.Session.username}/{self.id}")
-        if not r.json().get("ok",False):
-            raise exception.BadResponse(r)
-        
-async def download_asset(id:str,path:str,ClientSession:common.ClientSession):
-    await common.downloader(ClientSession,f"https://assets.scratch.mit.edu/internalapi/asset/{id}/get/",path)
+    async def delete(self):
+        await self.client.delete(f"https://backpack.scratch.mit.edu/{self._session.username}/{self.id}")
