@@ -1,343 +1,588 @@
+from __future__ import annotations
+
 import datetime
+from enum import Enum
 import random
-import json
-import re
-from typing import AsyncGenerator, Generator, Literal, TypedDict, TYPE_CHECKING, overload
+from typing import TYPE_CHECKING, AsyncGenerator, Final, NamedTuple, Self, Sequence
+
 import aiohttp
-
-from ..others import common
-from ..others import error as exception
-from . import base,project,comment,activity
-
 import bs4
+from ..utils.types import (
+    UserPayload,
+    UserMessageCountPayload,
+    OldUserPayload,
+    StudentPayload,
+    StudentPasswordRestPayliad,
+    OcularPayload
+)
+from ..utils.client import HTTPClient
+from ..utils.common import (
+    UNKNOWN,
+    MAYBE_UNKNOWN,
+    UNKNOWN_TYPE,
+    api_iterative,
+    page_html_iterative,
+    dt_from_isoformat,
+    _AwaitableContextManager,
+    Tag,
+    split,
+    get_any_count
+)
+from ..utils.error import ClientError,NotFound
+from ..utils.file import File,_read_file
+
+from ..event.temporal import CommentEvent
+
+from .base import _BaseSiteAPI
+
+from .project import (
+    Project,
+    ProjectFeatured,
+)
+from .studio import Studio
+from .comment import (
+    Comment,
+    get_comment_from_old
+)
 
 if TYPE_CHECKING:
-    from . import session,classroom
-    from ..event.comment import CommentEvent
-    from ..event.message import MessageEvent
+    from .session import Session
 
-class User(base._BaseSiteAPI):
-    id_name = "username"
+class UserWebsiteData(NamedTuple):
+    exist:bool
+    scratcher:MAYBE_UNKNOWN[bool] = UNKNOWN
+    classroom_id:MAYBE_UNKNOWN[int|None] = UNKNOWN
+    comments_allowed:bool = False
 
-    def __repr__(self):
-        return f"<User username:{self.username} id:{self.id} Session:{self.Session}>"
+class User(_BaseSiteAPI[str]):
+    """
+    ユーザーを表す
 
-    def __init__(
-        self,
-        ClientSession:common.ClientSession,
-        username:str,
-        scratch_session:"session.Session|None"=None,
-        **entries
-    ) -> None:
-        super().__init__("get",f"https://api.scratch.mit.edu/users/{username}",ClientSession,scratch_session)
+    Attributes:
+        username (str): ユーザー名
+        id (MAYBE_UNKNOWN[int]): ユーザーID
+        profile_id (MAYBE_UNKNOWN[int]): プロフィールID。ユーザーIDとは異なります。
+        bio (MAYBE_UNKNOWN[str]): 私について欄
+        status (MAYBE_UNKNOWN[str]): 私が取り組んでいること欄
+        country (MAYBE_UNKNOWN[str]): 国
+        scratchteam (MAYBE_UNKNOWN[bool]): アカウントがScratchTeamとしてマークされているか
 
-        self.id:int = None
-        self.username:str = username
+        educator_can_unban (MAYBE_UNKNOWN[bool]):
+        is_banned (MAYBE_UNKNOWN[bool]):
+    """
+    def __repr__(self) -> str:
+        return f"<User username:{self.username} id:{self.id} session:{self.session}>"
 
-        self._join_date:str = None
-        self.join_date:datetime.datetime = None
+    def __init__(self,username:str,client_or_session:"HTTPClient|Session|None"=None):
+        super().__init__(client_or_session)
+        self.username:Final[str] = username
+        self.id:MAYBE_UNKNOWN[int] = UNKNOWN
 
-        self.about_me:str = None
-        self.wiwo:str = None
-        self.country:str = None
-        self.scratchteam:bool = None
+        self._joined_at:MAYBE_UNKNOWN[str] = UNKNOWN
 
-        self._website_data:dict = {}
+        self.profile_id:MAYBE_UNKNOWN[int] = UNKNOWN
+        self.bio:MAYBE_UNKNOWN[str] = UNKNOWN
+        self.status:MAYBE_UNKNOWN[str] = UNKNOWN
+        self.country:MAYBE_UNKNOWN[str] = UNKNOWN
+        self.scratchteam:MAYBE_UNKNOWN[bool] = UNKNOWN
 
-        #教師アカウント向け
-        self.educator_can_unban:bool|None = None
-        self.force_password_reset:bool|None = None
-        self.banned:bool|None = None
-        self.email:str|None = None
+        #teacher only
+        self.educator_can_unban:MAYBE_UNKNOWN[bool] = UNKNOWN
+        self.is_banned:MAYBE_UNKNOWN[bool] = UNKNOWN
 
-        #フォーラム向け
-        self.forum_status:str|None = None
-        self.forum_post_count:int|None = None
+        self._loaded_website:MAYBE_UNKNOWN[UserWebsiteData] = UNKNOWN
 
-    def _update_from_dict(self, data:dict) -> None:
-        self.id = data.get("id",self.id)
-        self.username = data.get("username",self.username)
-        self.scratchteam = data.get("scratchteam",self.scratchteam)
-        self._add_datetime("join_date",data.get("history",{}).get("joined",None))
+    def __eq__(self, value:object) -> bool:
+        return isinstance(value,User) and self.username == value.username
 
-        _profile:dict = data.get("profile",{})
-        self.about_me = _profile.get("bio",self.about_me)
-        self.wiwo = _profile.get("status",self.wiwo)
-        self.country = _profile.get("country",self.country)
+    async def update(self):
+        response = await self.client.get(f"https://api.scratch.mit.edu/users/{self.username}")
+        self._update_from_data(response.json())
 
-    def _update_from_student_dict(self,data:dict):
-        fields:dict = data.get("fields",{})
-        self.educator_can_unban = fields.get("educator_can_unban",self.educator_can_unban)
-        self.force_password_reset = fields.get("force_password_reset",self.force_password_reset)
-        self.banned = fields.get("is_banned",self.banned)
+    def _update_from_data(self, data:UserPayload):
+        self._update_to_attributes(
+            id=data.get("id"),
+            scratchteam=data.get("scratchteam")
+        )
+        _history = data.get("history")
+        if _history:
+            self._update_to_attributes(_joined_at=_history.get("joined"))
+        
+        _profile = data.get("profile")
+        if _profile:
+            self._update_to_attributes(
+                profile_id=_profile.get("id"),
+                status=_profile.get("status"),
+                bio=_profile.get("bio"),
+                country=_profile.get("country")
+            )
 
-        user:dict = fields.get("user",{})
-        self.id = user.get("pk",self.id)
-        self.scratchteam = user.get("admin",self.scratchteam)
-        self.username = user.get("username",self.username)
-        self.email = user.get("email",self.email) #reset student acc api only
+    def _update_from_old_data(self, data:OldUserPayload):
+        self._update_to_attributes(
+            id=data.get("pk"),
+            scratchteam=data.get("admin")
+        )
 
-    @property
-    def _is_me(self) -> bool:
-        from . import session
-        if isinstance(self.Session,session.Session):
-            if self.Session.username == self.username:
-                return True
-        return False
+    def _update_from_student_data(self,data:StudentPayload):
+        self._update_to_attributes(
+            educator_can_unban=data.get("educator_can_unban"),
+            is_banned=data.get("is_banned")
+        )
+        self._update_from_old_data(data["user"])
+
+    @classmethod
+    def _create_from_html(cls,data:Tag,client_or_session:"HTTPClient|Session") -> Self:
+        _a:Tag = data.find("a")
+        _img:Tag = data.find("img")
+        user = cls(split(str(_a["href"]),"/users/","/",True),client_or_session)
+        user_id = split(str(_img["data-original"]),"/user/","_") or ""
+        if user_id.isdecimal():
+            user.id = int(user_id)
+        return user
     
-    def _is_me_raise(self):
-        if self.check and not self._is_me:
-            raise exception.NoPermission
-    
-    def __int__(self) -> int: return self.id
-    def __eq__(self,value) -> bool: return isinstance(value,User) and self.username.lower() == value.username.lower()
-    def __ne__(self,value) -> bool: return isinstance(value,User) and self.username.lower() != value.username.lower()
-    def __lt__(self,value) -> bool: return isinstance(value,User) and self.id < value.id
-    def __gt__(self,value) -> bool: return isinstance(value,User) and self.id > value.id
-    def __le__(self,value) -> bool: return isinstance(value,User) and self.id <= value.id
-    def __ge__(self,value) -> bool: return isinstance(value,User) and self.id >= value.id
-
     @property
-    def icon_url(self) -> str:
-        common.no_data_checker(self.id)
-        return f"https://uploads.scratch.mit.edu/get_image/user/{self.id}_90x90.png"
+    def joined_at(self) -> datetime.datetime|UNKNOWN_TYPE:
+        """
+        ユーザーが参加した時間を返す。
 
+        Returns:
+            datetime.datetime|UNKNOWN_TYPE: データがある場合、その時間。
+        """
+        return dt_from_isoformat(self._joined_at)
+    
     @property
     def url(self) -> str:
-        return f"https://scratch.mit.edu/users/{self.id}/"
-    
-    async def load_website(self,reload:bool=False):
-        if reload or (self._website_data == {}):
-            _website_data = await self.ClientSession.get(f"https://scratch.mit.edu/users/{self.username}/",check=False)
-            self._website_data = {"exist":_website_data.status_code == 200}
-            if _website_data.status_code != 200:
-                return
-            soup = bs4.BeautifulSoup(_website_data.text,"html.parser")
-            header_text = soup.find("div",{"class":"header-text"}) #class and scratcher
-            header_data = header_text.find_all("span",{"class","group"})
-            if len(header_data) == 2: #student acc
-                self._website_data["classroom"] = common.split_int(header_data[0].find("a")["href"],"/classes/","/"),
-                header_data.pop(0)
-            self._website_data["is_scratcher"] = "Scratcher" in header_data[0].next_element.strip()
+        """
+        ユーザーページのリンクを取得する
 
-        return
+        Returns:
+            str:
+        """
+        return f"https://scratch.mit.edu/users/{self.username}/"
     
-    async def exist(self,use_cache:bool=True) -> bool:
-        await self.load_website(not use_cache)
-        return self._website_data.get("exist")
+    @property
+    def icon_url(self) -> str:
+        """
+        アイコンURLを返す。
+
+        Returns:
+            str:
+        """
+        if self.id is UNKNOWN:
+            raise ValueError()
+        return f"https://cdn2.scratch.mit.edu/get_image/user/{self.id}_90x90.png"
     
-    async def is_new_scratcher(self,use_cache:bool=True) -> bool|None:
-        await self.load_website(not use_cache)
-        return not self._website_data.get("is_scratcher")
+    @property
+    def is_myself(self) -> bool:
+        """
+        紐づけられている |Session| がこのユーザーかどうか
+        
+        Returns:
+            MAYBE_UNKNOWN[bool]:
+        """
+        return self.username.lower() == self._session.username.lower()
     
-    async def classroom_id(self,use_cache:bool=True) -> int|None:
-        await self.load_website(not use_cache)
-        return self._website_data.get("classroom")
+    async def load_website(self):
+        """
+        ユーザーページをロードして、html上からのみ取得できるデータをを読み込む。
+        """
+        try:
+            response = await self.client.get(self.url)
+        except NotFound:
+            self._loaded_website = UserWebsiteData(False)
+            return 
+        soup = bs4.BeautifulSoup(response.text,"html.parser")
+        header_text:Tag = soup.find("div",{"class":"header-text"})
+        scratcher_text:Tag = header_text.find_all("span",{"class":"group"})[-1]
+        is_scratcher = scratcher_text.get_text().strip() != "New Scratcher"
+        class_url:Tag|None = header_text.find("a")
+
+        comments:Tag = soup.find("div",{"id":"comment-form"})
+        comments_allowed = comments.find("div",{"class":"template-feature-off comments-off"}) is None
+        if class_url is None:
+            self._loaded_website = UserWebsiteData(True,is_scratcher,None,comments_allowed)
+        else:
+            self._loaded_website = UserWebsiteData(
+                True,is_scratcher,
+                int(split(str(class_url["href"]),"/classes/","/",True)),
+                comments_allowed
+            )
     
-    async def classroom(self,use_cache:bool=True) -> "classroom.Classroom|None":
-        from . import classroom
-        id = await self.classroom_id(use_cache)
-        if id is None: return
-        return await base.get_object(self.ClientSession,id,classroom.Classroom,self.Session)
+    @property
+    def exist(self) -> MAYBE_UNKNOWN[bool]:
+        """
+        アカウントが削除(サイト上から隠された)状態かを返す。
+        事前に :func:`User.load_website` を実行しておく必要があります。
+
+        Returns:
+            MAYBE_UNKNOWN[bool]:
+        """
+        return self._loaded_website and self._loaded_website.exist
     
-    async def message_count(self) -> int:
-        return (await self.ClientSession.get(
+    @property
+    def is_scratcher(self) -> MAYBE_UNKNOWN[bool]:
+        """
+        アカウントがScratcherであるかを返す。ScratchTeamはScratcherとしてカウントされます。
+        事前に :func:`User.load_website` を実行しておく必要があります。
+
+        Returns:
+            MAYBE_UNKNOWN[bool]:
+        """
+        return self._loaded_website and self._loaded_website.scratcher
+    
+    @property
+    def classroom_id(self) -> MAYBE_UNKNOWN[int|None]:
+        """
+        アカウントの所属しているクラスのIDを返す。
+        事前に :func:`User.load_website` を実行しておく必要があります。
+
+        Returns:
+            MAYBE_UNKNOWN[int|None]:
+        """
+        return self._loaded_website and self._loaded_website.classroom_id
+    
+    @property
+    def comments_allowed(self) -> MAYBE_UNKNOWN[bool]:
+        """
+        ユーザーページにコメントができるか
+        事前に :func:`User.load_website` を実行しておく必要があります。
+
+        Returns:
+            MAYBE_UNKNOWN[bool]:
+        """
+        return self._loaded_website and self._loaded_website.comments_allowed
+
+    async def get_featured(self) -> "ProjectFeatured|None":
+        """
+        ユーザーの注目のプロジェクト欄を取得する。
+
+        Returns:
+            ProjectFeatured|None: ユーザーが設定している場合、そのデータ。
+        """
+        response = await self.client.get(f"https://scratch.mit.edu/site-api/users/all/{self.username}/")
+        return ProjectFeatured(response.json(),self)
+    
+    async def get_follower_count(self) -> int:
+        """
+        フォロワーの数を取得する
+
+        Returns:
+            int:
+        """
+        return await get_any_count(self.client,f"https://scratch.mit.edu/users/{self.username}/followers/","Followers (")
+
+    async def get_followers(self,limit:int|None=None,offset:int|None=None) -> AsyncGenerator["User", None]:
+        """
+        ユーザーのフォロワーを取得する。
+
+        Args:
+            limit (int|None, optional): 取得するユーザーの数。初期値は40です。
+            offset (int|None, optional): 取得するユーザーの開始位置。初期値は0です。
+
+        Yields:
+            User: 取得したユーザー
+        """
+        async for _u in api_iterative(
+            self.client,f"https://api.scratch.mit.edu/users/{self.username}/followers/",
+            limit=limit,offset=offset
+        ):
+            yield User._create_from_data(_u["username"],_u,self.client_or_session)
+
+    async def get_following_count(self) -> int:
+        """
+        フォロー中の数を取得する
+
+        Returns:
+            int:
+        """
+        return await get_any_count(self.client,f"https://scratch.mit.edu/users/{self.username}/following/","Following (")
+
+    async def get_followings(self,limit:int|None=None,offset:int|None=None) -> AsyncGenerator["User", None]:
+        """
+        ユーザーがフォローしているユーザーを取得する。
+
+        Args:
+            limit (int|None, optional): 取得するユーザーの数。初期値は40です。
+            offset (int|None, optional): 取得するユーザーの開始位置。初期値は0です。
+
+        Yields:
+            User: 取得したユーザー
+        """
+        async for _u in api_iterative(
+            self.client,f"https://api.scratch.mit.edu/users/{self.username}/following/",
+            limit=limit,offset=offset
+        ):
+            yield User._create_from_data(_u["username"],_u,self.client_or_session)
+
+    async def get_project_count(self) -> int:
+        """
+        共有中のプロジェクトの数を取得する
+
+        Returns:
+            int:
+        """
+        return await get_any_count(self.client,f"https://scratch.mit.edu/users/{self.username}/projects/","Shared Projects (")
+
+    async def get_projects(self,limit:int|None=None,offset:int|None=None) -> AsyncGenerator["Project", None]:
+        """
+        ユーザーが共有しているプロジェクトを取得する。
+
+        Args:
+            limit (int|None, optional): 取得するプロジェクトの数。初期値は40です。
+            offset (int|None, optional): 取得するプロジェクトの開始位置。初期値は0です。
+
+        Yields:
+            Project: 取得したプロジェクト
+        """
+        async for _p in api_iterative(
+            self.client,f"https://api.scratch.mit.edu/users/{self.username}/projects/",
+            limit=limit,offset=offset
+        ):
+            yield Project._create_from_data(_p["id"],_p,self.client_or_session)
+
+    async def get_favorite_count(self) -> int:
+        """
+        お気に入りのプロジェクトの数を取得する
+
+        Returns:
+            int:
+        """
+        return await get_any_count(self.client,f"https://scratch.mit.edu/users/{self.username}/favorites/","Favorites (")
+
+    async def get_favorites(self,limit:int|None=None,offset:int|None=None) -> AsyncGenerator["Project", None]:
+        """
+        ユーザーのお気に入りのプロジェクトを取得する。
+
+        Args:
+            limit (int|None, optional): 取得するプロジェクトの数。初期値は40です。
+            offset (int|None, optional): 取得するプロジェクトの開始位置。初期値は0です。
+
+        Yields:
+            Project: 取得したプロジェクト
+        """
+        async for _p in api_iterative(
+            self.client,f"https://api.scratch.mit.edu/users/{self.username}/favorites/",
+            limit=limit,offset=offset
+        ):
+            yield Project._create_from_data(_p["id"],_p,self.client_or_session)
+
+    async def get_studio_count(self) -> int:
+        """
+        ユーザーが参加しているスタジオの数を取得する
+
+        Returns:
+            int:
+        """
+        return await get_any_count(self.client,f"https://scratch.mit.edu/users/{self.username}/studios/","Studios I Curate (")
+
+    async def get_studios(self,limit:int|None=None,offset:int|None=None) -> AsyncGenerator["Studio", None]:
+        """
+        ユーザーが参加しているスタジオを取得する。
+
+        Args:
+            limit (int|None, optional): 取得するスタジオの数。初期値は40です。
+            offset (int|None, optional): 取得するスタジオの開始位置。初期値は0です。
+
+        Yields:
+            Studio: 取得したスタジオ
+        """
+        async for _s in api_iterative(
+            self.client,f"https://api.scratch.mit.edu/users/{self.username}/studios/curate",
+            limit=limit,offset=offset
+        ):
+            yield Studio._create_from_data(_s["id"],_s,self.client_or_session)
+
+    async def get_love_count(self) -> int:
+        """
+        好きなプロジェクトの数を取得する
+
+        Returns:
+            int:
+        """
+        return await get_any_count(self.client,f"https://scratch.mit.edu/projects/all/{self.username}/loves/","(")
+
+    async def get_loves(self,start_page:int|None=None,end_page:int|None=None) -> AsyncGenerator["Project",None]:
+        """
+       ユーザーの好きなプロジェクトを取得する。
+
+        Args:
+            start_page (int|None, optional): 取得するプロジェクトの開始ページ位置。初期値は1です。
+            end_page (int|None, optional): 取得するプロジェクトの終了ページ位置。初期値はstart_pageの値です。
+
+        Yields:
+            Project: 取得したプロジェクト
+        """
+
+        async for _t in page_html_iterative(
+            self.client,f"https://scratch.mit.edu/projects/all/{self.username}/loves/",
+            start_page=start_page,end_page=end_page,list_class="project thumb item"
+        ):
+            yield Project._create_from_html(_t,self.client_or_session)
+
+
+    async def get_message_count(self) -> int:
+        """
+        ユーザーのメッセージの未読数を取得する。
+
+        Returns:
+            int: 未読のメッセージの数
+        """
+        response = await self.client.get(
             f"https://api.scratch.mit.edu/users/{self.username}/messages/count/",
-            params={
-                "cachebust":str(random.randint(0,10000))
-            }
-        )).json()["count"]
-    
-    def message_event(self,interval=30) -> "MessageEvent":
-        from ..event.message import MessageEvent
-        return MessageEvent(self,interval)
-    
-    class user_featured_data(TypedDict):
-        label:str
-        title:str
-        id:int
-        object:project.Project
-    
-    async def featured_data(self) -> user_featured_data|None:
-        jsons = (await self.ClientSession.get(
-            f"https://scratch.mit.edu/site-api/users/all/{self.username}/"
-        )).json()
-        if jsons["featured_project_data"] is None:
-            return
-        _project = project.create_Partial_Project(jsons["featured_project_data"]["id"],self)
-        _project.title = jsons["featured_project_data"]["title"]
-        return {
-            "label":jsons["featured_project_label_name"],
-            "title":jsons["featured_project_data"]["title"],
-            "id":jsons["featured_project_data"]["id"],
-            "object":_project
-        }
-    
-    async def follower_count(self) -> int:
-        return await base.get_count(self.ClientSession,f"https://scratch.mit.edu/users/{self.username}/followers/","Followers (", ")")
-    
-    def followers(self, *, limit=40, offset=0) -> AsyncGenerator["User", None]:
-        return base.get_object_iterator(
-            self.ClientSession,f"https://api.scratch.mit.edu/users/{self.username}/followers/",
-            None,User,self.Session,limit=limit,offset=offset
+            params={"cachebust":str(random.randint(0,10000))}
         )
+        data:UserMessageCountPayload = response.json()
+        return data.get("count")
+
+    def get_comments(self,start_page:int|None=None,end_page:int|None=None) -> AsyncGenerator["Comment", None]:
+        """
+        プロフィールに投稿されたコメントを取得する。
+
+        Args:
+            start_page (int|None, optional): 取得するコメントの開始ページ位置。初期値は1です。
+            end_page (int|None, optional): 取得するコメントの終了ページ位置。初期値はstart_pageの値です。
+
+        Yields:
+            Comment: 取得したコメント
+        """
+        return get_comment_from_old(self,start_page,end_page)
     
-    async def following_count(self) -> int:
-        return await base.get_count(self.ClientSession,f"https://scratch.mit.edu/users/{self.username}/following/","Following (", ")")
+    get_comments_from_old = get_comments
+
+    def comment_event(self,interval:int=30,is_old:bool=False) -> CommentEvent:
+        """
+        コメントイベントを作成する。
+
+        Args:
+            interval (int, optional): コメントの更新間隔。デフォルトは30秒です。
+            is_old (bool, optional): 古いAPIから取得するか。デフォルトはFalseです。
+
+        Returns:
+            CommentEvent:
+        """
+        return CommentEvent(self,interval,is_old)
     
-    def following(self, *, limit=40, offset=0) -> AsyncGenerator["User", None]:
-        return base.get_object_iterator(
-            self.ClientSession,f"https://api.scratch.mit.edu/users/{self.username}/following/",
-            None,User,self.Session,limit=limit,offset=offset
+    async def get_ocular_status(self) -> "OcularStatus":
+        """
+        Ocularのステータスを取得します。
+
+        Returns:
+            OcularStatus:
+        """
+        return await OcularStatus._create_from_api(self,self.client_or_session)
+
+
+    async def post_comment(
+        self,content:str,
+        parent:"Comment|int|None"=None,commentee:"User|int|None"=None,
+        is_old:bool=True
+    ) -> "Comment":
+        """
+        コメントを投稿します。
+
+        Args:
+            content (str): コメントの内容
+            parent (Comment|int|None, optional): 返信する場合、返信元のコメントかID
+            commentee (User|int|None, optional): メンションする場合、ユーザーかそのユーザーのID
+            is_old (bool, optional): 古いAPIを使用して送信するか この値は使用されず、常に古いAPIが使用されます。
+
+        Returns:
+            Comment: 投稿されたコメント
+        """
+        return await Comment.post_comment(self,content,parent,commentee,is_old)
+    
+    async def follow(self):
+        """
+        ユーザーをフォローする
+        """
+        self.require_session()
+        await self.client.put(
+            f"https://scratch.mit.edu/site-api/users/followers/{self.username}/add/",
+            params={"usernames":self._session.username}
         )
-    
-    async def is_following(self,username:"str|User") -> bool:
-        _username = str(common.get_id(username,"username"))
-        async for i in self.following(limit=common.BIG):
-            if i.username.lower() == _username.lower():
-                return True
-        return False
-    
-    async def is_followed(self,username:"str|User") -> bool:
-        _username = str(common.get_id(username,"username"))
-        async for i in self.followers(limit=common.BIG):
-            if i.username.lower() == _username.lower():
-                return True
-        return False
-    
 
-    async def project_count(self) -> int:
-        return await base.get_count(self.ClientSession,f"https://scratch.mit.edu/users/{self.username}/projects/","Shared Projects (", ")")
-    
-    def projects(self, *, limit=40, offset=0) -> AsyncGenerator[project.Project, None]:
-        return base.get_object_iterator(
-            self.ClientSession,f"https://api.scratch.mit.edu/users/{self.username}/projects/",
-            None,project.Project,self.Session,limit=limit,offset=offset
+    async def unfollow(self):
+        """
+        ユーザーのフォローを解除する
+        """
+        self.require_session()
+        await self.client.put(
+            f"https://scratch.mit.edu/site-api/users/followers/{self.username}/remove/",
+            params={"usernames":self._session.username}
         )
-    
-    async def favorite_count(self) -> int:
-        return await base.get_count(self.ClientSession,f"https://scratch.mit.edu/users/{self.username}/favorites/","Favorites (", ")")
-    
-    def favorites(self, *, limit=40, offset=0) -> AsyncGenerator[project.Project, None]:
-        return base.get_object_iterator(
-            self.ClientSession,f"https://api.scratch.mit.edu/users/{self.username}/favorites/",
-            None,project.Project,self.Session,limit=limit,offset=offset
-        )
-    
-    async def love_count(self) -> int:
-        return await base.get_count(self.ClientSession,f"https://scratch.mit.edu/projects/all/{self.username}/loves/","</a>&raquo;\n\n (",")")
-    
-    async def loves(self, *, start_page=1, end_page=1) -> AsyncGenerator[project.Project, None]:
-        for i in range(start_page,end_page+1):
-            r = await self.ClientSession.get(f"https://scratch.mit.edu/projects/all/{self.username}/loves/?page={i}",check=False)
-            if r.status_code == 404:
-                return
-            soup = bs4.BeautifulSoup(r.text, "html.parser")
-            projects:bs4.element.ResultSet[bs4.element.Tag] = soup.find_all("li", {"class": "project thumb item"})
-            if len(projects) == 0:
-                return
-            for _project in projects:
-                _ptext = str(_project)
-                id = common.split_int(_ptext,"a href=\"/projects/","/")
-                title = common.split(_ptext,f"<span class=\"title\">\n<a href=\"/projects/{id}/\">","</a>")
-                author_name = common.split(_ptext,f"by <a href=\"/users/","/")
-                _obj = project.Project(self.ClientSession,id,self.Session)
-                _obj._update_from_dict({
-                    "author":{"username":author_name},
-                    "title":title
-                })
-                yield _obj
-
-    async def activity(self,limit=1000) -> AsyncGenerator[activity.Activity, None]:
-        r = await self.ClientSession.get(f"https://scratch.mit.edu/messages/ajax/user-activity/?user={self.username}&max={limit}")
-        souplist = bs4.BeautifulSoup(r.text, 'html.parser').find_all("li")
-        for i in souplist:
-            _obj = activity.Activity()
-            _obj._update_from_user(self,i)
-            yield _obj
-        return
 
 
-    
-    async def get_comment_by_id(self,id:int,is_old:bool|None=None) -> comment.Comment:
-        if is_old == False: raise ValueError()
-        return await comment._get_comment_old_api_by_id(self,f"https://scratch.mit.edu/site-api/comments/user/{self.username}",id)
-
-    
-    def get_comments(self, *, limit:int=40, offset:int=0, start_page:int=1, end_page:int=1, is_old:bool|None=None) -> AsyncGenerator[comment.Comment, None]:
-        if is_old == False: raise ValueError()
-        return comment._get_comments_old_api(self,f"https://scratch.mit.edu/site-api/comments/user/{self.username}",start_page=start_page,end_page=end_page)
-    
-    async def post_comment(self, content:str, parent:int|comment.Comment|None=None, commentee:"int|User|None"=None, is_old:bool|None=None) -> comment.Comment:
-        if is_old == False: raise ValueError()
-        self.has_session_raise()
-
-        return await comment._post_comment(
-            self,f"https://scratch.mit.edu/site-api/comments/user/{self.username}/add/",
-            True,content,common.get_id(commentee),common.get_id(parent)
-        )
-    
-    def comment_event(self,interval=30) -> "CommentEvent":
-        from ..event.comment import CommentEvent
-        return CommentEvent(self,interval)
-    
-
-    async def toggle_comment(self):
-        self._is_me_raise()
-        r = await self.ClientSession.post(f"https://scratch.mit.edu/site-api/comments/user/{self.username}/toggle-comments/")
-        if r.text != "ok":
-            raise exception.BadRequest(r)
-    
     async def edit(
             self,*,
-            about_me:str|None=None,
-            wiwo:str|None=None,
-            featured_project_id:int|None=None,
-            featured_label:Literal["Featured","ProjectFeatured","Tutorial","Work In Progress","Remix This!","My Favorite Things","Why I Scratch"]|None=None,
-        ):
-        (self.Session and self.Session.status.educator) or self._is_me_raise() #教師は生徒の設定を編集できる
-        data = {}
-        if about_me is not None: data["bio"] = about_me
-        if wiwo is not None: data["status"] = wiwo
-        if featured_project_id is not None: data["featured_project"] = featured_project_id
-        if featured_label is not None: data["featured_project_label_name"] = featured_label
-        r = await self.ClientSession.put(
-            f"https://scratch.mit.edu/site-api/users/all/{self.username}/",
-            json = data
-        )
+            bio:str|None=None,
+            status:str|None=None,
+            featured_project_id:"int|Project|None"=None,
+            featured_project_label:"ProjectFeaturedLabel|None"=None
+        ) -> "None | ProjectFeatured":
+        """
+        プロフィール欄を編集する。
 
-    async def change_icon(self,icon:bytes|str,filetype:str="icon.png"):
-        self._is_me_raise()
-        thumbnail,filename = await common.open_tool(icon,filetype)
-        form = aiohttp.FormData()
-        form.add_field("file",thumbnail,filename=filename)
-        await self.ClientSession.post(f"https://scratch.mit.edu/site-api/users/all/{self.username}/",data=form)
+        Args:
+            bio (str | None, optional): 私について欄の内容
+            status (str | None, optional): 私が取り組んでいることの内容
+            featured_project_id (int|Project|None, optional): 注目のプロジェクト欄に設定したいプロジェクトかそのID
+            featured_project_label (ProjectFeaturedLabel|None, optional): 注目のプロジェクト欄に使用したいラベル
 
-    set_icon = common.deprecated("User","set_icon","change_icon")(change_icon)
+        Returns:
+            None | ProjectFeatured: 変更された注目のプロジェクト欄
+        """
+        self.require_session()
+        _data = {}
+        if isinstance(featured_project_id,Project):
+            featured_project_id = featured_project_id.id
+        if bio is not None: _data["bio"] = bio
+        if status is not None: _data["status"] = status
+        if featured_project_id is not None: _data["featured_project"] = featured_project_id
+        if featured_project_label is not None: _data["featured_project_label"] = featured_project_label.value
 
-    async def follow(self,follow:bool=True):
-        self.has_session_raise()
-        if follow:
-            await self.ClientSession.put(f"https://scratch.mit.edu/site-api/users/followers/{self.username}/add/?usernames={self.Session.username}")
-        else:
-            await self.ClientSession.put(f"https://scratch.mit.edu/site-api/users/followers/{self.username}/remove/?usernames={self.Session.username}")
+        response = await self.client.put(f"https://scratch.mit.edu/site-api/users/all/{self.username}/",json=_data)
+        data = response.json()
+        if data.get("errors"):
+            raise ClientError(response,data.get("errors"))
+        return ProjectFeatured(data,self)
 
-    async def get_ocular_status(self) -> "OcularStatus":
-        return await base.get_object(self.ClientSession,self.username,OcularStatus,self.Session)
+    async def toggle_comment(self):
+        """
+        プロフィールのコメント欄を開閉する。
+        """
+        self.require_session()
+        await self.client.post(f"https://scratch.mit.edu/site-api/comments/user/{self.username}/toggle-comments/")
+
+    async def set_icon(self,icon:File|bytes):
+        """
+        アイコンを変更する。
+
+        Args:
+            icon (file.File | bytes): アイコンのデータ
+        """
+        self.require_session()
+        async with _read_file(icon) as f:
+            self.require_session()
+            await self.client.post(
+                f"https://scratch.mit.edu/site-api/users/all/{self.id}/",
+                data=aiohttp.FormData({"file":f})
+            )
     
     async def reset_student_password(self,password:str|None=None):
-        if not (self.Session and self.Session.status.educator) and self.check:
-            raise exception.NoPermission()
+        """
+        生徒アカウントのパスワードを変更します。
+        この生徒の教師である必要があります。
+
+        Args:
+            password (str | None, optional): 新しいパスワード。Noneで初期値にセットされます。
+        """
+        self.require_session()
         if password is None:
-            r = await self.ClientSession.post(
-                f"https://scratch.mit.edu/site-api/classrooms/reset_student_password/{self.username}/"
-            )
-            data = r.json()
-            self.id = data.get("pk",self.id)
-            self.scratchteam = data.get("admin",self.scratchteam)
-            self.email = data.get("email",self.email)
+            response = await self.client.post(f"https://scratch.mit.edu/site-api/classrooms/reset_student_password/{self.username}/")
+            data:StudentPasswordRestPayliad = response.json()
+            self._update_from_old_data(data["user"])
         else:
-            await self.ClientSession.post(
+            await self.client.post(
                 f"https://scratch.mit.edu/classes/student_password_change/{self.username}/",
                 data=aiohttp.FormData({
                     "csrfmiddlewaretoken":"a",
@@ -346,65 +591,90 @@ class User(base._BaseSiteAPI):
                 })
             )
 
-    async def report(self,type:Literal["username","icon","description","working_on"]):
-        self.has_session_raise()
-        r = await self.ClientSession.post(
-            f"https://scratch.mit.edu/site-api/users/all/{self.username}/report/",
-            data=f"selected_field={type}"
+class OcularStatus(_BaseSiteAPI[User]):
+    """
+    Ocularでのユーザーのステータス
+
+    Attributes:
+        user (User): Scratch上でのユーザー
+        name (str): ユーザー名
+        status (MAYBE_UNKNOWN[str]): ステータス
+        color (MAYBE_UNKNOWN[str|None]): 表示している色
+        updated_by (MAYBE_UNKNOWN[str]): 最後に編集したユーザー
+    """
+    def __init__(self,user:User,client_or_session:"HTTPClient|Session|None"=None):
+        super().__init__(client_or_session)
+
+        self.user:Final[User] = user
+        self.name:str = user.username
+        self.status:MAYBE_UNKNOWN[str] = UNKNOWN
+        self.color:MAYBE_UNKNOWN[str|None] = UNKNOWN
+        self._updated_at:MAYBE_UNKNOWN[str] = UNKNOWN
+        self.updated_by:MAYBE_UNKNOWN[str] = UNKNOWN
+
+    async def update(self) -> None:
+        response = await self.client.get(f"https://my-ocular.jeffalo.net/api/user/{self.user.username}")
+        self._update_from_data(response.json())
+
+    @property
+    def updated_at(self) -> datetime.datetime|UNKNOWN_TYPE:
+        """
+        最後にステータスを更新した時間を返す
+
+        Returns:
+            datetime.datetime|UNKNOWN_TYPE:
+        """
+        return dt_from_isoformat(self._updated_at)
+
+    def _update_from_data(self, data:OcularPayload):
+        if "error" in data:
+            return
+        color = data.get("color")
+        if color == "null":
+            color = None
+        
+        self._update_to_attributes(
+            name=data.get("name"),
+            status=data.get("status"),
+            color=color,
         )
-        if len(r.text) == 0:
-            raise exception.BadResponse(r)
-        if not r.json().get("success"):
-            raise exception.BadResponse(r)
-        return
 
+        meta = data.get("meta")
+        if meta:
+            self._update_to_attributes(
+                _updated_at=meta.get("updated"),
+                update_by=meta.get("updatedBy")
+            )
 
-class OcularStatus(base._BaseSiteAPI):
-    id_name = "username"
+class ProjectFeaturedLabel(Enum):
+    """
+    注目のプロジェクト欄のラベルを表す。
+    """
+    ProjectFeatured=""
+    Tutorial="0"
+    WorkInProgress="1"
+    RemixThis="2"
+    MyFavoriteThings="3"
+    WhyIScratch="4"
 
-    def __repr__(self):
-        return f"<OcularStatus username:{self.username} status:{self.status} color:{self._color}>"
+    @classmethod
+    def get_from_id(cls,id:int|None) -> "ProjectFeaturedLabel":
+        if id is None:
+            return cls.ProjectFeatured
+        _id = str(id)
+        for item in cls:
+            if item.value == _id:
+                return item
+        raise ValueError()
 
-    def __init__(
-        self,
-        ClientSession:common.ClientSession,
-        username:str,
-        scratch_session:"session.Session|None"=None,
-        **entries
-    ) -> None:
-        super().__init__("get",f"https://my-ocular.jeffalo.net/api/user/{username}",ClientSession,scratch_session)
+def get_user(username:str,*,_client:HTTPClient|None=None) -> _AwaitableContextManager[User]:
+    """
+    ユーザーを取得する。
 
-        self.id:int|None = None
-        self.username:str = username
-        self.status:str|None = None
-        self.color:int|None = None
-        self._color:str|None = None
-        self.updated:datetime.datetime|None = None
-        self._user:User|None = None
+    Args:
+        username (str): 取得したいユーザーのユーザー名
 
-    def _update_from_dict(self, data:dict) -> None:
-        if data.get("error"): return
-
-        self.id = data.get("_id")
-        self.status = data.get("status")
-        self._color = data.get("color")
-        if isinstance(self._color,str) and self._color.startswith("#"):
-            self.color = int(self._color[1:],16)
-        self.updated = common.to_dt(data.get("meta",{}).get("updated"),self.updated)
-
-    async def get_user(self) -> User:
-        return await base.get_object(self.ClientSession,self.username,User,self.Session)
-
-async def get_user(username:str,*,ClientSession=None) -> User:
-    ClientSession = common.create_ClientSession(ClientSession)
-    return await base.get_object(ClientSession,username,User)
-
-def create_Partial_User(username:str,user_id:int|None=None,*,ClientSession:common.ClientSession|None=None,session:"session.Session|None"=None) -> User:
-    ClientSession = common.create_ClientSession(ClientSession,session)
-    _user = User(ClientSession,username,session)
-    if user_id is not None:
-        _user.id = common.try_int(user_id)
-    return _user
-
-def is_allowed_username(username:str) -> bool:
-    return re.fullmatch(r"[a-zA-Z0-9-_]{3,20}",username) is not None
+    Returns:
+        _AwaitableContextManager[Studio]: await か async with で取得できるユーザー
+    """
+    return _AwaitableContextManager(User._create_from_api(username,_client))

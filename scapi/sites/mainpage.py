@@ -1,112 +1,163 @@
+from __future__ import annotations
+
 import datetime
-import random
-from typing import AsyncGenerator, Generator, Literal, TypedDict, TYPE_CHECKING
-import warnings
+from typing import TYPE_CHECKING, AsyncGenerator, Final, Sequence, TypedDict
 
-from ..others import common
-from ..others import error as exception
-from . import base,project,studio
+from .base import _BaseSiteAPI
+from ..utils.types import (
+    NewsPayload,
+    CommunityFeaturedPayload,
+    CommunityFeaturedProjectPayload,
+    CommunityFeaturedRemixProjectPayload
+)
+from ..utils.common import (
+    UNKNOWN,
+    UNKNOWN_TYPE,
+    MAYBE_UNKNOWN,
+    dt_from_isoformat,
+    api_iterative,
+)
+from ..utils.common import get_client_and_session
 
-import bs4
+from .user import User
+from .studio import Studio
+from .project import Project
 
 if TYPE_CHECKING:
-    from . import session
+    from .session import Session
+    from ..utils.client import HTTPClient
 
-class ScratchNews(base._BaseSiteAPI):
-    id_name = "id"
+class News(_BaseSiteAPI):
+    """
+    Scratchのニュース欄
 
-    def __repr__(self):
-        return f"<ScratchNews id:{self.id} title:{self.title} url:{self.url}>"
+    Attributes:
+        id (int):
+        headline (str): ニュースのタイトル
+        url (str): 詳細へのリンク
+        image (str): アイコンの画像のurl
+        copy (str): 説明文
+    """
+    def __init__(self, id:int, client_or_session:"HTTPClient|Session|None") -> None:
+        super().__init__(client_or_session)
+
+        self.id:Final[int] = id
+        self._created_at:MAYBE_UNKNOWN[str] = UNKNOWN
+        self.headline:MAYBE_UNKNOWN[str] = UNKNOWN
+        self.url:MAYBE_UNKNOWN[str] = UNKNOWN
+        self.image:MAYBE_UNKNOWN[str] = UNKNOWN
+        self.copy:MAYBE_UNKNOWN[str] = UNKNOWN
+
+    def __repr__(self) -> str:
+        return f"<News id:{self.id} headline:{self.headline}>"
     
-    def __init__(
-        self,
-        ClientSession:common.ClientSession,
-        id:int,
-        scratch_session:"session.Session|None"=None,
-        **entries
-    ):
+    def __eq__(self, value:object) -> bool:
+        return isinstance(value,News) and self.id == value.id
+
+    def _update_from_data(self, data:NewsPayload):
+        self._created_at = data.get("stamp")
+        self.headline = data.get("headline")
+        self.url = data.get("url")
+        self.image = data.get("image")
+        self.copy = data.get("copy")
+
+    @property
+    def created_at(self) -> datetime.datetime|UNKNOWN_TYPE:
+        """
+        ニュースが投稿された時間を返す
+
+        .. warning::
+            APIの情報が不正確だと考えられます。データの利用時には注意してください。
+
+        Returns:
+            datetime.datetime|UNKNOWN_TYPE:
+        """
+        return dt_from_isoformat(self._created_at)
+    
+async def get_news(
+        client_or_session:"HTTPClient|Session|None",
+        limit:int|None=None,offset:int|None=None
         
-        super().__init__("get","",ClientSession,scratch_session)
+    ) -> AsyncGenerator[News]:
+    """
+    ニュースを取得する。
 
-        self.id:int = common.try_int(id)
-        self._timestamp:str = None
-        self.timestamp:datetime.datetime = None
-        self.url:str = None
-        self.image_url:str = None
-        self.title:str = None
-        self.content:str = None
+    Args:
+        client (HTTPClient): 使用するHTTPクライアント
+        limit (int|None, optional): 取得するニュースの数。初期値は40です。
+        offset (int|None, optional): 取得するニュースの開始位置。初期値は0です。
 
-    async def update(self):
-        raise TypeError()
+    Yields:
+        News:
+    """
+    client,_ = get_client_and_session(client_or_session)
+    client_or_session = client_or_session or client
+    async for _p in api_iterative(
+        client,f"https://api.scratch.mit.edu/news",
+        limit=limit,offset=offset
+    ):
+        yield News._create_from_data(_p["id"],_p,client_or_session or client)
 
-    async def _update_from_dict(self, data:dict):
-        self.id = data.get("id",self.id)
-        self._add_datetime("timestamp",data.get("stamp"))
-        self.title = data.get("headline",self.title)
-        self.url = data.get("url",self.url)
-        self.image_url = data.get("image",self.image_url)
-        self.content = data.get("copy",self.content)
+class CommunityFeaturedResponse(TypedDict):
+    featured_projects:list[Project]
+    featured_studios:list[Studio]
+    most_loved_projects:list[Project]
+    most_remixed_projects:list[Project]
+    newest_projects:list[Project]
+    design_studio_projects:list[Project]
+    design_studio:Studio|None
 
-def get_scratchnews(limit=40, offset=0, clientsession:common.ClientSession|None=None) -> AsyncGenerator[ScratchNews,None]:
-        return base.get_object_iterator(
-            clientsession,"api.scratch.mit.edu/news",None,ScratchNews,None,
-            limit=limit,offset=offset
-        )
+def _add_community_featured_project(
+        client_or_session:"HTTPClient|Session",
+        list_object:"list[Project]",
+        payload:Sequence[CommunityFeaturedProjectPayload|CommunityFeaturedRemixProjectPayload]
+    ):
+    for data in payload:
+        project = Project(data.get("id"),client_or_session)
+        project.title = data.get("title")
+        project.love_count = data.get("love_count")
+        project.author = User(data.get("creator"),client_or_session)
+        project.remix_count = data.get("remixers_count",UNKNOWN)
+        list_object.append(project)
 
-class community_featured_response(TypedDict):
-    featured_projects:list[project.Project]
-    featured_studios:list[studio.Studio]
-    most_loved_projects:list[project.Project]
-    most_remixed_projects:list[project.Project]
-    newest_projects:list[project.Project]
-    design_studio_projects:list[project.Project]
-    design_studio:studio.Studio
+async def get_community_featured(client_or_session:"HTTPClient|Session") -> CommunityFeaturedResponse:
+    """
+    コミュニティ特集を取得する。
 
+    Args:
+        client_or_session (HTTPClient|Session): 通信に使用するHTTPClientか、セッション
 
-async def community_featured(clientsession:common.ClientSession|None=None,session:"session.Session|None"=None) -> community_featured_response:
-    clientsession = common.create_ClientSession(clientsession,session)
-    resp:dict[str,list[dict]] = (await clientsession.get("https://api.scratch.mit.edu/proxy/featured")).json()
-    r:community_featured_response = {}
-    cfp = []
-    for i in resp.get("community_featured_projects",[]):
-        p = project.create_Partial_Project(i.get("id"),i.get("creator"),ClientSession=clientsession,session=session)
-        p.title = i.get("title"); p.loves = i.get("love_count")
-        cfp.append(p)
-    r["featured_projects"] = cfp
-    cfs = []
-    for i in resp.get("community_featured_studios",[]):
-        s = studio.create_Partial_Studio(i.get("id"),ClientSession=clientsession,session=session)
-        s.title = i.get("title")
-        cfs.append(s)
-    r["featured_studios"] = cfs
-    cml = []
-    for i in resp.get("community_most_loved_projects",[]):
-        p = project.create_Partial_Project(i.get("id"),i.get("creator"),ClientSession=clientsession,session=session)
-        p.title = i.get("title"); p.loves = i.get("love_count")
-        cml.append(p)
-    r["most_loved_projects"] = cml
-    cmr = []
-    for i in resp.get("community_most_remixed_projects",[]):
-        p = project.create_Partial_Project(i.get("id"),i.get("creator"),ClientSession=clientsession,session=session)
-        p.title = i.get("title"); p.loves = i.get("love_count"); p.remix_count = i.get("remixers_count")
-        cmr.append(p)
-    r["most_remixed_projects"] = cmr
-    cnp = []
-    for i in resp.get("community_newest_projects",[]):
-        p = project.create_Partial_Project(i.get("id"),i.get("creator"),ClientSession=clientsession,session=session)
-        p.title = i.get("title"); p.loves = i.get("love_count")
-        cnp.append(p)
-    r["newest_projects"] = cnp
-    sds = []
-    for i in resp.get("scratch_design_studio",[]):
-        p = project.create_Partial_Project(i.get("id"),i.get("creator"),ClientSession=clientsession,session=session)
-        p.title = i.get("title"); p.loves = i.get("love_count"); p.remix_count = i.get("remixers_count")
-        sds.append(p)
-    r["design_studio_projects"] = sds
-    s_dict = resp.get("scratch_design_studio",[None])[0]
-    if s_dict is None: r["design_studio"] = None
-    else:
-        s_obj = studio.create_Partial_Studio(s_dict.get("gallery_id"),ClientSession=clientsession,session=session)
-        s_obj.title = s_dict.get("gallery_title")
-        r["design_studio"] = s_obj
-    return r
+    Returns:
+        CommunityFeaturedResponse:
+    """
+    client,_ = get_client_and_session(client_or_session)
+
+    response = await client.get("https://api.scratch.mit.edu/proxy/featured")
+    data:CommunityFeaturedPayload = response.json()
+
+    _return:CommunityFeaturedResponse = {
+        "featured_projects":[],
+        "featured_studios":[],
+        "most_loved_projects":[],
+        "most_remixed_projects":[],
+        "newest_projects":[],
+        "design_studio_projects":[],
+        "design_studio":None
+    }
+    for _data in data.get("community_featured_studios"):
+        studio = Studio(_data.get("id"),client_or_session)
+        studio.title = _data.get("title",UNKNOWN)
+        _return["featured_studios"].append(studio)
+
+    _add_community_featured_project(client_or_session,_return["featured_projects"],data.get("community_featured_projects"))
+    _add_community_featured_project(client_or_session,_return["most_loved_projects"],data.get("community_most_loved_projects"))
+    _add_community_featured_project(client_or_session,_return["most_remixed_projects"],data.get("community_most_remixed_projects"))
+    _add_community_featured_project(client_or_session,_return["newest_projects"],data.get("community_newest_projects"))
+    _add_community_featured_project(client_or_session,_return["design_studio_projects"],data.get("scratch_design_studio"))
+
+    if data.get("scratch_design_studio"):
+        _payload = data.get("scratch_design_studio")[0]
+        _return["design_studio"] = Studio(_payload.get("gallery_id"))
+        _return["design_studio"].title = _payload.get("gallery_title")
+
+    return _return
