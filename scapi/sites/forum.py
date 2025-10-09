@@ -363,6 +363,16 @@ class ForumPost(_BaseSiteAPI):
             OcularReactions:
         """
         return await OcularReactions._create_from_api(self.id,self.client_or_session)
+    
+    async def get_source(self) -> str:
+        """
+        この投稿のソース(BBcode)を取得する
+
+        Returns:
+            str:
+        """
+        response = await self.client.get(f"https://scratch.mit.edu/discuss/post/{self.id}/source/")
+        return response.text
 
 async def get_forum_categories(client_or_session:"HTTPClient|Session|None"=None) -> dict[str, list[ForumCategory]]:
     """
@@ -467,7 +477,7 @@ def load_last_post(self:_BaseSiteAPI,data:bs4.Tag) -> ForumPost:
     _last_post_url:str|Any = _post["href"]
     
     post = ForumPost(int(split(_last_post_url,"/discuss/post/","/",True)),self.client_or_session)
-    post.author = User(_post_author.get_text(strip=True).removeprefix("by "))
+    post.author = User(_post_author.get_text(strip=True).removeprefix("by "),self.client_or_session)
     post.created_at = decode_datetime(_post.get_text())
     return post
 
