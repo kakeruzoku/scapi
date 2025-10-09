@@ -10,5 +10,6 @@
    sites
    event
    cloud
+   editor
    error
 

@@ -8,6 +8,12 @@ class ProjectIn(TypedDict,total=False):
     info:Info
 
 class Project(Base):
+    """
+    Scratchのプロジェクトデータ。
+
+    Attributes:
+        info (Info): プロジェクトのメタデータ。
+    """
     def __init__(self,**kwargs:Unpack[ProjectIn]):
         self.info:Info = kwargs.get("info") or Info()
 

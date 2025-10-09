@@ -1,3 +1,5 @@
+from . import editor
+
 from .sites.session import (
     Session,
     SessionStatus,
