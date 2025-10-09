@@ -38,8 +38,8 @@ class SpriteBase(Base):
     def _add_to_project(self,project:"Project"):
         if self._project is not None:
             raise ValueError()
-        self._project = project
-        
+        self._project = project #TODO layer_order処理
+
     def to_sb3(self) -> SB3SpriteBase:
         return {
             "blocks":{},
@@ -50,7 +50,7 @@ class SpriteBase(Base):
             "lists":{},
             "name":self.name,
             "sounds":[],
-            "variables":{}
+            "variables":{},
         }
 
 class Sprite(SpriteBase):
@@ -84,6 +84,21 @@ class Sprite(SpriteBase):
             y=data["y"],
         )
     
+    def to_sb3(self) -> SB3Sprite:
+        base = super().to_sb3()
+        return base|{
+            "direction":self.direction,
+            "draggable":self.draggable,
+            "isStage":False,
+            "layerOrder":self.layer_order or 0, #TODO
+            "rotationStyle":self.rotation_style,
+            "size":self.size,
+            "visible":self.visible,
+            "volume":self.volume,
+            "x":self.x,
+            "y":self.y
+        } # pyright: ignore[reportReturnType]
+    
 class Stage(SpriteBase):
     is_stage:Final[Literal[True]] = True
     def __init__(self, project:"Project|None"=None, **kwargs:Unpack[StageIn]):
@@ -110,3 +125,15 @@ class Stage(SpriteBase):
             video_transparency=data["videoTransparency"],
             volume=data["volume"],
         )
+    
+    def to_sb3(self) -> SB3Stage:
+        base = super().to_sb3()
+        return base|{
+            "isStage":True,
+            "layerOrder":0, #TODO
+            "tempo":self.tempo,
+            "textToSpeechLanguage":self.t2t_language,
+            "videoState":self.video_state,
+            "videoTransparency":self.video_transparency,
+            "volume":self.volume
+        } # pyright: ignore[reportReturnType]
