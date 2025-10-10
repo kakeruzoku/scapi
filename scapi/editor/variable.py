@@ -71,5 +71,18 @@ class List(VariableBase):
         )
     
     def to_sb3(self) -> tuple[str,SB3List]:
-        id = self.genarete_id()
-        return id,[self.name,self.value]
+        return self.genarete_id(),[self.name,self.value]
+
+class BroadcastIn(TypedDict,total=False):
+    id:str|None
+
+class Broadcast(VariableBase):
+    def __init__(self,name:str,sprite:"AnySprite",**kwargs:Unpack[BroadcastIn]):
+        super().__init__(name,sprite,kwargs.get("id"))
+
+    @classmethod
+    def from_sb3(cls,id:str,data:str,sprite:"AnySprite"):
+        return cls(data,sprite,id=id)
+    
+    def to_sb3(self) -> tuple[str, str]:
+        return self.genarete_id(),self.name

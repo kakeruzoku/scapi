@@ -1,7 +1,7 @@
 from typing import TYPE_CHECKING, Any, Final, Iterable, Literal, Self, Unpack, TypedDict
 
 from .types import SB3Stage,SB3Sprite,SB3SpriteBase,RotationStyleText,VideoStateText
-from .variable import Variable,List
+from .variable import Variable,List,Broadcast
 
 if TYPE_CHECKING:
     from .project import ProjectEditor
@@ -35,11 +35,13 @@ class SpriteBase:
 
         self.current_costume:int = kwargs.get("current_costume") or 1
         self._variables:dict[str,Variable] = {}
-        self._list:dict[str,List] = {}
+        self._lists:dict[str,List] = {}
+        self._broadcasts:dict[str,Broadcast] = {}
 
-    def _setup_vlb(self,variables:list[Variable],lists:list[List]):
+    def _setup_vlb(self,variables:list[Variable],lists:list[List],broadcasts:list[Broadcast]):
         self._variables = {var.name:var for var in variables}
-        self._list = {l.name:l for l in lists}
+        self._lists = {l.name:l for l in lists}
+        self._broadcasts = {cast.name:cast for cast in broadcasts}
 
     def _add_to_project(self,project:"ProjectEditor"):
         if self._project is not None:
@@ -49,14 +51,14 @@ class SpriteBase:
     def to_sb3(self) -> SB3SpriteBase:
         return {
             "blocks":{},
-            "broadcasts":{},
+            "broadcasts":{k:v for k,v in [i.to_sb3() for i in self.broadcasts]},
             "comments":{},
             "costumes":[],
             "currentCostume":self.current_costume,
-            "lists":{},
+            "lists":{k:v for k,v in [i.to_sb3() for i in self.lists]},
             "name":self.name,
             "sounds":[],
-            "variables":{},
+            "variables":{k:v for k,v in [i.to_sb3() for i in self.variables]},
         }
     
     @property
@@ -65,7 +67,11 @@ class SpriteBase:
     
     @property
     def lists(self) -> Iterable[List]:
-        return self._list.values()
+        return self._lists.values()
+    
+    @property
+    def broadcasts(self) -> Iterable[Broadcast]:
+        return self._broadcasts.values()
 
 class Sprite(SpriteBase):
     is_stage:Final[Literal[False]] = False
@@ -100,6 +106,7 @@ class Sprite(SpriteBase):
         sprite._setup_vlb(
             [Variable.from_sb3(k,v,sprite) for k,v in data["variables"].items()],
             [List.from_sb3(k,v,sprite) for k,v in data["lists"].items()],
+            [Broadcast.from_sb3(k,v,sprite) for k,v in data["broadcasts"].items()]
         )
         return sprite
     
@@ -147,6 +154,7 @@ class Stage(SpriteBase):
         stage._setup_vlb(
             [Variable.from_sb3(k,v,stage) for k,v in data["variables"].items()],
             [List.from_sb3(k,v,stage) for k,v in data["lists"].items()],
+            [Broadcast.from_sb3(k,v,stage) for k,v in data["broadcasts"].items()]
         )
         return stage
     

@@ -24,3 +24,5 @@
 .. autoclass:: scapi.editor.Variable
 
 .. autoclass:: scapi.editor.List
+
+.. autoclass:: scapi.editor.Broadcast

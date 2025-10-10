@@ -16,7 +16,7 @@ class SB3SpriteBase(TypedDict):
     comments:dict[str,dict]
     costumes:list[dict]
     currentCostume:int #0始まり
-    lists:dict[str,list]
+    lists:dict[str,SB3List]
     name:str
     sounds:list[dict]
     variables:dict[str,SB3Variable]
