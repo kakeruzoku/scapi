@@ -10,7 +10,7 @@ class ProjectIn(TypedDict,total=False):
     stage:Stage
     extensions:list[str]
 
-class Project:
+class ProjectEditor:
     """
     Scratchのプロジェクトデータ。
 
@@ -84,5 +84,5 @@ class Project:
             "meta":self.info.to_sb3(),
             "extensions":self.extensions,
             "monitors":[],
-            "targets":[]
+            "targets":[self.stage.to_sb3()] + [sprite.to_sb3() for sprite in self.sprites]
         }

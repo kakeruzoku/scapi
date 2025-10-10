@@ -4,7 +4,7 @@ from .types import SB3Stage,SB3Sprite,SB3SpriteBase,RotationStyleText,VideoState
 from .variable import Variable,List
 
 if TYPE_CHECKING:
-    from .project import Project
+    from .project import ProjectEditor
 
 class SpriteBaseIn(TypedDict,total=False):
     current_costume:int
@@ -29,9 +29,9 @@ class StageIn(SpriteBaseIn,total=False):
 
 class SpriteBase:
     layer_order:int|None
-    def __init__(self,name:str,*,project:"Project|None"=None,**kwargs:Unpack[SpriteBaseIn]):
+    def __init__(self,name:str,*,project:"ProjectEditor|None"=None,**kwargs:Unpack[SpriteBaseIn]):
         self.name:str = name
-        self._project:"Project|None" = project
+        self._project:"ProjectEditor|None" = project
 
         self.current_costume:int = kwargs.get("current_costume") or 1
         self._variables:dict[str,Variable] = {}
@@ -41,7 +41,7 @@ class SpriteBase:
         self._variables = {var.name:var for var in variables}
         self._list = {l.name:l for l in lists}
 
-    def _add_to_project(self,project:"Project"):
+    def _add_to_project(self,project:"ProjectEditor"):
         if self._project is not None:
             raise ValueError()
         self._project = project #TODO layer_order処理
@@ -69,7 +69,7 @@ class SpriteBase:
 
 class Sprite(SpriteBase):
     is_stage:Final[Literal[False]] = False
-    def __init__(self,name:str,*,project:"Project|None"=None,**kwargs:Unpack[SpriteIn]):
+    def __init__(self,name:str,*,project:"ProjectEditor|None"=None,**kwargs:Unpack[SpriteIn]):
         super().__init__(name,project=project,**kwargs)
         self.layer_order:int|None = kwargs.get("layer_order")
         self.direction:int = kwargs.get("direction",90)
@@ -82,7 +82,7 @@ class Sprite(SpriteBase):
         self.y:int = kwargs.get("y",0)
 
     @classmethod
-    def from_sb3(cls, data:SB3Sprite, project:"Project|None"=None) -> Self:
+    def from_sb3(cls, data:SB3Sprite, project:"ProjectEditor|None"=None) -> Self:
         sprite = cls(
             data["name"],
             project=project,
@@ -120,7 +120,7 @@ class Sprite(SpriteBase):
     
 class Stage(SpriteBase):
     is_stage:Final[Literal[True]] = True
-    def __init__(self, project:"Project|None"=None, **kwargs:Unpack[StageIn]):
+    def __init__(self, project:"ProjectEditor|None"=None, **kwargs:Unpack[StageIn]):
         super().__init__(
             "Stage",
             project=project,
@@ -134,7 +134,7 @@ class Stage(SpriteBase):
         self.volume:int = kwargs.get("volume",100)
 
     @classmethod
-    def from_sb3(cls, data:SB3Stage, project:"Project|None"=None) -> Self:
+    def from_sb3(cls, data:SB3Stage, project:"ProjectEditor|None"=None) -> Self:
         stage = cls(
             project=project,
             current_costume=data["currentCostume"] + 1,

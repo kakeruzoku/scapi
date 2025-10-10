@@ -7,7 +7,7 @@
 プロジェクト
 ------------
 
-.. autoclass:: scapi.editor.Project
+.. autoclass:: scapi.editor.ProjectEditor
 
 .. autoclass:: scapi.editor.Info
 
