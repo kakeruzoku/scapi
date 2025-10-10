@@ -3,7 +3,7 @@ from __future__ import annotations
 import datetime
 from enum import Enum
 import random
-from typing import TYPE_CHECKING, AsyncGenerator, Final, NamedTuple, Self, Sequence
+from typing import TYPE_CHECKING, AsyncGenerator, Final, Literal, NamedTuple, Self, Sequence
 
 import aiohttp
 import bs4
@@ -13,7 +13,8 @@ from ..utils.types import (
     OldUserPayload,
     StudentPayload,
     StudentPasswordRestPayliad,
-    OcularPayload
+    OcularPayload,
+    AnySuccessPayload
 )
 from ..utils.client import HTTPClient
 from ..utils.common import (
@@ -28,7 +29,7 @@ from ..utils.common import (
     split,
     get_any_count
 )
-from ..utils.error import ClientError,NotFound
+from ..utils.error import ClientError,NotFound,InvalidData
 from ..utils.file import File,_read_file
 
 from ..event.temporal import CommentEvent
@@ -510,6 +511,23 @@ class User(_BaseSiteAPI[str]):
             f"https://scratch.mit.edu/site-api/users/followers/{self.username}/remove/",
             params={"usernames":self._session.username}
         )
+
+    async def report(self,type:Literal["username","icon","description","working_on"]):
+        """
+        ユーザーを報告する
+
+        ``3.1.0`` で追加
+
+        Args:
+            type (Literal["username","icon","description","working_on"]): 報告する種類
+        """
+        response = await self.client.post(
+            f"https://scratch.mit.edu/site-api/users/all/{self.username}/report/",
+            data=aiohttp.FormData({"selected_field":type})
+        )
+        data:AnySuccessPayload = response.json()
+        if not data.get("success"):
+            raise InvalidData(response)
 
 
     async def edit(
