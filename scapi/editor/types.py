@@ -8,6 +8,8 @@ Tlist = tuple[*Ts]|list[Any]
 VarType = str|int|float|bool|None
 SB3Variable = Tlist[str,VarType]|Tlist[str,VarType,Literal[True]]
 
+SB3List = Tlist[str,list[VarType]]
+
 class SB3SpriteBase(TypedDict):
     blocks:dict[str,dict]
     broadcasts:dict[str,str]

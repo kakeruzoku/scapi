@@ -1,7 +1,7 @@
-from typing import TYPE_CHECKING, Any, Final, Literal, Self, Unpack, TypedDict
+from typing import TYPE_CHECKING, Any, Final, Iterable, Literal, Self, Unpack, TypedDict
 
 from .types import SB3Stage,SB3Sprite,SB3SpriteBase,RotationStyleText,VideoStateText
-from .variable import Variable
+from .variable import Variable,List
 
 if TYPE_CHECKING:
     from .project import Project
@@ -34,10 +34,12 @@ class SpriteBase:
         self._project:"Project|None" = project
 
         self.current_costume:int = kwargs.get("current_costume") or 1
-        self.variables:dict[str,Variable] = {}
+        self._variables:dict[str,Variable] = {}
+        self._list:dict[str,List] = {}
 
-    def _setup_variables(self,variables:list[Variable]):
-        self.variables = {var.name:var for var in variables}
+    def _setup_vlb(self,variables:list[Variable],lists:list[List]):
+        self._variables = {var.name:var for var in variables}
+        self._list = {l.name:l for l in lists}
 
     def _add_to_project(self,project:"Project"):
         if self._project is not None:
@@ -56,6 +58,14 @@ class SpriteBase:
             "sounds":[],
             "variables":{},
         }
+    
+    @property
+    def variables(self) -> Iterable[Variable]:
+        return self._variables.values()
+    
+    @property
+    def lists(self) -> Iterable[List]:
+        return self._list.values()
 
 class Sprite(SpriteBase):
     is_stage:Final[Literal[False]] = False
@@ -87,7 +97,10 @@ class Sprite(SpriteBase):
             x=data["x"],
             y=data["y"],
         )
-        sprite._setup_variables([Variable.from_sb3(k,v,sprite) for k,v in data["variables"].items()])
+        sprite._setup_vlb(
+            [Variable.from_sb3(k,v,sprite) for k,v in data["variables"].items()],
+            [List.from_sb3(k,v,sprite) for k,v in data["lists"].items()],
+        )
         return sprite
     
     def to_sb3(self) -> SB3Sprite:
@@ -131,7 +144,10 @@ class Stage(SpriteBase):
             video_transparency=data["videoTransparency"],
             volume=data["volume"],
         )
-        stage._setup_variables([Variable.from_sb3(k,v,stage) for k,v in data["variables"].items()])
+        stage._setup_vlb(
+            [Variable.from_sb3(k,v,stage) for k,v in data["variables"].items()],
+            [List.from_sb3(k,v,stage) for k,v in data["lists"].items()],
+        )
         return stage
     
     def to_sb3(self) -> SB3Stage:

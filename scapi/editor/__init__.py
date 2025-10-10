@@ -1,3 +1,4 @@
-from .info import Info
 from .project import Project
-from .variable import Variable
+from .info import Info
+from .sprite import Sprite,Stage,AnySprite
+from .variable import Variable,List
