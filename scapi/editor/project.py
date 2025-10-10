@@ -1,5 +1,4 @@
 from typing import Any, Iterable, Self,Unpack,TypedDict
-from .common import Base
 from .types import SB3Project
 from ..utils.common import __version__
 from .info import Info
@@ -11,7 +10,7 @@ class ProjectIn(TypedDict,total=False):
     stage:Stage
     extensions:list[str]
 
-class Project(Base):
+class Project:
     """
     Scratchのプロジェクトデータ。
 

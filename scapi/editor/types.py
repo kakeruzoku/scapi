@@ -5,6 +5,9 @@ from typing import Any, Literal, TypeVarTuple, TypedDict
 Ts = TypeVarTuple('Ts')
 Tlist = tuple[*Ts]|list[Any] 
 
+VarType = str|int|float|bool|None
+SB3Variable = Tlist[str,VarType]|Tlist[str,VarType,Literal[True]]
+
 class SB3SpriteBase(TypedDict):
     blocks:dict[str,dict]
     broadcasts:dict[str,str]
@@ -14,7 +17,7 @@ class SB3SpriteBase(TypedDict):
     lists:dict[str,list]
     name:str
     sounds:list[dict]
-    variables:dict[str,list]
+    variables:dict[str,SB3Variable]
 
 RotationStyleText = str #TODO
 

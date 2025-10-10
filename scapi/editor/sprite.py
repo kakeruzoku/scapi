@@ -1,7 +1,7 @@
 from typing import TYPE_CHECKING, Any, Final, Literal, Self, Unpack, TypedDict
 
-from .common import Base
 from .types import SB3Stage,SB3Sprite,SB3SpriteBase,RotationStyleText,VideoStateText
+from .variable import Variable
 
 if TYPE_CHECKING:
     from .project import Project
@@ -27,13 +27,17 @@ class StageIn(SpriteBaseIn,total=False):
     video_transparency:int
     volume:int
 
-class SpriteBase(Base):
+class SpriteBase:
     layer_order:int|None
     def __init__(self,name:str,*,project:"Project|None"=None,**kwargs:Unpack[SpriteBaseIn]):
         self.name:str = name
         self._project:"Project|None" = project
 
         self.current_costume:int = kwargs.get("current_costume") or 1
+        self.variables:dict[str,Variable] = {}
+
+    def _setup_variables(self,variables:list[Variable]):
+        self.variables = {var.name:var for var in variables}
 
     def _add_to_project(self,project:"Project"):
         if self._project is not None:
@@ -68,8 +72,8 @@ class Sprite(SpriteBase):
         self.y:int = kwargs.get("y",0)
 
     @classmethod
-    def from_sb3(cls, data:SB3Sprite, *, project:"Project|None"=None) -> Self:
-        return cls(
+    def from_sb3(cls, data:SB3Sprite, project:"Project|None"=None) -> Self:
+        sprite = cls(
             data["name"],
             project=project,
             current_costume=data["currentCostume"] + 1,
@@ -83,6 +87,8 @@ class Sprite(SpriteBase):
             x=data["x"],
             y=data["y"],
         )
+        sprite._setup_variables([Variable.from_sb3(k,v,sprite) for k,v in data["variables"].items()])
+        return sprite
     
     def to_sb3(self) -> SB3Sprite:
         base = super().to_sb3()
@@ -115,8 +121,8 @@ class Stage(SpriteBase):
         self.volume:int = kwargs.get("volume",100)
 
     @classmethod
-    def from_sb3(cls, data:SB3Stage, *, project:"Project|None"=None) -> Self:
-        return cls(
+    def from_sb3(cls, data:SB3Stage, project:"Project|None"=None) -> Self:
+        stage = cls(
             project=project,
             current_costume=data["currentCostume"] + 1,
             tempo=data["tempo"],
@@ -125,6 +131,8 @@ class Stage(SpriteBase):
             video_transparency=data["videoTransparency"],
             volume=data["volume"],
         )
+        stage._setup_variables([Variable.from_sb3(k,v,stage) for k,v in data["variables"].items()])
+        return stage
     
     def to_sb3(self) -> SB3Stage:
         base = super().to_sb3()
@@ -137,3 +145,5 @@ class Stage(SpriteBase):
             "videoTransparency":self.video_transparency,
             "volume":self.volume
         } # pyright: ignore[reportReturnType]
+    
+AnySprite = Sprite|Stage

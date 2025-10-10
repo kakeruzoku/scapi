@@ -1,17 +1,8 @@
 from typing import Any,Self
+import random
+import string
 
-
-class Base:
-    @classmethod
-    def from_sb3(cls,data) -> Self:
-        raise TypeError()
+ID_CHARS = string.ascii_letters + string.digits + string.punctuation
     
-    @classmethod
-    def from_sb2(cls,data) -> Self:
-        raise TypeError()
-    
-    def to_sb3(self) -> Any:
-        raise TypeError()
-    
-    def to_sb2(self) -> Any:
-        raise TypeError()
+def generate_id() -> str:
+    return "".join(random.choices(ID_CHARS, k=20))

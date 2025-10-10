@@ -1,9 +1,8 @@
 from typing import Any, LiteralString
-from .common import Base
 from ..utils.common import __version__
 from .types import SB3Meta
 
-class Info(Base):
+class Info:
     """
     プロジェクトのメタデータ。
     """
