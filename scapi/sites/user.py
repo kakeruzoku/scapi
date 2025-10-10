@@ -516,6 +516,8 @@ class User(_BaseSiteAPI[str]):
         """
         ユーザーを報告する
 
+        ``3.1.0`` で追加
+
         Args:
             type (Literal["username","icon","description","working_on"]): 報告する種類
         """

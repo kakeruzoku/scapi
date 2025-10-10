@@ -368,6 +368,8 @@ class ForumPost(_BaseSiteAPI):
         """
         この投稿のソース(BBcode)を取得する
 
+        ``3.1.0`` で追加
+
         Returns:
             str:
         """
