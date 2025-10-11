@@ -26,3 +26,10 @@
 .. autoclass:: scapi.editor.List
 
 .. autoclass:: scapi.editor.Broadcast
+
+アセット
+--------
+
+.. autoclass:: scapi.editor.Costume
+
+.. autoclass:: scapi.editor.Sound

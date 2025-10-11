@@ -8,9 +8,6 @@ from .variable import Variable
 class ProjectEditor:
     """
     Scratchのプロジェクトデータ。
-
-    Attributes:
-        info (Info): プロジェクトのメタデータ。
     """
     info:Info
     extensions:list[str]

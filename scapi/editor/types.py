@@ -1,9 +1,26 @@
-from typing import Any, Literal, TypeVarTuple, TypedDict
+from typing import Any, Literal, TypeVarTuple, TypedDict, NotRequired
 
 # TODO 順番関係あるやつをTlistで表記
 
 Ts = TypeVarTuple('Ts')
 Tlist = tuple[*Ts]|list[Any] 
+
+class SB3Asset(TypedDict):
+    assetId:str
+    md5ext:str
+    name:str
+
+class SB3Costume(SB3Asset):
+    bitmapResolution:NotRequired[int]
+    dataFormat:Literal["png", "jpg", "jpeg", "svg"]
+    rotationCenterX:float
+    rotationCenterY:float
+
+class SB3Sound(SB3Asset):
+    dataFormat:Literal["wav", "mp3"]
+    format:str
+    rate:int
+    sampleCount:int
 
 VarType = str|int|float|bool|None
 SB3Variable = Tlist[str,VarType]|Tlist[str,VarType,Literal[True]]

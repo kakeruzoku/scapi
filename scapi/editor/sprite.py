@@ -2,6 +2,7 @@ from typing import TYPE_CHECKING, Any, Final, Iterable, Literal, Self, Unpack, T
 
 from .types import SB3Stage,SB3Sprite,SB3SpriteBase,RotationStyleText,VideoStateText,VarType,Sprite3Sprite
 from .variable import Variable,List,Broadcast
+from .asset import Costume,Sound
 
 if TYPE_CHECKING:
     from .project import ProjectEditor
@@ -17,6 +18,8 @@ class SpriteBase:
         self._variables:dict[str,Variable] = {}
         self._lists:dict[str,List] = {}
         self._broadcasts:dict[str,Broadcast] = {}
+        self.costumes:list[Costume] = []
+        self.sounds:list[Sound] = []
 
     def _init(self):
         self.current_costume = 1
@@ -36,17 +39,19 @@ class SpriteBase:
             [List.from_sb3(k,v,sprite) for k,v in data["lists"].items()],
             [Broadcast.from_sb3(k,v,sprite) for k,v in data["broadcasts"].items()]
         )
+        self.costumes = [Costume.from_sb3(i,sprite) for i in data["costumes"]]
+        self.sounds = [Sound.from_sb3(i,sprite) for i in data["sounds"]]
 
     def to_sb3(self) -> SB3SpriteBase:
         return {
             "blocks":{},
             "broadcasts":{k:v for k,v in [i.to_sb3() for i in self.broadcasts]},
             "comments":{},
-            "costumes":[],
+            "costumes":[i.to_sb3() for i in self.costumes],
             "currentCostume":self.current_costume,
             "lists":{k:v for k,v in [i.to_sb3() for i in self.lists]},
             "name":self.name,
-            "sounds":[],
+            "sounds":[i.to_sb3() for i in self.sounds],
             "variables":{k:v for k,v in [i.to_sb3() for i in self.variables]},
             "volume":self.volume
         }
