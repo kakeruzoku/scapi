@@ -20,18 +20,14 @@ class VariableBase:
             self.id = generate_id() #TODO変数を生成させたことでの処理?
         return self.id
 
-
-class VariableIn(TypedDict,total=False):
-    id:str|None
-    value:VarType
-    is_cloud:bool
-
 class Variable(VariableBase):
-    def __init__(self,name:str,sprite:"AnySprite",**kwargs:Unpack[VariableIn]):
-        super().__init__(name,sprite,kwargs.get("id"))
-        self.value:VarType = kwargs.get("value",0)
-
-        self.is_cloud:bool = kwargs.get("is_cloud",False)
+    def __init__(
+            self,name:str,sprite:"AnySprite",id:str|None=None,
+            value:VarType=0,is_cloud:bool=False
+        ):
+        super().__init__(name,sprite,id)
+        self.value:VarType = value
+        self.is_cloud:bool = is_cloud
 
     @classmethod
     def from_sb3(cls,id:str,data:SB3Variable,sprite:"AnySprite") -> Self:
@@ -51,15 +47,13 @@ class Variable(VariableBase):
         else:
             return id,[self.name,self.value]
 
-
-class ListIn(TypedDict,total=False):
-    id:str|None
-    value:list[VarType]
-
 class List(VariableBase):
-    def __init__(self,name:str,sprite:"AnySprite",**kwargs:Unpack[ListIn]):
-        super().__init__(name,sprite,kwargs.get("id"))
-        self.value:list[VarType] = kwargs.get("value",[])
+    def __init__(
+            self,name:str,sprite:"AnySprite",id:str|None=None,
+            value:list[VarType]|None=None
+        ):
+        super().__init__(name,sprite,id)
+        self.value:list[VarType] = value or []
 
     @classmethod
     def from_sb3(cls,id:str,data:SB3List,sprite:"AnySprite") -> Self:
@@ -73,12 +67,9 @@ class List(VariableBase):
     def to_sb3(self) -> tuple[str,SB3List]:
         return self.genarete_id(),[self.name,self.value]
 
-class BroadcastIn(TypedDict,total=False):
-    id:str|None
-
 class Broadcast(VariableBase):
-    def __init__(self,name:str,sprite:"AnySprite",**kwargs:Unpack[BroadcastIn]):
-        super().__init__(name,sprite,kwargs.get("id"))
+    def __init__(self,name:str,sprite:"AnySprite",id:str|None=None,):
+        super().__init__(name,sprite,id)
 
     @classmethod
     def from_sb3(cls,id:str,data:str,sprite:"AnySprite"):
