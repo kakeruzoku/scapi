@@ -3,6 +3,7 @@ from .types import SB3Project
 from ..utils.common import __version__
 from .info import Info
 from .sprite import Sprite,Stage
+from .variable import Variable
 
 class ProjectIn(TypedDict,total=False):
     info:Info
@@ -19,20 +20,23 @@ class ProjectEditor:
     """
     def __init__(self,**kwargs:Unpack[ProjectIn]):
         self.info:Info = kwargs.get("info") or Info()
+        self.extensions:list[str] = kwargs.get("extensions",[])
 
         #spriteのロード
         sprites = kwargs.get("sprites")
         self._sprites:dict[str,Sprite] = {}
+
+        stage = kwargs.get("stage")
+        if stage is None:
+            self._stage = Stage(self)
+        else:
+            stage._add_to_project(self)
+            self._stage = stage
+
         if sprites is not None:
             for sprite in sprites:
                 sprite._add_to_project(self)
                 self._sprites[sprite.name] = sprite
-        
-        stage = kwargs.get("stage")
-        self._stage:Stage|None = None
-        self.stage = stage or Stage(self)
-
-        self.extensions:list[str] = kwargs.get("extensions",[])
 
     @property
     def sprites(self) -> Iterable[Sprite]:
@@ -44,6 +48,19 @@ class ProjectEditor:
         """
         return self._sprites.values()
     
+    def create_sprite(self,name:str) -> Sprite:
+        if name in self._sprites:
+            raise ValueError(f"Sprite name:{name} already exists.")
+        sprite = Sprite(name,project=self)
+        self._sprites[name] = sprite
+        return sprite
+    
+    def use_sprite(self,sprite:Sprite):
+        if sprite.name in self._sprites:
+            raise ValueError(f"Sprite name:{sprite.name} already exists.")
+        sprite._add_to_project(self)
+        self._sprites[sprite.name] = sprite
+    
     @property
     def stage(self) -> Stage:
         """
@@ -54,11 +71,6 @@ class ProjectEditor:
         """
         assert self._stage
         return self._stage
-    
-    @stage.setter
-    def stage(self,value:Stage):
-        value._add_to_project(self)
-        self._stage = value
 
     @classmethod
     def from_sb3(cls, data:SB3Project) -> Self:

@@ -1,6 +1,6 @@
 from typing import TYPE_CHECKING, Any, Final, Iterable, Literal, Self, Unpack, TypedDict
 
-from .types import SB3Stage,SB3Sprite,SB3SpriteBase,RotationStyleText,VideoStateText
+from .types import SB3Stage,SB3Sprite,SB3SpriteBase,RotationStyleText,VideoStateText,VarType
 from .variable import Variable,List,Broadcast
 
 if TYPE_CHECKING:
@@ -46,7 +46,16 @@ class SpriteBase:
     def _add_to_project(self,project:"ProjectEditor"):
         if self._project is not None:
             raise ValueError()
-        self._project = project #TODO layer_order処理
+        #TODO 変数名とかチェックすべき？
+        self._project = project
+        self.layer_order = len(project._sprites)+1
+
+    def remove_from_project(self):
+        if self._project is None:
+            raise ValueError("This sprite does not belong to a project.")
+        self._project._sprites.pop(self.name)
+        # TODO モニター削除?
+        self._project = None
 
     def to_sb3(self) -> SB3SpriteBase:
         return {
@@ -60,6 +69,10 @@ class SpriteBase:
             "sounds":[],
             "variables":{k:v for k,v in [i.to_sb3() for i in self.variables]},
         }
+    
+    @property
+    def project(self) -> "ProjectEditor|None":
+        return self._project
     
     @property
     def variables(self) -> Iterable[Variable]:
@@ -86,6 +99,16 @@ class Sprite(SpriteBase):
         self.volume:int = kwargs.get("volume",100)
         self.x:int = kwargs.get("x",0)
         self.y:int = kwargs.get("y",0)
+
+    def create_variable(self,name:str,value:VarType=0) -> Variable:
+        if name in self._variables:
+            raise ValueError(f"Variable name:{name} already exists in this sprite.")
+        if self._project:
+            if name in self._project.stage._variables:
+                raise ValueError(f"Variable name:{name} already exists in stage.")
+        variable = Variable(name,self,value=value)
+        self._variables[name] = variable
+        return variable
 
     @classmethod
     def from_sb3(cls, data:SB3Sprite, project:"ProjectEditor|None"=None) -> Self:
@@ -169,5 +192,14 @@ class Stage(SpriteBase):
             "videoTransparency":self.video_transparency,
             "volume":self.volume
         } # pyright: ignore[reportReturnType]
+    
+    def create_variable(self,name:str,value:VarType=0,is_cloud:bool=False) -> Variable:
+        if is_cloud and not name.startswith("☁ "):
+            name = "☁ " + name
+        if name in self._variables:
+            raise ValueError(f"Variable name:{name} already exists.")
+        variable = Variable(name,self,value=value,is_cloud=is_cloud)
+        self._variables[name] = variable
+        return variable
     
 AnySprite = Sprite|Stage
