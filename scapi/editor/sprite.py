@@ -1,6 +1,6 @@
 from typing import TYPE_CHECKING, Any, Final, Iterable, Literal, Self, Unpack, TypedDict
 
-from .types import SB3Stage,SB3Sprite,SB3SpriteBase,RotationStyleText,VideoStateText,VarType
+from .types import SB3Stage,SB3Sprite,SB3SpriteBase,RotationStyleText,VideoStateText,VarType,Sprite3Sprite
 from .variable import Variable,List,Broadcast
 
 if TYPE_CHECKING:
@@ -26,6 +26,16 @@ class SpriteBase:
         self._variables = {var.name:var for var in variables}
         self._lists = {l.name:l for l in lists}
         self._broadcasts = {cast.name:cast for cast in broadcasts}
+
+    def _from_sb3(self,sprite:"AnySprite",data:SB3SpriteBase):
+        assert self == sprite
+        self.current_costume = data["currentCostume"]
+        self.volume = data["volume"]
+        self._setup_vlb(
+            [Variable.from_sb3(k,v,sprite) for k,v in data["variables"].items()],
+            [List.from_sb3(k,v,sprite) for k,v in data["lists"].items()],
+            [Broadcast.from_sb3(k,v,sprite) for k,v in data["broadcasts"].items()]
+        )
 
     def to_sb3(self) -> SB3SpriteBase:
         return {
@@ -82,9 +92,19 @@ class Sprite(SpriteBase):
         self.y = 0
 
     @classmethod
-    def from_sb3(cls, data:SB3Sprite, project:"ProjectEditor|None"=None) -> Self:
+    def from_sb3(cls, data:SB3Sprite|Sprite3Sprite, project:"ProjectEditor|None"=None) -> Self:
         sprite = cls(data["name"],project)
+        sprite._from_sb3(sprite,data)
 
+        sprite.layer_order = data.get("layerOrder")
+        sprite.direction = data["direction"]
+        sprite.draggable = data["draggable"]
+        sprite.rotation_style = data["rotationStyle"]
+        sprite.size = data["size"]
+        sprite.visible = data["visible"]
+        sprite.volume = data["volume"]
+        sprite.x = data["x"]
+        sprite.y = data["y"]
         return sprite
     
     def to_sb3(self) -> SB3Sprite:
@@ -112,11 +132,22 @@ class Stage(SpriteBase):
     def __init__(self,_project:"ProjectEditor"):
         super().__init__("Stage",_project)
 
+    def _init(self):
+        self.tempo = 60
+        self.t2t_language = "en"
+        self.video_state = "on"
+        self.video_transparency = 50
+
     @classmethod
     def from_sb3(cls, data:SB3Stage, project:"ProjectEditor") -> Self:
-        sprite = cls(project)
+        stage = cls(project)
+        stage._from_sb3(stage,data)
 
-        return sprite
+        stage.tempo = data["tempo"]
+        stage.t2t_language = data["textToSpeechLanguage"]
+        stage.video_state = data["videoState"]
+        stage.video_transparency = data["videoTransparency"]
+        return stage
     
     def to_sb3(self) -> SB3Stage:
         base = super().to_sb3()

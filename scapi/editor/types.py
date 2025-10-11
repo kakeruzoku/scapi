@@ -29,9 +29,10 @@ class Sprite3Sprite(SB3SpriteBase):
     draggable:bool
     isStage:Literal[False]
     rotationStyle:RotationStyleText
-
-    x:int
-    y:int
+    size:int
+    visible:bool
+    x:float
+    y:float
 
 class SB3Sprite(Sprite3Sprite):
     layerOrder:int
