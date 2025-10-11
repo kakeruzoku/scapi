@@ -14,26 +14,27 @@ class SB3SpriteBase(TypedDict):
     blocks:dict[str,dict]
     broadcasts:dict[str,str]
     comments:dict[str,dict]
-    costumes:list[dict]
+    costumes:list[SB3Costume]
     currentCostume:int #0始まり
     lists:dict[str,SB3List]
     name:str
-    sounds:list[dict]
+    sounds:list[SB3Sound]
     variables:dict[str,SB3Variable]
+    volume:int
 
 RotationStyleText = str #TODO
 
-class SB3Sprite(SB3SpriteBase):
+class Sprite3Sprite(SB3SpriteBase):
     direction:int
     draggable:bool
     isStage:Literal[False]
-    layerOrder:int
     rotationStyle:RotationStyleText
-    size:int
-    visible:bool
-    volume:int
+
     x:int
     y:int
+
+class SB3Sprite(Sprite3Sprite):
+    layerOrder:int
 
 VideoStateText = str #TODO
 
@@ -44,7 +45,6 @@ class SB3Stage(SB3SpriteBase):
     textToSpeechLanguage:str
     videoState:VideoStateText
     videoTransparency:int
-    volume:int
 
 class SB3Meta(TypedDict):
     agent:str

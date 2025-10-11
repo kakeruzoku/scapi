@@ -1,15 +1,9 @@
 from typing import Any, Iterable, Self,Unpack,TypedDict
-from .types import SB3Project
+from .types import SB3Project,SB3Sprite
 from ..utils.common import __version__
 from .info import Info
 from .sprite import Sprite,Stage
 from .variable import Variable
-
-class ProjectIn(TypedDict,total=False):
-    info:Info
-    sprites:list[Sprite]
-    stage:Stage
-    extensions:list[str]
 
 class ProjectEditor:
     """
@@ -18,25 +12,18 @@ class ProjectEditor:
     Attributes:
         info (Info): プロジェクトのメタデータ。
     """
-    def __init__(self,**kwargs:Unpack[ProjectIn]):
-        self.info:Info = kwargs.get("info") or Info()
-        self.extensions:list[str] = kwargs.get("extensions",[])
+    info:Info
+    extensions:list[str]
+    _stage:Stage
 
-        #spriteのロード
-        sprites = kwargs.get("sprites")
+    def __init__(self):
         self._sprites:dict[str,Sprite] = {}
+        self._sprite_layer:list[Sprite] = [] #<-後ろ 前->
 
-        stage = kwargs.get("stage")
-        if stage is None:
-            self._stage = Stage(self)
-        else:
-            stage._add_to_project(self)
-            self._stage = stage
-
-        if sprites is not None:
-            for sprite in sprites:
-                sprite._add_to_project(self)
-                self._sprites[sprite.name] = sprite
+    def _init(self):
+        self.info = Info()
+        self.extensions = []
+        self._stage = Stage(self)
 
     @property
     def sprites(self) -> Iterable[Sprite]:
@@ -48,19 +35,6 @@ class ProjectEditor:
         """
         return self._sprites.values()
     
-    def create_sprite(self,name:str) -> Sprite:
-        if name in self._sprites:
-            raise ValueError(f"Sprite name:{name} already exists.")
-        sprite = Sprite(name,project=self)
-        self._sprites[name] = sprite
-        return sprite
-    
-    def use_sprite(self,sprite:Sprite):
-        if sprite.name in self._sprites:
-            raise ValueError(f"Sprite name:{sprite.name} already exists.")
-        sprite._add_to_project(self)
-        self._sprites[sprite.name] = sprite
-    
     @property
     def stage(self) -> Stage:
         """
@@ -71,25 +45,29 @@ class ProjectEditor:
         """
         assert self._stage
         return self._stage
+    
+    @classmethod
+    def new(cls) -> Self:
+        project = cls()
+        project._init()
+        return project
 
     @classmethod
     def from_sb3(cls, data:SB3Project) -> Self:
-        stage:Stage|None = None
-        sprites:list[Sprite] = []
+        project = cls()
+        project.info = Info()
+        project.extensions = data["extensions"]
+
+        sprites:list[SB3Sprite] = []
         for target in data["targets"]:
             if target["isStage"] == True:
-                stage = Stage.from_sb3(target)
+                project._stage = Stage.from_sb3(target,project)
             else:
-                sprites.append(Sprite.from_sb3(target))
-        
-        if stage is None:
-            stage = Stage()
+                sprites.append(target)
 
-        return cls(
-            sprites=sprites,
-            stage=stage,
-            extensions=data["extensions"]
-        )
+        project._sprites = {i.name:i for i in [Sprite.from_sb3(i,project) for i in sprites]}
+        project._sprite_layer = sorted(project._sprites.values(),key=lambda sprite: sprite.layer_order or 0)
+        return project
     
     def to_sb3(self) -> SB3Project:
         return {

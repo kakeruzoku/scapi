@@ -6,56 +6,26 @@ from .variable import Variable,List,Broadcast
 if TYPE_CHECKING:
     from .project import ProjectEditor
 
-class SpriteBaseIn(TypedDict,total=False):
-    current_costume:int
-
-class SpriteIn(SpriteBaseIn,total=False):
-    layer_order:int
-    direction:int
-    draggable:bool
-    rotationStyle:RotationStyleText
-    size:int
-    visible:bool
-    volume:int
-    x:int
-    y:int
-
-class StageIn(SpriteBaseIn,total=False):
-    tempo:int
-    t2t_language:str
-    video_state:VideoStateText
-    video_transparency:int
-    volume:int
 
 class SpriteBase:
-    layer_order:int|None
-    def __init__(self,name:str,*,project:"ProjectEditor|None"=None,**kwargs:Unpack[SpriteBaseIn]):
+    current_costume:int
+    volume:int
+    
+    def __init__(self,name:str,_project:"ProjectEditor|None"=None):
         self.name:str = name
-        self._project:"ProjectEditor|None" = project
-
-        self.current_costume:int = kwargs.get("current_costume") or 1
+        self._project:"ProjectEditor|None" = _project
         self._variables:dict[str,Variable] = {}
         self._lists:dict[str,List] = {}
         self._broadcasts:dict[str,Broadcast] = {}
+
+    def _init(self):
+        self.current_costume = 1
+        self.volume = 100
 
     def _setup_vlb(self,variables:list[Variable],lists:list[List],broadcasts:list[Broadcast]):
         self._variables = {var.name:var for var in variables}
         self._lists = {l.name:l for l in lists}
         self._broadcasts = {cast.name:cast for cast in broadcasts}
-
-    def _add_to_project(self,project:"ProjectEditor"):
-        if self._project is not None:
-            raise ValueError()
-        #TODO 変数名とかチェックすべき？
-        self._project = project
-        self.layer_order = len(project._sprites)+1
-
-    def remove_from_project(self):
-        if self._project is None:
-            raise ValueError("This sprite does not belong to a project.")
-        self._project._sprites.pop(self.name)
-        # TODO モニター削除?
-        self._project = None
 
     def to_sb3(self) -> SB3SpriteBase:
         return {
@@ -68,6 +38,7 @@ class SpriteBase:
             "name":self.name,
             "sounds":[],
             "variables":{k:v for k,v in [i.to_sb3() for i in self.variables]},
+            "volume":self.volume
         }
     
     @property
@@ -85,52 +56,35 @@ class SpriteBase:
     @property
     def broadcasts(self) -> Iterable[Broadcast]:
         return self._broadcasts.values()
-
+    
 class Sprite(SpriteBase):
     is_stage:Final[Literal[False]] = False
-    def __init__(self,name:str,*,project:"ProjectEditor|None"=None,**kwargs:Unpack[SpriteIn]):
-        super().__init__(name,project=project,**kwargs)
-        self.layer_order:int|None = kwargs.get("layer_order")
-        self.direction:int = kwargs.get("direction",90)
-        self.draggable:bool = kwargs.get("draggable",False)
-        self.rotation_style:RotationStyleText = kwargs.get("rotationStyle","all around")
-        self.size:int = kwargs.get("size",100)
-        self.visible:bool = kwargs.get("visible",True)
-        self.volume:int = kwargs.get("volume",100)
-        self.x:int = kwargs.get("x",0)
-        self.y:int = kwargs.get("y",0)
 
-    def create_variable(self,name:str,value:VarType=0) -> Variable:
-        if name in self._variables:
-            raise ValueError(f"Variable name:{name} already exists in this sprite.")
-        if self._project:
-            if name in self._project.stage._variables:
-                raise ValueError(f"Variable name:{name} already exists in stage.")
-        variable = Variable(name,self,value=value)
-        self._variables[name] = variable
-        return variable
+    layer_order:int|None
+    direction:int
+    draggable:bool
+    rotation_style:RotationStyleText
+    size:int
+    visible:bool
+    volume:int
+    x:float
+    y:float
+
+    def _init(self):
+        self.layer_order = None
+        self.direction = 90
+        self.draggable = False
+        self.rotation_style = "all around"
+        self.size = 100
+        self.visible = True
+        self.volume = 100
+        self.x = 0
+        self.y = 0
 
     @classmethod
     def from_sb3(cls, data:SB3Sprite, project:"ProjectEditor|None"=None) -> Self:
-        sprite = cls(
-            data["name"],
-            project=project,
-            current_costume=data["currentCostume"] + 1,
-            layer_order=data["layerOrder"],
-            direction=data["direction"],
-            draggable=data["draggable"],
-            rotationStyle=data["rotationStyle"],
-            size=data["size"],
-            visible=data["visible"],
-            volume=data["volume"],
-            x=data["x"],
-            y=data["y"],
-        )
-        sprite._setup_vlb(
-            [Variable.from_sb3(k,v,sprite) for k,v in data["variables"].items()],
-            [List.from_sb3(k,v,sprite) for k,v in data["lists"].items()],
-            [Broadcast.from_sb3(k,v,sprite) for k,v in data["broadcasts"].items()]
-        )
+        sprite = cls(data["name"],project)
+
         return sprite
     
     def to_sb3(self) -> SB3Sprite:
@@ -143,43 +97,26 @@ class Sprite(SpriteBase):
             "rotationStyle":self.rotation_style,
             "size":self.size,
             "visible":self.visible,
-            "volume":self.volume,
             "x":self.x,
             "y":self.y
         } # pyright: ignore[reportReturnType]
     
 class Stage(SpriteBase):
     is_stage:Final[Literal[True]] = True
-    def __init__(self, project:"ProjectEditor|None"=None, **kwargs:Unpack[StageIn]):
-        super().__init__(
-            "Stage",
-            project=project,
-            **kwargs
-        )
-        self.layer_order = 0
-        self.tempo:int = kwargs.get("tempo",60)
-        self.t2t_language:str = kwargs.get("t2t_language","en")
-        self.video_state:VideoStateText = kwargs.get("video_state","on")
-        self.video_transparency:int = kwargs.get("video_transparency",50)
-        self.volume:int = kwargs.get("volume",100)
+
+    tempo:int
+    t2t_language:str
+    video_state:VideoStateText
+    video_transparency:int
+
+    def __init__(self,_project:"ProjectEditor"):
+        super().__init__("Stage",_project)
 
     @classmethod
-    def from_sb3(cls, data:SB3Stage, project:"ProjectEditor|None"=None) -> Self:
-        stage = cls(
-            project=project,
-            current_costume=data["currentCostume"] + 1,
-            tempo=data["tempo"],
-            t2t_language=data["textToSpeechLanguage"],
-            video_state=data["videoState"],
-            video_transparency=data["videoTransparency"],
-            volume=data["volume"],
-        )
-        stage._setup_vlb(
-            [Variable.from_sb3(k,v,stage) for k,v in data["variables"].items()],
-            [List.from_sb3(k,v,stage) for k,v in data["lists"].items()],
-            [Broadcast.from_sb3(k,v,stage) for k,v in data["broadcasts"].items()]
-        )
-        return stage
+    def from_sb3(cls, data:SB3Stage, project:"ProjectEditor") -> Self:
+        sprite = cls(project)
+
+        return sprite
     
     def to_sb3(self) -> SB3Stage:
         base = super().to_sb3()
@@ -193,13 +130,9 @@ class Stage(SpriteBase):
             "volume":self.volume
         } # pyright: ignore[reportReturnType]
     
-    def create_variable(self,name:str,value:VarType=0,is_cloud:bool=False) -> Variable:
-        if is_cloud and not name.startswith("☁ "):
-            name = "☁ " + name
-        if name in self._variables:
-            raise ValueError(f"Variable name:{name} already exists.")
-        variable = Variable(name,self,value=value,is_cloud=is_cloud)
-        self._variables[name] = variable
-        return variable
+    @property
+    def project(self) -> "ProjectEditor":
+        assert self._project
+        return self._project
     
 AnySprite = Sprite|Stage
