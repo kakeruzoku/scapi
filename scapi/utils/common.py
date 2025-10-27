@@ -188,7 +188,7 @@ async def page_html_iterative(
         outside_class:str|None="media-grid",
         list_class:str,
         list_name:str|None="li"
-    ) -> AsyncGenerator[Tag]:
+    ) -> AsyncGenerator[Tag,None]:
     params = params or {}
     start_page = start_page or 1
     end_page = end_page or start_page

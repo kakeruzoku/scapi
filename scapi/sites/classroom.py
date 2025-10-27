@@ -242,7 +242,7 @@ class Classroom(_BaseSiteAPI[int]):
         """
         return await get_any_count(self.client,f"https://scratch.mit.edu/classes/{self.id}/studios/","Class Studios (")
     
-    async def get_class_studios(self,start_page:int|None=None,end_page:int|None=None,*,use_api:bool=False) -> AsyncGenerator[Studio]:
+    async def get_class_studios(self,start_page:int|None=None,end_page:int|None=None,*,use_api:bool=False) -> AsyncGenerator[Studio,None]:
         """
         クラスのスタジオを取得する。
 
@@ -277,7 +277,7 @@ class Classroom(_BaseSiteAPI[int]):
         """
         return await get_any_count(self.client,f"https://scratch.mit.edu/classes/{self.id}/students/","Students (")
 
-    async def get_students(self,start_page:int|None=None,end_page:int|None=None,*,use_api:bool=False) -> AsyncGenerator[User]:
+    async def get_students(self,start_page:int|None=None,end_page:int|None=None,*,use_api:bool=False) -> AsyncGenerator[User,None]:
         """
         クラスの生徒を取得する。
 
@@ -311,7 +311,7 @@ class Classroom(_BaseSiteAPI[int]):
             student:str|User|None=None,
             sort:Literal["","username"]="",
             descending:bool=True
-        ) -> AsyncGenerator[Activity]:
+        ) -> AsyncGenerator[Activity,None]:
         self.require_session()
         add_params:dict[str,str|int|float] = {"descsort":sort} if descending else {"ascsort":sort}
         student = student.username if isinstance(student,User) else (student or "all")

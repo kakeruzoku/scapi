@@ -107,7 +107,7 @@ class ForumCategory(_BaseSiteAPI[int]):
         _page = _pages.select("span.current.page, a.page")[-1]
         self.page_count = int(_page.get_text())
 
-    async def get_topics(self,start_page:int|None=None,end_page:int|None=None) -> AsyncGenerator["ForumTopic"]:
+    async def get_topics(self,start_page:int|None=None,end_page:int|None=None) -> AsyncGenerator["ForumTopic",None]:
         """
         カテゴリーに所属しているトピックを取得します。
 
@@ -246,7 +246,7 @@ class ForumTopic(_BaseSiteAPI):
         """
         await self.client.post(f"https://scratch.mit.edu/discuss/subscription/topic/{self.id}/remove/")
 
-    async def get_posts(self,start_page:int|None=None,end_page:int|None=None) -> AsyncGenerator["ForumPost"]:
+    async def get_posts(self,start_page:int|None=None,end_page:int|None=None) -> AsyncGenerator["ForumPost",None]:
         """
         トピックに投稿された投稿を取得します。
 

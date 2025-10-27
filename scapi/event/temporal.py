@@ -29,7 +29,7 @@ class _TemporalEvent(_BaseEvent,Generic[_T]):
     def __init__(
             self,
             interval:float,
-            check_func:Callable[[],AsyncGenerator[_T]],
+            check_func:Callable[[],AsyncGenerator[_T,None]],
             datetime_attr:str
         ):
         super().__init__()
