@@ -52,19 +52,6 @@ class Response:
         self.status_code:int = response.status
         self._body = response._body or b""
 
-        return
-        for r in self._response.history:
-            print(r.method,r.status,r.url)
-        resp = self._response
-        req = resp.request_info
-        print(self._response.method,self.status_code,self._response.url)
-        print(req.headers)
-        print(self._response.headers)
-        try:
-            print(self.text[:2000])
-        except:
-            print(self.data[:2000])
-
     def _check(self):
         url = self._response.url
         status_code = self.status_code

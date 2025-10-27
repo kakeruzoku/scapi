@@ -4,6 +4,10 @@
 3.x.x
 -----
 
+3.1.1
+^^^^^
+- fix: AsyncGeneratorの引数が1つしかない型ヒントがある問題を修正
+
 3.1.0
 ^^^^^
 - :func:`ForumPost.get_source` の追加
