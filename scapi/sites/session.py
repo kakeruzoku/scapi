@@ -476,7 +476,7 @@ class Session(_BaseSiteAPI[str]):
         classroom.status = status or ""
         return classroom
     
-    async def get_feed(self,limit:int|None=None,offset:int|None=None) -> AsyncGenerator[Activity]:
+    async def get_feed(self,limit:int|None=None,offset:int|None=None) -> AsyncGenerator[Activity,None]:
         """
         最新の情報欄を取得する。
 
@@ -493,7 +493,7 @@ class Session(_BaseSiteAPI[str]):
         ):
             yield Activity._create_from_feed(_a,self)
     
-    async def get_messages(self,limit:int|None=None,offset:int|None=None) -> AsyncGenerator[Activity]:
+    async def get_messages(self,limit:int|None=None,offset:int|None=None) -> AsyncGenerator[Activity,None]:
         """
         メッセージを取得する。
 
@@ -576,7 +576,7 @@ class Session(_BaseSiteAPI[str]):
             type:Literal["all","shared","notshared","trashed"]="all",
             sort:Literal["","view_count","love_count","remixers_count","title"]="",
             descending:bool=True
-        ) -> AsyncGenerator[Project]:
+        ) -> AsyncGenerator[Project,None]:
         """
         自分の所有しているプロジェクトを取得する。
 
@@ -605,7 +605,7 @@ class Session(_BaseSiteAPI[str]):
             type:Literal["all","owned","curated"]="all",
             sort:Literal["","projecters_count","title"]="",
             descending:bool=True
-        ) -> AsyncGenerator[Studio]:
+        ) -> AsyncGenerator[Studio,None]:
         """
         自分の所有または参加しているスタジオを取得する。
 
@@ -634,7 +634,7 @@ class Session(_BaseSiteAPI[str]):
             type:Literal["all","closed"]="all",
             sort:Literal["","student_count","title"]="",
             descending:bool=True
-        ) -> AsyncGenerator[Classroom]:
+        ) -> AsyncGenerator[Classroom,None]:
         """
         自分の所有しているクラスを取得する。
 
@@ -656,7 +656,7 @@ class Session(_BaseSiteAPI[str]):
             _s:OldAnyObjectPayload[OldAllClassroomPayload]
             yield Classroom._create_from_data(_s["pk"],_s["fields"],self,Classroom._update_from_all_mystuff_data)
 
-    async def get_mystuff_students(self,start_page:int|None=None,end_page:int|None=None) -> AsyncGenerator[User]:
+    async def get_mystuff_students(self,start_page:int|None=None,end_page:int|None=None) -> AsyncGenerator[User,None]:
         """
         このアカウントの生徒を取得する。
 
@@ -758,7 +758,7 @@ class Session(_BaseSiteAPI[str]):
         data:AnySuccessPayload = response.json()
         return bool(data.get("success"))
     
-    async def get_backpacks(self,limit:int|None=None,offset:int|None=None) -> AsyncGenerator[Backpack]:
+    async def get_backpacks(self,limit:int|None=None,offset:int|None=None) -> AsyncGenerator[Backpack,None]:
         """
         バックパックを取得する。
 

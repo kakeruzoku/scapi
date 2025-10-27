@@ -98,7 +98,7 @@ async def _file(data:Any) -> AsyncGenerator[File | _FileLike,None]:
         yield _FileLike(data)
 
 @asynccontextmanager
-async def _read_file(data:File|bytes) -> AsyncGenerator[bytes]:
+async def _read_file(data:File|bytes) -> AsyncGenerator[bytes,None]:
     if isinstance(data,File):
         if data._opened:
             yield await data.read()

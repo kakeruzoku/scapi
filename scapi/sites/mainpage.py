@@ -77,8 +77,7 @@ class News(_BaseSiteAPI):
 async def get_news(
         client_or_session:"HTTPClient|Session|None",
         limit:int|None=None,offset:int|None=None
-        
-    ) -> AsyncGenerator[News]:
+    ) -> AsyncGenerator[News,None]:
     """
     ニュースを取得する。
 

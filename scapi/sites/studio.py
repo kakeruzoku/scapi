@@ -358,7 +358,7 @@ class Studio(_BaseSiteAPI[int]):
             return
         return await Classroom._create_from_api(classroom_id,self.client_or_session)
     
-    async def get_activities(self,limit:int|None=None,offset_dt:datetime.datetime|None=None) -> AsyncGenerator[Activity]:
+    async def get_activities(self,limit:int|None=None,offset_dt:datetime.datetime|None=None) -> AsyncGenerator[Activity,None]:
         """
         スタジオのアクティビティを取得する。
 
@@ -665,7 +665,7 @@ async def explore_studios(
         offset:int|None=None,
         *,
         session:Session|None=None
-    ) -> AsyncGenerator[Studio]:
+    ) -> AsyncGenerator[Studio,None]:
     """
     スタジオの傾向を取得する
 
@@ -697,7 +697,7 @@ async def search_studios(
         offset:int|None=None,
         *,
         session:Session|None=None
-    ) -> AsyncGenerator[Studio]:
+    ) -> AsyncGenerator[Studio,None]:
     """
     スタジオを検索する
 

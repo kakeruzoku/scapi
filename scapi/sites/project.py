@@ -983,7 +983,7 @@ async def explore_projects(
         offset:int|None=None,
         *,
         session:Session|None=None
-    ) -> AsyncGenerator[Project]:
+    ) -> AsyncGenerator[Project,None]:
     """
     プロジェクトの傾向を取得する
 
@@ -1015,7 +1015,7 @@ async def search_projects(
         offset:int|None=None,
         *,
         session:Session|None=None
-    )-> AsyncGenerator[Project]:
+    )-> AsyncGenerator[Project,None]:
     """
     プロジェクトを検索する
 
