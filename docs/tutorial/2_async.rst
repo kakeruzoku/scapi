@@ -8,6 +8,8 @@ Scapiでは非同期処理を採用してコードが書かれています。
 
 **制作中...**
 
+.. _use_ipython:
+
 対話形式でScapiを使用する
 -------------------------
 
@@ -15,13 +17,13 @@ Scapiは非同期処理を採用しているため、Python標準の対話型シ
 そのため、対話形式でScapiを試す場合は、 ``await`` 式をサポートする `iPython <https://ipython.org/>`_ のようなシェルの使用をおすすめします。
 iPythonは ``pip install ipython`` でインストールでき、コンソールで ``ipython`` と入力することで起動できます。
 
-iPython上で |HTTPClient| を作成する際は、 :func:`scapi.create_HTTPClient_async` を使用してください。これは、内部で使用しているaiohttpがイベントループを必要とするためです。
+iPython上で |HTTPClient| を ``await`` 式なしに作成する際は、 :func:`scapi.create_HTTPClient_async` を使用してください。これは、内部で使用しているaiohttpがイベントループを必要とするためです。
 
 例えば以下のように使用できます。
 
 .. code-block:: Python
 
-    PS C:\Users\*****> ipython
+    > ipython
     Python 3.13.5 ...
 
     In [1]: import scapi
