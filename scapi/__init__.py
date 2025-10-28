@@ -114,6 +114,7 @@ from .event.base import (
 from .utils.client import (
     Response,
     HTTPClient,
+    create_HTTPClient_async
 )
 
 from .utils.common import (

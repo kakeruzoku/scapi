@@ -1,6 +1,6 @@
 from __future__ import annotations
 
-from typing import Any, Callable, TypedDict, Unpack
+from typing import Any, Callable, TypedDict, Unpack, ParamSpec
 import aiohttp
 import json as _json
 from urllib.parse import urlparse
@@ -302,3 +302,12 @@ class HTTPClient:
     
     async def __aexit__(self, exc_type, exc, tb):
         await self.close()
+
+async def create_HTTPClient_async(*args,**kwargs) -> HTTPClient:
+    """
+    IPythonなどでの互換性のために追加されています。
+    通常は直接 ``HTTPClient()`` を使用してください。
+
+    引数は |HTTPClient| の生成時に渡すものと同じです。
+    """
+    return HTTPClient(*args,**kwargs)

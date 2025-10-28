@@ -28,3 +28,5 @@
 .. autoclass:: scapi.HTTPClient
 
 .. autoclass:: scapi.Response
+
+.. autofunction:: scapi.create_HTTPClient_async
