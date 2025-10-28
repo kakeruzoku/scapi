@@ -36,3 +36,5 @@ iPython上で |HTTPClient| を ``await`` 式なしに作成する際は、 :func
     In [4]: await u.client_close()
 
     In [5]: exit()
+
+Next: :doc:`はじめてのScapi <3_first-scapi>`
