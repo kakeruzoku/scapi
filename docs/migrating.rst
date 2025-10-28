@@ -163,7 +163,7 @@ session
 - ``Session.mute_status``
 - ``Session.banned``
 
-:attr:`Session.status <scapi.Session.status>`からアクセスしてください。
+:attr:`Session.status <scapi.Session.status>` からアクセスしてください。
 
 削除:
 

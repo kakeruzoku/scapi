@@ -4,14 +4,20 @@
 3.x.x
 -----
 
+3.1.2
+^^^^^
+
+- docs: :doc:`チュートリアル <tutorial/index>` を追加
+- :func:`scapi.create_HTTPClient_async` の追加
+
 3.1.1
 ^^^^^
 - fix: AsyncGeneratorの引数が1つしかない型ヒントがある問題を修正
 
 3.1.0
 ^^^^^
-- :func:`ForumPost.get_source` の追加
-- :func:`User.report` の追加
+- :func:`scapi.ForumPost.get_source` の追加
+- :func:`scapi.User.report` の追加
 
 3.0.0
 ^^^^^

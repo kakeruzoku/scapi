@@ -14,6 +14,17 @@ ScapiはScratch APIを非同期に実行できるPythonモジュールです。
    tutorial/index
    migrating
 
+
+チュートリアル
+--------------
+
+Scapiを使うのは始めてですか？チュートリアルから始めてみましょう！
+
+- :doc:`チュートリアルの目次 <tutorial/index>`
+- :doc:`インストールする <tutorial/1_install>`
+- :doc:`非同期処理って何? <tutorial/2_async>`
+- :doc:`はじめてのScapi <tutorial/3_first-scapi>`
+
 .. _update_to_v3:
 
 バージョン3.x.xへの移行
