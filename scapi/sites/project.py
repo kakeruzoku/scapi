@@ -294,6 +294,21 @@ class Project(_BaseSiteAPI[int]):
         return f"https://uploads.scratch.mit.edu/get_image/project/{self.id}_480x360.png"
     
     @property
+    def download_url(self) -> str:
+        """
+        プロジェクトのダウンロードURLを取得する。
+
+        Raises:
+            NoDataError: project_tokenが見つからない
+
+        Returns:
+            str: ダウンロードするためのURL
+        """
+        if self.project_token is UNKNOWN:
+            raise NoDataError(self)
+        return f"https://projects.scratch.mit.edu/{self.id}?token={self.project_token}"
+    
+    @property
     def is_author(self) -> MAYBE_UNKNOWN[bool]:
         """
         紐づけられている |Session| がプロジェクトの作者かどうか
