@@ -1,4 +1,4 @@
-from typing import TYPE_CHECKING, Any, Final, Iterable, Literal, Self, Unpack, TypedDict
+from typing import TYPE_CHECKING, Any, Final, Literal, Self, Unpack, TypedDict
 from .types import SB3Asset,SB3Costume,SB3Sound
 
 if TYPE_CHECKING:

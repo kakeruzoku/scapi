@@ -1,4 +1,4 @@
-from typing import TYPE_CHECKING, Any, Final, Iterable, Literal, Self, Unpack, TypedDict
+from typing import TYPE_CHECKING, Any, Final, Literal, Self, Unpack, TypedDict
 
 from .types import SB3Stage,SB3Sprite,SB3SpriteBase,RotationStyleText,VideoStateText,VarType,Sprite3Sprite
 from .variable import Variable,List,Broadcast
@@ -61,16 +61,16 @@ class SpriteBase:
         return self._project
     
     @property
-    def variables(self) -> Iterable[Variable]:
-        return self._variables.values()
+    def variables(self) -> list[Variable]:
+        return list(self._variables.values())
     
     @property
-    def lists(self) -> Iterable[List]:
-        return self._lists.values()
+    def lists(self) -> list[List]:
+        return list(self._lists.values())
     
     @property
-    def broadcasts(self) -> Iterable[Broadcast]:
-        return self._broadcasts.values()
+    def broadcasts(self) -> list[Broadcast]:
+        return list(self._broadcasts.values())
     
 class Sprite(SpriteBase):
     is_stage:Final[Literal[False]] = False

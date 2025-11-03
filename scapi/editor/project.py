@@ -1,4 +1,4 @@
-from typing import Any, Iterable, Self,Unpack,TypedDict
+from typing import Any, Self,Unpack,TypedDict
 from .types import SB3Project,SB3Sprite
 from ..utils.common import __version__
 from .info import Info
@@ -23,14 +23,14 @@ class ProjectEditor:
         self._stage = Stage(self)
 
     @property
-    def sprites(self) -> Iterable[Sprite]:
+    def sprites(self) -> list[Sprite]:
         """
         スプライトの一覧を返す。
 
         Returns:
-            Iterable[Sprite]:
+            list[Sprite]:
         """
-        return self._sprites.values()
+        return list(self._sprites.values())
     
     @property
     def stage(self) -> Stage:
