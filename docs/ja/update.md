@@ -1,7 +1,14 @@
 # 更新履歴
 
+このドキュメントは`2.x.x`用であり、非推奨です。[新しいドキュメント](https://scapi.kakeru.f5.si/ja/latest/index.html )で`3.0.0`以降を使用するようにしてください。
+
 Scapiの更新履歴です。1.0.0以前の更新履歴は[こちら](https://github.com/kakeruzoku/scapi/blob/main/changelog.md )
 # 2.x.x
+## 2.3.2
+- 翻訳APIのエンコードミスを修正
+- ドキュメントのURLを更新
+- ドキュメントにv3.0.0を使うように追記
+
 ## 2.3.1
 - スタジオフォローのAPIが呼び出されていない問題を修正
 - その他コードの最適化
