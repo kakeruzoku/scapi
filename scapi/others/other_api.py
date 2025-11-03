@@ -71,7 +71,6 @@ async def monthly_activity(clientsession:common.ClientSession) -> monthly_activi
     return r
 
 async def translation(language:str,text:str,clientsession:common.ClientSession) -> str:
-    text = urllib.parse.quote(text,safe="")
     r = await clientsession.get(
         "https://translate-service.scratch.mit.edu/translate",
         params={
