@@ -1,5 +1,5 @@
 # Scapiをはじめよう
 
-Scapiをまだダウンロードしていませんか？[こちら](https://scapi.kakeru.f5.si/ja/download )からダウンロードしてください！
+Scapiをまだダウンロードしていませんか？[こちら](https://kakeruzoku.github.io/scapi/ja/download )からダウンロードしてください！
 
 **制作中**

@@ -21,7 +21,7 @@ setup(
     author_email="kakeruzoku@gmail.com",
     maintainer="kakeruzoku",
     maintainer_email="kakeruzoku@gmail.com",
-    url="https://scapi.kakeru.f5.si/",
+    url="https://kakeruzoku.github.io/scapi/",
     download_url="https://github.com/kakeruzoku/scapi",
     classifiers=[
         "Development Status :: 5 - Production/Stable",

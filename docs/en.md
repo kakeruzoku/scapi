@@ -1,5 +1,7 @@
 # Welcome to Scapi!
 
+This document is for `2.x.x` and is deprecated. Please use `3.0.0` and later in the [new documentation](https://scapi.kakeru.f5.si/ja/latest/index.html).
+
 **日本語版は[こちら](http://scapi.kakeru.f5.si)**
 
 > Much of the documentation uses translations. If you find any errors in the translations, please report them to [GitHub](https://github.com/kakeruzoku/scapi )
@@ -16,7 +18,7 @@ Scapi is a Python module that allows you to execute Scratch APIs asynchronously.
 
 # Let's get started
 If you're new to this library, start here!
-- Get ready: [Download](http://scapi.kakeru.f5.si/ja/download )
+- Get ready: [Download](http://kakeruzoku.github.io/scapi/ja/download )
 
 # API reference
 > In preparation

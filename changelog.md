@@ -1,5 +1,5 @@
 # 移動
-更新履歴は[こちら](https://scapi.kakeru.f5.si/ja/update )に移動しました。
+更新履歴は[こちら(v1.x.x及びv2.x.x)](https://kakeruzoku.github.io/scapi/ja/update )または[こちら(3.0.0以降)](https://scapi.kakeru.f5.si/ja/latest/changelog.html )に移動しました。
 
 # tag
 - **[Del]** 機能の削除
