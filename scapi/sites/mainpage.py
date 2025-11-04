@@ -115,7 +115,7 @@ def _add_community_featured_project(
         project = Project(data.get("id"),client_or_session)
         project.title = data.get("title")
         project.love_count = data.get("love_count")
-        project.author = User(data.get("creator"),client_or_session)
+        project.author = User(data.get("creator"),client_or_session,is_real=True)
         project.remix_count = data.get("remixers_count",UNKNOWN)
         list_object.append(project)
 

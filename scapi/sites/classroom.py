@@ -124,7 +124,7 @@ class Classroom(_BaseSiteAPI[int]):
         """
         if self.educator is UNKNOWN:
             return UNKNOWN
-        return self.educator.username.lower() == self._session.username.lower()
+        return self.educator.lower_username == self._session.username.lower()
 
     def _update_from_data(self, data:ClassroomPayload):
         self.closed = False #closeしてたらapiから取得できない
@@ -138,7 +138,7 @@ class Classroom(_BaseSiteAPI[int]):
         _educator = data.get("educator")
         if _educator:
             if self.educator is UNKNOWN:
-                self.educator = User(_educator["username"])
+                self.educator = User(_educator["username"],self.client_or_session,is_real=True)
             self.educator._update_from_data(_educator)
 
     def _update_from_old_data(self, data:OldBaseClassroomPayload):
@@ -314,7 +314,7 @@ class Classroom(_BaseSiteAPI[int]):
         ) -> AsyncGenerator[Activity,None]:
         self.require_session()
         add_params:dict[str,str|int|float] = {"descsort":sort} if descending else {"ascsort":sort}
-        student = student.username if isinstance(student,User) else (student or "all")
+        student = student.lower_username if isinstance(student,User) else (student or "all")
         async for _a in page_api_iterative(
             self.client,f"https://scratch.mit.edu/site-api/classrooms/activity/{self.id}/{student}/",
             start_page,end_page,add_params

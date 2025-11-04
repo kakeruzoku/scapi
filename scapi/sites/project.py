@@ -147,7 +147,7 @@ class Project(_BaseSiteAPI[int]):
         if _author:
             if self.author is UNKNOWN:
                 from .user import User
-                self.author = User(_author.get("username"),self.client_or_session)
+                self.author = User(_author.get("username"),self.client_or_session,is_real=True)
             self.author._update_from_data(_author)
             
 
@@ -181,7 +181,7 @@ class Project(_BaseSiteAPI[int]):
         if _author:
             if self.author is UNKNOWN:
                 from .user import User
-                self.author = User(_author.get("username"),self.client_or_session)
+                self.author = User(_author.get("username"),self.client_or_session,is_real=True)
             self.author._update_from_old_data(_author)
 
         self._update_to_attributes(
@@ -234,7 +234,7 @@ class Project(_BaseSiteAPI[int]):
         project.title = _title_a.get_text()
         _author_span:Tag = data.find("span",{"class":"owner"})
         _author_name:Tag = _author_span.find("a")
-        project.author = User(_author_name.get_text(),client_or_session)
+        project.author = User(_author_name.get_text(),client_or_session,is_real=True)
         return project
 
     @property
@@ -319,7 +319,7 @@ class Project(_BaseSiteAPI[int]):
         """
         if self.author is UNKNOWN:
             return UNKNOWN
-        return self._session.username.lower() == self.author.username.lower()
+        return self._session.username.lower() == self.author.lower_username
 
     async def get_remixes(self,limit:int|None=None,offset:int|None=None) -> AsyncGenerator["Project", None]:
         """
@@ -893,7 +893,7 @@ class RemixTree(_BaseSiteAPI):
     def _update_from_data(self, data:RemixTreePayload):
         if self.project.author is UNKNOWN:
             from .user import User
-            self.project.author = User(data["username"],self.client_or_session)
+            self.project.author = User(data["username"],self.client_or_session,is_real=True)
 
         self.project._update_from_remixtree(data)
 

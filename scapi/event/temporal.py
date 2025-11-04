@@ -98,40 +98,6 @@ class CommentEvent(_TemporalEvent["Comment"]):
         """
         pass
 
-    '''
-    イベントのデータは変更されるべきじゃない？
-
-    @property
-    def place(self) -> User|Project|Studio:
-        """
-        監視する場所
-
-        Returns:
-            User|Project|Studio:
-        """
-        return self._place
-
-    @property
-    def is_old(self) -> bool:
-        """
-        古いAPIから取得するか
-
-        Returns:
-            bool:
-        """
-        return self._is_old
-    
-    @is_old.setter
-    def is_old(self,value:bool):
-        self._is_old = value
-        self._check_func = self._place.get_comments_from_old if value else self._place.get_comments
-
-    @place.setter
-    def place(self,value:User|Project|Studio):
-        self._place = value
-        self.is_old = self._is_old
-    '''
-
 class MessageEvent(_TemporalEvent["Activity"]):
     """
     メッセージイベントクラス

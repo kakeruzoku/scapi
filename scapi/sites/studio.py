@@ -130,7 +130,7 @@ class Studio(_BaseSiteAPI[int]):
 
         if _author:
             if self._host is UNKNOWN:
-                self._host = User(_author.get("username"),self.client_or_session)
+                self._host = User(_author.get("username"),self.client_or_session,is_real=True)
             self._host._update_from_old_data(_author)
         
         self._update_to_attributes(

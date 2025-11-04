@@ -59,8 +59,11 @@ class User(_BaseSiteAPI[str]):
     """
     ユーザーを表す
 
+    ``3.1.3`` で追加 :attr:`scapi.User.lower_username`, :attr:`scapi.User.real_username`
+
     Attributes:
-        username (str): ユーザー名
+        lower_username (str): 小文字に合わせられたユーザー名
+        real_username (MAYBE_UNKNOWN[int]): APIから取得された、大文字小文字の正しいユーザー名
         id (MAYBE_UNKNOWN[int]): ユーザーID
         profile_id (MAYBE_UNKNOWN[int]): プロフィールID。ユーザーIDとは異なります。
         bio (MAYBE_UNKNOWN[str]): 私について欄
@@ -73,10 +76,28 @@ class User(_BaseSiteAPI[str]):
     """
     def __repr__(self) -> str:
         return f"<User username:{self.username} id:{self.id} session:{self.session}>"
+    
+    @property
+    def username(self) -> str:
+        """
+        アカウントのユーザー名を返します。
 
-    def __init__(self,username:str,client_or_session:"HTTPClient|Session|None"=None):
+        APIから取得した場合は大文字小文字混合で出力されます。 ``User()`` などから作成した場合は、APIから取得されるまでは小文字に合わせられたユーザー名が使用されます。
+
+        これは、 ``User(is_real=True)`` で作成すると大文字小文字が引き継がれたものが生成されます。
+
+        Returns:
+            str: _description_
+        """
+        return self.real_username or self.lower_username
+
+    def __init__(self,username:str,client_or_session:"HTTPClient|Session|None"=None,is_real:bool=False):
         super().__init__(client_or_session)
-        self.username:Final[str] = username
+        self.lower_username:Final[str] = username.lower()
+        if is_real:
+            self.real_username:MAYBE_UNKNOWN[str] = username
+        else:
+            self.real_username:MAYBE_UNKNOWN[str] = UNKNOWN
         self.id:MAYBE_UNKNOWN[int] = UNKNOWN
 
         self._joined_at:MAYBE_UNKNOWN[str] = UNKNOWN
@@ -94,7 +115,7 @@ class User(_BaseSiteAPI[str]):
         self._loaded_website:MAYBE_UNKNOWN[UserWebsiteData] = UNKNOWN
 
     def __eq__(self, value:object) -> bool:
-        return isinstance(value,User) and self.username == value.username
+        return isinstance(value,User) and self.lower_username == value.lower_username
 
     async def update(self):
         response = await self.client.get(f"https://api.scratch.mit.edu/users/{self.username}")
@@ -103,6 +124,7 @@ class User(_BaseSiteAPI[str]):
     def _update_from_data(self, data:UserPayload):
         self._update_to_attributes(
             id=data.get("id"),
+            real_username=data.get("username"),
             scratchteam=data.get("scratchteam")
         )
         _history = data.get("history")
@@ -121,6 +143,7 @@ class User(_BaseSiteAPI[str]):
     def _update_from_old_data(self, data:OldUserPayload):
         self._update_to_attributes(
             id=data.get("pk"),
+            real_username=data.get("username"),
             scratchteam=data.get("admin")
         )
 
@@ -181,7 +204,7 @@ class User(_BaseSiteAPI[str]):
         Returns:
             MAYBE_UNKNOWN[bool]:
         """
-        return self.username.lower() == self._session.username.lower()
+        return self.lower_username == self._session.username.lower()
     
     async def load_website(self):
         """

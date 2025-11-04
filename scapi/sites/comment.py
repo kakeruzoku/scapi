@@ -137,7 +137,7 @@ class Comment(_BaseSiteAPI[int]):
         if _author:
             if self.author is UNKNOWN:
                 from .user import User
-                self.author = User(_author.get("username"),self.client_or_session)
+                self.author = User(_author.get("username"),self.client_or_session,is_real=True)
             self.author._update_from_data(_author)
 
     def _update_from_html(self,data:bs4.element.Tag):
@@ -153,7 +153,7 @@ class Comment(_BaseSiteAPI[int]):
         author_user_id = int(comment.find("a", class_="reply")["data-commentee-id"]) # type: ignore
         if self.author is UNKNOWN:
             from .user import User
-            self.author = User(author_username,self.client_or_session)
+            self.author = User(author_username,self.client_or_session,is_real=True)
         self.author.id = author_user_id
 
     @property

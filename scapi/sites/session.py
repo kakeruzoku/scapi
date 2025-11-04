@@ -198,7 +198,7 @@ class Session(_BaseSiteAPI[str]):
         self.user_id = try_int(decoded.get("_auth_user_id"))
         self._logged_at = login_dt
 
-        self.user:User = User(self.username,self)
+        self.user:User = User(self.username,self,is_real=True)
         self.user.id = self.user_id or UNKNOWN
 
         self.client.scratch_cookies = {

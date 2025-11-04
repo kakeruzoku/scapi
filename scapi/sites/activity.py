@@ -262,7 +262,7 @@ class Activity:
     
     def _setup_from_json(self,data:_BaseActivity,client_or_session:"HTTPClient|Session"):
         _import()
-        self.actor = User(data["actor_username"],client_or_session)
+        self.actor = User(data["actor_username"],client_or_session,is_real=True)
         self.actor.id = data.get("actor_id")
         self._created_at = data.get("datetime_created",None)
 
@@ -279,13 +279,13 @@ class Activity:
                 activity.target = activity.place
             case "becomecurator":
                 activity.action = ActivityAction.StudioBecomeCurator
-                activity.target = User(data["username"],client_or_session)
+                activity.target = User(data["username"],client_or_session,is_real=True)
             case "removecuratorstudio":
                 activity.action = ActivityAction.StudioRemoveCurator
-                activity.target = User(data["username"],client_or_session)
+                activity.target = User(data["username"],client_or_session,is_real=True)
             case "becomehoststudio":
                 activity.action = ActivityAction.StudioBecomeHost
-                activity.target = User(data["recipient_username"],client_or_session)
+                activity.target = User(data["recipient_username"],client_or_session,is_real=True)
             case "addprojecttostudio":
                 activity.action = ActivityAction.StudioAddProject
                 activity.target = Project(data["project_id"],client_or_session)
@@ -296,7 +296,7 @@ class Activity:
                 activity.target.title = data["project_title"]
             case "becomeownerstudio":
                 activity.action = ActivityAction.StudioBecomeManager
-                activity.target = User(data["recipient_username"],client_or_session)
+                activity.target = User(data["recipient_username"],client_or_session,is_real=True)
         return activity
 
     @staticmethod
@@ -382,7 +382,7 @@ class Activity:
                         activity.place = Project(data["comment_obj_id"],client_or_session)
                         activity.place.title = data["comment_obj_title"]
                     case 1:
-                        activity.place = User(data["comment_obj_title"],client_or_session)
+                        activity.place = User(data["comment_obj_title"],client_or_session,is_real=True)
                         activity.place.id = data["comment_obj_id"]
                     case 2:
                         activity.place = Studio(data["comment_obj_id"],client_or_session)
@@ -423,7 +423,7 @@ class Activity:
                 activity.place.author = session.user
             case "followuser":
                 activity.action = ActivityAction.UserFollow
-                activity.target = activity.place = User(data["followed_username"],session)
+                activity.target = activity.place = User(data["followed_username"],session,is_real=True)
                 activity.target.id = data["followed_user_id"]
             case "curatorinvite":
                 activity.action = ActivityAction.StudioInviteCurator
@@ -442,7 +442,7 @@ class Activity:
                         activity.place = Project(data["comment_obj_id"],session)
                         activity.place.title = data["comment_obj_title"]
                     case 1:
-                        activity.place = User(data["comment_obj_title"],session)
+                        activity.place = User(data["comment_obj_title"],session,is_real=True)
                         activity.place.id = data["comment_obj_id"]
                     case 2:
                         activity.place = Studio(data["comment_obj_id"],session)
@@ -470,13 +470,13 @@ class Activity:
         match data["type"]:
             case "becomeownerstudio":
                 activity.action = ActivityAction.StudioBecomeManager
-                activity.target = User(data["recipient_username"],session)
+                activity.target = User(data["recipient_username"],session,is_real=True)
                 activity.target.id = data["recipient_id"]
                 activity.place = Studio(data["gallery_id"],session)
                 activity.place.title = data["gallery_title"]
             case "becomecurator":
                 activity.action = ActivityAction.StudioBecomeCurator
-                activity.target = User(data["username"],session)
+                activity.target = User(data["username"],session,is_real=True)
                 activity.place = Studio(data["gallery_id"],session)
                 activity.place.title = data["gallery_title"]
             case "loveproject":
@@ -505,7 +505,7 @@ class Activity:
                 activity.place.title = data["parent_title"]
             case "followuser":
                 activity.action = ActivityAction.UserFollow
-                activity.target = activity.place = User(data["followed_username"],session)
+                activity.target = activity.place = User(data["followed_username"],session,is_real=True)
                 activity.target.id = data["followed_user_id"]
         return activity
 

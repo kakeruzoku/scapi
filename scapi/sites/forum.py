@@ -197,7 +197,7 @@ class ForumTopic(_BaseSiteAPI):
         topic.view_count = int(_view_count.get_text())
 
         _user:Tag = _tcl.find("span",{"class":"byuser"})
-        topic.author = User(_user.get_text(strip=True).removeprefix("by "),client_or_session)
+        topic.author = User(_user.get_text(strip=True).removeprefix("by "),client_or_session,is_real=True)
 
         if _tcl.find("div",{"class":"forumicon"}) is not None:
             topic.is_closed, topic.is_sticky = False,False
@@ -331,7 +331,7 @@ class ForumPost(_BaseSiteAPI):
         if self.author is UNKNOWN and self.number == 1:
             self.author = self.topic.author
         if self.author is UNKNOWN:
-            self.author = User(split(str(_author_a["href"]),"/users/","/",True),self.client_or_session)
+            self.author = User(split(str(_author_a["href"]),"/users/","/",True),self.client_or_session,is_real=True)
         if self.topic.author is UNKNOWN:
             self.topic.author = self.author
         
@@ -349,10 +349,10 @@ class ForumPost(_BaseSiteAPI):
             self.modified_by = None
         else:
             _edited_by = split(str(_edit.get_text()),"by "," ",True)
-            if _edited_by.lower() == self.author.username.lower():
+            if _edited_by.lower() == self.author.lower_username:
                 self.modified_by = self.author
-            if (not isinstance(self.modified_by,User)) or _edited_by.lower() != self.modified_by.username.lower():
-                self.modified_by = User(_edited_by)
+            if (not isinstance(self.modified_by,User)) or _edited_by.lower() != self.modified_by.lower_username:
+                self.modified_by = User(_edited_by,self.client_or_session,is_real=True)
             self.modified_at = decode_datetime(split(str(_edit.get_text()),"(",")",True))
 
     async def get_ocular_reactions(self) -> "OcularReactions":
@@ -479,7 +479,7 @@ def load_last_post(self:_BaseSiteAPI,data:bs4.Tag) -> ForumPost:
     _last_post_url:str|Any = _post["href"]
     
     post = ForumPost(int(split(_last_post_url,"/discuss/post/","/",True)),self.client_or_session)
-    post.author = User(_post_author.get_text(strip=True).removeprefix("by "),self.client_or_session)
+    post.author = User(_post_author.get_text(strip=True).removeprefix("by "),self.client_or_session,is_real=True)
     post.created_at = decode_datetime(_post.get_text())
     return post
 
