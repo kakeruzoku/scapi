@@ -9,6 +9,7 @@
 
 - |User| のユーザー名(:attr:`scapi.User.username`)が入力依存である場合の問題を修正
 - :attr:`scapi.User.lower_username`, :attr:`scapi.User.real_username` の追加
+- :attr:`scapi.Project.download_url` の追加
 
 3.1.2
 ^^^^^
