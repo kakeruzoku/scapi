@@ -1,0 +1,59 @@
+msgid ""
+msgstr ""
+"Project-Id-Version: scapi\n"
+"Report-Msgid-Bugs-To: \n"
+"POT-Creation-Date: 2025-11-27 10:14+0000\n"
+"PO-Revision-Date: 2025-11-27 11:27\n"
+"Last-Translator: \n"
+"Language-Team: English\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"Plural-Forms: nplurals=2; plural=(n != 1);\n"
+"X-Crowdin-Project: scapi\n"
+"X-Crowdin-Project-ID: 849930\n"
+"X-Crowdin-Language: en\n"
+"X-Crowdin-File: warning.pot\n"
+"X-Crowdin-File-ID: 9\n"
+"Language: en_US\n"
+
+#: ../../warning.rst:2
+msgid "使用上の注意"
+msgstr ""
+
+#: ../../warning.rst:5
+msgid "責任"
+msgstr ""
+
+#: ../../warning.rst:6
+msgid "Scapiは `MITライセンス <https://github.com/kakeruzoku/scapi/blob/main/LICENSE>`_ のもとで提供されているオープンソースソフトウェアです。"
+msgstr ""
+
+#: ../../warning.rst:7
+msgid "これは、Scapiが現状のままで提供され、ライブラリが常にあなたの期待通りに動作することを保証するものではありません。"
+msgstr ""
+
+#: ../../warning.rst:8
+msgid "**Scapiを使用したことによって生じたいかなる損害や問題についても、開発者および貢献者は一切の責任を負いません。** Scapiの使用は、すべて **自己責任** で行ってください。"
+msgstr ""
+
+#: ../../warning.rst:11
+msgid "Scratchの利用規約について"
+msgstr ""
+
+#: ../../warning.rst:12
+msgid "Scratchの利用規約では、Scapiのような非公式クライアントの使用が明確に禁止されているわけではありません。"
+msgstr ""
+
+#: ../../warning.rst:13
+msgid "しかし、これはScapiを使って何でもして良いということではなく、必ず **Scratchの利用規約やコミュニティガイドラインを遵守するようにしてください。**"
+msgstr ""
+
+#: ../../warning.rst:14
+msgid "Scapiの誤作動によってアカウントがブロックされた、などといった場合でも開発者は **責任を負いません。**"
+msgstr ""
+
+#: ../../warning.rst:15
+msgid "Scratch Teamは、非公式クライアントの使用を理由にアカウントを停止するような対応を積極的にはしていませんが、あなたのアカウントに対してそのリスクが全くないわけではありません。 **使用者の責任のもとにおいて使用してください。**"
+msgstr ""
+
