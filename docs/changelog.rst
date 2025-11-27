@@ -4,6 +4,11 @@
 3.x.x
 -----
 
+3.1.4
+^^^^^
+- :class:`scapi.RemixTree` 関連の関数/クラスを非推奨化
+- :attr:`scapi.count_api_iterative` を追加
+
 3.1.3
 ^^^^^
 
