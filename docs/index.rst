@@ -4,6 +4,9 @@ Scapi ドキュメント
 .. note::
    Scapiは3.0.0へと更新されました。移行については :doc:`migrating` を参考してください。旧ドキュメントは `こちら <oldwiki_>`_ から閲覧できます。
 
+.. note::
+   Scapiを使用する前に :doc:`注意事項 <warning>` を確認することを推奨します。
+
 ScapiはScratch APIを非同期に実行できるPythonモジュールです。
 
 .. toctree::
@@ -13,6 +16,7 @@ ScapiはScratch APIを非同期に実行できるPythonモジュールです。
    reference/index
    tutorial/index
    migrating
+   warning
 
 
 チュートリアル

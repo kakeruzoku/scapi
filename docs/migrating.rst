@@ -177,7 +177,7 @@ Project
 
 - プロジェクトサーバー上の問題から ``Project.download`` 及び ``Project.load_json`` を削除しました。この関数は将来再実装される予定です。
 
-- ``3.1.3``で追加: :attr:`scapi.Project.download_url`
+- ``3.1.3``で追加\: :attr:`scapi.Project.download_url`
 
 Forum
 *****
