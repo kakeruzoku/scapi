@@ -1,0 +1,27 @@
+name: 'Crowdin Download Translations & Create PR'
+
+on:
+  workflow_dispatch:
+  repository_dispatch:
+    types: [crowdin_file_translated] # Crowdin側で設定するイベントタイプ
+
+jobs:
+  download_translations:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+      pull-requests: write
+      
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+        
+      - name: Download Translations from Crowdin
+        uses: crowdin/github-action@v2
+        with:
+          download_translations: true 
+          push_translations: true
+          
+        env:
+          CROWDIN_PROJECT_ID: ${{ secrets.CROWDIN_PROJECT_ID }}
+          CROWDIN_PERSONAL_TOKEN: ${{ secrets.CROWDIN_PERSONAL_TOKEN }}
