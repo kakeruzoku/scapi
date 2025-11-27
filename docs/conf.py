@@ -37,6 +37,10 @@ intersphinx_mapping = {
     'python': ('https://docs.python.org/3/', None),
 }
 
+locale_dirs = ['locale/']
+
+gettext_compact = False
+
 # -- Options for HTML output -------------------------------------------------
 
 html_theme = 'sphinx_rtd_theme'
