@@ -41,6 +41,9 @@
 
 .. autoclass:: scapi.ProjectVisibility
 
+.. warning::
+    RemixTree APIは廃止されました。
+
 .. autofunction:: scapi.get_remixtree
 
 .. autoclass:: scapi.RemixTree

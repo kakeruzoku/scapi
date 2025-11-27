@@ -6,6 +6,7 @@ from typing import TYPE_CHECKING, Any, AsyncGenerator, Final, Literal
 
 import aiohttp
 import bs4
+from warnings import deprecated
 
 from ..utils.types import (
     ProjectPayload,
@@ -763,6 +764,7 @@ class Project(_BaseSiteAPI[int]):
             raise InvalidData(response)
         return data.get("moderation_status")
     
+    @deprecated("APIが廃止されました。")
     async def get_remixtree(self) -> RemixTree:
         response = await self.client.get(f"https://scratch.mit.edu/projects/{self.id}/remixtree/bare/")
         data:dict[str,RemixTreePayload]|str = response.json_or_text()
@@ -857,6 +859,7 @@ class ProjectFeatured:
 
         self.label:ProjectFeaturedLabel = ProjectFeaturedLabel.get_from_id(data.get("featured_project_label_id"))
 
+@deprecated("APIが廃止されました。")
 class RemixTree(_BaseSiteAPI):
     """
     プロジェクトのリミックスツリーを表す
@@ -976,7 +979,8 @@ def get_project(project_id:int,*,_client:HTTPClient|None=None) -> _AwaitableCont
 async def _get_remixtree(project_id:int,*,client_or_session:"Session|HTTPClient|None"=None) -> RemixTree:
     async with temporary_httpclient(client_or_session) as client:
         return await Project(project_id,client_or_session or client).get_remixtree()
-    
+
+@deprecated("APIが廃止されました。")
 def get_remixtree(project_id:int,*,client_or_session:"Session|HTTPClient|None"=None) -> _AwaitableContextManager[RemixTree]:
     """
     リミックスツリーを取得する。
