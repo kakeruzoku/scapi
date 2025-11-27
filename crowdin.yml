@@ -1,3 +1,9 @@
+# crowdin.yml (リポジトリのrootに配置)
+
+project_id: ${{ secrets.CROWDIN_PROJECT_ID }}
+api_token_env: CROWDIN_PERSONAL_TOKEN
+base_path: "docs"
+
 files:
-  - source: /docs/_build/gettext/**.pot
-    translation: /docs/locale/%two_letters_code%/LC_MESSAGES/**.po
+  - source: "_build/gettext/*.pot" 
+    translation: "locales/%locale%/LC_MESSAGES/%file_name%.po" 

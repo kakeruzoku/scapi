@@ -1,0 +1,47 @@
+name: 'Upload Sphinx POT Sources to Crowdin'
+
+on:
+  push:
+    branches:
+      - main
+    paths:
+      - 'docs/**'
+  workflow_dispatch:
+
+jobs:
+  upload_sources:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+        
+      # 1. Python環境のセットアップとSphinx依存関係のインストール
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.13'
+
+      - name: Install Documentation Dependencies (Sphinx)
+        run: |
+          python -m pip install --upgrade pip
+          pip install sphinx sphinx-rtd-theme
+          pip install -r docs/requirements.txt
+          pip install -r requirements.txt
+          
+      # 2. .pot ファイルの生成 (これがCrowdinへのソースとなる)
+      - name: Generate POT files
+        run: |
+          make -C docs gettext
+
+      # 3. Crowdinに .pot ファイルをアップロード
+      - name: Upload Sources to Crowdin
+        # GitHub Actionsの最新版を参照
+        uses: crowdin/github-action@v2 
+        with:
+          # crowdin.ymlで指定されたソースファイル (.pot) のみをアップロード
+          upload_sources: true 
+          # upload_translations: false # デフォルトでfalseですが明示してもOK
+          
+        env:
+          # Secretsからトークンを取得し、アクションに渡す
+          CROWDIN_PERSONAL_TOKEN: ${{ secrets.CROWDIN_PERSONAL_TOKEN }}
