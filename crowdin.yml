@@ -3,4 +3,4 @@ api_token_env: CROWDIN_PERSONAL_TOKEN
 base_path: docs
 files:
   - source: _build/gettext/**/*.pot
-    translation: locales/%language%/LC_MESSAGES/%original_path%/%file_name%.po
+    translation: locales/%two_letters_code%/LC_MESSAGES/%original_path%/%file_name%.po
