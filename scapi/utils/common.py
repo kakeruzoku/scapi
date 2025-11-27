@@ -205,6 +205,103 @@ async def page_html_iterative(
         for obj in objs:
             yield obj
         
+
+class APIIterativeFunc(Protocol):
+    def __call__(self, limit:int|None=None, offset:int|None=None,*args: Any, **kwds: Any) -> AsyncGenerator[Any,None]:
+        ...
+
+class PageAPIIterativeFunc(Protocol):
+    def __call__(self, start_page:int|None=None, end_oage:int|None=None,*args: Any, **kwds: Any) -> AsyncGenerator[Any,None]:
+        ...
+
+def _count_func(
+    func:APIIterativeFunc|PageAPIIterativeFunc,
+    is_page:bool,
+    *args,
+    **kwargs,
+) -> Callable[[int,int], Coroutine[Any, Any, int]]:
+    if is_page:
+        async def _func(c:int,max_limit:int) -> int:
+            return len([i async for i in func(c,None,*args,**kwargs)])
+    else:
+        async def _func(c:int,max_limit:int) -> int:
+            return len([i async for i in func(max_limit,(c-1)*max_limit,*args,**kwargs)])
+    return _func
+
+@overload
+async def count_api_iterative(
+    func:APIIterativeFunc,
+    is_page:Literal[False]=False,
+    max_limit:int=40,
+    *args,
+    **kwargs,
+) -> int:
+    ...
+    
+@overload
+async def count_api_iterative(
+    func:PageAPIIterativeFunc,
+    is_page:Literal[True],
+    max_limit:int=40,
+    *args,
+    **kwargs,
+) -> int:
+    ...
+
+async def count_api_iterative(
+    func:APIIterativeFunc|PageAPIIterativeFunc,
+    is_page:bool=False,
+    max_limit:int=40,
+    *args,
+    **kwargs,
+) -> int:
+    """
+    データ一覧を取得する関数から、そのデータの長さを特定する。
+
+    2種類の関数が使用できます。
+    - タイプ A: 1番目に ``limit``, 2番目に ``offset`` を取る関数
+    - タイプ B: 1番目に ``start_page``, 2番目に ``end_page`` を取る関数
+
+    Args:
+        func (Callable): タイプ A または タイプ B の関数 
+        is_page (bool, optional): タイプ B の場合 ``True`` にしてください。
+        max_limit (int, optional): その関数が1回で取得できる最大の数。基本的に ``40`` です。 **正しい値でない場合、結果が正しく返されません。**
+
+    Returns:
+        int: そのデータの値
+    """
+    _func = _count_func(func,is_page,*args,**kwargs)
+
+    # 最大値を決定する
+    c = 1
+    while True:
+        objs_len = await _func(c,max_limit)
+        print(c,objs_len)
+        if objs_len == 0:
+            low = c//2
+            high = c
+            break
+        elif objs_len < max_limit:
+            return (c-1)*max_limit+objs_len
+        c *= 2
+
+    if low == 0:
+        return 0
+    
+    # 二分探索
+    while True:
+        if high-low <= 1:
+            return low*max_limit
+        mid = (low+high)//2
+        objs_len =  await _func(mid,max_limit)
+        print(mid,objs_len)
+        if objs_len == 0:
+            high = mid
+        elif objs_len < max_limit:
+            return ((mid-1)*max_limit)+objs_len
+        else:
+            low = mid
+
 def get_client_and_session(client_or_session:"HTTPClient|Session|None") -> tuple["HTTPClient","Session|None"]:
     from .client import HTTPClient
     if client_or_session is None:

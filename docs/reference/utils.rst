@@ -20,6 +20,8 @@
 
 .. autoclass:: scapi.utils.common._AwaitableContextManager
 
+.. autofunction:: scapi.count_api_iterative
+
 .. autoclass:: scapi.File
 
 クライアント

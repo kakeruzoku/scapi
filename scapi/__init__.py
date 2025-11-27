@@ -118,6 +118,7 @@ from .utils.client import (
 )
 
 from .utils.common import (
+    count_api_iterative,
     empty_project_json,
     UNKNOWN,
     UNKNOWN_TYPE,
