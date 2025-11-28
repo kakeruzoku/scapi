@@ -37,7 +37,7 @@ intersphinx_mapping = {
     'python': ('https://docs.python.org/3/', None),
 }
 
-locale_dirs = ['locale/']
+locale_dirs = ['locales/']
 
 gettext_compact = False
 
