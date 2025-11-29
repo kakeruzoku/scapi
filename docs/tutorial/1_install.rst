@@ -45,6 +45,6 @@ Scapiのアップデート
 ソースコード
 ------------
 
-Scapiのソースコードは常に `Github <https://github.com/kakeruzoku/scapi>`_ 上で公開されています。
+Scapiのソースコードは常に `GitHub <https://github.com/kakeruzoku/scapi>`_ 上で公開されています。
 
 Next: :doc:`非同期処理 <2_async>`

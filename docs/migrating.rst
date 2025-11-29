@@ -1,9 +1,9 @@
-バージョン3への移行
-===================
+3.x.xへの移行
+=============
 
-| Scapiバージョン3へようこそ！
-| Scapiバージョン3は完全な書き直しが行われたため、バージョン2(v2.3.1以前)との互換性はほぼありません。
-| このページでScapiを3.0.0に移行してください。
+| Scapi v3へようこそ！
+| Scapi v3では完全な書き直しが行われたため、v2以前との互換性はほぼありません。
+| このページでScapiを3.0.0以降に移行してください。
 
 .. note::
     作者の書く気がなかったので、困ったことあれば `issue <https://github.com/kakeruzoku/scapi/issues>`_ か `discussion <https://github.com/kakeruzoku/scapi/discussions>`_ か `discordサーバー <https://discord.gg/Q4tkxFVzUX>`_ までお願いします
