@@ -3,7 +3,7 @@ msgstr ""
 "Project-Id-Version: scapi\n"
 "Report-Msgid-Bugs-To: \n"
 "POT-Creation-Date: 2025-11-27 10:14+0000\n"
-"PO-Revision-Date: 2025-11-27 11:27\n"
+"PO-Revision-Date: 2025-11-28 14:36\n"
 "Last-Translator: \n"
 "Language-Team: English\n"
 "MIME-Version: 1.0\n"
@@ -19,63 +19,64 @@ msgstr ""
 
 #: ../../migrating.rst:2
 msgid "バージョン3への移行"
-msgstr ""
+msgstr "Migration to Version 3.0.0"
 
 #: ../../migrating.rst:4
 msgid "Scapiバージョン3へようこそ！"
-msgstr ""
+msgstr "Welcome to Scapi Version 3.0.0!"
 
 #: ../../migrating.rst:5
 msgid "Scapiバージョン3は完全な書き直しが行われたため、バージョン2(v2.3.1以前)との互換性はほぼありません。"
-msgstr ""
+msgstr "Scapi version 3.0.0 has been completely rewritten, resulting in almost no compatibility with version 2.0.0 (v2.3.1 and earlier)."
 
 #: ../../migrating.rst:6
 msgid "このページでScapiを3.0.0に移行してください。"
-msgstr ""
+msgstr "Please migrate Scapi to version 3.0.0 on this page."
 
 #: ../../migrating.rst:9
 msgid "作者の書く気がなかったので、困ったことあれば `issue <https://github.com/kakeruzoku/scapi/issues>`_ か `discussion <https://github.com/kakeruzoku/scapi/discussions>`_ か `discordサーバー <https://discord.gg/Q4tkxFVzUX>`_ までお願いします"
-msgstr ""
+msgstr "The author (I) wasn't in the mood to write, so if you have any trouble, please contact us through `issue <https://github.com/kakeruzoku/scapi/issues>`_, `discussion <https://github.com/kakeruzoku/scapi/discussions>`_, or `discord server <https://discord.gg/Q4tkxFVzUX>`_"
 
 #: ../../migrating.rst:12
 msgid "目次"
-msgstr ""
+msgstr "Table of Contents"
 
 #: ../../migrating.rst:15
 msgid "Scapiをアップデートする"
-msgstr ""
+msgstr "Update Scapi"
 
 #: ../../migrating.rst:17
 msgid "コマンドプロンプトなどで ``pip install -U scapi`` と実行してください。"
-msgstr ""
+msgstr "Please run pip install -U scapi in the Command Prompt or another terminal."
 
 #: ../../migrating.rst:19
 msgid "以下のコードで ``3.0.0`` 以降のバージョンが表示されれば成功です。"
-msgstr ""
+msgstr "If the code below displays a version of ``3.0.0`` or later, it is successful."
 
 #: ../../migrating.rst:28
 msgid "全体に関わる変更"
-msgstr ""
+msgstr "System-wide Changes"
 
 #: ../../migrating.rst:30
 msgid "個別の変更のBase も確認してみてください。"
-msgstr ""
+msgstr "Please also check the Base for each individual change."
 
 #: ../../migrating.rst:33
 msgid "完全な型ヒントサポート"
-msgstr ""
+msgstr "Full type hint support"
 
 #: ../../migrating.rst:35
 msgid "Scapi 3.0.0以降では、開発体験を向上させるため、完全な型ヒントのサポートを追加しました。全ての関数に返り値の型ヒントを付け、内部処理で扱うレスポンスの内容にも型ヒントを付与しています。"
-msgstr ""
+msgstr "Starting with Scapi 3.0.0, we've added full type hinting support to enhance the development experience. We've added return type hints to all functions and provided type hints for the response content handled internally."
 
 #: ../../migrating.rst:38
 msgid "Unknownの追加"
-msgstr ""
+msgstr "Add Unknown"
 
 #: ../../migrating.rst:40
 msgid "「不明」を表すデータ形式として |UNKNOWN| が追加されました。 UNKNOWNは==の比較で常に ``False`` を返します。"
-msgstr ""
+msgstr "A data type representing ‘unknown’, |UNKNOWN|, has been added.\n"
+"UNKNOWN always returns False when compared using ==."
 
 #: ../../migrating.rst:43
 msgid "型ヒントとしてUNKNOWNを使いたい場合は :const:`UNKNOWN_TYPE <scapi.UNKNOWN_TYPE>` が使用できます。"

@@ -3,7 +3,7 @@ msgstr ""
 "Project-Id-Version: scapi\n"
 "Report-Msgid-Bugs-To: \n"
 "POT-Creation-Date: 2025-11-27 10:14+0000\n"
-"PO-Revision-Date: 2025-11-27 11:27\n"
+"PO-Revision-Date: 2025-11-28 14:36\n"
 "Last-Translator: \n"
 "Language-Team: English\n"
 "MIME-Version: 1.0\n"
@@ -19,93 +19,93 @@ msgstr ""
 
 #: ../../changelog.rst:2
 msgid "更新履歴"
-msgstr ""
+msgstr "Update history"
 
 #: ../../changelog.rst:5
 msgid "3.x.x"
-msgstr ""
+msgstr "3.x.x"
 
 #: ../../changelog.rst:8
 msgid "3.1.4"
-msgstr ""
+msgstr "3.1.4"
 
 #: ../../changelog.rst:9
 msgid ":class:`scapi.RemixTree` 関連の関数/クラスを非推奨化"
-msgstr ""
+msgstr "Deprecated :class:`scapi.RemixTree` related functions/classes"
 
 #: ../../changelog.rst:10
 msgid ":attr:`scapi.count_api_iterative` を追加"
-msgstr ""
+msgstr "Added :attr:`scapi.count_api_iterative`"
 
 #: ../../changelog.rst:13
 msgid "3.1.3"
-msgstr ""
+msgstr "3.1.3"
 
 #: ../../changelog.rst:15
 msgid "|User| のユーザー名(:attr:`scapi.User.username`)が入力依存である場合の問題を修正"
-msgstr ""
+msgstr "Fixed an issue where the |User| username (:attr: `scapi.user.username`) was input-dependent"
 
 #: ../../changelog.rst:16
 msgid ":attr:`scapi.User.lower_username`, :attr:`scapi.User.real_username` の追加"
-msgstr ""
+msgstr "Added :attr:`scapi.User.lower_username` and :attr:`scapi.User.real_username`"
 
 #: ../../changelog.rst:17
 msgid ":attr:`scapi.Project.download_url` の追加"
-msgstr ""
+msgstr "Added :attr:`scapi.Project.download_url`"
 
 #: ../../changelog.rst:20
 msgid "3.1.2"
-msgstr ""
+msgstr "3.1.2"
 
 #: ../../changelog.rst:22
 msgid "docs: :doc:`チュートリアル <tutorial/index>` を追加"
-msgstr ""
+msgstr "docs: Added :doc:`tutorial <tutorial/index>`"
 
 #: ../../changelog.rst:23
 msgid ":func:`scapi.create_HTTPClient_async` の追加"
-msgstr ""
+msgstr "Added :func:`scapi.create_HTTPClient_async`"
 
 #: ../../changelog.rst:26
 msgid "3.1.1"
-msgstr ""
+msgstr "3.1.1"
 
 #: ../../changelog.rst:27
 msgid "fix: AsyncGeneratorの引数が1つしかない型ヒントがある問題を修正"
-msgstr ""
+msgstr "Fix: Fixed an issue where there was a type hint with only one argument in AsyncGenerator\n"
 
 #: ../../changelog.rst:30
 msgid "3.1.0"
-msgstr ""
+msgstr "3.1.0"
 
 #: ../../changelog.rst:31
 msgid ":func:`scapi.ForumPost.get_source` の追加"
-msgstr ""
+msgstr "Added :func:`scapi.ForumPost.get_source`"
 
 #: ../../changelog.rst:32
 msgid ":func:`scapi.User.report` の追加"
-msgstr ""
+msgstr "Added :func:`scapi.User.report`"
 
 #: ../../changelog.rst:35
 msgid "3.0.0"
-msgstr ""
+msgstr "3.0.0"
 
 #: ../../changelog.rst:36
 msgid "3.0.0では書き直しによる大規模な変更が行われました。"
-msgstr ""
+msgstr "Major changes were made in 3.0.0 due to rewrites."
 
 #: ../../changelog.rst:37
 msgid "詳しくは :doc:`このページ <migrating>` を確認してください"
-msgstr ""
+msgstr "Please check :doc:`this page <migrating>` for details"
 
 #: ../../changelog.rst:40
 msgid "それ以前の更新"
-msgstr ""
+msgstr "Earlier updates"
 
 #: ../../changelog.rst:41
 msgid "``1.1.0 - 2.3.1`` の更新履歴は `旧ドキュメントへ <https://kakeruzoku.github.io/scapi/ja/update>`_"
-msgstr ""
+msgstr "The changelog for ``1.1.0 - 2.3.1`` is in `the old documentation<https://kakeruzoku.github.io/scapi/ja/update>`_"
 
 #: ../../changelog.rst:42
 msgid "``0.0.1 - 1.0.0`` の更新履歴は `Githubへ <https://github.com/kakeruzoku/scapi/blob/v2/changelog.md>`_"
-msgstr ""
+msgstr "The changelog for ``0.0.1 - 1.0.0`` is on `GitHub <https://github.com/kakeruzoku/scapi/blob/v2/changelog.md>`_"
 
