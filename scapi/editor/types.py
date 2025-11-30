@@ -5,6 +5,34 @@ from typing import Any, Literal, TypeVarTuple, TypedDict, NotRequired
 Ts = TypeVarTuple('Ts')
 Tlist = tuple[*Ts]|list[Any] 
 
+MonitorMode = Literal["default","large","slider"]
+
+VarType = str|int|float|bool|None
+
+class SB3MonitorBase(TypedDict):
+    id:str
+    opcode:str
+    params:dict[str,str]
+    spriteName:str|None
+    visible:bool
+    x:int
+    y:int
+
+class SB3NormalMonitor(SB3MonitorBase):
+    mode:MonitorMode
+    height:Literal[0]
+    isDiscrete:bool
+    sliderMax:int
+    sliderMin:int
+    value:VarType
+    width:Literal[0]
+
+class SB3ListMonitor(SB3MonitorBase):
+    mode:Literal["list"]
+    height:int
+    value:list[VarType]
+    width:int
+
 class SB3Asset(TypedDict):
     assetId:str
     md5ext:str
@@ -22,7 +50,6 @@ class SB3Sound(SB3Asset):
     rate:int
     sampleCount:int
 
-VarType = str|int|float|bool|None
 SB3Variable = Tlist[str,VarType]|Tlist[str,VarType,Literal[True]]
 
 SB3List = Tlist[str,list[VarType]]
