@@ -132,6 +132,12 @@ def dt_from_timestamp(timestamp:float|_T,allow_unknown:bool=True) -> datetime.da
             raise ValueError()
     return datetime.datetime.fromtimestamp(timestamp, tz=datetime.timezone.utc)
 
+def dt_to_str(dt:datetime.datetime) -> str:
+    if dt.tzinfo is None:
+        dt = dt.replace(tzinfo=datetime.timezone.utc)
+    dt = dt.astimezone(datetime.timezone.utc)
+    return f"{dt.strftime('%Y-%m-%dT%H:%M:%S')}.{dt.microsecond//1000:03d}Z"
+
 async def api_iterative(
         _client:"HTTPClient",
         url:str,

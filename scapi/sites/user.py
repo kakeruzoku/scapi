@@ -3,7 +3,7 @@ from __future__ import annotations
 import datetime
 from enum import Enum
 import random
-from typing import TYPE_CHECKING, AsyncGenerator, Final, Literal, NamedTuple, Self, Sequence
+from typing import TYPE_CHECKING, AsyncGenerator, Final, Literal, NamedTuple, Self, Sequence, cast
 
 import aiohttp
 import bs4
@@ -45,6 +45,7 @@ from .comment import (
     Comment,
     get_comment_from_old
 )
+from .activity import Activity
 
 if TYPE_CHECKING:
     from .session import Session
@@ -494,6 +495,28 @@ class User(_BaseSiteAPI[str]):
             OcularStatus:
         """
         return await OcularStatus._create_from_api(self,self.client_or_session)
+    
+    async def get_activities(self,limit:int) -> AsyncGenerator[Activity,None]:
+        """
+        ユーザーアクティビティを取得する。
+
+        Args:
+            limit (int): 取得する件数
+
+        Yields:
+            Activity: ユーザーのアクティビティ
+        """
+        response = await self.client.get(
+            "https://scratch.mit.edu/messages/ajax/user-activity/",
+            params={
+                "user":self.username,
+                "max":limit
+            }
+        )
+        soup = bs4.BeautifulSoup(response.text,'html.parser')
+        for i in soup.find_all("li"):
+            yield Activity._create_from_html(cast(bs4.Tag,i),self.client_or_session,self)
+
 
 
     async def post_comment(

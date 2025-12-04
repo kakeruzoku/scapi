@@ -1,6 +1,11 @@
 更新履歴
 ========
 
+未リリース
+----------
+- :attr:`scapi.User.get_activities` を追加
+- :attr:`scapi.Classroom.get_public_activity` を追加
+
 3.x.x
 -----
 
