@@ -1,0 +1,3358 @@
+msgid ""
+msgstr ""
+"Project-Id-Version: scapi\n"
+"Report-Msgid-Bugs-To: \n"
+"POT-Creation-Date: 2025-11-27 10:18+0000\n"
+"PO-Revision-Date: 2025-12-07 07:02\n"
+"Last-Translator: \n"
+"Language-Team: English\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"Plural-Forms: nplurals=2; plural=(n != 1);\n"
+"X-Crowdin-Project: scapi\n"
+"X-Crowdin-Project-ID: 849930\n"
+"X-Crowdin-Language: en\n"
+"X-Crowdin-File: /reference/sites.pot\n"
+"X-Crowdin-File-ID: 15\n"
+"Language: en_US\n"
+
+#: ../../reference/sites.rst:2
+msgid "サイトAPI"
+msgstr ""
+
+#: ../../reference/sites.rst:5
+msgid "目次"
+msgstr ""
+
+#: ../../reference/sites.rst:8
+msgid "ベースクラス"
+msgstr ""
+
+#: ../../../scapi/sites/base.py:docstring of scapi.sites.base._BaseSiteAPI:1
+msgid "ベースクラス: :py:class:`~abc.ABC`, :py:class:`~typing.Generic`\\ [:py:obj:`~scapi.sites.base._T`]"
+msgstr ""
+
+#: ../../../scapi/sites/base.py:docstring of scapi.sites.base._BaseSiteAPI:1
+msgid "Scratchの何かしらのオブジェクトを表す。"
+msgstr ""
+
+#: ../../../scapi/sites/base.py:docstring of scapi.sites.base._BaseSiteAPI:5
+msgid "通信に使用するHTTPクライアント。"
+msgstr ""
+
+#: ../../../scapi/sites/activity.py:docstring of scapi.sites.activity.Activity:0
+#: ../../../scapi/sites/activity.py:docstring of scapi.sites.activity.CloudActivity:0
+#: ../../../scapi/sites/base.py:docstring of scapi.sites.base._BaseSiteAPI:0
+#: ../../../scapi/sites/classroom.py:docstring of scapi.sites.classroom.Classroom:0
+#: ../../../scapi/sites/comment.py:docstring of scapi.sites.comment.Comment:0
+#: ../../../scapi/sites/forum.py:docstring of scapi.sites.forum.ForumCategory:0
+#: ../../../scapi/sites/forum.py:docstring of scapi.sites.forum.ForumPost:0
+#: ../../../scapi/sites/forum.py:docstring of scapi.sites.forum.ForumTopic:0
+#: ../../../scapi/sites/forum.py:docstring of scapi.sites.forum.OcularReactions:0
+#: ../../../scapi/sites/mainpage.py:docstring of scapi.sites.mainpage.News:0
+#: ../../../scapi/sites/project.py:docstring of scapi.sites.project.Project:0
+#: ../../../scapi/sites/project.py:docstring of scapi.sites.project.ProjectFeatured:0
+#: ../../../scapi/sites/project.py:docstring of scapi.sites.project.ProjectVisibility:0
+#: ../../../scapi/sites/project.py:docstring of scapi.sites.project.RemixTree:0
+#: ../../../scapi/sites/session.py:docstring of scapi.sites.session.Session:0
+#: ../../../scapi/sites/session.py:docstring of scapi.sites.session.SessionStatus:0
+#: ../../../scapi/sites/studio.py:docstring of scapi.sites.studio.Studio:0
+#: ../../../scapi/sites/user.py:docstring of scapi.sites.user.OcularStatus:0
+#: ../../../scapi/sites/user.py:docstring of scapi.sites.user.User:0
+msgid "type"
+msgstr ""
+
+#: ../../../scapi/sites/base.py:docstring of scapi.sites.base._BaseSiteAPI:7
+msgid "HTTPClient"
+msgstr ""
+
+#: ../../../scapi/sites/base.py:docstring of scapi.sites.base._BaseSiteAPI:11
+msgid "ログインしている場合、そのセッション。"
+msgstr ""
+
+#: ../../../scapi/sites/base.py:docstring of scapi.sites.base._BaseSiteAPI:13
+msgid "Session|None"
+msgstr ""
+
+#: ../../../scapi/sites/base.py:docstring of scapi._BaseSiteAPI.client_or_session:1
+msgid "紐づけられているSessionかHTTPClientを返す。"
+msgstr ""
+
+#: ../../reference/sites.rst:0
+msgid "戻り値"
+msgstr ""
+
+#: ../../../scapi/sites/base.py:docstring of scapi._BaseSiteAPI.client_or_session:3
+msgid "HTTPClient|Session"
+msgstr ""
+
+#: ../../../scapi/sites/base.py:docstring of scapi.sites.base._BaseSiteAPI.update:1
+#: ../../../scapi/sites/classroom.py:docstring of scapi.sites.classroom.Classroom.update:1
+#: ../../../scapi/sites/comment.py:docstring of scapi.sites.comment.Comment.update:1
+#: ../../../scapi/sites/forum.py:docstring of scapi.sites.forum.ForumCategory.update:1
+#: ../../../scapi/sites/forum.py:docstring of scapi.sites.forum.ForumPost.update:1
+#: ../../../scapi/sites/forum.py:docstring of scapi.sites.forum.ForumTopic.update:1
+#: ../../../scapi/sites/forum.py:docstring of scapi.sites.forum.OcularReactions.update:1
+#: ../../../scapi/sites/project.py:docstring of scapi.sites.project.Project.update:1
+#: ../../../scapi/sites/session.py:docstring of scapi.sites.session.Session.update:1
+#: ../../../scapi/sites/studio.py:docstring of scapi.sites.studio.Studio.update:1
+#: ../../../scapi/sites/user.py:docstring of scapi.sites.user.OcularStatus.update:1
+#: ../../../scapi/sites/user.py:docstring of scapi.sites.user.User.update:1
+msgid "APIからデータを更新する。"
+msgstr ""
+
+#: ../../reference/sites.rst:0
+msgid "例外"
+msgstr ""
+
+#: ../../../scapi/sites/base.py:docstring of scapi.sites.base._BaseSiteAPI.update:3
+#: ../../../scapi/sites/classroom.py:docstring of scapi.sites.classroom.Classroom.update:3
+#: ../../../scapi/sites/comment.py:docstring of scapi.sites.comment.Comment.update:3
+#: ../../../scapi/sites/forum.py:docstring of scapi.sites.forum.ForumCategory.update:3
+#: ../../../scapi/sites/forum.py:docstring of scapi.sites.forum.ForumPost.update:3
+#: ../../../scapi/sites/forum.py:docstring of scapi.sites.forum.ForumTopic.update:3
+#: ../../../scapi/sites/forum.py:docstring of scapi.sites.forum.OcularReactions.update:3
+#: ../../../scapi/sites/project.py:docstring of scapi.sites.project.Project.update:3
+#: ../../../scapi/sites/session.py:docstring of scapi.sites.session.Session.update:3
+#: ../../../scapi/sites/studio.py:docstring of scapi.sites.studio.Studio.update:3
+#: ../../../scapi/sites/user.py:docstring of scapi.sites.user.OcularStatus.update:3
+#: ../../../scapi/sites/user.py:docstring of scapi.sites.user.User.update:3
+msgid "このクラスでupdate()が定義されていない。"
+msgstr ""
+
+#: ../../../scapi/sites/base.py:docstring of scapi.sites.base._BaseSiteAPI.require_session:1
+msgid "クラスにセッションが紐づけられていない場合、例外を送出する。"
+msgstr ""
+
+#: ../../../scapi/sites/base.py:docstring of scapi.sites.base._BaseSiteAPI.require_session:3
+msgid "セッションが紐づけられていない。"
+msgstr ""
+
+#: ../../../scapi/sites/base.py:docstring of scapi._BaseSiteAPI.client_closed:1
+msgid "HTTPClientが閉じられているか。"
+msgstr ""
+
+#: ../../../scapi/sites/base.py:docstring of scapi._BaseSiteAPI.client_closed:3
+msgid "接続が閉じられているか"
+msgstr ""
+
+#: ../../reference/sites.rst:0
+msgid "戻り値の型"
+msgstr ""
+
+#: ../../../scapi/sites/base.py:docstring of scapi.sites.base._BaseSiteAPI.client_close:1
+msgid "紐づけられているHTTPClientを閉じる。"
+msgstr ""
+
+#: ../../reference/sites.rst:14
+msgid "アカウント"
+msgstr ""
+
+#: ../../../scapi/sites/session.py:docstring of scapi.sites.session.login:1
+msgid "Scratchにログインする。"
+msgstr ""
+
+#: ../../reference/sites.rst:0
+msgid "パラメータ"
+msgstr ""
+
+#: ../../../scapi/sites/session.py:docstring of scapi.sites.session.Session:23
+#: ../../../scapi/sites/session.py:docstring of scapi.sites.session.login:3
+#: ../../../scapi/sites/session.py:docstring of scapi.sites.session.send_password_reset_email:6
+#: ../../../scapi/sites/user.py:docstring of scapi.sites.user.OcularStatus:11
+msgid "ユーザー名"
+msgstr ""
+
+#: ../../../scapi/sites/session.py:docstring of scapi.sites.session.Session.change_email:5
+#: ../../../scapi/sites/session.py:docstring of scapi.sites.session.login:5
+msgid "パスワード"
+msgstr ""
+
+#: ../../../scapi/sites/classroom.py:docstring of scapi.sites.classroom.Classroom.create_student_account:14
+#: ../../../scapi/sites/session.py:docstring of scapi.sites.session.login:7
+msgid "アカウントのステータスを取得するか。デフォルトはTrueです。"
+msgstr ""
+
+#: ../../../scapi/sites/session.py:docstring of scapi.sites.session.login:12
+msgid "ログインに失敗した。"
+msgstr ""
+
+#: ../../../scapi/sites/session.py:docstring of scapi.sites.session.login:13
+#: ../../../scapi/sites/session.py:docstring of scapi.sites.session.session_login:8
+msgid "不明な理由でログインに失敗した。"
+msgstr ""
+
+#: ../../../scapi/sites/session.py:docstring of scapi.sites.session.login:15
+msgid "await か async with で取得できるセッション"
+msgstr ""
+
+#: ../../../scapi/sites/session.py:docstring of scapi.sites.session.session_login:1
+msgid "セッションIDからアカウントにログインする。"
+msgstr ""
+
+#: ../../../scapi/sites/session.py:docstring of scapi.sites.session.session_login:3
+msgid "async with または await でSessionを取得できます。"
+msgstr ""
+
+#: ../../../scapi/sites/session.py:docstring of scapi.sites.session.session_login:5
+#: ../../../scapi/sites/user.py:docstring of scapi.User.username:7
+msgid "_description_"
+msgstr ""
+
+#: ../../../scapi/sites/session.py:docstring of scapi.sites.session.session_login:9
+msgid "無効なセッションID。"
+msgstr ""
+
+#: ../../../scapi/sites/session.py:docstring of scapi.sites.session.session_login:11
+msgid "await か async with で取得できるセッション。"
+msgstr ""
+
+#: ../../../scapi/sites/session.py:docstring of scapi.sites.session.send_password_reset_email:1
+msgid "パスワードリセットメールを送信する。 ユーザー名とメールアドレスはどちらかのみ指定できます。"
+msgstr ""
+
+#: ../../../scapi/sites/other.py:docstring of scapi.sites.other.check_email:3
+#: ../../../scapi/sites/other.py:docstring of scapi.sites.other.check_password:3
+#: ../../../scapi/sites/other.py:docstring of scapi.sites.other.check_username:3
+#: ../../../scapi/sites/other.py:docstring of scapi.sites.other.get_monthly_activity:3
+#: ../../../scapi/sites/other.py:docstring of scapi.sites.other.get_monthly_site_traffic:3
+#: ../../../scapi/sites/other.py:docstring of scapi.sites.other.get_total_site_stats:3
+#: ../../../scapi/sites/session.py:docstring of scapi.sites.session.send_password_reset_email:4
+msgid "通信に使用するHTTPClient"
+msgstr ""
+
+#: ../../../scapi/sites/session.py:docstring of scapi.sites.session.send_password_reset_email:8
+msgid "メールアドレス"
+msgstr ""
+
+#: ../../../scapi/sites/session.py:docstring of scapi.sites.session.Session:1
+#: ../../../scapi/sites/user.py:docstring of scapi.sites.user.User:1
+msgid "ベースクラス: :py:class:`~scapi.sites.base._BaseSiteAPI`\\ [:py:class:`str`]"
+msgstr ""
+
+#: ../../../scapi/sites/session.py:docstring of scapi.sites.session.Session:1
+msgid "ログイン済みのアカウントを表す"
+msgstr ""
+
+#: ../../../scapi/sites/session.py:docstring of scapi.sites.session.Session:5
+msgid "アカウントのセッションID"
+msgstr ""
+
+#: ../../../scapi/sites/activity.py:docstring of scapi.sites.activity.CloudActivity:7
+#: ../../../scapi/sites/activity.py:docstring of scapi.sites.activity.CloudActivity:13
+#: ../../../scapi/sites/activity.py:docstring of scapi.sites.activity.CloudActivity:19
+#: ../../../scapi/sites/mainpage.py:docstring of scapi.sites.mainpage.News:13
+#: ../../../scapi/sites/mainpage.py:docstring of scapi.sites.mainpage.News:19
+#: ../../../scapi/sites/mainpage.py:docstring of scapi.sites.mainpage.News:25
+#: ../../../scapi/sites/mainpage.py:docstring of scapi.sites.mainpage.News:31
+#: ../../../scapi/sites/project.py:docstring of scapi.sites.project.ProjectVisibility:55
+#: ../../../scapi/sites/project.py:docstring of scapi.sites.project.RemixTree:19
+#: ../../../scapi/sites/session.py:docstring of scapi.sites.session.Session:7
+#: ../../../scapi/sites/session.py:docstring of scapi.sites.session.Session:19
+#: ../../../scapi/sites/session.py:docstring of scapi.sites.session.Session:25
+#: ../../../scapi/sites/session.py:docstring of scapi.sites.session.Session:31
+#: ../../../scapi/sites/session.py:docstring of scapi.sites.session.SessionStatus:25
+#: ../../../scapi/sites/session.py:docstring of scapi.sites.session.SessionStatus:31
+#: ../../../scapi/sites/session.py:docstring of scapi.sites.session.SessionStatus:43
+#: ../../../scapi/sites/user.py:docstring of scapi.sites.user.OcularStatus:13
+#: ../../../scapi/sites/user.py:docstring of scapi.sites.user.User:9
+msgid "str"
+msgstr ""
+
+#: ../../../scapi/sites/session.py:docstring of scapi.sites.session.Session:11
+#: ../../../scapi/sites/studio.py:docstring of scapi.sites.studio.Studio.get_my_role:3
+msgid "アカウントのステータス"
+msgstr ""
+
+#: ../../../scapi/sites/session.py:docstring of scapi.sites.session.Session:13
+msgid "MAYBE_UNKNOWN[SessionStatus]"
+msgstr ""
+
+#: ../../../scapi/sites/session.py:docstring of scapi.sites.session.Session:17
+msgid "アカウントのXtoken"
+msgstr ""
+
+#: ../../../scapi/sites/session.py:docstring of scapi.sites.session.Session:29
+msgid "ログイン時のIPアドレス"
+msgstr ""
+
+#: ../../../scapi/sites/session.py:docstring of scapi.sites.session.Session:35
+msgid "ログインしているユーザー"
+msgstr ""
+
+#: ../../../scapi/sites/project.py:docstring of scapi.sites.project.ProjectFeatured:13
+#: ../../../scapi/sites/project.py:docstring of scapi.sites.project.ProjectVisibility:19
+#: ../../../scapi/sites/session.py:docstring of scapi.sites.session.Session:37
+#: ../../../scapi/sites/user.py:docstring of scapi.sites.user.OcularStatus:7
+msgid "User"
+msgstr ""
+
+#: ../../../scapi/sites/session.py:docstring of scapi.Session.logged_at:1
+msgid "アカウントにログインした時間を取得する。"
+msgstr ""
+
+#: ../../../scapi/sites/session.py:docstring of scapi.Session.logged_at:3
+msgid "ログインした時間"
+msgstr ""
+
+#: ../../../scapi/sites/session.py:docstring of scapi.sites.session.Session.logout:1
+msgid "アカウントからログアウトする。"
+msgstr ""
+
+#: ../../../scapi/sites/session.py:docstring of scapi.sites.session.Session.logout:3
+msgid "リクエストが無意味な可能性があります。"
+msgstr ""
+
+#: ../../../scapi/sites/session.py:docstring of scapi.sites.session.Session.change_country:1
+msgid "アカウントに表示される国を変更する"
+msgstr ""
+
+#: ../../../scapi/sites/session.py:docstring of scapi.sites.session.Session.change_country:3
+msgid "変更先の国名"
+msgstr ""
+
+#: ../../../scapi/sites/session.py:docstring of scapi.sites.session.Session.change_password:1
+msgid "アカウントのパスワードを変更します。"
+msgstr ""
+
+#: ../../../scapi/sites/session.py:docstring of scapi.sites.session.Session.change_password:3
+msgid "現在のパスワード(通常のパスワード変更の場合はstrのみ使用できます。)"
+msgstr ""
+
+#: ../../../scapi/sites/session.py:docstring of scapi.sites.session.Session.change_password:5
+#: ../../../scapi/sites/session.py:docstring of scapi.sites.session.Session.register_info:3
+msgid "新しいパスワード"
+msgstr ""
+
+#: ../../../scapi/sites/session.py:docstring of scapi.sites.session.Session.change_password:7
+msgid "生徒アカウントのパスワードリセットの場合、Trueにしてください。"
+msgstr ""
+
+#: ../../../scapi/sites/session.py:docstring of scapi.sites.session.Session.change_email:1
+msgid "アカウントに登録されているメールアドレスを変更する。"
+msgstr ""
+
+#: ../../../scapi/sites/session.py:docstring of scapi.sites.session.Session.change_email:3
+msgid "新たなメールアドレス"
+msgstr ""
+
+#: ../../../scapi/sites/session.py:docstring of scapi.sites.session.Session.change_subscription:1
+msgid "登録しているメールアドレスへの配信を設定する。"
+msgstr ""
+
+#: ../../../scapi/sites/session.py:docstring of scapi.sites.session.Session.change_subscription:3
+msgid "家庭でScratchを使う活動のアイデアを受け取るか。デフォルトはFalseです。"
+msgstr ""
+
+#: ../../../scapi/sites/session.py:docstring of scapi.sites.session.Session.change_subscription:5
+msgid "Scratchを教育現場向け設定にするためのプロダクトアップデートを受け取るか。デフォルトはFalseです。"
+msgstr ""
+
+#: ../../../scapi/sites/session.py:docstring of scapi.sites.session.Session.register_info:1
+msgid "新しい生徒アカウントに個人情報を登録する。"
+msgstr ""
+
+#: ../../../scapi/sites/session.py:docstring of scapi.sites.session.Session.register_info:5
+msgid "誕生日"
+msgstr ""
+
+#: ../../../scapi/sites/session.py:docstring of scapi.sites.session.Session.register_info:7
+msgid "性別"
+msgstr ""
+
+#: ../../../scapi/sites/session.py:docstring of scapi.sites.session.Session.register_info:9
+#: ../../../scapi/sites/user.py:docstring of scapi.sites.user.User:43
+msgid "国"
+msgstr ""
+
+#: ../../../scapi/sites/session.py:docstring of scapi.sites.session.Session.delete_account:1
+msgid "アカウントを削除してログアウトする。 2日間ログインがなければ、アカウントにログインできなくなります。"
+msgstr ""
+
+#: ../../../scapi/sites/classroom.py:docstring of scapi.sites.classroom.Classroom.create_student_account:6
+#: ../../../scapi/sites/session.py:docstring of scapi.sites.session.Session.check_password:3
+#: ../../../scapi/sites/session.py:docstring of scapi.sites.session.Session.delete_account:4
+#: ../../../scapi/sites/session.py:docstring of scapi.sites.session.Session.empty_trash:3
+msgid "アカウントのパスワード"
+msgstr ""
+
+#: ../../../scapi/sites/session.py:docstring of scapi.sites.session.Session.delete_account:6
+msgid "プロジェクトも削除するか"
+msgstr ""
+
+#: ../../../scapi/sites/session.py:docstring of scapi.sites.session.Session.create_project:1
+msgid "プロジェクトを作成する"
+msgstr ""
+
+#: ../../../scapi/sites/project.py:docstring of scapi.sites.project.Project:11
+#: ../../../scapi/sites/project.py:docstring of scapi.sites.project.Project.edit:5
+#: ../../../scapi/sites/project.py:docstring of scapi.sites.project.Project.old_edit:3
+#: ../../../scapi/sites/session.py:docstring of scapi.sites.session.Session.create_project:3
+msgid "プロジェクトのタイトル"
+msgstr ""
+
+#: ../../../scapi/sites/project.py:docstring of scapi.sites.project.Project.edit_project:3
+#: ../../../scapi/sites/session.py:docstring of scapi.sites.session.Session.create_project:5
+msgid "プロジェクトのデータ本体。"
+msgstr ""
+
+#: ../../../scapi/sites/session.py:docstring of scapi.sites.session.Session.create_project:7
+msgid "リミックスする場合、リミックス元のプロジェクトID"
+msgstr ""
+
+#: ../../../scapi/sites/project.py:docstring of scapi.sites.project.Project.edit_project:5
+#: ../../../scapi/sites/session.py:docstring of scapi.sites.session.Session.create_project:9
+msgid "プロジェクトのデータの形式。zip形式を使用したい場合はFalseを指定してください。Noneにすると簡易的に判定されます。"
+msgstr ""
+
+#: ../../../scapi/sites/project.py:docstring of scapi.sites.project.Project.create_remix:7
+#: ../../../scapi/sites/session.py:docstring of scapi.sites.session.Session.create_project:12
+msgid "作成されたプロジェクト"
+msgstr ""
+
+#: ../../../scapi/sites/session.py:docstring of scapi.sites.session.Session.create_studio:1
+msgid "スタジオを作成する"
+msgstr ""
+
+#: ../../../scapi/sites/classroom.py:docstring of scapi.sites.classroom.Classroom.create_class_studio:8
+#: ../../../scapi/sites/session.py:docstring of scapi.sites.session.Session.create_studio:3
+msgid "作成されたスタジオ"
+msgstr ""
+
+#: ../../../scapi/sites/session.py:docstring of scapi.sites.session.Session.create_class:1
+msgid "クラスを作成する。"
+msgstr ""
+
+#: ../../../scapi/sites/session.py:docstring of scapi.sites.session.Session.create_class:3
+msgid "クラスを作成するには教師アカウントが必要です。 6カ月に10クラスまで作成できます。"
+msgstr ""
+
+#: ../../../scapi/sites/session.py:docstring of scapi.sites.session.Session.create_class:6
+msgid "作成したいクラスの名前"
+msgstr ""
+
+#: ../../../scapi/sites/classroom.py:docstring of scapi.sites.classroom.Classroom:29
+#: ../../../scapi/sites/session.py:docstring of scapi.sites.session.Session.create_class:8
+msgid "このクラスについて欄"
+msgstr ""
+
+#: ../../../scapi/sites/session.py:docstring of scapi.sites.session.Session.create_class:10
+msgid "現在、取り組んでいること欄"
+msgstr ""
+
+#: ../../../scapi/sites/session.py:docstring of scapi.sites.session.Session.create_class:13
+msgid "作成されたクラス"
+msgstr ""
+
+#: ../../../scapi/sites/session.py:docstring of scapi.sites.session.Session.get_feed:1
+msgid "最新の情報欄を取得する。"
+msgstr ""
+
+#: ../../../scapi/sites/session.py:docstring of scapi.sites.session.Session.get_feed:3
+#: ../../../scapi/sites/studio.py:docstring of scapi.sites.studio.Studio.get_activities:3
+msgid "取得するアクティビティの数。初期値は40です。"
+msgstr ""
+
+#: ../../../scapi/sites/session.py:docstring of scapi.sites.session.Session.get_feed:5
+msgid "取得するアクティビティの開始位置。初期値は0です。"
+msgstr ""
+
+#: ../../../scapi/sites/classroom.py:docstring of scapi.sites.classroom.Classroom.get_class_studios:0
+#: ../../../scapi/sites/classroom.py:docstring of scapi.sites.classroom.Classroom.get_students:0
+#: ../../../scapi/sites/comment.py:docstring of scapi.sites.comment.Comment.get_replies:0
+#: ../../../scapi/sites/forum.py:docstring of scapi.sites.forum.ForumCategory.get_topics:0
+#: ../../../scapi/sites/forum.py:docstring of scapi.sites.forum.ForumTopic.get_posts:0
+#: ../../../scapi/sites/mainpage.py:docstring of scapi.sites.mainpage.get_news:0
+#: ../../../scapi/sites/project.py:docstring of scapi.sites.project.Project.get_cloud_logs:0
+#: ../../../scapi/sites/project.py:docstring of scapi.sites.project.Project.get_comments:0
+#: ../../../scapi/sites/project.py:docstring of scapi.sites.project.Project.get_remixes:0
+#: ../../../scapi/sites/project.py:docstring of scapi.sites.project.Project.get_studios:0
+#: ../../../scapi/sites/project.py:docstring of scapi.sites.project.explore_projects:0
+#: ../../../scapi/sites/project.py:docstring of scapi.sites.project.search_projects:0
+#: ../../../scapi/sites/session.py:docstring of scapi.sites.session.Session.get_backpacks:0
+#: ../../../scapi/sites/session.py:docstring of scapi.sites.session.Session.get_feed:0
+#: ../../../scapi/sites/session.py:docstring of scapi.sites.session.Session.get_followings_loves:0
+#: ../../../scapi/sites/session.py:docstring of scapi.sites.session.Session.get_messages:0
+#: ../../../scapi/sites/session.py:docstring of scapi.sites.session.Session.get_mystuff_classes:0
+#: ../../../scapi/sites/session.py:docstring of scapi.sites.session.Session.get_mystuff_projects:0
+#: ../../../scapi/sites/session.py:docstring of scapi.sites.session.Session.get_mystuff_students:0
+#: ../../../scapi/sites/session.py:docstring of scapi.sites.session.Session.get_mystuff_studios:0
+#: ../../../scapi/sites/session.py:docstring of scapi.sites.session.Session.get_viewed_projects:0
+#: ../../../scapi/sites/studio.py:docstring of scapi.sites.studio.Studio.get_activities:0
+#: ../../../scapi/sites/studio.py:docstring of scapi.sites.studio.Studio.get_comments:0
+#: ../../../scapi/sites/studio.py:docstring of scapi.sites.studio.Studio.get_curators:0
+#: ../../../scapi/sites/studio.py:docstring of scapi.sites.studio.Studio.get_managers:0
+#: ../../../scapi/sites/studio.py:docstring of scapi.sites.studio.Studio.get_projects:0
+#: ../../../scapi/sites/studio.py:docstring of scapi.sites.studio.explore_studios:0
+#: ../../../scapi/sites/studio.py:docstring of scapi.sites.studio.search_studios:0
+#: ../../../scapi/sites/user.py:docstring of scapi.sites.user.User.get_comments:0
+#: ../../../scapi/sites/user.py:docstring of scapi.sites.user.User.get_favorites:0
+#: ../../../scapi/sites/user.py:docstring of scapi.sites.user.User.get_followers:0
+#: ../../../scapi/sites/user.py:docstring of scapi.sites.user.User.get_followings:0
+#: ../../../scapi/sites/user.py:docstring of scapi.sites.user.User.get_projects:0
+#: ../../../scapi/sites/user.py:docstring of scapi.sites.user.User.get_studios:0
+msgid "列挙"
+msgstr ""
+
+#: ../../../scapi/sites/session.py:docstring of scapi.sites.session.Session.get_feed:8
+msgid "*Activity* -- 取得したアクティビティ"
+msgstr ""
+
+#: ../../../scapi/sites/session.py:docstring of scapi.sites.session.Session.get_messages:1
+msgid "メッセージを取得する。"
+msgstr ""
+
+#: ../../../scapi/sites/session.py:docstring of scapi.sites.session.Session.get_messages:3
+msgid "取得するメッセージの数。初期値は40です。"
+msgstr ""
+
+#: ../../../scapi/sites/session.py:docstring of scapi.sites.session.Session.get_messages:5
+msgid "取得するメッセージの開始位置。初期値は0です。"
+msgstr ""
+
+#: ../../../scapi/sites/session.py:docstring of scapi.sites.session.Session.get_messages:8
+msgid "*Activity* -- 取得したメッセージ"
+msgstr ""
+
+#: ../../../scapi/sites/session.py:docstring of scapi.sites.session.Session.message_event:1
+msgid "メッセージイベントを作成する。"
+msgstr ""
+
+#: ../../../scapi/sites/session.py:docstring of scapi.sites.session.Session.message_event:3
+msgid "更新間隔"
+msgstr ""
+
+#: ../../../scapi/sites/session.py:docstring of scapi.sites.session.Session.clear_message:1
+msgid "メッセージをすべて既読する。"
+msgstr ""
+
+#: ../../../scapi/sites/session.py:docstring of scapi.sites.session.Session.get_message_count:1
+msgid "アカウントのメッセージ数を取得する。"
+msgstr ""
+
+#: ../../../scapi/sites/session.py:docstring of scapi.sites.session.Session.get_invite_status:1
+msgid "Scratcherへの招待への詳細データ"
+msgstr ""
+
+#: ../../../scapi/sites/session.py:docstring of scapi.sites.session.Session.get_invite_status:3
+msgid "招待がある場合、Scratchからの生データ"
+msgstr ""
+
+#: ../../../scapi/sites/session.py:docstring of scapi.sites.session.Session.become_scratcher:1
+msgid "Scratcherに昇格する。"
+msgstr ""
+
+#: ../../../scapi/sites/session.py:docstring of scapi.sites.session.Session.get_my_classroom:1
+msgid "生徒アカウントの場合、参加しているクラスを取得する。"
+msgstr ""
+
+#: ../../../scapi/sites/session.py:docstring of scapi.sites.session.Session.get_mystuff_projects:1
+msgid "自分の所有しているプロジェクトを取得する。"
+msgstr ""
+
+#: ../../../scapi/sites/session.py:docstring of scapi.sites.session.Session.get_mystuff_projects:3
+msgid "取得するプロジェクトの開始ページ位置。初期値は1です。"
+msgstr ""
+
+#: ../../../scapi/sites/session.py:docstring of scapi.sites.session.Session.get_mystuff_projects:5
+msgid "取得するプロジェクトの終了ページ位置。初期値はstart_pageの値です。"
+msgstr ""
+
+#: ../../../scapi/sites/session.py:docstring of scapi.sites.session.Session.get_mystuff_projects:7
+msgid "取得したいプロジェクトの種類。デフォルトは\"all\"です。"
+msgstr ""
+
+#: ../../../scapi/sites/session.py:docstring of scapi.sites.session.Session.get_mystuff_projects:9
+msgid "ソートしたい順。デフォルトは \"\" (最終更新順)です。"
+msgstr ""
+
+#: ../../../scapi/sites/session.py:docstring of scapi.sites.session.Session.get_mystuff_classes:11
+#: ../../../scapi/sites/session.py:docstring of scapi.sites.session.Session.get_mystuff_projects:11
+#: ../../../scapi/sites/session.py:docstring of scapi.sites.session.Session.get_mystuff_studios:11
+msgid "降順にするか。デフォルトはTrueです。"
+msgstr ""
+
+#: ../../../scapi/sites/session.py:docstring of scapi.sites.session.Session.get_followings_loves:8
+#: ../../../scapi/sites/session.py:docstring of scapi.sites.session.Session.get_mystuff_projects:14
+#: ../../../scapi/sites/session.py:docstring of scapi.sites.session.Session.get_viewed_projects:8
+#: ../../../scapi/sites/studio.py:docstring of scapi.sites.studio.Studio.get_projects:8
+#: ../../../scapi/sites/user.py:docstring of scapi.sites.user.User.get_favorites:8
+#: ../../../scapi/sites/user.py:docstring of scapi.sites.user.User.get_projects:8
+msgid "*Project* -- 取得したプロジェクト"
+msgstr ""
+
+#: ../../../scapi/sites/session.py:docstring of scapi.sites.session.Session.get_mystuff_studios:1
+msgid "自分の所有または参加しているスタジオを取得する。"
+msgstr ""
+
+#: ../../../scapi/sites/classroom.py:docstring of scapi.sites.classroom.Classroom.get_class_studios:3
+#: ../../../scapi/sites/session.py:docstring of scapi.sites.session.Session.get_mystuff_studios:3
+msgid "取得するスタジオの開始ページ位置。初期値は1です。"
+msgstr ""
+
+#: ../../../scapi/sites/classroom.py:docstring of scapi.sites.classroom.Classroom.get_class_studios:5
+#: ../../../scapi/sites/session.py:docstring of scapi.sites.session.Session.get_mystuff_studios:5
+msgid "取得するスタジオの終了ページ位置。初期値はstart_pageの値です。"
+msgstr ""
+
+#: ../../../scapi/sites/session.py:docstring of scapi.sites.session.Session.get_mystuff_studios:7
+msgid "取得したいスタジオの種類。デフォルトは\"all\"です。"
+msgstr ""
+
+#: ../../../scapi/sites/session.py:docstring of scapi.sites.session.Session.get_mystuff_classes:9
+#: ../../../scapi/sites/session.py:docstring of scapi.sites.session.Session.get_mystuff_studios:9
+msgid "ソートしたい順。デフォルトは \"\"です。"
+msgstr ""
+
+#: ../../../scapi/sites/classroom.py:docstring of scapi.sites.classroom.Classroom.get_class_studios:10
+#: ../../../scapi/sites/session.py:docstring of scapi.sites.session.Session.get_mystuff_classes:14
+#: ../../../scapi/sites/session.py:docstring of scapi.sites.session.Session.get_mystuff_studios:14
+#: ../../../scapi/sites/user.py:docstring of scapi.sites.user.User.get_studios:8
+msgid "*Studio* -- 取得したスタジオ"
+msgstr ""
+
+#: ../../../scapi/sites/session.py:docstring of scapi.sites.session.Session.get_mystuff_classes:1
+msgid "自分の所有しているクラスを取得する。"
+msgstr ""
+
+#: ../../../scapi/sites/session.py:docstring of scapi.sites.session.Session.get_mystuff_classes:3
+msgid "取得するクラスの開始ページ位置。初期値は1です。"
+msgstr ""
+
+#: ../../../scapi/sites/session.py:docstring of scapi.sites.session.Session.get_mystuff_classes:5
+msgid "取得するクラスの終了ページ位置。初期値はstart_pageの値です。"
+msgstr ""
+
+#: ../../../scapi/sites/session.py:docstring of scapi.sites.session.Session.get_mystuff_classes:7
+msgid "取得したいクラスの種類。デフォルトは\"all\"です。"
+msgstr ""
+
+#: ../../../scapi/sites/session.py:docstring of scapi.sites.session.Session.get_mystuff_students:1
+msgid "このアカウントの生徒を取得する。"
+msgstr ""
+
+#: ../../../scapi/sites/classroom.py:docstring of scapi.sites.classroom.Classroom.get_students:3
+#: ../../../scapi/sites/session.py:docstring of scapi.sites.session.Session.get_mystuff_students:3
+msgid "取得するユーザーの開始ページ位置。初期値は1です。"
+msgstr ""
+
+#: ../../../scapi/sites/classroom.py:docstring of scapi.sites.classroom.Classroom.get_students:5
+#: ../../../scapi/sites/session.py:docstring of scapi.sites.session.Session.get_mystuff_students:5
+msgid "取得するユーザーの終了ページ位置。初期値はstart_pageの値です。"
+msgstr ""
+
+#: ../../../scapi/sites/classroom.py:docstring of scapi.sites.classroom.Classroom.get_students:10
+#: ../../../scapi/sites/session.py:docstring of scapi.sites.session.Session.get_mystuff_students:8
+#: ../../../scapi/sites/studio.py:docstring of scapi.sites.studio.Studio.get_curators:8
+#: ../../../scapi/sites/studio.py:docstring of scapi.sites.studio.Studio.get_managers:8
+#: ../../../scapi/sites/user.py:docstring of scapi.sites.user.User.get_followers:8
+#: ../../../scapi/sites/user.py:docstring of scapi.sites.user.User.get_followings:8
+msgid "*User* -- 取得したユーザー"
+msgstr ""
+
+#: ../../../scapi/sites/session.py:docstring of scapi.sites.session.Session.get_mystuff_class:1
+msgid "所有しているクラスの情報を取得する。"
+msgstr ""
+
+#: ../../../scapi/sites/classroom.py:docstring of scapi.sites.classroom.get_class:3
+#: ../../../scapi/sites/session.py:docstring of scapi.sites.session.Session.get_classroom:3
+#: ../../../scapi/sites/session.py:docstring of scapi.sites.session.Session.get_mystuff_class:3
+msgid "取得したいクラスのID"
+msgstr ""
+
+#: ../../../scapi/sites/session.py:docstring of scapi.sites.session.Session.get_followings_loves:1
+msgid "フォロー中のユーザーが好きなプロジェクトを取得する。"
+msgstr ""
+
+#: ../../../scapi/sites/project.py:docstring of scapi.sites.project.Project.get_remixes:3
+#: ../../../scapi/sites/project.py:docstring of scapi.sites.project.explore_projects:11
+#: ../../../scapi/sites/project.py:docstring of scapi.sites.project.search_projects:11
+#: ../../../scapi/sites/session.py:docstring of scapi.sites.session.Session.explore_projects:10
+#: ../../../scapi/sites/session.py:docstring of scapi.sites.session.Session.get_followings_loves:3
+#: ../../../scapi/sites/session.py:docstring of scapi.sites.session.Session.get_viewed_projects:3
+#: ../../../scapi/sites/session.py:docstring of scapi.sites.session.Session.search_projects:10
+#: ../../../scapi/sites/studio.py:docstring of scapi.sites.studio.Studio.get_projects:3
+#: ../../../scapi/sites/user.py:docstring of scapi.sites.user.User.get_favorites:3
+#: ../../../scapi/sites/user.py:docstring of scapi.sites.user.User.get_projects:3
+msgid "取得するプロジェクトの数。初期値は40です。"
+msgstr ""
+
+#: ../../../scapi/sites/project.py:docstring of scapi.sites.project.Project.get_remixes:5
+#: ../../../scapi/sites/project.py:docstring of scapi.sites.project.explore_projects:13
+#: ../../../scapi/sites/project.py:docstring of scapi.sites.project.search_projects:13
+#: ../../../scapi/sites/session.py:docstring of scapi.sites.session.Session.explore_projects:12
+#: ../../../scapi/sites/session.py:docstring of scapi.sites.session.Session.get_followings_loves:5
+#: ../../../scapi/sites/session.py:docstring of scapi.sites.session.Session.get_viewed_projects:5
+#: ../../../scapi/sites/session.py:docstring of scapi.sites.session.Session.search_projects:12
+#: ../../../scapi/sites/studio.py:docstring of scapi.sites.studio.Studio.get_projects:5
+#: ../../../scapi/sites/user.py:docstring of scapi.sites.user.User.get_favorites:5
+#: ../../../scapi/sites/user.py:docstring of scapi.sites.user.User.get_projects:5
+msgid "取得するプロジェクトの開始位置。初期値は0です。"
+msgstr ""
+
+#: ../../../scapi/sites/session.py:docstring of scapi.sites.session.Session.get_viewed_projects:1
+msgid "プロジェクトの閲覧履歴を取得する。"
+msgstr ""
+
+#: ../../../scapi/sites/session.py:docstring of scapi.sites.session.Session.empty_trash:1
+msgid "ゴミ箱を空にする"
+msgstr ""
+
+#: ../../../scapi/sites/session.py:docstring of scapi.sites.session.Session.empty_trash:6
+msgid "削除されたプロジェクトの数"
+msgstr ""
+
+#: ../../../scapi/sites/session.py:docstring of scapi.sites.session.Session.check_password:1
+msgid "アカウントのパスワードを確認する"
+msgstr ""
+
+#: ../../../scapi/sites/session.py:docstring of scapi.sites.session.Session.check_password:6
+msgid "パスワードが正しいかどうか"
+msgstr ""
+
+#: ../../../scapi/sites/session.py:docstring of scapi.sites.session.Session.get_backpacks:1
+msgid "バックパックを取得する。"
+msgstr ""
+
+#: ../../../scapi/sites/session.py:docstring of scapi.sites.session.Session.get_backpacks:3
+msgid "取得するバックパックの数。初期値は40です。"
+msgstr ""
+
+#: ../../../scapi/sites/session.py:docstring of scapi.sites.session.Session.get_backpacks:5
+msgid "取得するバックパックの開始位置。初期値は0です。"
+msgstr ""
+
+#: ../../../scapi/sites/session.py:docstring of scapi.sites.session.Session.get_backpacks:8
+msgid "*Backpack* -- 取得したバックパック"
+msgstr ""
+
+#: ../../../scapi/sites/session.py:docstring of scapi.sites.session.Session.upload_asset:1
+msgid "アセットサーバーにファイルをアップロードする。"
+msgstr ""
+
+#: ../../../scapi/sites/session.py:docstring of scapi.sites.session.Session.upload_asset:3
+msgid "ファイルの本体"
+msgstr ""
+
+#: ../../../scapi/sites/session.py:docstring of scapi.sites.session.Session.upload_asset:5
+msgid "使用する拡張子 (svg,wav,pngなど)"
+msgstr ""
+
+#: ../../../scapi/sites/session.py:docstring of scapi.sites.session.Session.upload_asset:8
+msgid "アセットID"
+msgstr ""
+
+#: ../../../scapi/sites/project.py:docstring of scapi.sites.project.get_project:1
+#: ../../../scapi/sites/session.py:docstring of scapi.sites.session.Session.get_project:1
+msgid "プロジェクトを取得する。"
+msgstr ""
+
+#: ../../../scapi/sites/project.py:docstring of scapi.sites.project.get_project:3
+#: ../../../scapi/sites/session.py:docstring of scapi.sites.session.Session.get_project:3
+msgid "取得したいプロジェクトのID"
+msgstr ""
+
+#: ../../../scapi/sites/session.py:docstring of scapi.sites.session.Session.get_project:6
+msgid "取得したプロジェクト"
+msgstr ""
+
+#: ../../../scapi/sites/session.py:docstring of scapi.sites.session.Session.get_studio:1
+#: ../../../scapi/sites/studio.py:docstring of scapi.sites.studio.get_studio:1
+msgid "スタジオを取得する。"
+msgstr ""
+
+#: ../../../scapi/sites/forum.py:docstring of scapi.sites.forum.get_forum_topic:3
+#: ../../../scapi/sites/session.py:docstring of scapi.sites.session.Session.get_studio:3
+#: ../../../scapi/sites/studio.py:docstring of scapi.sites.studio.get_studio:3
+msgid "取得したいスタジオのID"
+msgstr ""
+
+#: ../../../scapi/sites/session.py:docstring of scapi.sites.session.Session.get_studio:6
+msgid "取得したスタジオ"
+msgstr ""
+
+#: ../../../scapi/sites/session.py:docstring of scapi.sites.session.Session.get_user:1
+#: ../../../scapi/sites/user.py:docstring of scapi.sites.user.get_user:1
+msgid "ユーザーを取得する。"
+msgstr ""
+
+#: ../../../scapi/sites/session.py:docstring of scapi.sites.session.Session.get_user:3
+msgid "取得したいユーザーの名前"
+msgstr ""
+
+#: ../../../scapi/sites/session.py:docstring of scapi.sites.session.Session.get_user:6
+#: ../../../scapi/sites/studio.py:docstring of scapi.sites.studio.Studio.get_host:3
+msgid "取得したユーザー"
+msgstr ""
+
+#: ../../../scapi/sites/classroom.py:docstring of scapi.sites.classroom.get_class:1
+#: ../../../scapi/sites/session.py:docstring of scapi.sites.session.Session.get_classroom:1
+msgid "クラスを取得する。"
+msgstr ""
+
+#: ../../../scapi/sites/session.py:docstring of scapi.sites.session.Session.get_classroom_from_token:1
+msgid "classtokenからクラスを取得する。"
+msgstr ""
+
+#: ../../../scapi/sites/classroom.py:docstring of scapi.sites.classroom.get_class_from_token:3
+#: ../../../scapi/sites/session.py:docstring of scapi.sites.session.Session.get_classroom_from_token:3
+msgid "取得したいクラスのtoken"
+msgstr ""
+
+#: ../../../scapi/sites/forum.py:docstring of scapi.sites.forum.get_forum_categories:1
+#: ../../../scapi/sites/session.py:docstring of scapi.sites.session.Session.get_forum_categories:1
+msgid "フォーラムのカテゴリー一覧を取得する。"
+msgstr ""
+
+#: ../../../scapi/sites/forum.py:docstring of scapi.sites.forum.get_forum_categories:6
+#: ../../../scapi/sites/session.py:docstring of scapi.sites.session.Session.get_forum_categories:3
+msgid "ボックスの名前と、そこに属しているカテゴリーのペア"
+msgstr ""
+
+#: ../../../scapi/sites/session.py:docstring of scapi.sites.session.Session.get_forum_category:1
+msgid "フォーラムカテゴリーを取得する"
+msgstr ""
+
+#: ../../../scapi/sites/forum.py:docstring of scapi.sites.forum.get_forum_category:3
+#: ../../../scapi/sites/session.py:docstring of scapi.sites.session.Session.get_forum_category:3
+msgid "取得したいカテゴリーのID"
+msgstr ""
+
+#: ../../../scapi/sites/session.py:docstring of scapi.sites.session.Session.get_forum_topic:1
+msgid "フォーラムトピックを取得する"
+msgstr ""
+
+#: ../../../scapi/sites/session.py:docstring of scapi.sites.session.Session.get_forum_topic:3
+msgid "取得したいトピックのID"
+msgstr ""
+
+#: ../../../scapi/sites/session.py:docstring of scapi.sites.session.Session.get_forum_post:1
+msgid "フォーラムの投稿を取得する"
+msgstr ""
+
+#: ../../../scapi/sites/forum.py:docstring of scapi.sites.forum.get_forum_post:3
+#: ../../../scapi/sites/session.py:docstring of scapi.sites.session.Session.get_forum_post:3
+msgid "取得したい投稿のID"
+msgstr ""
+
+#: ../../../scapi/sites/session.py:docstring of scapi.sites.session.Session.explore_projects:1
+msgid "プロジェクトの傾向を取得する。 この関数は ``async for`` から使用してください。"
+msgstr ""
+
+#: ../../../scapi/sites/project.py:docstring of scapi.sites.project.explore_projects:5
+#: ../../../scapi/sites/session.py:docstring of scapi.sites.session.Session.explore_projects:4
+#: ../../../scapi/sites/session.py:docstring of scapi.sites.session.Session.explore_studios:4
+#: ../../../scapi/sites/studio.py:docstring of scapi.sites.studio.explore_studios:5
+msgid "取得するする種類。デフォルトは\"*\"(all)です。"
+msgstr ""
+
+#: ../../../scapi/sites/project.py:docstring of scapi.sites.project.explore_projects:7
+#: ../../../scapi/sites/project.py:docstring of scapi.sites.project.search_projects:7
+#: ../../../scapi/sites/session.py:docstring of scapi.sites.session.Session.explore_projects:6
+#: ../../../scapi/sites/session.py:docstring of scapi.sites.session.Session.explore_studios:6
+#: ../../../scapi/sites/session.py:docstring of scapi.sites.session.Session.search_projects:6
+#: ../../../scapi/sites/session.py:docstring of scapi.sites.session.Session.search_studios:6
+#: ../../../scapi/sites/studio.py:docstring of scapi.sites.studio.explore_studios:7
+#: ../../../scapi/sites/studio.py:docstring of scapi.sites.studio.search_studios:7
+msgid "取得するモード。デフォルトは\"trending\"です。"
+msgstr ""
+
+#: ../../../scapi/sites/project.py:docstring of scapi.sites.project.explore_projects:9
+#: ../../../scapi/sites/project.py:docstring of scapi.sites.project.search_projects:9
+#: ../../../scapi/sites/session.py:docstring of scapi.sites.session.Session.explore_projects:8
+#: ../../../scapi/sites/session.py:docstring of scapi.sites.session.Session.explore_studios:8
+#: ../../../scapi/sites/session.py:docstring of scapi.sites.session.Session.search_projects:8
+#: ../../../scapi/sites/session.py:docstring of scapi.sites.session.Session.search_studios:8
+#: ../../../scapi/sites/studio.py:docstring of scapi.sites.studio.explore_studios:9
+#: ../../../scapi/sites/studio.py:docstring of scapi.sites.studio.search_studios:9
+msgid "取得する言語。デフォルトは\"en\"です。"
+msgstr ""
+
+#: ../../../scapi/sites/session.py:docstring of scapi.sites.session.Session.search_projects:1
+msgid "プロジェクトを検索する この関数は ``async for`` から使用してください。"
+msgstr ""
+
+#: ../../../scapi/sites/project.py:docstring of scapi.sites.project.search_projects:5
+#: ../../../scapi/sites/session.py:docstring of scapi.sites.session.Session.search_projects:4
+#: ../../../scapi/sites/session.py:docstring of scapi.sites.session.Session.search_studios:4
+#: ../../../scapi/sites/studio.py:docstring of scapi.sites.studio.search_studios:5
+msgid "検索したい内容"
+msgstr ""
+
+#: ../../../scapi/sites/session.py:docstring of scapi.sites.session.Session.explore_studios:1
+msgid "スタジオの傾向を取得する この関数は ``async for`` から使用してください。"
+msgstr ""
+
+#: ../../../scapi/sites/project.py:docstring of scapi.sites.project.Project.get_studios:3
+#: ../../../scapi/sites/session.py:docstring of scapi.sites.session.Session.explore_studios:10
+#: ../../../scapi/sites/session.py:docstring of scapi.sites.session.Session.search_studios:10
+#: ../../../scapi/sites/studio.py:docstring of scapi.sites.studio.explore_studios:11
+#: ../../../scapi/sites/studio.py:docstring of scapi.sites.studio.search_studios:11
+#: ../../../scapi/sites/user.py:docstring of scapi.sites.user.User.get_studios:3
+msgid "取得するスタジオの数。初期値は40です。"
+msgstr ""
+
+#: ../../../scapi/sites/project.py:docstring of scapi.sites.project.Project.get_studios:5
+#: ../../../scapi/sites/session.py:docstring of scapi.sites.session.Session.explore_studios:12
+#: ../../../scapi/sites/session.py:docstring of scapi.sites.session.Session.search_studios:12
+#: ../../../scapi/sites/studio.py:docstring of scapi.sites.studio.explore_studios:13
+#: ../../../scapi/sites/studio.py:docstring of scapi.sites.studio.search_studios:13
+#: ../../../scapi/sites/user.py:docstring of scapi.sites.user.User.get_studios:5
+msgid "取得するスタジオの開始位置。初期値は0です。"
+msgstr ""
+
+#: ../../../scapi/sites/session.py:docstring of scapi.sites.session.Session.search_studios:1
+msgid "スタジオを検索する この関数は ``async for`` から使用してください。"
+msgstr ""
+
+#: ../../../scapi/sites/activity.py:docstring of scapi.sites.activity.Activity:1
+#: ../../../scapi/sites/other.py:docstring of scapi.sites.other.MonthlyActivity:1
+#: ../../../scapi/sites/other.py:docstring of scapi.sites.other.MonthlySiteTraffic:1
+#: ../../../scapi/sites/other.py:docstring of scapi.sites.other.TotalSiteStats:1
+#: ../../../scapi/sites/project.py:docstring of scapi.sites.project.ProjectFeatured:1
+#: ../../../scapi/sites/project.py:docstring of scapi.sites.project.ProjectVisibility:1
+#: ../../../scapi/sites/session.py:docstring of scapi.sites.session.SessionStatus:1
+#: ../../../scapi/sites/studio.py:docstring of scapi.sites.studio.StudioStatus:1
+msgid "ベースクラス: :py:class:`object`"
+msgstr ""
+
+#: ../../../scapi/sites/session.py:docstring of scapi.sites.session.SessionStatus:1
+msgid "アカウントのステータスを表す。"
+msgstr ""
+
+#: ../../../scapi/sites/session.py:docstring of scapi.sites.session.SessionStatus:5
+msgid "ステータスを表しているアカウントのセッション"
+msgstr ""
+
+#: ../../../scapi/sites/session.py:docstring of scapi.sites.session.SessionStatus:7
+msgid "Session"
+msgstr ""
+
+#: ../../../scapi/sites/session.py:docstring of scapi.sites.session.SessionStatus:11
+msgid "アカウントがブロックされているか"
+msgstr ""
+
+#: ../../../scapi/sites/project.py:docstring of scapi.sites.project.ProjectVisibility:25
+#: ../../../scapi/sites/project.py:docstring of scapi.sites.project.ProjectVisibility:31
+#: ../../../scapi/sites/project.py:docstring of scapi.sites.project.ProjectVisibility:37
+#: ../../../scapi/sites/project.py:docstring of scapi.sites.project.ProjectVisibility:43
+#: ../../../scapi/sites/project.py:docstring of scapi.sites.project.ProjectVisibility:49
+#: ../../../scapi/sites/session.py:docstring of scapi.sites.session.SessionStatus:13
+#: ../../../scapi/sites/session.py:docstring of scapi.sites.session.SessionStatus:19
+#: ../../../scapi/sites/session.py:docstring of scapi.sites.session.SessionStatus:55
+#: ../../../scapi/sites/session.py:docstring of scapi.sites.session.SessionStatus:61
+#: ../../../scapi/sites/session.py:docstring of scapi.sites.session.SessionStatus:67
+#: ../../../scapi/sites/session.py:docstring of scapi.sites.session.SessionStatus:73
+#: ../../../scapi/sites/session.py:docstring of scapi.sites.session.SessionStatus:79
+#: ../../../scapi/sites/session.py:docstring of scapi.sites.session.SessionStatus:85
+#: ../../../scapi/sites/session.py:docstring of scapi.sites.session.SessionStatus:91
+#: ../../../scapi/sites/session.py:docstring of scapi.sites.session.SessionStatus:97
+#: ../../../scapi/sites/session.py:docstring of scapi.sites.session.SessionStatus:103
+#: ../../../scapi/sites/session.py:docstring of scapi.sites.session.SessionStatus:109
+#: ../../../scapi/sites/session.py:docstring of scapi.sites.session.SessionStatus:115
+#: ../../../scapi/sites/session.py:docstring of scapi.sites.session.SessionStatus:121
+#: ../../../scapi/sites/session.py:docstring of scapi.sites.session.SessionStatus:127
+#: ../../../scapi/sites/session.py:docstring of scapi.sites.session.SessionStatus:133
+#: ../../../scapi/sites/session.py:docstring of scapi.sites.session.SessionStatus:139
+#: ../../../scapi/sites/session.py:docstring of scapi.sites.session.SessionStatus:145
+#: ../../../scapi/sites/session.py:docstring of scapi.sites.session.SessionStatus:151
+#: ../../../scapi/sites/session.py:docstring of scapi.sites.session.SessionStatus:157
+#: ../../../scapi/sites/session.py:docstring of scapi.sites.session.SessionStatus:163
+#: ../../../scapi/sites/session.py:docstring of scapi.sites.session.SessionStatus:169
+msgid "bool"
+msgstr ""
+
+#: ../../../scapi/sites/session.py:docstring of scapi.sites.session.SessionStatus:23
+msgid "アカウントのアイコンのURL"
+msgstr ""
+
+#: ../../../scapi/sites/session.py:docstring of scapi.sites.session.SessionStatus:29
+msgid "アカウントのメールアドレス"
+msgstr ""
+
+#: ../../../scapi/sites/session.py:docstring of scapi.sites.session.SessionStatus:35
+msgid "アカウントに登録された誕生日。日付は常に`1`です"
+msgstr ""
+
+#: ../../../scapi/sites/session.py:docstring of scapi.sites.session.SessionStatus:37
+msgid "datetime.date|None"
+msgstr ""
+
+#: ../../../scapi/sites/session.py:docstring of scapi.sites.session.SessionStatus:41
+msgid "アカウントに登録された性別"
+msgstr ""
+
+#: ../../../scapi/sites/session.py:docstring of scapi.sites.session.SessionStatus:47
+msgid "生徒アカウントの場合、所属しているクラス"
+msgstr ""
+
+#: ../../../scapi/sites/activity.py:docstring of scapi.sites.activity.Activity:26
+#: ../../../scapi/sites/session.py:docstring of scapi.sites.session.SessionStatus:49
+msgid "int|None"
+msgstr ""
+
+#: ../../../scapi/sites/session.py:docstring of scapi.sites.session.SessionStatus:53
+msgid "ScratchTeamのアカウントか"
+msgstr ""
+
+#: ../../../scapi/sites/session.py:docstring of scapi.sites.session.SessionStatus:59
+msgid "Scratcherか"
+msgstr ""
+
+#: ../../../scapi/sites/session.py:docstring of scapi.sites.session.SessionStatus:65
+msgid "New Scratcherか"
+msgstr ""
+
+#: ../../../scapi/sites/session.py:docstring of scapi.sites.session.SessionStatus:71
+msgid "Scratcherへの招待が届いているか"
+msgstr ""
+
+#: ../../../scapi/sites/session.py:docstring of scapi.sites.session.SessionStatus:83
+msgid "教師アカウントか"
+msgstr ""
+
+#: ../../../scapi/sites/session.py:docstring of scapi.sites.session.SessionStatus:95
+msgid "生徒アカウントか"
+msgstr ""
+
+#: ../../../scapi/sites/session.py:docstring of scapi.sites.session.SessionStatus:101
+msgid "アカウントのコメントのミュートステータス"
+msgstr ""
+
+#: ../../../scapi/sites/session.py:docstring of scapi.sites.session.SessionStatus:107
+msgid "パスワードを再設定する必要があるか"
+msgstr ""
+
+#: ../../../scapi/sites/session.py:docstring of scapi.sites.session.SessionStatus:113
+msgid "アカウント情報を登録する必要があるか"
+msgstr ""
+
+#: ../../../scapi/sites/session.py:docstring of scapi.sites.session.SessionStatus:143
+msgid "親のメールアドレスで登録しているか"
+msgstr ""
+
+#: ../../../scapi/sites/session.py:docstring of scapi.SessionStatus.joined_at:1
+msgid "Returns: datetime.datetime: Scratchに参加した時間"
+msgstr ""
+
+#: ../../reference/sites.rst:27
+msgid "プロジェクト"
+msgstr ""
+
+#: ../../../scapi/sites/project.py:docstring of scapi.sites.project.get_project:6
+msgid "await か async with で取得できるプロジェクト"
+msgstr ""
+
+#: ../../../scapi/sites/project.py:docstring of scapi.sites.project.explore_projects:1
+msgid "プロジェクトの傾向を取得する"
+msgstr ""
+
+#: ../../../scapi/sites/other.py:docstring of scapi.sites.other.get_supported_translation_language:3
+#: ../../../scapi/sites/other.py:docstring of scapi.sites.other.translation:3
+#: ../../../scapi/sites/other.py:docstring of scapi.sites.other.tts:3
+#: ../../../scapi/sites/project.py:docstring of scapi.sites.project.explore_projects:3
+#: ../../../scapi/sites/project.py:docstring of scapi.sites.project.search_projects:3
+#: ../../../scapi/sites/studio.py:docstring of scapi.sites.studio.explore_studios:3
+#: ../../../scapi/sites/studio.py:docstring of scapi.sites.studio.search_studios:3
+msgid "使用するHTTPClient"
+msgstr ""
+
+#: ../../../scapi/sites/project.py:docstring of scapi.sites.project.explore_projects:15
+#: ../../../scapi/sites/project.py:docstring of scapi.sites.project.search_projects:15
+#: ../../../scapi/sites/studio.py:docstring of scapi.sites.studio.explore_studios:15
+#: ../../../scapi/sites/studio.py:docstring of scapi.sites.studio.search_studios:15
+msgid "セッションを使用したい場合、使用したいセッション"
+msgstr ""
+
+#: ../../../scapi/sites/project.py:docstring of scapi.sites.project.explore_projects:18
+#: ../../../scapi/sites/project.py:docstring of scapi.sites.project.search_projects:18
+msgid "*Project*"
+msgstr ""
+
+#: ../../../scapi/sites/project.py:docstring of scapi.sites.project.search_projects:1
+msgid "プロジェクトを検索する"
+msgstr ""
+
+#: ../../../scapi/sites/classroom.py:docstring of scapi.sites.classroom.Classroom:1
+#: ../../../scapi/sites/comment.py:docstring of scapi.sites.comment.Comment:1
+#: ../../../scapi/sites/forum.py:docstring of scapi.sites.forum.ForumCategory:1
+#: ../../../scapi/sites/project.py:docstring of scapi.sites.project.Project:1
+#: ../../../scapi/sites/studio.py:docstring of scapi.sites.studio.Studio:1
+msgid "ベースクラス: :py:class:`~scapi.sites.base._BaseSiteAPI`\\ [:py:class:`int`]"
+msgstr ""
+
+#: ../../../scapi/sites/project.py:docstring of scapi.sites.project.Project:1
+msgid "プロジェクトを表す"
+msgstr ""
+
+#: ../../../scapi/sites/project.py:docstring of scapi.sites.project.Project:5
+#: ../../../scapi/sites/project.py:docstring of scapi.sites.project.ProjectVisibility:5
+#: ../../../scapi/sites/project.py:docstring of scapi.sites.project.RemixTree:5
+msgid "プロジェクトのID"
+msgstr ""
+
+#: ../../../scapi/sites/classroom.py:docstring of scapi.sites.classroom.Classroom:7
+#: ../../../scapi/sites/comment.py:docstring of scapi.sites.comment.Comment:13
+#: ../../../scapi/sites/forum.py:docstring of scapi.sites.forum.ForumCategory:7
+#: ../../../scapi/sites/forum.py:docstring of scapi.sites.forum.ForumPost:7
+#: ../../../scapi/sites/forum.py:docstring of scapi.sites.forum.ForumTopic:7
+#: ../../../scapi/sites/forum.py:docstring of scapi.sites.forum.OcularReactions:7
+#: ../../../scapi/sites/mainpage.py:docstring of scapi.sites.mainpage.News:7
+#: ../../../scapi/sites/project.py:docstring of scapi.sites.project.Project:7
+#: ../../../scapi/sites/project.py:docstring of scapi.sites.project.ProjectVisibility:7
+#: ../../../scapi/sites/project.py:docstring of scapi.sites.project.RemixTree:7
+#: ../../../scapi/sites/project.py:docstring of scapi.sites.project.RemixTree:25
+#: ../../../scapi/sites/studio.py:docstring of scapi.sites.studio.Studio:7
+msgid "int"
+msgstr ""
+
+#: ../../../scapi/sites/activity.py:docstring of scapi.sites.activity.CloudActivity:25
+#: ../../../scapi/sites/classroom.py:docstring of scapi.sites.classroom.Classroom:13
+#: ../../../scapi/sites/classroom.py:docstring of scapi.sites.classroom.Classroom:31
+#: ../../../scapi/sites/classroom.py:docstring of scapi.sites.classroom.Classroom:37
+#: ../../../scapi/sites/classroom.py:docstring of scapi.sites.classroom.Classroom:43
+#: ../../../scapi/sites/comment.py:docstring of scapi.sites.comment.Comment:37
+#: ../../../scapi/sites/forum.py:docstring of scapi.sites.forum.ForumCategory:13
+#: ../../../scapi/sites/forum.py:docstring of scapi.sites.forum.ForumCategory:25
+#: ../../../scapi/sites/forum.py:docstring of scapi.sites.forum.ForumCategory:31
+#: ../../../scapi/sites/forum.py:docstring of scapi.sites.forum.ForumTopic:13
+#: ../../../scapi/sites/project.py:docstring of scapi.sites.project.Project:13
+#: ../../../scapi/sites/project.py:docstring of scapi.sites.project.Project:25
+#: ../../../scapi/sites/project.py:docstring of scapi.sites.project.Project:31
+#: ../../../scapi/sites/project.py:docstring of scapi.sites.project.Project:94
+#: ../../../scapi/sites/studio.py:docstring of scapi.sites.studio.Studio:13
+#: ../../../scapi/sites/studio.py:docstring of scapi.sites.studio.Studio:25
+#: ../../../scapi/sites/user.py:docstring of scapi.sites.user.OcularStatus:19
+#: ../../../scapi/sites/user.py:docstring of scapi.sites.user.OcularStatus:31
+#: ../../../scapi/sites/user.py:docstring of scapi.sites.user.User:33
+#: ../../../scapi/sites/user.py:docstring of scapi.sites.user.User:39
+#: ../../../scapi/sites/user.py:docstring of scapi.sites.user.User:45
+msgid "MAYBE_UNKNOWN[str]"
+msgstr ""
+
+#: ../../../scapi/sites/project.py:docstring of scapi.sites.project.Project:17
+msgid "プロジェクトの作者"
+msgstr ""
+
+#: ../../../scapi/sites/classroom.py:docstring of scapi.sites.classroom.Classroom:19
+#: ../../../scapi/sites/comment.py:docstring of scapi.sites.comment.Comment:43
+#: ../../../scapi/sites/forum.py:docstring of scapi.sites.forum.ForumPost:25
+#: ../../../scapi/sites/forum.py:docstring of scapi.sites.forum.ForumTopic:31
+#: ../../../scapi/sites/project.py:docstring of scapi.sites.project.Project:19
+#: ../../../scapi/sites/studio.py:docstring of scapi.sites.studio.Studio:67
+msgid "MAYBE_UNKNOWN[User]"
+msgstr ""
+
+#: ../../../scapi/sites/project.py:docstring of scapi.sites.project.Project:23
+msgid "プロジェクトの使い方欄"
+msgstr ""
+
+#: ../../../scapi/sites/project.py:docstring of scapi.sites.project.Project:29
+msgid "プロジェクトのメモとクレジット欄"
+msgstr ""
+
+#: ../../../scapi/sites/project.py:docstring of scapi.sites.project.Project:35
+msgid "プロジェクトが公開されているか"
+msgstr ""
+
+#: ../../../scapi/sites/classroom.py:docstring of scapi.sites.classroom.Classroom:25
+#: ../../../scapi/sites/forum.py:docstring of scapi.sites.forum.ForumTopic:37
+#: ../../../scapi/sites/forum.py:docstring of scapi.sites.forum.ForumTopic:43
+#: ../../../scapi/sites/forum.py:docstring of scapi.sites.forum.ForumTopic:49
+#: ../../../scapi/sites/project.py:docstring of scapi.sites.project.Project:37
+#: ../../../scapi/sites/project.py:docstring of scapi.sites.project.Project:43
+#: ../../../scapi/sites/project.py:docstring of scapi.sites.project.Project:49
+#: ../../../scapi/sites/studio.py:docstring of scapi.sites.studio.Studio:31
+#: ../../../scapi/sites/studio.py:docstring of scapi.sites.studio.Studio:37
+#: ../../../scapi/sites/user.py:docstring of scapi.sites.user.User:51
+#: ../../../scapi/sites/user.py:docstring of scapi.sites.user.User:57
+#: ../../../scapi/sites/user.py:docstring of scapi.sites.user.User:63
+msgid "MAYBE_UNKNOWN[bool]"
+msgstr ""
+
+#: ../../../scapi/sites/project.py:docstring of scapi.sites.project.Project:41
+#: ../../../scapi/sites/studio.py:docstring of scapi.sites.studio.Studio:35
+msgid "コメント欄が開いているか"
+msgstr ""
+
+#: ../../../scapi/sites/project.py:docstring of scapi.sites.project.Project:47
+msgid "プロジェクトがゴミ箱またはゴミ箱からも削除されているか。"
+msgstr ""
+
+#: ../../../scapi/sites/project.py:docstring of scapi.sites.project.Project:53
+msgid "プロジェクトの閲覧数"
+msgstr ""
+
+#: ../../../scapi/sites/classroom.py:docstring of scapi.sites.classroom.Classroom:49
+#: ../../../scapi/sites/classroom.py:docstring of scapi.sites.classroom.Classroom:55
+#: ../../../scapi/sites/classroom.py:docstring of scapi.sites.classroom.Classroom:61
+#: ../../../scapi/sites/comment.py:docstring of scapi.sites.comment.Comment:49
+#: ../../../scapi/sites/forum.py:docstring of scapi.sites.forum.ForumCategory:19
+#: ../../../scapi/sites/forum.py:docstring of scapi.sites.forum.ForumCategory:37
+#: ../../../scapi/sites/forum.py:docstring of scapi.sites.forum.ForumCategory:43
+#: ../../../scapi/sites/forum.py:docstring of scapi.sites.forum.ForumPost:19
+#: ../../../scapi/sites/forum.py:docstring of scapi.sites.forum.ForumTopic:25
+#: ../../../scapi/sites/forum.py:docstring of scapi.sites.forum.ForumTopic:55
+#: ../../../scapi/sites/forum.py:docstring of scapi.sites.forum.ForumTopic:61
+#: ../../../scapi/sites/project.py:docstring of scapi.sites.project.Project:55
+#: ../../../scapi/sites/project.py:docstring of scapi.sites.project.Project:61
+#: ../../../scapi/sites/project.py:docstring of scapi.sites.project.Project:67
+#: ../../../scapi/sites/project.py:docstring of scapi.sites.project.Project:73
+#: ../../../scapi/sites/studio.py:docstring of scapi.sites.studio.Studio:19
+#: ../../../scapi/sites/studio.py:docstring of scapi.sites.studio.Studio:43
+#: ../../../scapi/sites/studio.py:docstring of scapi.sites.studio.Studio:49
+#: ../../../scapi/sites/studio.py:docstring of scapi.sites.studio.Studio:55
+#: ../../../scapi/sites/studio.py:docstring of scapi.sites.studio.Studio:61
+#: ../../../scapi/sites/user.py:docstring of scapi.sites.user.User:15
+#: ../../../scapi/sites/user.py:docstring of scapi.sites.user.User:21
+#: ../../../scapi/sites/user.py:docstring of scapi.sites.user.User:27
+msgid "MAYBE_UNKNOWN[int]"
+msgstr ""
+
+#: ../../../scapi/sites/project.py:docstring of scapi.sites.project.Project:59
+msgid "プロジェクトの「好き」の数"
+msgstr ""
+
+#: ../../../scapi/sites/project.py:docstring of scapi.sites.project.Project:65
+msgid "プロジェクトの「お気に入り」の数"
+msgstr ""
+
+#: ../../../scapi/sites/project.py:docstring of scapi.sites.project.Project:71
+msgid "プロジェクトの「リミックス」の数"
+msgstr ""
+
+#: ../../../scapi/sites/project.py:docstring of scapi.sites.project.Project:76
+msgid "remix_count の値は 3.0APIのリスト形式での取得など(傾向等)では常に0になります。正確な値を確認したい場合は .update() を実行してください。"
+msgstr ""
+
+#: ../../../scapi/sites/project.py:docstring of scapi.sites.project.Project:80
+msgid "プロジェクトの親プロジェクトID"
+msgstr ""
+
+#: ../../../scapi/sites/comment.py:docstring of scapi.sites.comment.Comment:25
+#: ../../../scapi/sites/comment.py:docstring of scapi.sites.comment.Comment:31
+#: ../../../scapi/sites/project.py:docstring of scapi.sites.project.Project:82
+#: ../../../scapi/sites/project.py:docstring of scapi.sites.project.Project:88
+#: ../../../scapi/sites/project.py:docstring of scapi.sites.project.Project:100
+msgid "MAYBE_UNKNOWN[int|None]"
+msgstr ""
+
+#: ../../../scapi/sites/project.py:docstring of scapi.sites.project.Project:86
+msgid "プロジェクトの元プロジェクトID"
+msgstr ""
+
+#: ../../../scapi/sites/project.py:docstring of scapi.sites.project.Project:92
+msgid "プロジェクトのアクセストークン"
+msgstr ""
+
+#: ../../../scapi/sites/project.py:docstring of scapi.sites.project.Project:98
+msgid "コメントの数。Session.get_mystuff_projects()からでのみ取得できます。"
+msgstr ""
+
+#: ../../../scapi/sites/project.py:docstring of scapi.Project.created_at:1
+msgid "プロジェクトが作成された時間を返す"
+msgstr ""
+
+#: ../../../scapi/sites/comment.py:docstring of scapi.Comment.created_at:3
+#: ../../../scapi/sites/comment.py:docstring of scapi.Comment.modified_at:4
+#: ../../../scapi/sites/project.py:docstring of scapi.Project.created_at:3
+#: ../../../scapi/sites/project.py:docstring of scapi.Project.modified_at:3
+#: ../../../scapi/sites/project.py:docstring of scapi.Project.shared_at:3
+#: ../../../scapi/sites/studio.py:docstring of scapi.Studio.created_at:3
+#: ../../../scapi/sites/studio.py:docstring of scapi.Studio.modified_at:3
+#: ../../../scapi/sites/user.py:docstring of scapi.User.joined_at:3
+msgid "データがある場合、その時間。"
+msgstr ""
+
+#: ../../../scapi/sites/project.py:docstring of scapi.Project.modified_at:1
+msgid "プロジェクトが最後に編集された時間を返す"
+msgstr ""
+
+#: ../../../scapi/sites/project.py:docstring of scapi.Project.shared_at:1
+msgid "プロジェクトが共有された時間を返す"
+msgstr ""
+
+#: ../../../scapi/sites/project.py:docstring of scapi.Project.url:1
+msgid "プロジェクトのURLを取得する"
+msgstr ""
+
+#: ../../../scapi/sites/classroom.py:docstring of scapi.Classroom.thumbnail_url:1
+#: ../../../scapi/sites/project.py:docstring of scapi.Project.thumbnail_url:1
+#: ../../../scapi/sites/studio.py:docstring of scapi.Studio.thumbnail_url:1
+msgid "サムネイルURLを返す。"
+msgstr ""
+
+#: ../../../scapi/sites/project.py:docstring of scapi.Project.download_url:1
+msgid "プロジェクトのダウンロードURLを取得する。"
+msgstr ""
+
+#: ../../../scapi/sites/project.py:docstring of scapi.Project.download_url:3
+msgid "project_tokenが見つからない"
+msgstr ""
+
+#: ../../../scapi/sites/project.py:docstring of scapi.Project.download_url:5
+msgid "ダウンロードするためのURL"
+msgstr ""
+
+#: ../../../scapi/sites/project.py:docstring of scapi.Project.is_author:1
+msgid "紐づけられている |Session| がプロジェクトの作者かどうか :attr:`Project.author` が |UNKNOWN| の場合は |UNKNOWN| が返されます。"
+msgstr ""
+
+#: ../../../scapi/sites/project.py:docstring of scapi.sites.project.Project.get_remixes:1
+msgid "リミックスされたプロジェクトを取得する。"
+msgstr ""
+
+#: ../../../scapi/sites/project.py:docstring of scapi.sites.project.Project.get_remixes:8
+msgid "*Project* -- リミックスされたプロジェクト"
+msgstr ""
+
+#: ../../../scapi/sites/project.py:docstring of scapi.sites.project.Project.get_studios:1
+msgid "プロジェクトが追加されたスタジオを取得する。"
+msgstr ""
+
+#: ../../../scapi/sites/project.py:docstring of scapi.sites.project.Project.get_studios:8
+msgid "*Studio* -- 追加されたスタジオ。"
+msgstr ""
+
+#: ../../../scapi/sites/project.py:docstring of scapi.sites.project.Project.get_parent_project:1
+msgid "プロジェクトの親プロジェクトを取得する。"
+msgstr ""
+
+#: ../../../scapi/sites/project.py:docstring of scapi.sites.project.Project.get_parent_project:3
+#: ../../../scapi/sites/project.py:docstring of scapi.sites.project.Project.get_root_project:3
+msgid "プロジェクトが見つからない"
+msgstr ""
+
+#: ../../../scapi/sites/project.py:docstring of scapi.sites.project.Project.get_parent_project:5
+#: ../../../scapi/sites/project.py:docstring of scapi.sites.project.Project.get_root_project:5
+msgid "データが存在する場合、そのプロジェクト。"
+msgstr ""
+
+#: ../../../scapi/sites/project.py:docstring of scapi.sites.project.Project.get_root_project:1
+msgid "プロジェクトの元プロジェクトを取得する。"
+msgstr ""
+
+#: ../../../scapi/sites/project.py:docstring of scapi.sites.project.Project.get_comments:1
+msgid "プロジェクトに投稿されたコメントを取得する。"
+msgstr ""
+
+#: ../../../scapi/sites/comment.py:docstring of scapi.sites.comment.Comment.get_replies:4
+#: ../../../scapi/sites/project.py:docstring of scapi.sites.project.Project.get_comments:3
+#: ../../../scapi/sites/studio.py:docstring of scapi.sites.studio.Studio.get_comments:3
+msgid "取得するコメントの数。初期値は40です。"
+msgstr ""
+
+#: ../../../scapi/sites/comment.py:docstring of scapi.sites.comment.Comment.get_replies:6
+#: ../../../scapi/sites/project.py:docstring of scapi.sites.project.Project.get_comments:5
+#: ../../../scapi/sites/studio.py:docstring of scapi.sites.studio.Studio.get_comments:5
+msgid "取得するコメントの開始位置。初期値は0です。"
+msgstr ""
+
+#: ../../../scapi/sites/project.py:docstring of scapi.sites.project.Project.get_comments:8
+#: ../../../scapi/sites/studio.py:docstring of scapi.sites.studio.Studio.get_comments:8
+msgid "*Comment* -- プロジェクトに投稿されたコメント"
+msgstr ""
+
+#: ../../../scapi/sites/project.py:docstring of scapi.sites.project.Project.get_comment_by_id:1
+#: ../../../scapi/sites/studio.py:docstring of scapi.sites.studio.Studio.get_comment_by_id:1
+msgid "コメントIDからコメントを取得する。"
+msgstr ""
+
+#: ../../../scapi/sites/project.py:docstring of scapi.sites.project.Project.get_comment_by_id:3
+#: ../../../scapi/sites/studio.py:docstring of scapi.sites.studio.Studio.get_comment_by_id:3
+msgid "取得したいコメントのID"
+msgstr ""
+
+#: ../../../scapi/sites/project.py:docstring of scapi.sites.project.Project.get_comment_by_id:6
+#: ../../../scapi/sites/studio.py:docstring of scapi.sites.studio.Studio.get_comment_by_id:6
+msgid "コメントが見つからない"
+msgstr ""
+
+#: ../../../scapi/sites/project.py:docstring of scapi.sites.project.Project.get_comment_by_id:8
+#: ../../../scapi/sites/studio.py:docstring of scapi.sites.studio.Studio.get_comment_by_id:8
+msgid "見つかったコメント"
+msgstr ""
+
+#: ../../../scapi/sites/project.py:docstring of scapi.sites.project.Project.get_comments_from_old:1
+msgid "プロジェクトに投稿されたコメントを古いAPIから取得する。"
+msgstr ""
+
+#: ../../../scapi/sites/project.py:docstring of scapi.sites.project.Project.get_comments_from_old:3
+#: ../../../scapi/sites/studio.py:docstring of scapi.sites.studio.Studio.get_comments_from_old:3
+#: ../../../scapi/sites/user.py:docstring of scapi.sites.user.User.get_comments:3
+msgid "取得するコメントの開始ページ位置。初期値は1です。"
+msgstr ""
+
+#: ../../../scapi/sites/project.py:docstring of scapi.sites.project.Project.get_comments_from_old:5
+#: ../../../scapi/sites/studio.py:docstring of scapi.sites.studio.Studio.get_comments_from_old:5
+#: ../../../scapi/sites/user.py:docstring of scapi.sites.user.User.get_comments:5
+msgid "取得するコメントの終了ページ位置。初期値はstart_pageの値です。"
+msgstr ""
+
+#: ../../../scapi/sites/project.py:docstring of scapi.sites.project.Project.get_comments_from_old:8
+msgid "プロジェクトに投稿されたコメント"
+msgstr ""
+
+#: ../../../scapi/sites/project.py:docstring of scapi.sites.project.Project.comment_event:1
+#: ../../../scapi/sites/studio.py:docstring of scapi.sites.studio.Studio.comment_event:1
+#: ../../../scapi/sites/user.py:docstring of scapi.sites.user.User.comment_event:1
+msgid "コメントイベントを作成する。"
+msgstr ""
+
+#: ../../../scapi/sites/project.py:docstring of scapi.sites.project.Project.comment_event:3
+#: ../../../scapi/sites/studio.py:docstring of scapi.sites.studio.Studio.comment_event:3
+#: ../../../scapi/sites/user.py:docstring of scapi.sites.user.User.comment_event:3
+msgid "コメントの更新間隔。デフォルトは30秒です。"
+msgstr ""
+
+#: ../../../scapi/sites/project.py:docstring of scapi.sites.project.Project.comment_event:5
+#: ../../../scapi/sites/studio.py:docstring of scapi.sites.studio.Studio.comment_event:5
+#: ../../../scapi/sites/user.py:docstring of scapi.sites.user.User.comment_event:5
+msgid "古いAPIから取得するか。デフォルトはFalseです。"
+msgstr ""
+
+#: ../../../scapi/sites/project.py:docstring of scapi.sites.project.Project.get_cloud_logs:1
+msgid "クラウド変数のログを取得する。"
+msgstr ""
+
+#: ../../../scapi/sites/project.py:docstring of scapi.sites.project.Project.get_cloud_logs:3
+msgid "取得するログの数。初期値は100です。"
+msgstr ""
+
+#: ../../../scapi/sites/project.py:docstring of scapi.sites.project.Project.get_cloud_logs:5
+msgid "取得するログの開始位置。初期値は0です。"
+msgstr ""
+
+#: ../../../scapi/sites/project.py:docstring of scapi.sites.project.Project.get_cloud_logs:8
+msgid "CloudActivity"
+msgstr ""
+
+#: ../../../scapi/sites/project.py:docstring of scapi.sites.project.Project.edit_project:1
+msgid "プロジェクト本体を更新します。"
+msgstr ""
+
+#: ../../../scapi/sites/project.py:docstring of scapi.sites.project.Project.edit:1
+msgid "プロジェクトのステータスを編集します。"
+msgstr ""
+
+#: ../../../scapi/sites/project.py:docstring of scapi.sites.project.Project.edit:3
+msgid "コメントを許可するか"
+msgstr ""
+
+#: ../../../scapi/sites/project.py:docstring of scapi.sites.project.Project.edit:7
+msgid "プロジェクトの「使い方」欄"
+msgstr ""
+
+#: ../../../scapi/sites/project.py:docstring of scapi.sites.project.Project.edit:9
+msgid "プロジェクトの「メモとクレジット」欄"
+msgstr ""
+
+#: ../../../scapi/sites/project.py:docstring of scapi.sites.project.Project.old_edit:1
+msgid "プロジェクトのステータスを古いAPIで編集します。"
+msgstr ""
+
+#: ../../../scapi/sites/project.py:docstring of scapi.sites.project.Project.old_edit:5
+msgid "プロジェクトの共有状態"
+msgstr ""
+
+#: ../../../scapi/sites/project.py:docstring of scapi.sites.project.Project.old_edit:7
+msgid "ゴミ箱に入れるか"
+msgstr ""
+
+#: ../../../scapi/sites/project.py:docstring of scapi.sites.project.Project.set_thumbnail:1
+msgid "プロジェクトのサムネイルを変更します。"
+msgstr ""
+
+#: ../../../scapi/sites/project.py:docstring of scapi.sites.project.Project.set_thumbnail:3
+#: ../../../scapi/sites/studio.py:docstring of scapi.sites.studio.Studio.set_thumbnail:3
+msgid "サムネイルデータ"
+msgstr ""
+
+#: ../../../scapi/sites/project.py:docstring of scapi.sites.project.Project.share:1
+msgid "プロジェクトを共有する"
+msgstr ""
+
+#: ../../../scapi/sites/project.py:docstring of scapi.sites.project.Project.unshare:1
+msgid "プロジェクトを非共有にする"
+msgstr ""
+
+#: ../../../scapi/sites/project.py:docstring of scapi.sites.project.Project.get_visibility:1
+msgid "プロジェクトのステータスを取得します。"
+msgstr ""
+
+#: ../../../scapi/sites/project.py:docstring of scapi.sites.project.Project.get_visibility:3
+msgid "プロジェクトの共有ステータス"
+msgstr ""
+
+#: ../../../scapi/sites/project.py:docstring of scapi.sites.project.Project.create_remix:1
+msgid "プロジェクトのリミックスを作成します。 プロジェクトの中身は複製されません。"
+msgstr ""
+
+#: ../../../scapi/sites/project.py:docstring of scapi.sites.project.Project.create_remix:4
+msgid "プロジェクトのタイトル。"
+msgstr ""
+
+#: ../../../scapi/sites/project.py:docstring of scapi.sites.project.Project.is_loved:1
+msgid "プロジェクトに「好き」を付けているかを取得します。"
+msgstr ""
+
+#: ../../../scapi/sites/project.py:docstring of scapi.sites.project.Project.is_loved:3
+msgid "プロジェクトに「好き」を付けているか"
+msgstr ""
+
+#: ../../../scapi/sites/project.py:docstring of scapi.sites.project.Project.add_love:1
+msgid "プロジェクトに「好き」を付けます。"
+msgstr ""
+
+#: ../../../scapi/sites/project.py:docstring of scapi.sites.project.Project.add_favorite:3
+#: ../../../scapi/sites/project.py:docstring of scapi.sites.project.Project.add_love:3
+#: ../../../scapi/sites/project.py:docstring of scapi.sites.project.Project.remove_favorite:3
+#: ../../../scapi/sites/project.py:docstring of scapi.sites.project.Project.remove_love:3
+msgid "ステータスが変更されたか"
+msgstr ""
+
+#: ../../../scapi/sites/project.py:docstring of scapi.sites.project.Project.remove_love:1
+msgid "プロジェクトから「好き」を外します。"
+msgstr ""
+
+#: ../../../scapi/sites/project.py:docstring of scapi.sites.project.Project.is_favorited:1
+msgid "プロジェクトに「お気に入り」を付けているかを取得します。"
+msgstr ""
+
+#: ../../../scapi/sites/project.py:docstring of scapi.sites.project.Project.is_favorited:3
+msgid "プロジェクトに「お気に入り」を付けているか"
+msgstr ""
+
+#: ../../../scapi/sites/project.py:docstring of scapi.sites.project.Project.add_favorite:1
+msgid "プロジェクトに「お気に入り」を付けます。"
+msgstr ""
+
+#: ../../../scapi/sites/project.py:docstring of scapi.sites.project.Project.remove_favorite:1
+msgid "プロジェクトから「お気に入り」を外します。"
+msgstr ""
+
+#: ../../../scapi/sites/project.py:docstring of scapi.sites.project.Project.add_view:1
+msgid "プロジェクトの閲覧数を増やします。"
+msgstr ""
+
+#: ../../../scapi/sites/project.py:docstring of scapi.sites.project.Project.add_view:3
+msgid "閲覧数が増えたか"
+msgstr ""
+
+#: ../../../scapi/sites/project.py:docstring of scapi.sites.project.Project.post_comment:1
+msgid "コメントを投稿する。"
+msgstr ""
+
+#: ../../../scapi/sites/comment.py:docstring of scapi.sites.comment.Comment:35
+#: ../../../scapi/sites/comment.py:docstring of scapi.sites.comment.Comment.post_reply:3
+#: ../../../scapi/sites/project.py:docstring of scapi.sites.project.Project.post_comment:3
+#: ../../../scapi/sites/studio.py:docstring of scapi.sites.studio.Studio.post_comment:3
+#: ../../../scapi/sites/user.py:docstring of scapi.sites.user.User.post_comment:3
+msgid "コメントの内容"
+msgstr ""
+
+#: ../../../scapi/sites/project.py:docstring of scapi.sites.project.Project.post_comment:5
+#: ../../../scapi/sites/studio.py:docstring of scapi.sites.studio.Studio.post_comment:5
+#: ../../../scapi/sites/user.py:docstring of scapi.sites.user.User.post_comment:5
+msgid "返信する場合、返信元のコメントかID"
+msgstr ""
+
+#: ../../../scapi/sites/comment.py:docstring of scapi.sites.comment.Comment.post_reply:5
+#: ../../../scapi/sites/project.py:docstring of scapi.sites.project.Project.post_comment:7
+#: ../../../scapi/sites/studio.py:docstring of scapi.sites.studio.Studio.post_comment:7
+#: ../../../scapi/sites/user.py:docstring of scapi.sites.user.User.post_comment:7
+msgid "メンションする場合、ユーザーかそのユーザーのID"
+msgstr ""
+
+#: ../../../scapi/sites/comment.py:docstring of scapi.sites.comment.Comment.post_reply:7
+#: ../../../scapi/sites/project.py:docstring of scapi.sites.project.Project.post_comment:9
+#: ../../../scapi/sites/studio.py:docstring of scapi.sites.studio.Studio.post_comment:9
+msgid "古いAPIを使用して送信するか"
+msgstr ""
+
+#: ../../../scapi/sites/comment.py:docstring of scapi.sites.comment.Comment.post_reply:10
+#: ../../../scapi/sites/project.py:docstring of scapi.sites.project.Project.post_comment:12
+#: ../../../scapi/sites/studio.py:docstring of scapi.sites.studio.Studio.post_comment:12
+#: ../../../scapi/sites/user.py:docstring of scapi.sites.user.User.post_comment:12
+msgid "投稿されたコメント"
+msgstr ""
+
+#: ../../../scapi/sites/project.py:docstring of scapi.sites.project.Project.report:1
+msgid "プロジェクトを報告する。"
+msgstr ""
+
+#: ../../../scapi/sites/project.py:docstring of scapi.sites.project.Project.report:3
+msgid "カテゴリーは以下を参照してください:"
+msgstr ""
+
+#: ../../../scapi/sites/project.py:docstring of scapi.sites.project.Project.report:28
+msgid "報告のカテゴリー"
+msgstr ""
+
+#: ../../../scapi/sites/project.py:docstring of scapi.sites.project.Project.report:30
+msgid "追加のメッセージ"
+msgstr ""
+
+#: ../../../scapi/sites/project.py:docstring of scapi.sites.project.Project.report:33
+msgid "このプロジェクトのステータス"
+msgstr ""
+
+#: ../../../scapi/sites/project.py:docstring of scapi.sites.project.ProjectFeatured:1
+msgid "注目のプロジェクト欄を表す。"
+msgstr ""
+
+#: ../../../scapi/sites/project.py:docstring of scapi.sites.project.ProjectFeatured:5
+msgid "設定されているプロジェクト"
+msgstr ""
+
+#: ../../../scapi/sites/project.py:docstring of scapi.sites.project.ProjectFeatured:7
+#: ../../../scapi/sites/project.py:docstring of scapi.sites.project.ProjectVisibility:13
+#: ../../../scapi/sites/project.py:docstring of scapi.sites.project.RemixTree:13
+msgid "Project"
+msgstr ""
+
+#: ../../../scapi/sites/project.py:docstring of scapi.sites.project.ProjectFeatured:11
+#: ../../../scapi/sites/project.py:docstring of scapi.sites.project.ProjectVisibility:17
+msgid "そのプロジェクトの作者"
+msgstr ""
+
+#: ../../../scapi/sites/project.py:docstring of scapi.sites.project.ProjectFeatured:17
+msgid "プロジェクトのラベル"
+msgstr ""
+
+#: ../../../scapi/sites/project.py:docstring of scapi.sites.project.ProjectFeatured:19
+msgid "ProjectFeaturedLabel"
+msgstr ""
+
+#: ../../../scapi/sites/project.py:docstring of scapi.sites.project.ProjectVisibility:1
+msgid "プロジェクトのステータス。"
+msgstr ""
+
+#: ../../../scapi/sites/project.py:docstring of scapi.sites.project.ProjectVisibility:11
+msgid "ステータスを表しているプロジェクト"
+msgstr ""
+
+#: ../../reference/sites.rst:45
+msgid "RemixTree APIは廃止されました。"
+msgstr ""
+
+#: ../../../scapi/sites/project.py:docstring of scapi.sites.project.get_remixtree:1
+msgid "リミックスツリーを取得する。"
+msgstr ""
+
+#: ../../../scapi/sites/project.py:docstring of scapi.sites.project.get_remixtree:3
+msgid "取得したいリミックスツリーのID"
+msgstr ""
+
+#: ../../../scapi/sites/project.py:docstring of scapi.sites.project.get_remixtree:6
+msgid "await か async with で取得できるリミックスツリー"
+msgstr ""
+
+#: ../../../scapi/sites/activity.py:docstring of scapi.sites.activity.CloudActivity:1
+#: ../../../scapi/sites/forum.py:docstring of scapi.sites.forum.ForumPost:1
+#: ../../../scapi/sites/forum.py:docstring of scapi.sites.forum.ForumTopic:1
+#: ../../../scapi/sites/forum.py:docstring of scapi.sites.forum.OcularReactions:1
+#: ../../../scapi/sites/mainpage.py:docstring of scapi.sites.mainpage.News:1
+#: ../../../scapi/sites/project.py:docstring of scapi.sites.project.RemixTree:1
+msgid "ベースクラス: :py:class:`~scapi.sites.base._BaseSiteAPI`"
+msgstr ""
+
+#: ../../../scapi/sites/project.py:docstring of scapi.sites.project.RemixTree:1
+msgid "プロジェクトのリミックスツリーを表す"
+msgstr ""
+
+#: ../../../scapi/sites/project.py:docstring of scapi.sites.project.RemixTree:11
+msgid "プロジェクトのProject"
+msgstr ""
+
+#: ../../../scapi/sites/project.py:docstring of scapi.sites.project.RemixTree:17
+msgid "プロジェクトのステータス"
+msgstr ""
+
+#: ../../../scapi/sites/project.py:docstring of scapi.sites.project.RemixTree:23
+msgid "この木の根プロジェクトのID"
+msgstr ""
+
+#: ../../../scapi/sites/project.py:docstring of scapi.RemixTree.parent:1
+msgid "プロジェクトの親プロジェクトのRemixTree"
+msgstr ""
+
+#: ../../../scapi/sites/project.py:docstring of scapi.RemixTree.is_root:1
+msgid "一番下のプロジェクトか"
+msgstr ""
+
+#: ../../../scapi/sites/project.py:docstring of scapi.RemixTree.root:1
+msgid "プロジェクトの根プロジェクトのRemixTree"
+msgstr ""
+
+#: ../../../scapi/sites/project.py:docstring of scapi.RemixTree.children:1
+msgid "このプロジェクトの子プロジェクトのRemixTree"
+msgstr ""
+
+#: ../../../scapi/sites/project.py:docstring of scapi.RemixTree.all_remixtree:1
+msgid "このプロジェクトのリミックスツリーに関連付けられている全てのRemixTree"
+msgstr ""
+
+#: ../../reference/sites.rst:53
+msgid "スタジオ"
+msgstr ""
+
+#: ../../../scapi/sites/studio.py:docstring of scapi.sites.studio.get_studio:6
+msgid "await か async with で取得できるスタジオ"
+msgstr ""
+
+#: ../../../scapi/sites/studio.py:docstring of scapi.sites.studio.explore_studios:1
+msgid "スタジオの傾向を取得する"
+msgstr ""
+
+#: ../../../scapi/sites/studio.py:docstring of scapi.sites.studio.explore_studios:18
+#: ../../../scapi/sites/studio.py:docstring of scapi.sites.studio.search_studios:18
+msgid "*Studio*"
+msgstr ""
+
+#: ../../../scapi/sites/studio.py:docstring of scapi.sites.studio.search_studios:1
+msgid "スタジオを検索する"
+msgstr ""
+
+#: ../../../scapi/sites/studio.py:docstring of scapi.sites.studio.Studio:1
+msgid "スタジオを表す"
+msgstr ""
+
+#: ../../../scapi/sites/studio.py:docstring of scapi.sites.studio.Studio:5
+msgid "スタジオのID"
+msgstr ""
+
+#: ../../../scapi/sites/studio.py:docstring of scapi.sites.studio.Studio:11
+msgid "スタジオの名前"
+msgstr ""
+
+#: ../../../scapi/sites/studio.py:docstring of scapi.sites.studio.Studio:17
+msgid "スタジオの所有者のユーザーID"
+msgstr ""
+
+#: ../../../scapi/sites/classroom.py:docstring of scapi.sites.classroom.Classroom.create_class_studio:5
+#: ../../../scapi/sites/studio.py:docstring of scapi.sites.studio.Studio:23
+#: ../../../scapi/sites/studio.py:docstring of scapi.sites.studio.Studio.edit:5
+msgid "スタジオの説明欄"
+msgstr ""
+
+#: ../../../scapi/sites/studio.py:docstring of scapi.sites.studio.Studio:29
+msgid "誰でもプロジェクトを追加できるか"
+msgstr ""
+
+#: ../../../scapi/sites/studio.py:docstring of scapi.sites.studio.Studio:41
+msgid "コメントの数(<=100)"
+msgstr ""
+
+#: ../../../scapi/sites/studio.py:docstring of scapi.sites.studio.Studio:47
+msgid "フォロワーの数"
+msgstr ""
+
+#: ../../../scapi/sites/studio.py:docstring of scapi.sites.studio.Studio:53
+msgid "マネージャーの数"
+msgstr ""
+
+#: ../../../scapi/sites/studio.py:docstring of scapi.sites.studio.Studio:59
+msgid "プロジェクトの数(<=100)"
+msgstr ""
+
+#: ../../../scapi/sites/studio.py:docstring of scapi.sites.studio.Studio:65
+msgid "所有者の情報。Session.get_mystuff_studios()からでのみ取得できます。"
+msgstr ""
+
+#: ../../../scapi/sites/studio.py:docstring of scapi.Studio.created_at:1
+msgid "スタジオが作成された時間を返す"
+msgstr ""
+
+#: ../../../scapi/sites/studio.py:docstring of scapi.Studio.modified_at:1
+msgid "スタジオが最後に編集された時間を返す"
+msgstr ""
+
+#: ../../../scapi/sites/studio.py:docstring of scapi.Studio.url:1
+msgid "スタジオのURLを取得する"
+msgstr ""
+
+#: ../../../scapi/sites/studio.py:docstring of scapi.Studio.is_host:1
+msgid "紐づけられている |Session| がスタジオの所有者かどうか :attr:`Studio.host_id` が |UNKNOWN| の場合は |UNKNOWN| が返されます。"
+msgstr ""
+
+#: ../../../scapi/sites/studio.py:docstring of scapi.sites.studio.Studio.get_projects:1
+msgid "スタジオに入れられているプロジェクトを取得する。"
+msgstr ""
+
+#: ../../../scapi/sites/studio.py:docstring of scapi.sites.studio.Studio.get_host:1
+msgid "スタジオの所有者ユーザーを取得する。"
+msgstr ""
+
+#: ../../../scapi/sites/studio.py:docstring of scapi.sites.studio.Studio.get_managers:1
+msgid "スタジオのマネージャーを取得する。"
+msgstr ""
+
+#: ../../../scapi/sites/studio.py:docstring of scapi.sites.studio.Studio.get_curators:3
+#: ../../../scapi/sites/studio.py:docstring of scapi.sites.studio.Studio.get_managers:3
+#: ../../../scapi/sites/user.py:docstring of scapi.sites.user.User.get_followers:3
+#: ../../../scapi/sites/user.py:docstring of scapi.sites.user.User.get_followings:3
+msgid "取得するユーザーの数。初期値は40です。"
+msgstr ""
+
+#: ../../../scapi/sites/studio.py:docstring of scapi.sites.studio.Studio.get_curators:5
+#: ../../../scapi/sites/studio.py:docstring of scapi.sites.studio.Studio.get_managers:5
+#: ../../../scapi/sites/user.py:docstring of scapi.sites.user.User.get_followers:5
+#: ../../../scapi/sites/user.py:docstring of scapi.sites.user.User.get_followings:5
+msgid "取得するユーザーの開始位置。初期値は0です。"
+msgstr ""
+
+#: ../../../scapi/sites/studio.py:docstring of scapi.sites.studio.Studio.get_curators:1
+msgid "スタジオのキュレーターを取得する。"
+msgstr ""
+
+#: ../../../scapi/sites/studio.py:docstring of scapi.sites.studio.Studio.get_comments:1
+msgid "スタジオに投稿されたコメントを取得する。"
+msgstr ""
+
+#: ../../../scapi/sites/studio.py:docstring of scapi.sites.studio.Studio.get_comments_from_old:1
+msgid "スタジオに投稿されたコメントを古いAPIから取得する。"
+msgstr ""
+
+#: ../../../scapi/sites/studio.py:docstring of scapi.sites.studio.Studio.get_comments_from_old:8
+msgid "取得したコメント"
+msgstr ""
+
+#: ../../../scapi/sites/studio.py:docstring of scapi.sites.studio.Studio.get_classroom_id:1
+msgid "_ スタジオが属しているクラスのIDを返す"
+msgstr ""
+
+#: ../../../scapi/sites/studio.py:docstring of scapi.sites.studio.Studio.get_classroom:1
+msgid "_ スタジオが属しているクラスを返す"
+msgstr ""
+
+#: ../../../scapi/sites/studio.py:docstring of scapi.sites.studio.Studio.get_activities:1
+msgid "スタジオのアクティビティを取得する。"
+msgstr ""
+
+#: ../../../scapi/sites/studio.py:docstring of scapi.sites.studio.Studio.get_activities:5
+msgid "取得したい最初のアクティビティの時間"
+msgstr ""
+
+#: ../../../scapi/sites/studio.py:docstring of scapi.sites.studio.Studio.get_activities:8
+msgid "*Activity*"
+msgstr ""
+
+#: ../../../scapi/sites/studio.py:docstring of scapi.sites.studio.Studio.post_comment:1
+#: ../../../scapi/sites/user.py:docstring of scapi.sites.user.User.post_comment:1
+msgid "コメントを投稿します。"
+msgstr ""
+
+#: ../../../scapi/sites/studio.py:docstring of scapi.sites.studio.Studio.follow:1
+msgid "スタジオをフォローする。"
+msgstr ""
+
+#: ../../../scapi/sites/studio.py:docstring of scapi.sites.studio.Studio.unfollow:1
+msgid "スタジオのフォローを解除する。"
+msgstr ""
+
+#: ../../../scapi/sites/studio.py:docstring of scapi.sites.studio.Studio.add_project:1
+msgid "プロジェクトをスタジオに追加する。"
+msgstr ""
+
+#: ../../../scapi/sites/studio.py:docstring of scapi.sites.studio.Studio.add_project:3
+msgid "追加するプロジェクトかそのID"
+msgstr ""
+
+#: ../../../scapi/sites/studio.py:docstring of scapi.sites.studio.Studio.remove_project:1
+msgid "プロジェクトをスタジオから削除する。"
+msgstr ""
+
+#: ../../../scapi/sites/studio.py:docstring of scapi.sites.studio.Studio.remove_project:3
+msgid "削除するプロジェクトかそのID"
+msgstr ""
+
+#: ../../../scapi/sites/studio.py:docstring of scapi.sites.studio.Studio.invite:1
+msgid "スタジオにユーザーを招待する"
+msgstr ""
+
+#: ../../../scapi/sites/studio.py:docstring of scapi.sites.studio.Studio.invite:3
+msgid "招待したいユーザーかそのID"
+msgstr ""
+
+#: ../../../scapi/sites/studio.py:docstring of scapi.sites.studio.Studio.accept_invite:1
+msgid "招待を受け取る"
+msgstr ""
+
+#: ../../../scapi/sites/studio.py:docstring of scapi.sites.studio.Studio.promote:1
+msgid "ユーザーをマネージャーに昇格する"
+msgstr ""
+
+#: ../../../scapi/sites/studio.py:docstring of scapi.sites.studio.Studio.promote:3
+msgid "昇格したいユーザーかそのID"
+msgstr ""
+
+#: ../../../scapi/sites/studio.py:docstring of scapi.sites.studio.Studio.remove_curator:1
+msgid "スタジオからユーザーを削除する。"
+msgstr ""
+
+#: ../../../scapi/sites/studio.py:docstring of scapi.sites.studio.Studio.remove_curator:3
+msgid "削除したいユーザーかそのID"
+msgstr ""
+
+#: ../../../scapi/sites/studio.py:docstring of scapi.sites.studio.Studio.leave:1
+msgid "スタジオからぬける"
+msgstr ""
+
+#: ../../../scapi/sites/studio.py:docstring of scapi.sites.studio.Studio.transfer_ownership:1
+msgid "スタジオの所有権を移行する"
+msgstr ""
+
+#: ../../../scapi/sites/studio.py:docstring of scapi.sites.studio.Studio.transfer_ownership:3
+msgid "新たな所有者かそのユーザー名"
+msgstr ""
+
+#: ../../../scapi/sites/studio.py:docstring of scapi.sites.studio.Studio.transfer_ownership:5
+msgid "このアカウントのパスワード"
+msgstr ""
+
+#: ../../../scapi/sites/studio.py:docstring of scapi.sites.studio.Studio.get_my_role:1
+msgid "アカウントのスタジオでのステータスを取得する。"
+msgstr ""
+
+#: ../../../scapi/sites/studio.py:docstring of scapi.sites.studio.Studio.report:1
+msgid "スタジオを報告する"
+msgstr ""
+
+#: ../../../scapi/sites/studio.py:docstring of scapi.sites.studio.Studio.report:3
+msgid "報告の理由"
+msgstr ""
+
+#: ../../../scapi/sites/studio.py:docstring of scapi.sites.studio.Studio.report:6
+msgid "このスタジオのステータス"
+msgstr ""
+
+#: ../../../scapi/sites/studio.py:docstring of scapi.sites.studio.Studio.edit:1
+msgid "スタジオを編集する。"
+msgstr ""
+
+#: ../../../scapi/sites/classroom.py:docstring of scapi.sites.classroom.Classroom.create_class_studio:3
+#: ../../../scapi/sites/studio.py:docstring of scapi.sites.studio.Studio.edit:3
+msgid "スタジオのタイトル"
+msgstr ""
+
+#: ../../../scapi/sites/studio.py:docstring of scapi.sites.studio.Studio.edit:7
+msgid "スタジオを削除するか"
+msgstr ""
+
+#: ../../../scapi/sites/studio.py:docstring of scapi.sites.studio.Studio.set_thumbnail:1
+msgid "サムネイルを設定する。"
+msgstr ""
+
+#: ../../../scapi/sites/studio.py:docstring of scapi.sites.studio.Studio.open_project:1
+msgid "プロジェクトを誰でも入れれるように変更する。"
+msgstr ""
+
+#: ../../../scapi/sites/studio.py:docstring of scapi.sites.studio.Studio.close_project:1
+msgid "プロジェクトをキュレーター以上のみ入れれるように変更する。"
+msgstr ""
+
+#: ../../../scapi/sites/studio.py:docstring of scapi.sites.studio.Studio.toggle_comment:1
+msgid "コメント欄を開閉する。"
+msgstr ""
+
+#: ../../../scapi/sites/studio.py:docstring of scapi.sites.studio.StudioStatus:1
+msgid "スタジオでのステータスを表す。"
+msgstr ""
+
+#: ../../../scapi/sites/studio.py:docstring of scapi.sites.studio.StudioStatus:3
+msgid "Attributes:s"
+msgstr ""
+
+#: ../../../scapi/sites/studio.py:docstring of scapi.sites.studio.StudioStatus:4
+msgid "manager (bool): マネージャーか curator (bool): キュレーターか invited (bool): 招待されているか following (bool): フォローしているか"
+msgstr ""
+
+#: ../../reference/sites.rst:69
+msgid "ユーザー"
+msgstr ""
+
+#: ../../../scapi/sites/user.py:docstring of scapi.sites.user.get_user:3
+msgid "取得したいユーザーのユーザー名"
+msgstr ""
+
+#: ../../../scapi/sites/user.py:docstring of scapi.sites.user.get_user:6
+msgid "await か async with で取得できるユーザー"
+msgstr ""
+
+#: ../../../scapi/sites/user.py:docstring of scapi.sites.user.User:1
+msgid "ユーザーを表す"
+msgstr ""
+
+#: ../../../scapi/sites/user.py:docstring of scapi.sites.user.User:3
+msgid "``3.1.3`` で追加 :attr:`scapi.User.lower_username`, :attr:`scapi.User.real_username`"
+msgstr ""
+
+#: ../../../scapi/sites/user.py:docstring of scapi.sites.user.User:7
+msgid "小文字に合わせられたユーザー名"
+msgstr ""
+
+#: ../../../scapi/sites/user.py:docstring of scapi.sites.user.User:13
+msgid "APIから取得された、大文字小文字の正しいユーザー名"
+msgstr ""
+
+#: ../../../scapi/sites/user.py:docstring of scapi.sites.user.User:19
+msgid "ユーザーID"
+msgstr ""
+
+#: ../../../scapi/sites/user.py:docstring of scapi.sites.user.User:25
+msgid "プロフィールID。ユーザーIDとは異なります。"
+msgstr ""
+
+#: ../../../scapi/sites/user.py:docstring of scapi.sites.user.User:31
+msgid "私について欄"
+msgstr ""
+
+#: ../../../scapi/sites/user.py:docstring of scapi.sites.user.User:37
+msgid "私が取り組んでいること欄"
+msgstr ""
+
+#: ../../../scapi/sites/user.py:docstring of scapi.sites.user.User:49
+msgid "アカウントがScratchTeamとしてマークされているか"
+msgstr ""
+
+#: ../../../scapi/sites/user.py:docstring of scapi.User.username:1
+msgid "アカウントのユーザー名を返します。"
+msgstr ""
+
+#: ../../../scapi/sites/user.py:docstring of scapi.User.username:3
+msgid "APIから取得した場合は大文字小文字混合で出力されます。 ``User()`` などから作成した場合は、APIから取得されるまでは小文字に合わせられたユーザー名が使用されます。"
+msgstr ""
+
+#: ../../../scapi/sites/user.py:docstring of scapi.User.username:5
+msgid "これは、 ``User(is_real=True)`` で作成すると大文字小文字が引き継がれたものが生成されます。"
+msgstr ""
+
+#: ../../../scapi/sites/user.py:docstring of scapi.User.joined_at:1
+msgid "ユーザーが参加した時間を返す。"
+msgstr ""
+
+#: ../../../scapi/sites/user.py:docstring of scapi.User.url:1
+msgid "ユーザーページのリンクを取得する"
+msgstr ""
+
+#: ../../../scapi/sites/user.py:docstring of scapi.User.icon_url:1
+msgid "アイコンURLを返す。"
+msgstr ""
+
+#: ../../../scapi/sites/user.py:docstring of scapi.User.is_myself:1
+msgid "紐づけられている |Session| がこのユーザーかどうか"
+msgstr ""
+
+#: ../../../scapi/sites/user.py:docstring of scapi.sites.user.User.load_website:1
+msgid "ユーザーページをロードして、html上からのみ取得できるデータをを読み込む。"
+msgstr ""
+
+#: ../../../scapi/sites/user.py:docstring of scapi.User.exist:1
+msgid "アカウントが削除(サイト上から隠された)状態かを返す。 事前に :func:`User.load_website` を実行しておく必要があります。"
+msgstr ""
+
+#: ../../../scapi/sites/user.py:docstring of scapi.User.is_scratcher:1
+msgid "アカウントがScratcherであるかを返す。ScratchTeamはScratcherとしてカウントされます。 事前に :func:`User.load_website` を実行しておく必要があります。"
+msgstr ""
+
+#: ../../../scapi/sites/user.py:docstring of scapi.User.classroom_id:1
+msgid "アカウントの所属しているクラスのIDを返す。 事前に :func:`User.load_website` を実行しておく必要があります。"
+msgstr ""
+
+#: ../../../scapi/sites/user.py:docstring of scapi.User.comments_allowed:1
+msgid "ユーザーページにコメントができるか 事前に :func:`User.load_website` を実行しておく必要があります。"
+msgstr ""
+
+#: ../../../scapi/sites/user.py:docstring of scapi.sites.user.User.get_featured:1
+msgid "ユーザーの注目のプロジェクト欄を取得する。"
+msgstr ""
+
+#: ../../../scapi/sites/user.py:docstring of scapi.sites.user.User.get_featured:3
+msgid "ユーザーが設定している場合、そのデータ。"
+msgstr ""
+
+#: ../../../scapi/sites/user.py:docstring of scapi.sites.user.User.get_follower_count:1
+msgid "フォロワーの数を取得する"
+msgstr ""
+
+#: ../../../scapi/sites/user.py:docstring of scapi.sites.user.User.get_followers:1
+msgid "ユーザーのフォロワーを取得する。"
+msgstr ""
+
+#: ../../../scapi/sites/user.py:docstring of scapi.sites.user.User.get_following_count:1
+msgid "フォロー中の数を取得する"
+msgstr ""
+
+#: ../../../scapi/sites/user.py:docstring of scapi.sites.user.User.get_followings:1
+msgid "ユーザーがフォローしているユーザーを取得する。"
+msgstr ""
+
+#: ../../../scapi/sites/user.py:docstring of scapi.sites.user.User.get_project_count:1
+msgid "共有中のプロジェクトの数を取得する"
+msgstr ""
+
+#: ../../../scapi/sites/user.py:docstring of scapi.sites.user.User.get_projects:1
+msgid "ユーザーが共有しているプロジェクトを取得する。"
+msgstr ""
+
+#: ../../../scapi/sites/user.py:docstring of scapi.sites.user.User.get_favorite_count:1
+msgid "お気に入りのプロジェクトの数を取得する"
+msgstr ""
+
+#: ../../../scapi/sites/user.py:docstring of scapi.sites.user.User.get_favorites:1
+msgid "ユーザーのお気に入りのプロジェクトを取得する。"
+msgstr ""
+
+#: ../../../scapi/sites/user.py:docstring of scapi.sites.user.User.get_studio_count:1
+msgid "ユーザーが参加しているスタジオの数を取得する"
+msgstr ""
+
+#: ../../../scapi/sites/user.py:docstring of scapi.sites.user.User.get_studios:1
+msgid "ユーザーが参加しているスタジオを取得する。"
+msgstr ""
+
+#: ../../../scapi/sites/user.py:docstring of scapi.sites.user.User.get_love_count:1
+msgid "好きなプロジェクトの数を取得する"
+msgstr ""
+
+#: ../../../scapi/sites/user.py:docstring of scapi.sites.user.User.get_loves:1
+msgid "ユーザーの好きなプロジェクトを取得する。"
+msgstr ""
+
+#: ../../../scapi/sites/user.py:docstring of scapi.sites.user.User.get_loves:3
+msgid "Args:"
+msgstr ""
+
+#: ../../../scapi/sites/user.py:docstring of scapi.sites.user.User.get_loves:4
+msgid "start_page (int|None, optional): 取得するプロジェクトの開始ページ位置。初期値は1です。 end_page (int|None, optional): 取得するプロジェクトの終了ページ位置。初期値はstart_pageの値です。"
+msgstr ""
+
+#: ../../../scapi/sites/user.py:docstring of scapi.sites.user.User.get_loves:7
+msgid "Yields:"
+msgstr ""
+
+#: ../../../scapi/sites/user.py:docstring of scapi.sites.user.User.get_loves:8
+msgid "Project: 取得したプロジェクト"
+msgstr ""
+
+#: ../../../scapi/sites/user.py:docstring of scapi.sites.user.User.get_message_count:1
+msgid "ユーザーのメッセージの未読数を取得する。"
+msgstr ""
+
+#: ../../../scapi/sites/user.py:docstring of scapi.sites.user.User.get_message_count:3
+msgid "未読のメッセージの数"
+msgstr ""
+
+#: ../../../scapi/sites/user.py:docstring of scapi.sites.user.User.get_comments:1
+msgid "プロフィールに投稿されたコメントを取得する。"
+msgstr ""
+
+#: ../../../scapi/sites/comment.py:docstring of scapi.sites.comment.Comment.get_replies:11
+#: ../../../scapi/sites/user.py:docstring of scapi.sites.user.User.get_comments:8
+msgid "*Comment* -- 取得したコメント"
+msgstr ""
+
+#: ../../../scapi/sites/user.py:docstring of scapi.sites.user.User.get_ocular_status:1
+msgid "Ocularのステータスを取得します。"
+msgstr ""
+
+#: ../../../scapi/sites/user.py:docstring of scapi.sites.user.User.post_comment:9
+msgid "古いAPIを使用して送信するか この値は使用されず、常に古いAPIが使用されます。"
+msgstr ""
+
+#: ../../../scapi/sites/user.py:docstring of scapi.sites.user.User.follow:1
+msgid "ユーザーをフォローする"
+msgstr ""
+
+#: ../../../scapi/sites/user.py:docstring of scapi.sites.user.User.unfollow:1
+msgid "ユーザーのフォローを解除する"
+msgstr ""
+
+#: ../../../scapi/sites/user.py:docstring of scapi.sites.user.User.report:1
+msgid "ユーザーを報告する"
+msgstr ""
+
+#: ../../../scapi/sites/forum.py:docstring of scapi.sites.forum.ForumPost.get_source:3
+#: ../../../scapi/sites/user.py:docstring of scapi.sites.user.User.report:3
+msgid "``3.1.0`` で追加"
+msgstr ""
+
+#: ../../../scapi/sites/user.py:docstring of scapi.sites.user.User.report:5
+msgid "報告する種類"
+msgstr ""
+
+#: ../../../scapi/sites/user.py:docstring of scapi.sites.user.User.edit:1
+msgid "プロフィール欄を編集する。"
+msgstr ""
+
+#: ../../../scapi/sites/user.py:docstring of scapi.sites.user.User.edit:3
+msgid "私について欄の内容"
+msgstr ""
+
+#: ../../../scapi/sites/user.py:docstring of scapi.sites.user.User.edit:5
+msgid "私が取り組んでいることの内容"
+msgstr ""
+
+#: ../../../scapi/sites/user.py:docstring of scapi.sites.user.User.edit:7
+msgid "注目のプロジェクト欄に設定したいプロジェクトかそのID"
+msgstr ""
+
+#: ../../../scapi/sites/user.py:docstring of scapi.sites.user.User.edit:9
+msgid "注目のプロジェクト欄に使用したいラベル"
+msgstr ""
+
+#: ../../../scapi/sites/user.py:docstring of scapi.sites.user.User.edit:12
+msgid "変更された注目のプロジェクト欄"
+msgstr ""
+
+#: ../../../scapi/sites/user.py:docstring of scapi.sites.user.User.toggle_comment:1
+msgid "プロフィールのコメント欄を開閉する。"
+msgstr ""
+
+#: ../../../scapi/sites/classroom.py:docstring of scapi.sites.classroom.Classroom.set_icon:1
+#: ../../../scapi/sites/user.py:docstring of scapi.sites.user.User.set_icon:1
+msgid "アイコンを変更する。"
+msgstr ""
+
+#: ../../../scapi/sites/classroom.py:docstring of scapi.sites.classroom.Classroom.set_icon:3
+#: ../../../scapi/sites/user.py:docstring of scapi.sites.user.User.set_icon:3
+msgid "アイコンのデータ"
+msgstr ""
+
+#: ../../../scapi/sites/user.py:docstring of scapi.sites.user.User.reset_student_password:1
+msgid "生徒アカウントのパスワードを変更します。 この生徒の教師である必要があります。"
+msgstr ""
+
+#: ../../../scapi/sites/user.py:docstring of scapi.sites.user.User.reset_student_password:4
+msgid "新しいパスワード。Noneで初期値にセットされます。"
+msgstr ""
+
+#: ../../../scapi/sites/user.py:docstring of scapi.sites.user.OcularStatus:1
+msgid "ベースクラス: :py:class:`~scapi.sites.base._BaseSiteAPI`\\ [:py:class:`~scapi.sites.user.User`]"
+msgstr ""
+
+#: ../../../scapi/sites/user.py:docstring of scapi.sites.user.OcularStatus:1
+msgid "Ocularでのユーザーのステータス"
+msgstr ""
+
+#: ../../../scapi/sites/user.py:docstring of scapi.sites.user.OcularStatus:5
+msgid "Scratch上でのユーザー"
+msgstr ""
+
+#: ../../../scapi/sites/user.py:docstring of scapi.sites.user.OcularStatus:17
+msgid "ステータス"
+msgstr ""
+
+#: ../../../scapi/sites/user.py:docstring of scapi.sites.user.OcularStatus:23
+msgid "表示している色"
+msgstr ""
+
+#: ../../../scapi/sites/user.py:docstring of scapi.sites.user.OcularStatus:25
+msgid "MAYBE_UNKNOWN[str|None]"
+msgstr ""
+
+#: ../../../scapi/sites/user.py:docstring of scapi.sites.user.OcularStatus:29
+msgid "最後に編集したユーザー"
+msgstr ""
+
+#: ../../../scapi/sites/user.py:docstring of scapi.OcularStatus.updated_at:1
+msgid "最後にステータスを更新した時間を返す"
+msgstr ""
+
+#: ../../reference/sites.rst:81
+msgid "コメント"
+msgstr ""
+
+#: ../../../scapi/sites/comment.py:docstring of scapi.sites.comment.Comment:1
+msgid "コメントを表す。"
+msgstr ""
+
+#: ../../../scapi/sites/comment.py:docstring of scapi.sites.comment.Comment:4
+msgid "プロジェクト欄でコメントに関するAPIを使用する場合、プロジェクトの作者のユーザー名が必要です。データが取得されていない可能性がある場合、古いAPIを使用することを検討してください。"
+msgstr ""
+
+#: ../../../scapi/sites/comment.py:docstring of scapi.sites.comment.Comment:7
+msgid "プロフィール欄でコメントに関するAPIを使用する場合、必ず古いAPIが使用されます。新しいAPIでしか利用できない関数では TypeError が送出されることがあります。"
+msgstr ""
+
+#: ../../../scapi/sites/comment.py:docstring of scapi.sites.comment.Comment:11
+msgid "コメントID"
+msgstr ""
+
+#: ../../../scapi/sites/comment.py:docstring of scapi.sites.comment.Comment:17
+msgid "コメントの場所"
+msgstr ""
+
+#: ../../../scapi/sites/comment.py:docstring of scapi.sites.comment.Comment:19
+msgid "MAYBE_UNKNOWN[Project|Studio|User]"
+msgstr ""
+
+#: ../../../scapi/sites/comment.py:docstring of scapi.sites.comment.Comment:23
+msgid "親コメントID"
+msgstr ""
+
+#: ../../../scapi/sites/comment.py:docstring of scapi.sites.comment.Comment:29
+msgid "メンションしたユーザーのID"
+msgstr ""
+
+#: ../../../scapi/sites/comment.py:docstring of scapi.sites.comment.Comment:41
+msgid "コメントしたユーザー"
+msgstr ""
+
+#: ../../../scapi/sites/comment.py:docstring of scapi.sites.comment.Comment:47
+msgid "コメントにある返信の数"
+msgstr ""
+
+#: ../../../scapi/sites/comment.py:docstring of scapi.Comment.created_at:1
+msgid "コメントが作成された時間を返す"
+msgstr ""
+
+#: ../../../scapi/sites/comment.py:docstring of scapi.Comment.modified_at:1
+msgid "コメントが最後に編集された時間を返す ユーザーがコメントを編集することはできないため、基本的に created_at と同じになります。"
+msgstr ""
+
+#: ../../../scapi/sites/comment.py:docstring of scapi.sites.comment.Comment.get_replies:1
+msgid "コメントの返信を取得する。 ユーザーページや、作者の不明なプロジェクト欄では取得できません。"
+msgstr ""
+
+#: ../../../scapi/sites/comment.py:docstring of scapi.sites.comment.Comment.get_replies:8
+msgid "古いAPIから取得した時のキャッシュを使用するか。"
+msgstr ""
+
+#: ../../../scapi/sites/comment.py:docstring of scapi.sites.comment.Comment.get_parent:1
+msgid "親コメントを取得する。"
+msgstr ""
+
+#: ../../../scapi/sites/comment.py:docstring of scapi.sites.comment.Comment.get_parent:3
+msgid "キャッシュを使用するか。デフォルトはTrueです。"
+msgstr ""
+
+#: ../../../scapi/sites/comment.py:docstring of scapi.sites.comment.Comment.get_parent:6
+msgid "取得できる場合、取得されたコメント"
+msgstr ""
+
+#: ../../../scapi/sites/comment.py:docstring of scapi.sites.comment.Comment.post_reply:1
+msgid "コメントを返信する。"
+msgstr ""
+
+#: ../../../scapi/sites/comment.py:docstring of scapi.sites.comment.Comment.delete:1
+msgid "コメントを削除する。"
+msgstr ""
+
+#: ../../../scapi/sites/comment.py:docstring of scapi.sites.comment.Comment.delete:3
+#: ../../../scapi/sites/comment.py:docstring of scapi.sites.comment.Comment.report:3
+msgid "古いAPIを使用するか"
+msgstr ""
+
+#: ../../../scapi/sites/comment.py:docstring of scapi.sites.comment.Comment.report:1
+msgid "コメントを報告する。"
+msgstr ""
+
+#: ../../reference/sites.rst:86
+msgid "クラス"
+msgstr ""
+
+#: ../../../scapi/sites/classroom.py:docstring of scapi.sites.classroom.get_class:6
+#: ../../../scapi/sites/classroom.py:docstring of scapi.sites.classroom.get_class_from_token:6
+msgid "await か async with で取得できるクラス"
+msgstr ""
+
+#: ../../../scapi/sites/classroom.py:docstring of scapi.sites.classroom.get_class_from_token:1
+msgid "クラストークンからクラスを取得する。"
+msgstr ""
+
+#: ../../../scapi/sites/classroom.py:docstring of scapi.sites.classroom.Classroom:1
+msgid "クラスを表す。"
+msgstr ""
+
+#: ../../../scapi/sites/classroom.py:docstring of scapi.sites.classroom.Classroom:5
+msgid "クラスのID"
+msgstr ""
+
+#: ../../../scapi/sites/classroom.py:docstring of scapi.sites.classroom.Classroom:11
+msgid "クラスの名前"
+msgstr ""
+
+#: ../../../scapi/sites/classroom.py:docstring of scapi.sites.classroom.Classroom:17
+msgid "クラスの所有者"
+msgstr ""
+
+#: ../../../scapi/sites/classroom.py:docstring of scapi.sites.classroom.Classroom:23
+msgid "クラスが閉じられているか"
+msgstr ""
+
+#: ../../../scapi/sites/classroom.py:docstring of scapi.sites.classroom.Classroom:35
+#: ../../../scapi/sites/classroom.py:docstring of scapi.sites.classroom.Classroom.edit:7
+msgid "現在、取り組んでいること"
+msgstr ""
+
+#: ../../../scapi/sites/classroom.py:docstring of scapi.sites.classroom.Classroom:41
+msgid "クラスのtoken"
+msgstr ""
+
+#: ../../../scapi/sites/classroom.py:docstring of scapi.sites.classroom.Classroom:47
+msgid "スタジオの数"
+msgstr ""
+
+#: ../../../scapi/sites/classroom.py:docstring of scapi.sites.classroom.Classroom:53
+msgid "生徒の数"
+msgstr ""
+
+#: ../../../scapi/sites/classroom.py:docstring of scapi.sites.classroom.Classroom:59
+msgid "アラートの数"
+msgstr ""
+
+#: ../../../scapi/sites/classroom.py:docstring of scapi.Classroom.started_at:1
+msgid "クラスが開始した時間。"
+msgstr ""
+
+#: ../../../scapi/sites/classroom.py:docstring of scapi.Classroom.url:1
+msgid "クラスページのリンクを取得する"
+msgstr ""
+
+#: ../../../scapi/sites/classroom.py:docstring of scapi.Classroom.is_educator:1
+msgid "紐づけられている |Session| がクラスの教師かどうか :attr:`Classroom.educator` が |UNKNOWN| の場合は |UNKNOWN| が返されます。"
+msgstr ""
+
+#: ../../../scapi/sites/classroom.py:docstring of scapi.sites.classroom.Classroom.edit:1
+msgid "クラスを編集する。"
+msgstr ""
+
+#: ../../../scapi/sites/classroom.py:docstring of scapi.sites.classroom.Classroom.edit:3
+msgid "クラスのタイトル"
+msgstr ""
+
+#: ../../../scapi/sites/classroom.py:docstring of scapi.sites.classroom.Classroom.edit:5
+msgid "このクラスについて"
+msgstr ""
+
+#: ../../../scapi/sites/classroom.py:docstring of scapi.sites.classroom.Classroom.edit:9
+msgid "クラスを開けるか"
+msgstr ""
+
+#: ../../../scapi/sites/classroom.py:docstring of scapi.sites.classroom.Classroom.create_class_studio:1
+msgid "クラスのスタジオを作成する"
+msgstr ""
+
+#: ../../../scapi/sites/classroom.py:docstring of scapi.sites.classroom.Classroom.get_class_studio_count:1
+msgid "クラススタジオの数を取得する"
+msgstr ""
+
+#: ../../../scapi/sites/classroom.py:docstring of scapi.sites.classroom.Classroom.get_class_studios:1
+msgid "クラスのスタジオを取得する。"
+msgstr ""
+
+#: ../../../scapi/sites/classroom.py:docstring of scapi.sites.classroom.Classroom.get_class_studios:7
+#: ../../../scapi/sites/classroom.py:docstring of scapi.sites.classroom.Classroom.get_students:7
+msgid "教師向けAPIを使用するか。教師の場合のみ使用できます。"
+msgstr ""
+
+#: ../../../scapi/sites/classroom.py:docstring of scapi.sites.classroom.Classroom.get_student_count:1
+msgid "生徒の数を取得する"
+msgstr ""
+
+#: ../../../scapi/sites/classroom.py:docstring of scapi.sites.classroom.Classroom.get_students:1
+msgid "クラスの生徒を取得する。"
+msgstr ""
+
+#: ../../../scapi/sites/classroom.py:docstring of scapi.sites.classroom.Classroom.create_student_account:1
+msgid "tokenから生徒アカウントを作成する。 ユーザー名のみを指定して作成することもできます。"
+msgstr ""
+
+#: ../../../scapi/sites/classroom.py:docstring of scapi.sites.classroom.Classroom.create_student_account:4
+msgid "アカウントのユーザー名"
+msgstr ""
+
+#: ../../../scapi/sites/classroom.py:docstring of scapi.sites.classroom.Classroom.create_student_account:8
+msgid "登録したい誕生日"
+msgstr ""
+
+#: ../../../scapi/sites/classroom.py:docstring of scapi.sites.classroom.Classroom.create_student_account:10
+msgid "登録したい性別"
+msgstr ""
+
+#: ../../../scapi/sites/classroom.py:docstring of scapi.sites.classroom.Classroom.create_student_account:12
+msgid "登録したい国"
+msgstr ""
+
+#: ../../../scapi/sites/classroom.py:docstring of scapi.sites.classroom.Classroom.create_student_account:17
+msgid "作成されたアカウント"
+msgstr ""
+
+#: ../../../scapi/sites/classroom.py:docstring of scapi.sites.classroom.Classroom.create_student_accounts:1
+msgid "教師アカウントから生徒アカウントを作成します。 同時に40アカウントまで作成できます。"
+msgstr ""
+
+#: ../../../scapi/sites/classroom.py:docstring of scapi.sites.classroom.Classroom.create_student_accounts:4
+msgid "作成したいアカウントのユーザー名とパスワードのペア"
+msgstr ""
+
+#: ../../../scapi/sites/classroom.py:docstring of scapi.sites.classroom.Classroom.get_token:1
+msgid "生徒アカウントを作成するためのトークンを取得する。 新たにトークンを生成した場合、過去のトークンは無効になります。"
+msgstr ""
+
+#: ../../../scapi/sites/classroom.py:docstring of scapi.sites.classroom.Classroom.get_token:4
+msgid "新たにトークン生成するか。デフォルトはTrueです。"
+msgstr ""
+
+#: ../../../scapi/sites/classroom.py:docstring of scapi.sites.classroom.Classroom.get_token:7
+msgid "取得したトークンと、そのトークンの有効期限"
+msgstr ""
+
+#: ../../reference/sites.rst:95
+msgid "アクティビティ"
+msgstr ""
+
+#: ../../../scapi/sites/activity.py:docstring of scapi.sites.activity.ActivityAction:1
+#: ../../../scapi/sites/activity.py:docstring of scapi.sites.activity.ActivityType:1
+#: ../../../scapi/sites/other.py:docstring of scapi.sites.other.EmailStatus:1
+#: ../../../scapi/sites/other.py:docstring of scapi.sites.other.PasswordStatus:1
+#: ../../../scapi/sites/other.py:docstring of scapi.sites.other.UsernameStatus:1
+msgid "ベースクラス: :py:class:`~enum.Enum`"
+msgstr ""
+
+#: ../../../scapi/sites/activity.py:docstring of scapi.sites.activity.ActivityType:1
+msgid "アクティビティのデータ元を表します。"
+msgstr ""
+
+#: ../../../scapi/sites/activity.py:docstring of scapi.sites.activity.ActivityType:5
+msgid "不明"
+msgstr ""
+
+#: ../../../scapi/sites/activity.py:docstring of scapi.sites.activity.ActivityType:9
+msgid "スタジオの活動履歴"
+msgstr ""
+
+#: ../../../scapi/sites/activity.py:docstring of scapi.sites.activity.ActivityType:13
+msgid "ユーザーまたはクラスの公開アクティビティ"
+msgstr ""
+
+#: ../../../scapi/sites/activity.py:docstring of scapi.sites.activity.ActivityType:17
+msgid "メッセージ"
+msgstr ""
+
+#: ../../../scapi/sites/activity.py:docstring of scapi.sites.activity.ActivityType:21
+msgid "最新の情報"
+msgstr ""
+
+#: ../../../scapi/sites/activity.py:docstring of scapi.sites.activity.ActivityType:25
+msgid "クラスのプライベートアクティビティ"
+msgstr ""
+
+#: ../../../scapi/sites/activity.py:docstring of scapi.sites.activity.ActivityAction:1
+msgid "行動の内容を表します。"
+msgstr ""
+
+#: ../../../scapi/sites/activity.py:docstring of scapi.sites.activity.ActivityAction:4
+msgid "この欄に表示されているデータは必ず使用できるとは保証されず、場合によってNoneになる可能性があります。 ``isinstance()`` や ``is not None`` などでデータが正しいものであるか確認するようにしてください。"
+msgstr ""
+
+#: ../../../scapi/sites/activity.py:docstring of scapi.sites.activity.ActivityAction:8
+msgid "不明なアクティビティ。"
+msgstr ""
+
+#: ../../../scapi/sites/activity.py:docstring of scapi.sites.activity.ActivityAction:12
+msgid "スタジオをフォローした。"
+msgstr ""
+
+#: ../../../scapi/sites/activity.py:docstring of scapi.sites.activity.ActivityAction:13
+#: ../../../scapi/sites/activity.py:docstring of scapi.sites.activity.ActivityAction:107
+msgid "|actor| : |User| フォローした人"
+msgstr ""
+
+#: ../../../scapi/sites/activity.py:docstring of scapi.sites.activity.ActivityAction:14
+msgid "|place| |target| : |Studio| フォローされたスタジオ"
+msgstr ""
+
+#: ../../../scapi/sites/activity.py:docstring of scapi.sites.activity.ActivityAction:18
+msgid "スタジオにプロジェクトを追加した。"
+msgstr ""
+
+#: ../../../scapi/sites/activity.py:docstring of scapi.sites.activity.ActivityAction:19
+msgid "|actor| : |User| プロジェクトを追加した人"
+msgstr ""
+
+#: ../../../scapi/sites/activity.py:docstring of scapi.sites.activity.ActivityAction:20
+msgid "|place| : |Studio| 追加されたスタジオ"
+msgstr ""
+
+#: ../../../scapi/sites/activity.py:docstring of scapi.sites.activity.ActivityAction:21
+msgid "|target| : |Project| 追加されたプロジェクト"
+msgstr ""
+
+#: ../../../scapi/sites/activity.py:docstring of scapi.sites.activity.ActivityAction:25
+msgid "スタジオからプロジェクトを削除した。"
+msgstr ""
+
+#: ../../../scapi/sites/activity.py:docstring of scapi.sites.activity.ActivityAction:26
+msgid "|actor| : |User| プロジェクトを削除した人"
+msgstr ""
+
+#: ../../../scapi/sites/activity.py:docstring of scapi.sites.activity.ActivityAction:27
+#: ../../../scapi/sites/activity.py:docstring of scapi.sites.activity.ActivityAction:64
+msgid "|place| : |Studio| 削除されたスタジオ"
+msgstr ""
+
+#: ../../../scapi/sites/activity.py:docstring of scapi.sites.activity.ActivityAction:28
+msgid "|target| : |Project| 削除されたプロジェクト"
+msgstr ""
+
+#: ../../../scapi/sites/activity.py:docstring of scapi.sites.activity.ActivityAction:32
+msgid "ユーザーがスタジオのキュレーターの招待を受け取った"
+msgstr ""
+
+#: ../../../scapi/sites/activity.py:docstring of scapi.sites.activity.ActivityAction:33
+msgid "|actor| : |User| キュレーターに招待した人"
+msgstr ""
+
+#: ../../../scapi/sites/activity.py:docstring of scapi.sites.activity.ActivityAction:34
+msgid "|place| : |Studio| キュレーターに招待されたスタジオ"
+msgstr ""
+
+#: ../../../scapi/sites/activity.py:docstring of scapi.sites.activity.ActivityAction:35
+msgid "|target| : |User| キュレーターに招待された人(つまり自分自身)"
+msgstr ""
+
+#: ../../../scapi/sites/activity.py:docstring of scapi.sites.activity.ActivityAction:39
+msgid "ユーザーがスタジオのキュレーターの招待を承認した。"
+msgstr ""
+
+#: ../../../scapi/sites/activity.py:docstring of scapi.sites.activity.ActivityAction:40
+msgid "|actor| : |User| キュレーターになった人"
+msgstr ""
+
+#: ../../../scapi/sites/activity.py:docstring of scapi.sites.activity.ActivityAction:41
+msgid "|place| : |Studio| キュレーターになったスタジオ"
+msgstr ""
+
+#: ../../../scapi/sites/activity.py:docstring of scapi.sites.activity.ActivityAction:42
+msgid "|target| : |User| キュレーターに招待した人"
+msgstr ""
+
+#: ../../../scapi/sites/activity.py:docstring of scapi.sites.activity.ActivityAction:46
+msgid "ユーザーがマネージャーに昇格した。"
+msgstr ""
+
+#: ../../../scapi/sites/activity.py:docstring of scapi.sites.activity.ActivityAction:47
+msgid "|actor| : |User| マネージャーに昇格させた人"
+msgstr ""
+
+#: ../../../scapi/sites/activity.py:docstring of scapi.sites.activity.ActivityAction:48
+msgid "|place| : |Studio| マネージャーに昇格したスタジオ"
+msgstr ""
+
+#: ../../../scapi/sites/activity.py:docstring of scapi.sites.activity.ActivityAction:49
+msgid "|target| : |User| マネージャーに昇格した人"
+msgstr ""
+
+#: ../../../scapi/sites/activity.py:docstring of scapi.sites.activity.ActivityAction:53
+msgid "所有権がユーザーに移った (またはスタジオが作成された)"
+msgstr ""
+
+#: ../../../scapi/sites/activity.py:docstring of scapi.sites.activity.ActivityAction:54
+msgid "|actor| と |target| が同じ場合、スタジオが作成されたということになります。"
+msgstr ""
+
+#: ../../../scapi/sites/activity.py:docstring of scapi.sites.activity.ActivityAction:55
+msgid "|actor| : |User| 前の所有者"
+msgstr ""
+
+#: ../../../scapi/sites/activity.py:docstring of scapi.sites.activity.ActivityAction:56
+msgid "|place| : |Studio| 所有権が移ったスタジオ"
+msgstr ""
+
+#: ../../../scapi/sites/activity.py:docstring of scapi.sites.activity.ActivityAction:57
+msgid "|target| : |User| 新しい所有者"
+msgstr ""
+
+#: ../../../scapi/sites/activity.py:docstring of scapi.sites.activity.ActivityAction:58
+msgid "|activity_other| : bool? ``actor_admin`` の値(不明)"
+msgstr ""
+
+#: ../../../scapi/sites/activity.py:docstring of scapi.sites.activity.ActivityAction:62
+msgid "ユーザーがキュレーターかマネージャーから削除された"
+msgstr ""
+
+#: ../../../scapi/sites/activity.py:docstring of scapi.sites.activity.ActivityAction:63
+msgid "|actor| : |User| 削除された人"
+msgstr ""
+
+#: ../../../scapi/sites/activity.py:docstring of scapi.sites.activity.ActivityAction:65
+msgid "|target| : |User| 削除昇格した人"
+msgstr ""
+
+#: ../../../scapi/sites/activity.py:docstring of scapi.sites.activity.ActivityAction:69
+msgid "スタジオが更新された。"
+msgstr ""
+
+#: ../../../scapi/sites/activity.py:docstring of scapi.sites.activity.ActivityAction:70
+msgid "|actor| : |User| スタジオを更新した人(すなわち所有者)"
+msgstr ""
+
+#: ../../../scapi/sites/activity.py:docstring of scapi.sites.activity.ActivityAction:71
+msgid "|place| |target| : |Studio| 更新されたスタジオ"
+msgstr ""
+
+#: ../../../scapi/sites/activity.py:docstring of scapi.sites.activity.ActivityAction:75
+msgid "スタジオで活動があった。"
+msgstr ""
+
+#: ../../../scapi/sites/activity.py:docstring of scapi.sites.activity.ActivityAction:76
+msgid "|actor| : ``None`` API上の理由から明示的にNoneになります。"
+msgstr ""
+
+#: ../../../scapi/sites/activity.py:docstring of scapi.sites.activity.ActivityAction:77
+msgid "|place| |target| : |Studio| 活動があったスタジオ"
+msgstr ""
+
+#: ../../../scapi/sites/activity.py:docstring of scapi.sites.activity.ActivityAction:81
+msgid "プロジェクトに好きが押された"
+msgstr ""
+
+#: ../../../scapi/sites/activity.py:docstring of scapi.sites.activity.ActivityAction:82
+msgid "|actor| : |User| 好きを押した人"
+msgstr ""
+
+#: ../../../scapi/sites/activity.py:docstring of scapi.sites.activity.ActivityAction:83
+msgid "|place| |target| : |Project| 好きを押されたプロジェクト"
+msgstr ""
+
+#: ../../../scapi/sites/activity.py:docstring of scapi.sites.activity.ActivityAction:87
+msgid "プロジェクトにお気に入りが押された"
+msgstr ""
+
+#: ../../../scapi/sites/activity.py:docstring of scapi.sites.activity.ActivityAction:88
+msgid "|actor| : |User| お気に入りを押した人"
+msgstr ""
+
+#: ../../../scapi/sites/activity.py:docstring of scapi.sites.activity.ActivityAction:89
+msgid "|place| |target| : |Project| お気に入りを押されたプロジェクト"
+msgstr ""
+
+#: ../../../scapi/sites/activity.py:docstring of scapi.sites.activity.ActivityAction:93
+msgid "プロジェクトが共有された"
+msgstr ""
+
+#: ../../../scapi/sites/activity.py:docstring of scapi.sites.activity.ActivityAction:94
+#: ../../../scapi/sites/activity.py:docstring of scapi.sites.activity.ActivityAction:100
+msgid "|actor| : |User| 共有した人"
+msgstr ""
+
+#: ../../../scapi/sites/activity.py:docstring of scapi.sites.activity.ActivityAction:95
+msgid "|place| |target| : |Project| 共有されたプロジェクト"
+msgstr ""
+
+#: ../../../scapi/sites/activity.py:docstring of scapi.sites.activity.ActivityAction:99
+msgid "プロジェクトがリミックスされた"
+msgstr ""
+
+#: ../../../scapi/sites/activity.py:docstring of scapi.sites.activity.ActivityAction:101
+msgid "|place| : |Project| 共有されたプロジェクト"
+msgstr ""
+
+#: ../../../scapi/sites/activity.py:docstring of scapi.sites.activity.ActivityAction:102
+msgid "|target| : |Project| リミックス元のプロジェクト"
+msgstr ""
+
+#: ../../../scapi/sites/activity.py:docstring of scapi.sites.activity.ActivityAction:106
+msgid "ユーザーがフォローした"
+msgstr ""
+
+#: ../../../scapi/sites/activity.py:docstring of scapi.sites.activity.ActivityAction:108
+msgid "|place| |target| : |User| フォローされた人"
+msgstr ""
+
+#: ../../../scapi/sites/activity.py:docstring of scapi.sites.activity.ActivityAction:112
+msgid "ユーザーがプロフィール欄を編集した"
+msgstr ""
+
+#: ../../../scapi/sites/activity.py:docstring of scapi.sites.activity.ActivityAction:113
+msgid "|actor| |place| |target| : |User| 編集したユーザー"
+msgstr ""
+
+#: ../../../scapi/sites/activity.py:docstring of scapi.sites.activity.ActivityAction:117
+msgid "ユーザーがScratchに参加した"
+msgstr ""
+
+#: ../../../scapi/sites/activity.py:docstring of scapi.sites.activity.ActivityAction:118
+msgid "|actor| |place| |target| : |User| 参加したユーザー"
+msgstr ""
+
+#: ../../../scapi/sites/activity.py:docstring of scapi.sites.activity.ActivityAction:122
+msgid "コメントをした"
+msgstr ""
+
+#: ../../../scapi/sites/activity.py:docstring of scapi.sites.activity.ActivityAction:123
+msgid "|actor| : |User| コメントをした人"
+msgstr ""
+
+#: ../../../scapi/sites/activity.py:docstring of scapi.sites.activity.ActivityAction:124
+msgid "|place| : |Project| |Studio| |User| コメントされた場所"
+msgstr ""
+
+#: ../../../scapi/sites/activity.py:docstring of scapi.sites.activity.ActivityAction:125
+msgid "|target| : |Comment| そのコメント"
+msgstr ""
+
+#: ../../../scapi/sites/activity.py:docstring of scapi.sites.activity.ActivityAction:129
+msgid "フォーラムで新規投稿があった"
+msgstr ""
+
+#: ../../../scapi/sites/activity.py:docstring of scapi.sites.activity.ActivityAction:130
+msgid "|actor| : |User| 投稿した人"
+msgstr ""
+
+#: ../../../scapi/sites/activity.py:docstring of scapi.sites.activity.ActivityAction:131
+msgid "|place| |target| : |ForumTopic| 投稿された場所"
+msgstr ""
+
+#: ../../../scapi/sites/activity.py:docstring of scapi.sites.activity.Activity:1
+msgid "ユーザーの行動を表す。"
+msgstr ""
+
+#: ../../../scapi/sites/activity.py:docstring of scapi.sites.activity.Activity:4
+msgid "このクラスは :class:`_BaseSiteAPI <scapi._BaseSiteAPI>` を継承していません。"
+msgstr ""
+
+#: ../../../scapi/sites/activity.py:docstring of scapi.sites.activity.Activity:7
+msgid "このクラスの属性値は ``.action`` の値によって変わります。 どのアクションのときにどんなデータがセットされるかについては、:class:`ActivityAction <scapi.ActivityAction>` を確認してください。"
+msgstr ""
+
+#: ../../../scapi/sites/activity.py:docstring of scapi.sites.activity.Activity:12
+msgid "アクティビティデータの場所"
+msgstr ""
+
+#: ../../../scapi/sites/activity.py:docstring of scapi.sites.activity.Activity:14
+msgid "ActivityType"
+msgstr ""
+
+#: ../../../scapi/sites/activity.py:docstring of scapi.sites.activity.Activity:18
+msgid "実行されたアクティビティの種類"
+msgstr ""
+
+#: ../../../scapi/sites/activity.py:docstring of scapi.sites.activity.Activity:20
+msgid "ActivityAction"
+msgstr ""
+
+#: ../../../scapi/sites/activity.py:docstring of scapi.sites.activity.Activity:24
+msgid "アクティビティのID"
+msgstr ""
+
+#: ../../../scapi/sites/activity.py:docstring of scapi.sites.activity.Activity:30
+msgid "アクティビティを実行したユーザー"
+msgstr ""
+
+#: ../../../scapi/sites/activity.py:docstring of scapi.sites.activity.Activity:32
+msgid "User|None"
+msgstr ""
+
+#: ../../../scapi/sites/activity.py:docstring of scapi.sites.activity.Activity:36
+msgid "適用したオブジェクトまたは、このアクティビティによってできたオブジェクト"
+msgstr ""
+
+#: ../../../scapi/sites/activity.py:docstring of scapi.sites.activity.Activity:38
+msgid "Comment|Studio|Project|User"
+msgstr ""
+
+#: ../../../scapi/sites/activity.py:docstring of scapi.sites.activity.Activity:42
+msgid "アクティビティが実行された場所"
+msgstr ""
+
+#: ../../../scapi/sites/activity.py:docstring of scapi.sites.activity.Activity:44
+msgid "Studio|Project|User"
+msgstr ""
+
+#: ../../../scapi/sites/activity.py:docstring of scapi.sites.activity.Activity:48
+msgid "追加の(上記に振り分けられない)追加データ"
+msgstr ""
+
+#: ../../../scapi/sites/activity.py:docstring of scapi.sites.activity.Activity:50
+msgid "Any"
+msgstr ""
+
+#: ../../../scapi/sites/activity.py:docstring of scapi.Activity.created_at:1
+msgid "アクションが実行された時間を返す"
+msgstr ""
+
+#: ../../../scapi/sites/activity.py:docstring of scapi.sites.activity.CloudActivity:1
+msgid "クラウド変数の操作ログを表すクラス。"
+msgstr ""
+
+#: ../../../scapi/sites/activity.py:docstring of scapi.sites.activity.CloudActivity:5
+msgid "操作の種類"
+msgstr ""
+
+#: ../../../scapi/sites/activity.py:docstring of scapi.sites.activity.CloudActivity:11
+msgid "操作された変数の名前"
+msgstr ""
+
+#: ../../../scapi/sites/activity.py:docstring of scapi.sites.activity.CloudActivity:17
+msgid "新しい値"
+msgstr ""
+
+#: ../../../scapi/sites/activity.py:docstring of scapi.sites.activity.CloudActivity:23
+msgid "利用できる場合、変更したユーザーのユーザー名"
+msgstr ""
+
+#: ../../../scapi/sites/activity.py:docstring of scapi.sites.activity.CloudActivity:29
+msgid "プロジェクトID"
+msgstr ""
+
+#: ../../../scapi/sites/activity.py:docstring of scapi.sites.activity.CloudActivity:31
+msgid "int|str"
+msgstr ""
+
+#: ../../../scapi/sites/activity.py:docstring of scapi.sites.activity.CloudActivity:37
+msgid "datetime.datetime"
+msgstr ""
+
+#: ../../../scapi/sites/activity.py:docstring of scapi.sites.activity.CloudActivity:43
+msgid "_BaseCloud|None"
+msgstr ""
+
+#: ../../../scapi/sites/activity.py:docstring of scapi.sites.activity.CloudActivity.get_user:1
+msgid "ユーザー名からユーザーを取得する。"
+msgstr ""
+
+#: ../../../scapi/sites/activity.py:docstring of scapi.sites.activity.CloudActivity.get_user:3
+msgid "ユーザー名の情報がない。"
+msgstr ""
+
+#: ../../../scapi/sites/activity.py:docstring of scapi.sites.activity.CloudActivity.get_project:1
+msgid "プロジェクトIDからプロジェクトを取得する。"
+msgstr ""
+
+#: ../../../scapi/sites/activity.py:docstring of scapi.sites.activity.CloudActivity.get_project:3
+msgid "プロジェクトIDがintに変換できない。"
+msgstr ""
+
+#: ../../reference/sites.rst:111
+msgid "フォーラム"
+msgstr ""
+
+#: ../../../scapi/sites/forum.py:docstring of scapi.sites.forum.get_forum_categories:3
+msgid "接続に使用するHTTPClientかSession"
+msgstr ""
+
+#: ../../../scapi/sites/forum.py:docstring of scapi.sites.forum.get_forum_category:1
+msgid "フォーラムカテゴリーを取得する。"
+msgstr ""
+
+#: ../../../scapi/sites/forum.py:docstring of scapi.sites.forum.get_forum_category:6
+msgid "await か async with で取得できるカテゴリー"
+msgstr ""
+
+#: ../../../scapi/sites/forum.py:docstring of scapi.sites.forum.ForumCategory:1
+msgid "フォーラムのカテゴリーを表す"
+msgstr ""
+
+#: ../../../scapi/sites/forum.py:docstring of scapi.sites.forum.ForumCategory:5
+msgid "カテゴリーのID"
+msgstr ""
+
+#: ../../../scapi/sites/forum.py:docstring of scapi.sites.forum.ForumCategory:11
+msgid "カテゴリーの名前"
+msgstr ""
+
+#: ../../../scapi/sites/forum.py:docstring of scapi.sites.forum.ForumCategory:17
+msgid "カテゴリーのページの数"
+msgstr ""
+
+#: ../../../scapi/sites/forum.py:docstring of scapi.sites.forum.ForumCategory:23
+msgid "ボックスの名前"
+msgstr ""
+
+#: ../../../scapi/sites/forum.py:docstring of scapi.sites.forum.ForumCategory:29
+msgid "カテゴリーの説明"
+msgstr ""
+
+#: ../../../scapi/sites/forum.py:docstring of scapi.sites.forum.ForumCategory:35
+msgid "トピックの数"
+msgstr ""
+
+#: ../../../scapi/sites/forum.py:docstring of scapi.sites.forum.ForumCategory:41
+msgid "投稿の数"
+msgstr ""
+
+#: ../../../scapi/sites/forum.py:docstring of scapi.sites.forum.ForumCategory:47
+msgid "そのカテゴリに最後に投稿された投稿"
+msgstr ""
+
+#: ../../../scapi/sites/forum.py:docstring of scapi.sites.forum.ForumCategory:49
+#: ../../../scapi/sites/forum.py:docstring of scapi.sites.forum.ForumTopic:67
+msgid "MAYBE_UNKNOWN[ForumPost]"
+msgstr ""
+
+#: ../../../scapi/sites/forum.py:docstring of scapi.sites.forum.ForumCategory.get_topics:1
+msgid "カテゴリーに所属しているトピックを取得します。"
+msgstr ""
+
+#: ../../../scapi/sites/forum.py:docstring of scapi.sites.forum.ForumCategory.get_topics:3
+msgid "取得するトピックの開始ページ位置。初期値は1です。"
+msgstr ""
+
+#: ../../../scapi/sites/forum.py:docstring of scapi.sites.forum.ForumCategory.get_topics:5
+msgid "取得するトピックの終了ページ位置。初期値はstart_pageの値です。"
+msgstr ""
+
+#: ../../../scapi/sites/forum.py:docstring of scapi.sites.forum.ForumCategory.get_topics:8
+msgid "*ForumTopic*"
+msgstr ""
+
+#: ../../../scapi/sites/forum.py:docstring of scapi.sites.forum.get_forum_topic:1
+msgid "フォーラムトピックを取得する。"
+msgstr ""
+
+#: ../../../scapi/sites/forum.py:docstring of scapi.sites.forum.get_forum_topic:6
+msgid "await か async with で取得できるトピック"
+msgstr ""
+
+#: ../../../scapi/sites/forum.py:docstring of scapi.sites.forum.ForumTopic:1
+msgid "フォーラムのトピックを表す"
+msgstr ""
+
+#: ../../../scapi/sites/forum.py:docstring of scapi.sites.forum.ForumTopic:5
+msgid "トピックのID"
+msgstr ""
+
+#: ../../../scapi/sites/forum.py:docstring of scapi.sites.forum.ForumTopic:11
+msgid "トピックの名前"
+msgstr ""
+
+#: ../../../scapi/sites/forum.py:docstring of scapi.sites.forum.ForumTopic:17
+msgid "トピックが属しているカテゴリー"
+msgstr ""
+
+#: ../../../scapi/sites/forum.py:docstring of scapi.sites.forum.ForumTopic:19
+msgid "MAYBE_UNKNOWN[ForumCategory]"
+msgstr ""
+
+#: ../../../scapi/sites/forum.py:docstring of scapi.sites.forum.ForumTopic:23
+msgid "ページの数"
+msgstr ""
+
+#: ../../../scapi/sites/forum.py:docstring of scapi.sites.forum.ForumTopic:29
+msgid "トピックの作成者"
+msgstr ""
+
+#: ../../../scapi/sites/forum.py:docstring of scapi.sites.forum.ForumTopic:35
+msgid "未読の投稿があるか"
+msgstr ""
+
+#: ../../../scapi/sites/forum.py:docstring of scapi.sites.forum.ForumTopic:41
+msgid "ピン留めされているか"
+msgstr ""
+
+#: ../../../scapi/sites/forum.py:docstring of scapi.sites.forum.ForumTopic:47
+msgid "閉じられているか"
+msgstr ""
+
+#: ../../../scapi/sites/forum.py:docstring of scapi.sites.forum.ForumTopic:53
+msgid "投稿されたポストの数"
+msgstr ""
+
+#: ../../../scapi/sites/forum.py:docstring of scapi.sites.forum.ForumTopic:59
+msgid "トピックが閲覧された回数"
+msgstr ""
+
+#: ../../../scapi/sites/forum.py:docstring of scapi.sites.forum.ForumTopic:65
+msgid "最後に投稿された投稿"
+msgstr ""
+
+#: ../../../scapi/sites/forum.py:docstring of scapi.sites.forum.ForumTopic.follow:1
+msgid "このトピックをフォローする"
+msgstr ""
+
+#: ../../../scapi/sites/forum.py:docstring of scapi.sites.forum.ForumTopic.unfollow:1
+msgid "このトピックのフォローを外す"
+msgstr ""
+
+#: ../../../scapi/sites/forum.py:docstring of scapi.sites.forum.ForumTopic.get_posts:1
+msgid "トピックに投稿された投稿を取得します。"
+msgstr ""
+
+#: ../../../scapi/sites/forum.py:docstring of scapi.sites.forum.ForumTopic.get_posts:3
+msgid "取得する投稿の開始ページ位置。初期値は1です。"
+msgstr ""
+
+#: ../../../scapi/sites/forum.py:docstring of scapi.sites.forum.ForumTopic.get_posts:5
+msgid "取得する投稿の終了ページ位置。初期値はstart_pageの値です。"
+msgstr ""
+
+#: ../../../scapi/sites/forum.py:docstring of scapi.sites.forum.ForumTopic.get_posts:8
+msgid "*ForumPost*"
+msgstr ""
+
+#: ../../../scapi/sites/forum.py:docstring of scapi.sites.forum.get_forum_post:1
+msgid "フォーラムの投稿を取得する。"
+msgstr ""
+
+#: ../../../scapi/sites/forum.py:docstring of scapi.sites.forum.get_forum_post:6
+msgid "await か async with で取得できる投稿"
+msgstr ""
+
+#: ../../../scapi/sites/forum.py:docstring of scapi.sites.forum.ForumPost:1
+msgid "フォーラムの投稿を表す"
+msgstr ""
+
+#: ../../../scapi/sites/forum.py:docstring of scapi.sites.forum.ForumPost:5
+msgid "投稿ID"
+msgstr ""
+
+#: ../../../scapi/sites/forum.py:docstring of scapi.sites.forum.ForumPost:11
+msgid "投稿されたトピック"
+msgstr ""
+
+#: ../../../scapi/sites/forum.py:docstring of scapi.sites.forum.ForumPost:13
+msgid "MAYBE_UNKNOWN[ForumTopic]"
+msgstr ""
+
+#: ../../../scapi/sites/forum.py:docstring of scapi.sites.forum.ForumPost:17
+msgid "投稿の番号"
+msgstr ""
+
+#: ../../../scapi/sites/forum.py:docstring of scapi.sites.forum.ForumPost:23
+msgid "投稿したユーザー"
+msgstr ""
+
+#: ../../../scapi/sites/forum.py:docstring of scapi.sites.forum.ForumPost:29
+msgid "投稿された時間"
+msgstr ""
+
+#: ../../../scapi/sites/forum.py:docstring of scapi.sites.forum.ForumPost:31
+msgid "MAYBE_UNKNOWN[datetime.datetime]"
+msgstr ""
+
+#: ../../../scapi/sites/forum.py:docstring of scapi.sites.forum.ForumPost:35
+msgid "編集された時間"
+msgstr ""
+
+#: ../../../scapi/sites/forum.py:docstring of scapi.sites.forum.ForumPost:37
+msgid "MAYBE_UNKNOWN[datetime.datetime|None]"
+msgstr ""
+
+#: ../../../scapi/sites/forum.py:docstring of scapi.sites.forum.ForumPost:41
+msgid "編集したユーザー"
+msgstr ""
+
+#: ../../../scapi/sites/forum.py:docstring of scapi.sites.forum.ForumPost:43
+msgid "MAYBE_UNKNOWN[User|None]"
+msgstr ""
+
+#: ../../../scapi/sites/forum.py:docstring of scapi.sites.forum.ForumPost:47
+msgid "投稿の内容"
+msgstr ""
+
+#: ../../../scapi/sites/forum.py:docstring of scapi.sites.forum.ForumPost:49
+msgid "MAYBE_UNKNOWN[bs4.Tag]"
+msgstr ""
+
+#: ../../../scapi/sites/forum.py:docstring of scapi.sites.forum.ForumPost.get_ocular_reactions:1
+msgid "この投稿にたいするOcularでのリアクションを取得する。"
+msgstr ""
+
+#: ../../../scapi/sites/forum.py:docstring of scapi.sites.forum.ForumPost.get_source:1
+msgid "この投稿のソース(BBcode)を取得する"
+msgstr ""
+
+#: ../../../scapi/sites/forum.py:docstring of scapi.sites.forum.OcularReactions:1
+msgid "投稿に対する Ocular のリアクション"
+msgstr ""
+
+#: ../../../scapi/sites/forum.py:docstring of scapi.sites.forum.OcularReactions:5
+msgid "投稿のID"
+msgstr ""
+
+#: ../../../scapi/sites/forum.py:docstring of scapi.sites.forum.OcularReactions:11
+msgid "👍をリアクションしたユーザー一覧"
+msgstr ""
+
+#: ../../../scapi/sites/forum.py:docstring of scapi.sites.forum.OcularReactions:13
+#: ../../../scapi/sites/forum.py:docstring of scapi.sites.forum.OcularReactions:19
+#: ../../../scapi/sites/forum.py:docstring of scapi.sites.forum.OcularReactions:25
+#: ../../../scapi/sites/forum.py:docstring of scapi.sites.forum.OcularReactions:31
+#: ../../../scapi/sites/forum.py:docstring of scapi.sites.forum.OcularReactions:37
+#: ../../../scapi/sites/forum.py:docstring of scapi.sites.forum.OcularReactions:43
+#: ../../../scapi/sites/forum.py:docstring of scapi.sites.forum.OcularReactions:49
+#: ../../../scapi/sites/forum.py:docstring of scapi.sites.forum.OcularReactions:55
+msgid "list[str]"
+msgstr ""
+
+#: ../../../scapi/sites/forum.py:docstring of scapi.sites.forum.OcularReactions:17
+msgid "👎をリアクションしたユーザー一覧"
+msgstr ""
+
+#: ../../../scapi/sites/forum.py:docstring of scapi.sites.forum.OcularReactions:23
+msgid "😄をリアクションしたユーザー一覧"
+msgstr ""
+
+#: ../../../scapi/sites/forum.py:docstring of scapi.sites.forum.OcularReactions:29
+msgid "🎉をリアクションしたユーザー一覧"
+msgstr ""
+
+#: ../../../scapi/sites/forum.py:docstring of scapi.sites.forum.OcularReactions:35
+msgid "😕をリアクションしたユーザー一覧"
+msgstr ""
+
+#: ../../../scapi/sites/forum.py:docstring of scapi.sites.forum.OcularReactions:41
+msgid "❤️をリアクションしたユーザー一覧"
+msgstr ""
+
+#: ../../../scapi/sites/forum.py:docstring of scapi.sites.forum.OcularReactions:47
+msgid "🚀をリアクションしたユーザー一覧"
+msgstr ""
+
+#: ../../../scapi/sites/forum.py:docstring of scapi.sites.forum.OcularReactions:53
+msgid "👀をリアクションしたユーザー一覧"
+msgstr ""
+
+#: ../../reference/sites.rst:130
+msgid "メインページ/統計"
+msgstr ""
+
+#: ../../../scapi/sites/mainpage.py:docstring of scapi.sites.mainpage.get_news:1
+msgid "ニュースを取得する。"
+msgstr ""
+
+#: ../../../scapi/sites/mainpage.py:docstring of scapi.sites.mainpage.get_news:3
+msgid "使用するHTTPクライアント"
+msgstr ""
+
+#: ../../../scapi/sites/mainpage.py:docstring of scapi.sites.mainpage.get_news:5
+msgid "取得するニュースの数。初期値は40です。"
+msgstr ""
+
+#: ../../../scapi/sites/mainpage.py:docstring of scapi.sites.mainpage.get_news:7
+msgid "取得するニュースの開始位置。初期値は0です。"
+msgstr ""
+
+#: ../../../scapi/sites/mainpage.py:docstring of scapi.sites.mainpage.get_news:10
+msgid "*News*"
+msgstr ""
+
+#: ../../../scapi/sites/mainpage.py:docstring of scapi.sites.mainpage.News:1
+msgid "Scratchのニュース欄"
+msgstr ""
+
+#: ../../../scapi/sites/mainpage.py:docstring of scapi.sites.mainpage.News:11
+msgid "ニュースのタイトル"
+msgstr ""
+
+#: ../../../scapi/sites/mainpage.py:docstring of scapi.sites.mainpage.News:17
+msgid "詳細へのリンク"
+msgstr ""
+
+#: ../../../scapi/sites/mainpage.py:docstring of scapi.sites.mainpage.News:23
+msgid "アイコンの画像のurl"
+msgstr ""
+
+#: ../../../scapi/sites/mainpage.py:docstring of scapi.sites.mainpage.News:29
+msgid "説明文"
+msgstr ""
+
+#: ../../../scapi/sites/mainpage.py:docstring of scapi.News.created_at:1
+msgid "ニュースが投稿された時間を返す"
+msgstr ""
+
+#: ../../../scapi/sites/mainpage.py:docstring of scapi.News.created_at:4
+msgid "APIの情報が不正確だと考えられます。データの利用時には注意してください。"
+msgstr ""
+
+#: ../../../scapi/sites/mainpage.py:docstring of scapi.sites.mainpage.CommunityFeaturedResponse:1
+msgid "ベースクラス: :py:class:`~typing.TypedDict`"
+msgstr ""
+
+#: ../../../scapi/sites/mainpage.py:docstring of scapi.sites.mainpage.get_community_featured:1
+msgid "コミュニティ特集を取得する。"
+msgstr ""
+
+#: ../../../scapi/sites/mainpage.py:docstring of scapi.sites.mainpage.get_community_featured:3
+msgid "通信に使用するHTTPClientか、セッション"
+msgstr ""
+
+#: ../../../scapi/sites/other.py:docstring of scapi.sites.other.get_total_site_stats:1
+msgid "全体の統計情報を取得する"
+msgstr ""
+
+#: ../../../scapi/sites/other.py:docstring of scapi.sites.other.get_monthly_site_traffic:1
+msgid "月のアクティビティ数を取得する。"
+msgstr ""
+
+#: ../../../scapi/sites/other.py:docstring of scapi.sites.other.MonthlyActivity:1
+msgid "月間アクティビティ統計情報を表す"
+msgstr ""
+
+#: ../../../scapi/sites/other.py:docstring of scapi.sites.other.get_monthly_activity:1
+msgid "月間アクティビティ統計情報を取得する。"
+msgstr ""
+
+#: ../../reference/sites.rst:153
+msgid "その他"
+msgstr ""
+
+#: ../../../scapi/sites/other.py:docstring of scapi.sites.other.check_username:1
+msgid "ユーザー名が利用可能か確認する。"
+msgstr ""
+
+#: ../../../scapi/sites/other.py:docstring of scapi.sites.other.check_username:5
+msgid "確認したいユーザー名"
+msgstr ""
+
+#: ../../../scapi/sites/other.py:docstring of scapi.sites.other.check_password:1
+msgid "パスワードが使用可能か確認する。"
+msgstr ""
+
+#: ../../../scapi/sites/other.py:docstring of scapi.sites.other.check_password:5
+msgid "確認したいパスワード"
+msgstr ""
+
+#: ../../../scapi/sites/other.py:docstring of scapi.sites.other.check_email:1
+msgid "メールアドレスが利用可能か確認する。"
+msgstr ""
+
+#: ../../../scapi/sites/other.py:docstring of scapi.sites.other.check_email:5
+msgid "確認したいメールアドレス"
+msgstr ""
+
+#: ../../../scapi/sites/other.py:docstring of scapi.sites.other.translation:1
+msgid "テキストを翻訳する。"
+msgstr ""
+
+#: ../../../scapi/sites/other.py:docstring of scapi.sites.other.translation:5
+msgid "翻訳先の言語コード"
+msgstr ""
+
+#: ../../../scapi/sites/other.py:docstring of scapi.sites.other.translation:7
+msgid "翻訳するテキスト"
+msgstr ""
+
+#: ../../../scapi/sites/other.py:docstring of scapi.sites.other.translation:10
+msgid "翻訳されたテキスト"
+msgstr ""
+
+#: ../../../scapi/sites/other.py:docstring of scapi.sites.other.get_supported_translation_language:1
+msgid "翻訳でサポートされているテキストを取得する。"
+msgstr ""
+
+#: ../../../scapi/sites/other.py:docstring of scapi.sites.other.get_supported_translation_language:6
+msgid "対応している言語の言語コードと名前のペア"
+msgstr ""
+
+#: ../../../scapi/sites/other.py:docstring of scapi.sites.other.tts:1
+msgid "読み上げ音声を取得する。"
+msgstr ""
+
+#: ../../../scapi/sites/other.py:docstring of scapi.sites.other.tts:5
+msgid "使用する言語 (en-US形式)"
+msgstr ""
+
+#: ../../../scapi/sites/other.py:docstring of scapi.sites.other.tts:7
+msgid "話す声の種類"
+msgstr ""
+
+#: ../../../scapi/sites/other.py:docstring of scapi.sites.other.tts:9
+msgid "話す内容"
+msgstr ""
+

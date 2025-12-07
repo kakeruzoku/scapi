@@ -1,0 +1,215 @@
+msgid ""
+msgstr ""
+"Project-Id-Version: scapi\n"
+"Report-Msgid-Bugs-To: \n"
+"POT-Creation-Date: 2025-11-27 10:18+0000\n"
+"PO-Revision-Date: 2025-12-07 07:02\n"
+"Last-Translator: \n"
+"Language-Team: English\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"Plural-Forms: nplurals=2; plural=(n != 1);\n"
+"X-Crowdin-Project: scapi\n"
+"X-Crowdin-Project-ID: 849930\n"
+"X-Crowdin-Language: en\n"
+"X-Crowdin-File: /reference/event.pot\n"
+"X-Crowdin-File-ID: 25\n"
+"Language: en_US\n"
+
+#: ../../reference/event.rst:2
+msgid "イベント"
+msgstr ""
+
+#: ../../reference/event.rst:5
+msgid "目次"
+msgstr ""
+
+#: ../../reference/event.rst:8
+msgid "ベースイベント"
+msgstr ""
+
+#: ../../../scapi/event/base.py:docstring of scapi.event.base._BaseEvent:1
+msgid "ベースクラス: :py:class:`~abc.ABC`"
+msgstr ""
+
+#: ../../../scapi/event/base.py:docstring of scapi.event.base._BaseEvent:1
+msgid "イベントのベースクラス。"
+msgstr ""
+
+#: ../../../scapi/event/base.py:docstring of scapi.event.base._BaseEvent.event:1
+msgid "イベントを追加するデコレータ。"
+msgstr ""
+
+#: ../../../scapi/event/base.py:docstring of scapi.event.base._BaseEvent.event:9
+msgid "クラスを継承することでもイベントを追加できます。"
+msgstr ""
+
+#: ../../reference/event.rst:0
+msgid "パラメータ"
+msgstr ""
+
+#: ../../../scapi/event/base.py:docstring of scapi.event.base._BaseEvent.event:18
+msgid "追加したい関数"
+msgstr ""
+
+#: ../../reference/event.rst:0
+msgid "例外"
+msgstr ""
+
+#: ../../../scapi/event/base.py:docstring of scapi.event.base._BaseEvent.event:21
+msgid "コルーチン関数(async defで定義された関数)ではない"
+msgstr ""
+
+#: ../../../scapi/event/base.py:docstring of scapi.event.base._BaseEvent.event:22
+msgid "関数名が`on_`から始まっていない。"
+msgstr ""
+
+#: ../../../scapi/event/base.py:docstring of scapi.event.base._BaseEvent.on_error:1
+msgid "[イベント] イベントモニター関数内でエラーが発生した。"
+msgstr ""
+
+#: ../../../scapi/event/base.py:docstring of scapi.event.base._BaseEvent.on_error:3
+msgid "発生したエラー"
+msgstr ""
+
+#: ../../../scapi/event/base.py:docstring of scapi._BaseEvent.is_running:1
+msgid "実行中かつポーズしていないか。"
+msgstr ""
+
+#: ../../reference/event.rst:0
+msgid "戻り値"
+msgstr ""
+
+#: ../../../scapi/event/base.py:docstring of scapi._BaseEvent.is_running:3
+#: ../../../scapi/event/temporal.py:docstring of scapi.event.temporal.CommentEvent:13
+msgid "bool"
+msgstr ""
+
+#: ../../../scapi/event/base.py:docstring of scapi.event.base._BaseEvent.run:1
+msgid "イベントの監視を開始する。"
+msgstr ""
+
+#: ../../../scapi/event/base.py:docstring of scapi.event.base._BaseEvent.run:3
+msgid "既に開始済みです。 stop() するか、 resume() の使用を検討してください。"
+msgstr ""
+
+#: ../../../scapi/event/base.py:docstring of scapi.event.base._BaseEvent.run:5
+msgid "監視のタスク。await run()で監視が終了するまで(つまりstop()が実行されて終了処理が終わるまで)待ちます。"
+msgstr ""
+
+#: ../../reference/event.rst:0
+msgid "戻り値の型"
+msgstr ""
+
+#: ../../../scapi/event/base.py:docstring of scapi.event.base._BaseEvent.pause:1
+msgid "監視を一時停止する。"
+msgstr ""
+
+#: ../../../scapi/event/base.py:docstring of scapi.event.base._BaseEvent.pause:3
+msgid "イベントが送出されなくなりますが、接続の維持のためにバックグラウンドで処理が続行される可能性があります。"
+msgstr ""
+
+#: ../../../scapi/event/base.py:docstring of scapi.event.base._BaseEvent.resume:1
+msgid "監視を再開する。"
+msgstr ""
+
+#: ../../../scapi/event/base.py:docstring of scapi.event.base._BaseEvent.stop:1
+msgid "監視を終了する。"
+msgstr ""
+
+#: ../../../scapi/event/base.py:docstring of scapi.event.base._BaseEvent.stop:3
+msgid "実行中のタスクが見つからない"
+msgstr ""
+
+#: ../../../scapi/event/base.py:docstring of scapi.event.base._BaseEvent.stop:5
+msgid "終了処理を含んだ監視のタスク"
+msgstr ""
+
+#: ../../../scapi/event/temporal.py:docstring of scapi.event.temporal._TemporalEvent:1
+msgid "ベースクラス: :py:class:`~scapi.event.base._BaseEvent`, :py:class:`~typing.Generic`\\ [:py:obj:`~scapi.event.temporal._T`]"
+msgstr ""
+
+#: ../../../scapi/event/temporal.py:docstring of scapi.event.temporal._TemporalEvent:1
+msgid "一定期間ごとにリストを取得して新着のものをイベントとして送出するタイプのイベントの共通関数"
+msgstr ""
+
+#: ../../../scapi/event/temporal.py:docstring of scapi.event.temporal._TemporalEvent:5
+msgid "更新間隔"
+msgstr ""
+
+#: ../../../scapi/event/temporal.py:docstring of scapi.event.temporal.CommentEvent:0
+#: ../../../scapi/event/temporal.py:docstring of scapi.event.temporal.MessageEvent:0
+#: ../../../scapi/event/temporal.py:docstring of scapi.event.temporal._TemporalEvent:0
+msgid "type"
+msgstr ""
+
+#: ../../../scapi/event/temporal.py:docstring of scapi.event.temporal._TemporalEvent:7
+msgid "float"
+msgstr ""
+
+#: ../../../scapi/event/temporal.py:docstring of scapi.event.temporal._TemporalEvent:11
+msgid "確認したイベントの最後の時間"
+msgstr ""
+
+#: ../../../scapi/event/temporal.py:docstring of scapi.event.temporal._TemporalEvent:13
+msgid "datetime.datetime"
+msgstr ""
+
+#: ../../reference/event.rst:15
+msgid "コメントイベント"
+msgstr ""
+
+#: ../../../scapi/event/temporal.py:docstring of scapi.event.temporal.CommentEvent:1
+msgid "ベースクラス: :py:class:`~scapi.event.temporal._TemporalEvent`\\ [:py:class:`Comment`]"
+msgstr ""
+
+#: ../../../scapi/event/temporal.py:docstring of scapi.event.temporal.CommentEvent:1
+msgid "コメントイベントクラス"
+msgstr ""
+
+#: ../../../scapi/event/temporal.py:docstring of scapi.event.temporal.CommentEvent:5
+#: ../../../scapi/event/temporal.py:docstring of scapi.event.temporal.CommentEvent.__init__:1
+msgid "監視する場所"
+msgstr ""
+
+#: ../../../scapi/event/temporal.py:docstring of scapi.event.temporal.CommentEvent:7
+msgid "User|Project|Studio"
+msgstr ""
+
+#: ../../../scapi/event/temporal.py:docstring of scapi.event.temporal.CommentEvent:11
+msgid "古いAPIから取得するか"
+msgstr ""
+
+#: ../../../scapi/event/temporal.py:docstring of scapi.event.temporal.CommentEvent.__init__:3
+msgid "コメントの更新間隔。デフォルトは30秒です。"
+msgstr ""
+
+#: ../../../scapi/event/temporal.py:docstring of scapi.event.temporal.CommentEvent.__init__:5
+msgid "古いAPIから取得するか。デフォルトはFalseです。"
+msgstr ""
+
+#: ../../../scapi/event/temporal.py:docstring of scapi.event.temporal.CommentEvent.on_comment:1
+msgid "[イベント] コメントが送信された。"
+msgstr ""
+
+#: ../../../scapi/event/temporal.py:docstring of scapi.event.temporal.MessageEvent:1
+msgid "ベースクラス: :py:class:`~scapi.event.temporal._TemporalEvent`\\ [:py:class:`Activity`]"
+msgstr ""
+
+#: ../../../scapi/event/temporal.py:docstring of scapi.event.temporal.MessageEvent:1
+msgid "メッセージイベントクラス"
+msgstr ""
+
+#: ../../../scapi/event/temporal.py:docstring of scapi.event.temporal.MessageEvent:5
+msgid "メッセージを監視しているアカウント"
+msgstr ""
+
+#: ../../../scapi/event/temporal.py:docstring of scapi.event.temporal.MessageEvent:7
+msgid "Session"
+msgstr ""
+
+#: ../../../scapi/event/temporal.py:docstring of scapi.event.temporal.MessageEvent.on_message:1
+msgid "[イベント] メッセージを受信した。"
+msgstr ""
+

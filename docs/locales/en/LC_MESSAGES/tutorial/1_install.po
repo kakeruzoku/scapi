@@ -1,0 +1,71 @@
+msgid ""
+msgstr ""
+"Project-Id-Version: scapi\n"
+"Report-Msgid-Bugs-To: \n"
+"POT-Creation-Date: 2025-11-29 06:24+0000\n"
+"PO-Revision-Date: 2025-12-07 07:02\n"
+"Last-Translator: \n"
+"Language-Team: English\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"Plural-Forms: nplurals=2; plural=(n != 1);\n"
+"X-Crowdin-Project: scapi\n"
+"X-Crowdin-Project-ID: 849930\n"
+"X-Crowdin-Language: en\n"
+"X-Crowdin-File: /tutorial/1_install.pot\n"
+"X-Crowdin-File-ID: 33\n"
+"Language: en_US\n"
+
+#: ../../tutorial/1_install.rst:2
+msgid "インストール"
+msgstr "Install"
+
+#: ../../tutorial/1_install.rst:5
+msgid "目次"
+msgstr "Table of Contents"
+
+#: ../../tutorial/1_install.rst:8
+msgid "Scapiのインストール"
+msgstr "Install Scapi"
+
+#: ../../tutorial/1_install.rst:10
+msgid "コマンドプロンプトなどのコンソール上で以下のコマンドを実行してください:"
+msgstr "Run the commands below on the console, such as the command prompt:"
+
+#: ../../tutorial/1_install.rst:16
+msgid "Scapiが正しくインストールされたかは、IDLE等で以下のコードを実行します。"
+msgstr "Execute the code below, such as in IDLE, and you can make sure whether Scapi was installed successfully."
+
+#: ../../tutorial/1_install.rst:24
+msgid "この時帰ってきた文字列が、ダウンロードされたScapiのバージョンです。"
+msgstr "The returned value is the installed version of Scapi."
+
+#: ../../tutorial/1_install.rst:27
+msgid "Scapiのアップデート"
+msgstr "Update Scapi"
+
+#: ../../tutorial/1_install.rst:29
+msgid "新たなバージョンがリリースされた場合は以下のコマンドを実行してください:"
+msgstr "When the new version is released, run the commands below:"
+
+#: ../../tutorial/1_install.rst:35
+msgid "``-U`` というオプションは既にインストールされていても最新版をインストールするオプションです。"
+msgstr "``-U`` is the option that installs the latest version, even if an old version is already installed."
+
+#: ../../tutorial/1_install.rst:37
+msgid "バージョンを確認してみると最新版のバージョンが表示されるはずです。"
+msgstr "If you check the version, you should see the latest version."
+
+#: ../../tutorial/1_install.rst:46
+msgid "ソースコード"
+msgstr "Source code"
+
+#: ../../tutorial/1_install.rst:48
+msgid "Scapiのソースコードは常に `GitHub <https://github.com/kakeruzoku/scapi>`_ 上で公開されています。"
+msgstr "Scapi's source code is always publicly available on `GitHub <https://github.com/kakeruzoku/scapi>`_."
+
+#: ../../tutorial/1_install.rst:50
+msgid "Next: :doc:`非同期処理 <2_async>`"
+msgstr "Next: :doc:`Asynchronous Processing <2_async>`"
+

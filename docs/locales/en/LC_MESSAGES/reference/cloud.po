@@ -1,0 +1,417 @@
+msgid ""
+msgstr ""
+"Project-Id-Version: scapi\n"
+"Report-Msgid-Bugs-To: \n"
+"POT-Creation-Date: 2025-11-27 10:18+0000\n"
+"PO-Revision-Date: 2025-12-07 07:02\n"
+"Last-Translator: \n"
+"Language-Team: English\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"Plural-Forms: nplurals=2; plural=(n != 1);\n"
+"X-Crowdin-Project: scapi\n"
+"X-Crowdin-Project-ID: 849930\n"
+"X-Crowdin-Language: en\n"
+"X-Crowdin-File: /reference/cloud.pot\n"
+"X-Crowdin-File-ID: 29\n"
+"Language: en_US\n"
+
+#: ../../reference/cloud.rst:2
+#: ../../reference/cloud.rst:8
+msgid "クラウド"
+msgstr "Cloud"
+
+#: ../../reference/cloud.rst:5
+msgid "目次"
+msgstr "Table of Contents"
+
+#: ../../reference/cloud.rst:10
+msgid "接続の開始/停止やイベントに関しては :class:`_BaseEvent <scapi._BaseEvent>` を確認してください。"
+msgstr "For information about starting/stopping connections and related events, see :class:`_BaseEvent <scapi._BaseEvent>`."
+
+#: ../../../scapi/event/cloud.py:docstring of scapi.event.cloud._BaseCloud:1
+msgid "ベースクラス: :py:class:`~scapi.event.base._BaseEvent`"
+msgstr "Base class: :py:class:`~scapi.event.base._BaseEvent`"
+
+#: ../../../scapi/event/cloud.py:docstring of scapi.event.cloud._BaseCloud:1
+msgid "クラウドサーバーに接続するためのクラス。"
+msgstr "A class for connecting to a cloud server."
+
+#: ../../../scapi/event/cloud.py:docstring of scapi.event.cloud._BaseCloud:5
+msgid "接続先のURL"
+msgstr "The URL of the connection destination"
+
+#: ../../../scapi/event/cloud.py:docstring of scapi.event.cloud.CloudLogEvent:0
+#: ../../../scapi/event/cloud.py:docstring of scapi.event.cloud.ScratchCloud:0
+#: ../../../scapi/event/cloud.py:docstring of scapi.event.cloud._BaseCloud:0
+msgid "type"
+msgstr "type"
+
+#: ../../../scapi/event/cloud.py:docstring of scapi.event.cloud._BaseCloud:7
+#: ../../../scapi/event/cloud.py:docstring of scapi.event.cloud._BaseCloud:41
+msgid "str"
+msgstr "str"
+
+#: ../../../scapi/event/cloud.py:docstring of scapi.event.cloud._BaseCloud:11
+msgid "接続に使用するHTTPClient"
+msgstr "The HTTPClient used for the connection"
+
+#: ../../../scapi/event/cloud.py:docstring of scapi.event.cloud.CloudLogEvent:7
+#: ../../../scapi/event/cloud.py:docstring of scapi.event.cloud._BaseCloud:13
+msgid "HTTPClient"
+msgstr "HTTPClient"
+
+#: ../../../scapi/event/cloud.py:docstring of scapi.event.cloud.ScratchCloud:5
+#: ../../../scapi/event/cloud.py:docstring of scapi.event.cloud._BaseCloud:17
+msgid "Scratchのセッション"
+msgstr "Scratch session"
+
+#: ../../../scapi/event/cloud.py:docstring of scapi.event.cloud.CloudLogEvent:13
+#: ../../../scapi/event/cloud.py:docstring of scapi.event.cloud._BaseCloud:19
+msgid "Session|None"
+msgstr "Session|None"
+
+#: ../../../scapi/event/cloud.py:docstring of scapi.event.cloud._BaseCloud:23
+msgid "ヘッダーに使用するデータ"
+msgstr "The data used in the header"
+
+#: ../../../scapi/event/cloud.py:docstring of scapi.event.cloud._BaseCloud:25
+msgid "dict[str,str]"
+msgstr "dict[str,str]"
+
+#: ../../../scapi/event/cloud.py:docstring of scapi.event.cloud.ScratchCloud.__init__:3
+#: ../../../scapi/event/cloud.py:docstring of scapi.event.cloud.TurboWarpCloud.__init__:3
+#: ../../../scapi/event/cloud.py:docstring of scapi.event.cloud._BaseCloud:29
+msgid "接続先のプロジェクトID"
+msgstr "The project ID of the connection destination"
+
+#: ../../../scapi/event/cloud.py:docstring of scapi.event.cloud._BaseCloud:31
+msgid "str|int"
+msgstr "str|int"
+
+#: ../../../scapi/event/cloud.py:docstring of scapi.event.cloud._BaseCloud:34
+msgid "クラウド変数では、プロジェクトIDとして数字以外の文字列もサポートしています。 プロジェクトIDがint|strとなっていることに注意してください。"
+msgstr "For cloud variables, strings other than numbers are also supported as project IDs.\n"
+"Note that the project ID can be either int|str."
+
+#: ../../../scapi/event/cloud.py:docstring of scapi.event.cloud.TurboWarpCloud.__init__:5
+#: ../../../scapi/event/cloud.py:docstring of scapi.event.cloud._BaseCloud:39
+msgid "接続に使用するユーザー名"
+msgstr "The username to use for the connection"
+
+#: ../../../scapi/event/cloud.py:docstring of scapi.event.cloud._BaseCloud:45
+msgid "aiohttpライブラリのタイムアウト設定"
+msgstr "aiohttp library timeout setting"
+
+#: ../../../scapi/event/cloud.py:docstring of scapi.event.cloud._BaseCloud:47
+msgid "aiohttp.ClientWSTimeout"
+msgstr "aiohttp.ClientWSTimeout"
+
+#: ../../../scapi/event/cloud.py:docstring of scapi.event.cloud._BaseCloud:51
+msgid "データを送信する時のタイムアウトまでの時間"
+msgstr "Timeout period for sending data"
+
+#: ../../../scapi/event/cloud.py:docstring of scapi.event.cloud.CloudLogEvent:19
+#: ../../../scapi/event/cloud.py:docstring of scapi.event.cloud._BaseCloud:53
+msgid "float"
+msgstr "float"
+
+#: ../../../scapi/event/cloud.py:docstring of scapi._BaseCloud.ws:1
+msgid "接続に使用しているWebsocketを返す"
+msgstr "Returns the Websocket used for the connection"
+
+#: ../../reference/cloud.rst:0
+msgid "例外"
+msgstr "exception"
+
+#: ../../../scapi/event/cloud.py:docstring of scapi._BaseCloud.ws:3
+msgid "現在接続していない。"
+msgstr "Not currently connected."
+
+#: ../../reference/cloud.rst:0
+msgid "戻り値"
+msgstr "Returns"
+
+#: ../../../scapi/event/cloud.py:docstring of scapi._BaseCloud.ws:5
+msgid "aiohttp.ClientWebSocketResponse"
+msgstr "aiohttp.ClientWebSocketResponse"
+
+#: ../../../scapi/event/cloud.py:docstring of scapi.event.cloud._BaseCloud.send:1
+msgid "サーバーにデータを送信する。"
+msgstr "Send data to the server."
+
+#: ../../reference/cloud.rst:0
+msgid "パラメータ"
+msgstr "Parameters"
+
+#: ../../../scapi/event/cloud.py:docstring of scapi.event.cloud._BaseCloud.send:3
+msgid "送信したいデータ本体"
+msgstr "The data you want to send"
+
+#: ../../../scapi/event/cloud.py:docstring of scapi.event.cloud._BaseCloud.create_var:7
+#: ../../../scapi/event/cloud.py:docstring of scapi.event.cloud._BaseCloud.delete_var:5
+#: ../../../scapi/event/cloud.py:docstring of scapi.event.cloud._BaseCloud.rename_var:7
+#: ../../../scapi/event/cloud.py:docstring of scapi.event.cloud._BaseCloud.send:5
+#: ../../../scapi/event/cloud.py:docstring of scapi.event.cloud._BaseCloud.set_var:7
+#: ../../../scapi/event/cloud.py:docstring of scapi.event.cloud._BaseCloud.set_vars:5
+msgid "変更したい場合、送信先のプロジェクトID"
+msgstr "If you want to change it, enter the destination project ID"
+
+#: ../../../scapi/event/cloud.py:docstring of scapi.event.cloud._BaseCloud.create_var:11
+#: ../../../scapi/event/cloud.py:docstring of scapi.event.cloud._BaseCloud.delete_var:9
+#: ../../../scapi/event/cloud.py:docstring of scapi.event.cloud._BaseCloud.rename_var:11
+#: ../../../scapi/event/cloud.py:docstring of scapi.event.cloud._BaseCloud.send:7
+#: ../../../scapi/event/cloud.py:docstring of scapi.event.cloud._BaseCloud.set_var:11
+#: ../../../scapi/event/cloud.py:docstring of scapi.event.cloud._BaseCloud.set_vars:9
+msgid "送信の優先度。小さいほど優先され、初期値は10です。"
+msgstr "The priority of transmission. The smaller the value, the higher the priority. The default value is 10."
+
+#: ../../../scapi/event/cloud.py:docstring of scapi.event.cloud._BaseCloud.create_var:14
+#: ../../../scapi/event/cloud.py:docstring of scapi.event.cloud._BaseCloud.delete_var:12
+#: ../../../scapi/event/cloud.py:docstring of scapi.event.cloud._BaseCloud.rename_var:14
+#: ../../../scapi/event/cloud.py:docstring of scapi.event.cloud._BaseCloud.send:10
+#: ../../../scapi/event/cloud.py:docstring of scapi.event.cloud._BaseCloud.set_var:14
+#: ../../../scapi/event/cloud.py:docstring of scapi.event.cloud._BaseCloud.set_vars:12
+msgid "データの送信が完了するまで待つFuture"
+msgstr "A Future that waits until the data has been sent"
+
+#: ../../reference/cloud.rst:0
+msgid "戻り値の型"
+msgstr "Return Type"
+
+#: ../../../scapi/event/cloud.py:docstring of scapi.event.cloud._BaseCloud.queue_len:1
+msgid "キューの長さを取得する。"
+msgstr "Get the queue length."
+
+#: ../../../scapi/event/cloud.py:docstring of scapi.event.cloud._BaseCloud.handshake:1
+msgid "ハンドシェイクを送信する"
+msgstr "Send a handshake"
+
+#: ../../../scapi/event/cloud.py:docstring of scapi.event.cloud._BaseCloud.on_connect:1
+msgid "[イベント] サーバーに接続が完了した。"
+msgstr "[Event] Connection to the server completed."
+
+#: ../../../scapi/event/cloud.py:docstring of scapi.event.cloud._BaseCloud.on_set:1
+msgid "[イベント] 変数の値が変更された。"
+msgstr "[Event] The value of a variable has changed."
+
+#: ../../../scapi/event/cloud.py:docstring of scapi.event.cloud._BaseCloud.on_set:3
+msgid "変更のアクティビティ"
+msgstr "Change Activity"
+
+#: ../../../scapi/event/cloud.py:docstring of scapi.event.cloud._BaseCloud.on_disconnect:1
+msgid "[イベント] サーバーから切断された。"
+msgstr "[Event] Disconnected from server."
+
+#: ../../../scapi/event/cloud.py:docstring of scapi.event.cloud._BaseCloud.on_disconnect:3
+msgid "再接続するまでの時間"
+msgstr "Reconnect time"
+
+#: ../../../scapi/event/cloud.py:docstring of scapi.event.cloud._BaseCloud.get_vars:1
+msgid "全てのクラウド変数を読み込む"
+msgstr "Read all cloud variables"
+
+#: ../../../scapi/event/cloud.py:docstring of scapi.event.cloud._BaseCloud.get_vars:3
+#: ../../../scapi/event/cloud.py:docstring of scapi.event.cloud._BaseCloud.set_vars:3
+msgid "変数名と値のペア"
+msgstr "Variable name/value pairs"
+
+#: ../../../scapi/event/cloud.py:docstring of scapi.event.cloud._BaseCloud.get_var:1
+msgid "クラウド変数を読み込む"
+msgstr "Read Cloud Variables"
+
+#: ../../../scapi/event/cloud.py:docstring of scapi.event.cloud._BaseCloud.get_var:3
+msgid "取得したい変数の名前"
+msgstr "The name of the variable you want to retrieve"
+
+#: ../../../scapi/event/cloud.py:docstring of scapi.event.cloud._BaseCloud.get_var:5
+msgid "☁マークを先頭に追加するか"
+msgstr "Add a ☁ mark to the beginning"
+
+#: ../../../scapi/event/cloud.py:docstring of scapi.event.cloud._BaseCloud.get_var:8
+msgid "存在する場合、その変数の値。"
+msgstr "The value of the variable, if any."
+
+#: ../../../scapi/event/cloud.py:docstring of scapi.event.cloud._BaseCloud.wait_connect:1
+msgid "サーバーに接続するまで待機します。"
+msgstr "Wait until you connect to the server."
+
+#: ../../../scapi/event/cloud.py:docstring of scapi.event.cloud._BaseCloud.wait_connect:3
+msgid "タイムアウトさせたい場合、その時間"
+msgstr "If you want to time out, specify the time"
+
+#: ../../../scapi/event/cloud.py:docstring of scapi.event.cloud._BaseCloud.add_cloud_symbol:1
+msgid "先頭に☁がない場合☁を先頭に挿入する。"
+msgstr "If there is no ☁ at the beginning, insert ☁ at the beginning."
+
+#: ../../../scapi/event/cloud.py:docstring of scapi.event.cloud._BaseCloud.add_cloud_symbol:3
+msgid "変換したいテキスト"
+msgstr "The text you want to convert"
+
+#: ../../../scapi/event/cloud.py:docstring of scapi.event.cloud._BaseCloud.add_cloud_symbol:6
+msgid "変換されたテキスト"
+msgstr "Converted Text"
+
+#: ../../../scapi/event/cloud.py:docstring of scapi.event.cloud._BaseCloud.set_var:1
+#: ../../../scapi/event/cloud.py:docstring of scapi.event.cloud._BaseCloud.set_vars:1
+msgid "クラウド変数を変更する。"
+msgstr "Change Cloud Variable."
+
+#: ../../../scapi/event/cloud.py:docstring of scapi.event.cloud._BaseCloud.set_var:3
+msgid "設定したい変数名"
+msgstr "The variable name you want to change"
+
+#: ../../../scapi/event/cloud.py:docstring of scapi.event.cloud._BaseCloud.create_var:5
+#: ../../../scapi/event/cloud.py:docstring of scapi.event.cloud._BaseCloud.set_var:5
+msgid "変数の値"
+msgstr "The value of the variable"
+
+#: ../../../scapi/event/cloud.py:docstring of scapi.event.cloud._BaseCloud.create_var:9
+#: ../../../scapi/event/cloud.py:docstring of scapi.event.cloud._BaseCloud.delete_var:7
+#: ../../../scapi/event/cloud.py:docstring of scapi.event.cloud._BaseCloud.rename_var:9
+#: ../../../scapi/event/cloud.py:docstring of scapi.event.cloud._BaseCloud.set_var:9
+#: ../../../scapi/event/cloud.py:docstring of scapi.event.cloud._BaseCloud.set_vars:7
+msgid "自動的に先頭に☁をつけるか"
+msgstr "Whether attach ☁ automatically"
+
+#: ../../../scapi/event/cloud.py:docstring of scapi.event.cloud._BaseCloud.create_var:1
+msgid "クラウド変数を作成する。"
+msgstr "Create cloud variable."
+
+#: ../../../scapi/event/cloud.py:docstring of scapi.event.cloud._BaseCloud.create_var:3
+msgid "作成したい変数名"
+msgstr "The variable name you want to create"
+
+#: ../../../scapi/event/cloud.py:docstring of scapi.event.cloud._BaseCloud.rename_var:1
+msgid "クラウド変数名を変更する。"
+msgstr "Change Cloud Variable name."
+
+#: ../../../scapi/event/cloud.py:docstring of scapi.event.cloud._BaseCloud.rename_var:3
+msgid "変更前の変数名"
+msgstr "The Cloud Variable name before changing"
+
+#: ../../../scapi/event/cloud.py:docstring of scapi.event.cloud._BaseCloud.rename_var:5
+msgid "変更後の変数名"
+msgstr "The Cloud Variable name after changing"
+
+#: ../../../scapi/event/cloud.py:docstring of scapi.event.cloud._BaseCloud.delete_var:1
+msgid "クラウド変数を削除する。"
+msgstr "Delete Cloud Variable."
+
+#: ../../../scapi/event/cloud.py:docstring of scapi.event.cloud._BaseCloud.delete_var:3
+msgid "削除したい変数"
+msgstr "The variable name you want to delete"
+
+#: ../../../scapi/event/cloud.py:docstring of scapi.event.cloud._BaseCloud.clear_queue:1
+msgid "待機中の送信処理を全てキャンセルする"
+msgstr "Cancel all pending send requests"
+
+#: ../../../scapi/event/cloud.py:docstring of scapi.event.cloud.ScratchCloud:1
+#: ../../../scapi/event/cloud.py:docstring of scapi.event.cloud.TurboWarpCloud:1
+msgid "ベースクラス: :py:class:`~scapi.event.cloud._BaseCloud`"
+msgstr "Base Class: :py:class:`~scapi.event.cloud._BaseCloud"
+
+#: ../../../scapi/event/cloud.py:docstring of scapi.event.cloud.TurboWarpCloud:1
+msgid "turbowarpクラウドサーバー用クラス"
+msgstr "Class for cloud server in TurboWarp"
+
+#: ../../../scapi/event/cloud.py:docstring of scapi.event.cloud.TurboWarpCloud.__init__:1
+msgid "接続に使用するHTTPクライアント"
+msgstr ""
+
+#: ../../../scapi/event/cloud.py:docstring of scapi.event.cloud.TurboWarpCloud.__init__:7
+msgid "サーバー側に提供する接続する理由"
+msgstr ""
+
+#: ../../../scapi/event/cloud.py:docstring of scapi.event.cloud.TurboWarpCloud.__init__:9
+msgid "接続先URL。デフォルトはwss://clouddata.turbowarp.orgです"
+msgstr ""
+
+#: ../../../scapi/event/cloud.py:docstring of scapi.event.cloud.ScratchCloud.__init__:5
+#: ../../../scapi/event/cloud.py:docstring of scapi.event.cloud.TurboWarpCloud.__init__:11
+msgid "aiohttp側で使用するタイムアウト"
+msgstr ""
+
+#: ../../../scapi/event/cloud.py:docstring of scapi.event.cloud.ScratchCloud.__init__:7
+#: ../../../scapi/event/cloud.py:docstring of scapi.event.cloud.TurboWarpCloud.__init__:13
+msgid "set_var()などを実行してから、送信できるようになるまで待つ最大時間"
+msgstr ""
+
+#: ../../../scapi/event/cloud.py:docstring of scapi.event.cloud.ScratchCloud:1
+msgid "scratchクラウドサーバー用クラス"
+msgstr ""
+
+#: ../../../scapi/event/cloud.py:docstring of scapi.event.cloud.ScratchCloud:7
+msgid "Session"
+msgstr ""
+
+#: ../../../scapi/event/cloud.py:docstring of scapi.event.cloud.ScratchCloud.__init__:1
+msgid "接続するアカウントのセッション"
+msgstr ""
+
+#: ../../../scapi/event/cloud.py:docstring of scapi.event.cloud.CloudLogEvent.get_logs:1
+#: ../../../scapi/event/cloud.py:docstring of scapi.event.cloud.ScratchCloud.get_logs:1
+msgid "クラウド変数のログを取得する。"
+msgstr ""
+
+#: ../../../scapi/event/cloud.py:docstring of scapi.event.cloud.CloudLogEvent.get_logs:3
+#: ../../../scapi/event/cloud.py:docstring of scapi.event.cloud.ScratchCloud.get_logs:3
+msgid "取得するログの数。初期値は100です。"
+msgstr ""
+
+#: ../../../scapi/event/cloud.py:docstring of scapi.event.cloud.CloudLogEvent.get_logs:5
+#: ../../../scapi/event/cloud.py:docstring of scapi.event.cloud.ScratchCloud.get_logs:5
+msgid "取得するログの開始位置。初期値は0です。"
+msgstr ""
+
+#: ../../../scapi/event/cloud.py:docstring of scapi.event.cloud.CloudLogEvent.get_logs:0
+#: ../../../scapi/event/cloud.py:docstring of scapi.event.cloud.ScratchCloud.get_logs:0
+msgid "列挙"
+msgstr ""
+
+#: ../../../scapi/event/cloud.py:docstring of scapi.event.cloud.CloudLogEvent.get_logs:8
+#: ../../../scapi/event/cloud.py:docstring of scapi.event.cloud.ScratchCloud.get_logs:8
+msgid "*CloudActivity*"
+msgstr ""
+
+#: ../../../scapi/event/cloud.py:docstring of scapi.event.cloud.ScratchCloud.log_event:1
+msgid ":class:`CloudLogEvent` を作成する。"
+msgstr ""
+
+#: ../../../scapi/event/cloud.py:docstring of scapi.event.cloud.ScratchCloud.log_event:3
+msgid "更新間隔"
+msgstr ""
+
+#: ../../../scapi/event/cloud.py:docstring of scapi.event.cloud.CloudLogEvent:1
+msgid "ベースクラス: :py:class:`~scapi.event.temporal._TemporalEvent`\\ [:py:class:`~scapi.sites.activity.CloudActivity`]"
+msgstr ""
+
+#: ../../../scapi/event/cloud.py:docstring of scapi.event.cloud.CloudLogEvent:1
+msgid "クラウドログイベント"
+msgstr ""
+
+#: ../../../scapi/event/cloud.py:docstring of scapi.event.cloud.CloudLogEvent:25
+msgid "datetime.datetime"
+msgstr ""
+
+#: ../../../scapi/event/cloud.py:docstring of scapi.event.cloud.CloudLogEvent.on_change:1
+msgid "[イベント] 変数が編集された。 これは全てのログに対して呼び出されます。"
+msgstr ""
+
+#: ../../../scapi/event/cloud.py:docstring of scapi.event.cloud.CloudLogEvent.on_set:1
+msgid "[イベント] 変数がセットされた。"
+msgstr ""
+
+#: ../../../scapi/event/cloud.py:docstring of scapi.event.cloud.CloudLogEvent.on_create:1
+msgid "[イベント] 変数が作成された。"
+msgstr ""
+
+#: ../../../scapi/event/cloud.py:docstring of scapi.event.cloud.CloudLogEvent.on_rename:1
+msgid "[イベント] 変数名が変更された。"
+msgstr ""
+
+#: ../../../scapi/event/cloud.py:docstring of scapi.event.cloud.CloudLogEvent.on_delete:1
+msgid "[イベント] 変数が削除された。"
+msgstr ""
+

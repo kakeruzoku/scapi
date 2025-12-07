@@ -2,8 +2,8 @@ msgid ""
 msgstr ""
 "Project-Id-Version: scapi\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2025-11-27 10:14+0000\n"
-"PO-Revision-Date: 2025-11-28 14:36\n"
+"POT-Creation-Date: 2025-11-29 06:24+0000\n"
+"PO-Revision-Date: 2025-12-07 07:02\n"
 "Last-Translator: \n"
 "Language-Team: English\n"
 "MIME-Version: 1.0\n"
@@ -62,18 +62,14 @@ msgid "バージョン3.x.xへの移行"
 msgstr "Migrating to version 3.x.x"
 
 #: ../../index.rst:37
-msgid "Scapi2.x.xと3.x.xとでは互換性がほぼありません。"
-msgstr "There is little to no compatibility between Scapi 2.x.x and 3.x.x."
+msgid "バージョン ``3.0.0`` でScapiは完全に書き直されました。 ``2.x.x``以前を使用している場合、コードの大幅な変更が必要になります。詳しくは :doc:`このページ <migrating>` を参照してください。"
+msgstr "Scapi have been completely rewritten in version ``3.0.0``. If you are using ``2.x.x`` or earlier, significant code changes will be required. See :doc:`this migrating page <migrating>` for more information."
 
-#: ../../index.rst:39
-msgid ":doc:`バージョン3への移行 <migrating>`"
-msgstr ":doc:`Migrating to Version 3.x.x <migrating>`"
-
-#: ../../index.rst:42
+#: ../../index.rst:40
 msgid "貢献する"
 msgstr "Contributing"
 
-#: ../../index.rst:44
-msgid "`Github <https://github.com/kakeruzoku/scapi>`_ の ``main`` ブランチにプルリクエストを送信してください"
+#: ../../index.rst:42
+msgid "`GitHub <https://github.com/kakeruzoku/scapi>`_ の ``main`` ブランチにプルリクエストを送信してください"
 msgstr "Please submit a pull request to the ``main`` branch on `GitHub <https://github.com/kakeruzoku/scapi>`_"
 
