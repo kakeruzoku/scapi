@@ -1,0 +1,87 @@
+msgid ""
+msgstr ""
+"Project-Id-Version: scapi\n"
+"Report-Msgid-Bugs-To: \n"
+"POT-Creation-Date: 2025-11-27 10:18+0000\n"
+"PO-Revision-Date: 2025-12-07 07:02\n"
+"Last-Translator: \n"
+"Language-Team: English\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"Plural-Forms: nplurals=2; plural=(n != 1);\n"
+"X-Crowdin-Project: scapi\n"
+"X-Crowdin-Project-ID: 849930\n"
+"X-Crowdin-Language: en\n"
+"X-Crowdin-File: /tutorial/3_first-scapi.pot\n"
+"X-Crowdin-File-ID: 19\n"
+"Language: en_US\n"
+
+#: ../../tutorial/3_first-scapi.rst:2
+msgid "はじめてのScapi"
+msgstr ""
+
+#: ../../tutorial/3_first-scapi.rst:5
+msgid "このチュートリアルでは `IPython <https://ipython.org/>`_ を使用します。詳しくは :ref:`こちら <use_ipython>` を確認してください。"
+msgstr ""
+
+#: ../../tutorial/3_first-scapi.rst:7
+msgid "Scapiを使用する準備が整いました！まずは簡単なコードから実行してみましょう！"
+msgstr ""
+
+#: ../../tutorial/3_first-scapi.rst:9
+msgid "まずは IPython を起動してください。"
+msgstr ""
+
+#: ../../tutorial/3_first-scapi.rst:17
+msgid "まずはScapiをインポートしましょう。"
+msgstr ""
+
+#: ../../tutorial/3_first-scapi.rst:24
+msgid "データを取得する"
+msgstr ""
+
+#: ../../tutorial/3_first-scapi.rst:26
+msgid "まずはプロジェクトを取得してみましょう。"
+msgstr ""
+
+#: ../../tutorial/3_first-scapi.rst:28
+msgid "Scratch上で公開されているプロジェクトを選んでみて下さい。この例では存在しないプロジェクトIDである ``0`` を使用しています。"
+msgstr ""
+
+#: ../../tutorial/3_first-scapi.rst:30
+msgid "プロジェクトを選んだら、プロジェクトIDを探しましょう。URLの ``https://scratch.mit.edu/projects/`` のあとに続く数字のことです。"
+msgstr ""
+
+#: ../../tutorial/3_first-scapi.rst:32
+msgid "まずは以下のようにコードを書いてみましょう。コード内の ``0`` の部分をあなたが選んだプロジェクトのIDに変更してみてください。"
+msgstr ""
+
+#: ../../tutorial/3_first-scapi.rst:38
+msgid "(プロジェクトが正常に共有されていて、Scratchサーバーとの通信に成功すれば、)エラーが発生せずに実行が完了します。"
+msgstr ""
+
+#: ../../tutorial/3_first-scapi.rst:40
+msgid "取得したプロジェクトを確認してみましょう。直接変数を表示する他に、様々な属性があります。"
+msgstr ""
+
+#: ../../tutorial/3_first-scapi.rst:57
+msgid "async forを使用する"
+msgstr ""
+
+#: ../../tutorial/3_first-scapi.rst:59
+msgid "コメント欄やリミックス欄などの「リスト」的なデータを取得したい場合は ``async for`` 式を使用します。"
+msgstr ""
+
+#: ../../tutorial/3_first-scapi.rst:71
+msgid "(コメントが投稿されている場合、)最大で40のコメントが表示されます。表示されない場合はコメントが投稿されているプロジェクトを選んで最初からやり直してみて下さい。"
+msgstr ""
+
+#: ../../tutorial/3_first-scapi.rst:73
+msgid "このような関数では、 ``limit`` (取得上限)や ``offset`` (開始位置)を指定することができます。指定しない場合、Scapi1回のリクエストで取得できる最大の量を取得しようとします。"
+msgstr ""
+
+#: ../../tutorial/3_first-scapi.rst:83
+msgid "また、 ``limit`` を大きい数(通常 ``41`` 以上)指定した場合はScapiは自動的にリクエストを分割して処理します。その際に、全てのリクエストを行ってからではなく、毎回のリクエストごとに ``async for`` 文の中を実行します。"
+msgstr ""
+

@@ -1,0 +1,150 @@
+msgid ""
+msgstr ""
+"Project-Id-Version: scapi\n"
+"Report-Msgid-Bugs-To: \n"
+"POT-Creation-Date: 2025-11-27 10:18+0000\n"
+"PO-Revision-Date: 2025-12-07 07:02\n"
+"Last-Translator: \n"
+"Language-Team: English\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"Plural-Forms: nplurals=2; plural=(n != 1);\n"
+"X-Crowdin-Project: scapi\n"
+"X-Crowdin-Project-ID: 849930\n"
+"X-Crowdin-Language: en\n"
+"X-Crowdin-File: /reference/error.pot\n"
+"X-Crowdin-File-ID: 31\n"
+"Language: en_US\n"
+
+#: ../../reference/error.rst:2
+#: ../../reference/error.rst:40
+msgid "例外"
+msgstr ""
+
+#: ../../reference/error.rst:5
+msgid "目次"
+msgstr ""
+
+#: ../../reference/error.rst:8
+msgid "例外の階層構造"
+msgstr ""
+
+#: ../../reference/error.rst:10
+msgid ":class:`HTTPError <scapi.exceptions.HTTPError>`"
+msgstr ""
+
+#: ../../reference/error.rst:12
+msgid ":class:`SessionClosed <scapi.exceptions.SessionClosed>`"
+msgstr ""
+
+#: ../../reference/error.rst:13
+msgid ":class:`ProcessingError <scapi.exceptions.ProcessingError>`"
+msgstr ""
+
+#: ../../reference/error.rst:14
+msgid ":class:`ResponseError <scapi.exceptions.ResponseError>`"
+msgstr ""
+
+#: ../../reference/error.rst:16
+msgid ":class:`ClientError <scapi.exceptions.ClientError>`"
+msgstr ""
+
+#: ../../reference/error.rst:18
+msgid ":class:`Unauthorized <scapi.exceptions.Unauthorized>`"
+msgstr ""
+
+#: ../../reference/error.rst:19
+msgid ":class:`Forbidden <scapi.exceptions.Forbidden>`"
+msgstr ""
+
+#: ../../reference/error.rst:21
+msgid ":class:`IPBanned <scapi.exceptions.IPBanned>`"
+msgstr ""
+
+#: ../../reference/error.rst:22
+msgid ":class:`AccountBlocked <scapi.exceptions.AccountBlocked>`"
+msgstr ""
+
+#: ../../reference/error.rst:23
+msgid ":class:`RegistrationRequested <scapi.exceptions.RegistrationRequested>`"
+msgstr ""
+
+#: ../../reference/error.rst:24
+msgid ":class:`ResetPasswordRequested <scapi.exceptions.ResetPasswordRequested>`"
+msgstr ""
+
+#: ../../reference/error.rst:25
+msgid ":class:`LoginFailure <scapi.exceptions.LoginFailure>`"
+msgstr ""
+
+#: ../../reference/error.rst:26
+msgid ":class:`CommentFailure <scapi.exceptions.CommentFailure>`"
+msgstr ""
+
+#: ../../reference/error.rst:28
+msgid ":class:`NotFound <scapi.exceptions.NotFound>`"
+msgstr ""
+
+#: ../../reference/error.rst:29
+msgid ":class:`TooManyRequests <scapi.exceptions.TooManyRequests>`"
+msgstr ""
+
+#: ../../reference/error.rst:31
+msgid ":class:`ServerError <scapi.exceptions.ServerError>`"
+msgstr ""
+
+#: ../../reference/error.rst:32
+msgid ":class:`InvalidData <scapi.exceptions.InvalidData>`"
+msgstr ""
+
+#: ../../reference/error.rst:34
+msgid ":class:`CheckingFailed <scapi.exceptions.CheckingFailed>`"
+msgstr ""
+
+#: ../../reference/error.rst:36
+msgid ":class:`NoSession <scapi.exceptions.NoSession>`"
+msgstr ""
+
+#: ../../reference/error.rst:37
+msgid ":class:`NoDataError <scapi.exceptions.NoDataError>`"
+msgstr ""
+
+#: ../../../scapi/utils/error.py:docstring of scapi.utils.error.CheckingFailed:1
+#: ../../../scapi/utils/error.py:docstring of scapi.utils.error.HTTPError:1
+msgid "ベースクラス: :py:class:`Exception`"
+msgstr ""
+
+#: ../../../scapi/utils/error.py:docstring of scapi.utils.error.ProcessingError:1
+#: ../../../scapi/utils/error.py:docstring of scapi.utils.error.ResponseError:1
+#: ../../../scapi/utils/error.py:docstring of scapi.utils.error.SessionClosed:1
+msgid "ベースクラス: :py:class:`~scapi.utils.error.HTTPError`"
+msgstr ""
+
+#: ../../../scapi/utils/error.py:docstring of scapi.utils.error.ClientError:1
+#: ../../../scapi/utils/error.py:docstring of scapi.utils.error.InvalidData:1
+#: ../../../scapi/utils/error.py:docstring of scapi.utils.error.ServerError:1
+msgid "ベースクラス: :py:class:`~scapi.utils.error.ResponseError`"
+msgstr ""
+
+#: ../../../scapi/utils/error.py:docstring of scapi.utils.error.Forbidden:1
+#: ../../../scapi/utils/error.py:docstring of scapi.utils.error.NotFound:1
+#: ../../../scapi/utils/error.py:docstring of scapi.utils.error.TooManyRequests:1
+#: ../../../scapi/utils/error.py:docstring of scapi.utils.error.Unauthorized:1
+msgid "ベースクラス: :py:class:`~scapi.utils.error.ClientError`"
+msgstr ""
+
+#: ../../../scapi/utils/error.py:docstring of scapi.utils.error.AccountBlocked:1
+#: ../../../scapi/utils/error.py:docstring of scapi.utils.error.CommentFailure:1
+#: ../../../scapi/utils/error.py:docstring of scapi.utils.error.IPBanned:1
+#: ../../../scapi/utils/error.py:docstring of scapi.utils.error.LoginFailure:1
+#: ../../../scapi/utils/error.py:docstring of scapi.utils.error.RegistrationRequested:1
+#: ../../../scapi/utils/error.py:docstring of scapi.utils.error.ResetPasswordRequested:1
+msgid "ベースクラス: :py:class:`~scapi.utils.error.Forbidden`"
+msgstr ""
+
+#: ../../../scapi/utils/error.py:docstring of scapi.utils.error.NoDataError:1
+#: ../../../scapi/utils/error.py:docstring of scapi.utils.error.NoSession:1
+msgid "ベースクラス: :py:class:`~scapi.utils.error.CheckingFailed`"
+msgstr ""
+
