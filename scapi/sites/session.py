@@ -535,9 +535,7 @@ class Session(_BaseSiteAPI[str]):
         Returns:
             int:
         """
-        response = await self.client.get("https://api.scratch.mit.edu/users/fas/messages/count")
-        data:MessageCountPayload = response.json()
-        return data.get("count",0)
+        return await self.user.get_message_count()
     
     async def get_invite_status(self) -> ScratcherInvitePayload|None:
         """
