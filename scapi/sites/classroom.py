@@ -1,11 +1,12 @@
 from __future__ import annotations
 
 import datetime
-from typing import TYPE_CHECKING, Any, AsyncGenerator, Final, Literal, overload
+from typing import TYPE_CHECKING, Any, AsyncGenerator, Final, Literal, cast, overload
 import csv
 import io
 
 import aiohttp
+import bs4
 
 from ..utils.types import (
     ClassroomPayload,
@@ -312,6 +313,20 @@ class Classroom(_BaseSiteAPI[int]):
             sort:Literal["","username"]="",
             descending:bool=True
         ) -> AsyncGenerator[Activity,None]:
+        """
+        クラスの非公開アクティビティを取得する
+        このAPIは教師アカウントでのみ使用できます。
+
+        Args:
+            start_page (int|None, optional): 取得するユーザーの開始ページ位置。初期値は1です。
+            end_page (int|None, optional): 取得するユーザーの終了ページ位置。初期値はstart_pageの値です。
+            student (str | User | None, optional): 生徒を指定したい場合、そのユーザー。
+            sort (Literal["","username"], optional): ソートしたい場合
+            descending (bool, optional): 降順にするか。デフォルトはTrueです。
+        
+        Yields:
+            Activity:
+        """
         self.require_session()
         add_params:dict[str,str|int|float] = {"descsort":sort} if descending else {"ascsort":sort}
         student = student.lower_username if isinstance(student,User) else (student or "all")
@@ -320,6 +335,38 @@ class Classroom(_BaseSiteAPI[int]):
             start_page,end_page,add_params
         ):
             yield Activity._create_from_class(_a,self.client_or_session)
+
+    async def get_public_activity(
+            self,
+            limit:int|None=None,
+            offset:int|None=None,
+        ) -> AsyncGenerator[Activity,None]:
+        """
+        クラスの公開アクティビティを取得する。
+
+        Args:
+            limit (int|None, optional): 取得するログの数。初期値は20です。
+            offset (int|None, optional): 取得するログの開始位置。初期値は0です。
+
+        Yields:
+            Activity:
+        """
+        limit = limit or 20
+        offset = offset or 0
+        for i in range(offset,offset+limit,20):
+            response = await self.client.get(
+                f"https://scratch.mit.edu/site-api/classrooms/activity/public/{self.id}/",
+                params={
+                    "limit":min(20,offset+limit-i),
+                    "offset":i,
+                }
+            )
+            soup = bs4.BeautifulSoup(response.text,'html.parser')
+            data = soup.find_all("li")
+            for i in data:
+                yield Activity._create_from_html(cast(bs4.Tag,i),self.client_or_session,None)
+            if not data:
+                return
 
     @overload
     async def create_student_account(

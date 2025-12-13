@@ -3,6 +3,7 @@ from __future__ import annotations
 import datetime
 from enum import Enum
 import json
+import re
 from typing import TYPE_CHECKING, Any, AsyncGenerator, Final, Literal, Self, TypedDict
 
 import bs4
@@ -24,7 +25,10 @@ from ..utils.common import (
     UNKNOWN,
     MAYBE_UNKNOWN,
     dt_from_timestamp,
-    dt_from_isoformat
+    dt_from_isoformat,
+    Tag,
+    dt_to_str,
+    split
 )
 
 from ..utils.error import (
@@ -203,6 +207,8 @@ class ActivityAction(Enum):
     #other
     Comment="comment"
     ForumPost="forum_post"
+
+get_number_re = re.compile(r'\d+')
 
 class Activity:
     """
@@ -508,6 +514,102 @@ class Activity:
                 activity.target = activity.place = User(data["followed_username"],session,is_real=True)
                 activity.target.id = data["followed_user_id"]
         return activity
+
+    """
+    def _load_dt_from_html(self,text:str):
+        _minute = _hour = _day = _week = _month = 0
+        for i in text.replace("ago","").split(","):
+            c = get_number_re.findall(i)
+            c = 0 if c == [] else int(c[0])
+            if "minute" in i: _minute = c
+            elif "hour" in i: _hour = c
+            elif "day" in i: _day = c
+            elif "week" in i: _week = c
+            elif "month" in i: _month = c
+        td = datetime.timedelta(days=_day+(_week*7)+(_month*30),minutes=_minute,hours=_hour)
+        dt = datetime.datetime.now() - td
+        self._created_at = dt_to_str(dt)
+    """
+
+    @staticmethod
+    def _load_studio_from_html(data:bs4.Tag|None,client_or_session:"HTTPClient|Session") -> "Studio|None":
+        if data is None: return
+        try:
+            studio = Studio(int(split(str(data["href"]),"/studios/","/",True)),client_or_session)
+            studio.title = data.text
+            return studio
+        except Exception:
+            return
+    
+    @staticmethod
+    def _load_project_from_html(data:bs4.Tag|None,client_or_session:"HTTPClient|Session") -> "Project|None":
+        if data is None: return
+        try:
+            project = Project(int(split(str(data["href"]),"/projects/","/",True)),client_or_session)
+            project.title = data.text
+            return project
+        except Exception:
+            return
+    
+    @staticmethod
+    def _load_user_from_html(data:bs4.Tag|None,client_or_session:"HTTPClient|Session") -> "User|None":
+        if data is None: return
+        try:
+            return User(split(str(data["href"]),"/projects/","/",True),client_or_session)
+        except Exception:
+            return
+
+    @classmethod
+    def _create_from_html(cls,data:bs4.Tag,client_or_session:"HTTPClient|Session",user:User|None) -> Self:
+        _import()
+        activity = cls(ActivityType.User)
+        _dt_data:Tag = data.find("span",{"class":"time"})
+        activity.other = _dt_data.text
+        _user_tag:Tag = data.find("span",{"class":"actor"})
+        if user is None:
+            user = User(_user_tag.text.strip(),client_or_session,True)
+        activity.actor = user
+        _activity_action:Tag = _user_tag.next_sibling
+        activity_action = str(_activity_action).strip()
+        _target1:Tag|None = None if _activity_action is None else _activity_action.next_sibling
+        _text:Tag|None = None if _target1 is None else _target1.next_sibling
+        _target2:Tag|None = None if _text is None else _text.next_sibling
+        match activity_action:
+            case "was promoted to manager of":
+                activity.action = ActivityAction.StudioBecomeManager
+                activity.place = cls._load_studio_from_html(_target1,client_or_session)
+                activity.target, activity.actor = activity.actor, None
+            case "added":
+                activity.action = ActivityAction.StudioAddProject
+                activity.place = cls._load_studio_from_html(_target2,client_or_session)
+                activity.target = cls._load_project_from_html(_target1,client_or_session)
+            case "became a curator of":
+                activity.action = ActivityAction.StudioBecomeCurator
+                activity.place = cls._load_studio_from_html(_target1,client_or_session)
+            case "is now following the studio":
+                activity.action = ActivityAction.StudioFollow
+                activity.place = cls._load_studio_from_html(_target1,client_or_session)
+            case "shared the project":
+                activity.action = ActivityAction.ProjectShare
+                activity.target = cls._load_project_from_html(_target1,client_or_session)
+            case "is now following":
+                activity.action = ActivityAction.UserFollow
+                activity.target = cls._load_user_from_html(_target1,client_or_session)
+            case "favorited":
+                activity.action = ActivityAction.ProjectFavorite
+                activity.target = cls._load_project_from_html(_target1,client_or_session)
+            case "loved":
+                activity.action = ActivityAction.ProjectLove
+                activity.target = cls._load_project_from_html(_target1,client_or_session)
+            case "remixed":
+                activity.action = ActivityAction.ProjectRemix
+                activity.target = cls._load_project_from_html(_target1,client_or_session)
+                activity.place = cls._load_project_from_html(_target2,client_or_session)
+            case "joined Scratch":
+                activity.action = ActivityAction.UserJoin
+
+        return activity
+
 
 class CloudActivity(_BaseSiteAPI):
     """

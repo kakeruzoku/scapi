@@ -1,8 +1,17 @@
 更新履歴
 ========
 
+未リリース
+----------
+
 3.x.x
 -----
+
+3.2.0
+^^^^^
+- :attr:`scapi.User.get_activities` を追加
+- :attr:`scapi.Classroom.get_public_activity` を追加
+- :attr:`scapi.Session.get_message_count` が正しい値を取得しない問題を修正
 
 3.1.4
 ^^^^^
