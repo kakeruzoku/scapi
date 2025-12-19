@@ -570,6 +570,12 @@ class Activity:
             user = User(_user_tag.text.strip(),client_or_session,True)
         activity.actor = user
         _activity_action:Tag = _user_tag.next_sibling
+        while True:
+            if isinstance(_activity_action,bs4.element.NavigableString) and str(_activity_action).strip():
+                break
+            _activity_action:Tag = _activity_action.next_sibling
+            if _activity_action is None:
+                return activity
         activity_action = str(_activity_action).strip()
         _target1:Tag|None = None if _activity_action is None else _activity_action.next_sibling
         _text:Tag|None = None if _target1 is None else _target1.next_sibling
