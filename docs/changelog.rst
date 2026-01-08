@@ -7,6 +7,11 @@
 3.x.x
 -----
 
+3.2.1
+^^^^^
+- :attr:`scapi.User.membership_avatar_badge`, :attr:`scapi.User.membership_label` を追加
+- メンバーシップ追加によるHTMLパースが失敗する問題を修正
+
 3.2.0
 ^^^^^
 - :attr:`scapi.User.get_activities` を追加

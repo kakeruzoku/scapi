@@ -74,6 +74,9 @@ class User(_BaseSiteAPI[str]):
 
         educator_can_unban (MAYBE_UNKNOWN[bool]):
         is_banned (MAYBE_UNKNOWN[bool]):
+
+        membership_avatar_badge (MAYBE_UNKNOWN[bool|None]): メンバーシップバッチを表示するか
+        membership_label (MAYBE_UNKNOWN[int|None]): メンバーシップのラベル?
     """
     def __repr__(self) -> str:
         return f"<User username:{self.username} id:{self.id} session:{self.session}>"
@@ -108,6 +111,9 @@ class User(_BaseSiteAPI[str]):
         self.status:MAYBE_UNKNOWN[str] = UNKNOWN
         self.country:MAYBE_UNKNOWN[str] = UNKNOWN
         self.scratchteam:MAYBE_UNKNOWN[bool] = UNKNOWN
+        
+        self.membership_avatar_badge:MAYBE_UNKNOWN[bool|None] = UNKNOWN
+        self.membership_label:MAYBE_UNKNOWN[int|None] = UNKNOWN
 
         #teacher only
         self.educator_can_unban:MAYBE_UNKNOWN[bool] = UNKNOWN
@@ -138,7 +144,9 @@ class User(_BaseSiteAPI[str]):
                 profile_id=_profile.get("id"),
                 status=_profile.get("status"),
                 bio=_profile.get("bio"),
-                country=_profile.get("country")
+                country=_profile.get("country"),
+                membership_avatar_badge=_profile.get("membership_avatar_badge",None),
+                membership_label=_profile.get("membership_label",None),
             )
 
     def _update_from_old_data(self, data:OldUserPayload):

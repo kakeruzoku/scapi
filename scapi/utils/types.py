@@ -103,6 +103,8 @@ class UserProfilePayload(TypedDict,total=False):
     status:str
     bio:str
     country:str
+    membership_avatar_badge:bool
+    membership_label:bool
 
 class UserPayload(TypedDict,total=False):
     id:int
