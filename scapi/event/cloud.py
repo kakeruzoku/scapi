@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import asyncio
+import dataclasses
 from typing import TYPE_CHECKING, Any, AsyncGenerator
 import json
 
@@ -25,6 +26,13 @@ if TYPE_CHECKING:
 
 class NormalDisconnection(Exception):
     pass
+
+@dataclasses.dataclass(order=True)
+class CloudQueue:
+    priority: int
+    body: str = dataclasses.field(compare=False)
+    future: asyncio.Future = dataclasses.field(compare=False)
+    len: int = dataclasses.field(compare=False)
 
 class _BaseCloud(_BaseEvent):
     """
@@ -72,9 +80,8 @@ class _BaseCloud(_BaseEvent):
         self.project_id = project_id
         self.username = username
 
-        self._send_queue:asyncio.PriorityQueue[tuple[int,int,tuple[asyncio.Future,int,str]]] = asyncio.PriorityQueue()
-        self._send_next:tuple[asyncio.Future,int,str]|None = None
-        self._count:int = 0
+        self._send_queue:asyncio.PriorityQueue[CloudQueue] = asyncio.PriorityQueue()
+        self._send_next:CloudQueue|None = None
 
         self._data:dict[str,str] = {}
 
@@ -114,8 +121,7 @@ class _BaseCloud(_BaseEvent):
         }
         text = "".join([json.dumps(add_param|i)+"\n" for i in payload])
         future = asyncio.Future()
-        self._count += 1
-        self._send_queue.put_nowait((priority,self._count,(future,len(payload),text)))
+        self._send_queue.put_nowait(CloudQueue(priority,text,future,len(payload)))
         return future
     
     def queue_len(self) -> int:
@@ -231,12 +237,12 @@ class _BaseCloud(_BaseEvent):
             send_count = 1
             try:
                 if self._send_next is None:
-                    _,_,self._send_next = await self._send_queue.get()
+                    self._send_next = await self._send_queue.get()
                 if not all((self._event.is_set(),self._ws_event.is_set())):
                     raise NormalDisconnection
-                await self.ws.send_str(self._send_next[2])
-                self._send_next[0].set_result(None)
-                send_count = self._send_next[1]
+                await self.ws.send_str(self._send_next.body)
+                self._send_next.future.set_result(None)
+                send_count = self._send_next.len
                 self._send_next = None
             except NormalDisconnection:
                 pass
@@ -425,8 +431,8 @@ class _BaseCloud(_BaseEvent):
         """
         try:
             while True:
-                _,_,data = self._send_queue.get_nowait()
-                data[0].set_exception(asyncio.CancelledError)
+                data = self._send_queue.get_nowait()
+                data.future.set_exception(asyncio.CancelledError)
         except asyncio.QueueEmpty:
             pass
 
