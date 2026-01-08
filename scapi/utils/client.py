@@ -1,6 +1,6 @@
 from __future__ import annotations
 
-from typing import Any, Callable, TypedDict, Unpack, ParamSpec
+from typing import Any, Callable, TypedDict, Unpack
 import aiohttp
 import json as _json
 from urllib.parse import urlparse

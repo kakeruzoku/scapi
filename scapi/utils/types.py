@@ -1,3 +1,5 @@
+from __future__ import annotations
+
 from typing import Generic, Literal, TypeVar, TypedDict, Required, NotRequired
 
 class NoElementsPayload(TypedDict):

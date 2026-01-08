@@ -4,7 +4,6 @@ import datetime
 from typing import TYPE_CHECKING, Any, AsyncGenerator, Final
 import math
 
-import aiohttp
 import bs4
 
 from ..utils.client import HTTPClient
@@ -19,7 +18,6 @@ from ..utils.common import (
 from ..utils.types import (
     OcularReactionPayload
 )
-
 from .base import _BaseSiteAPI
 from .user import User
 

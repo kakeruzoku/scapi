@@ -19,9 +19,7 @@ from ..utils.types import (
     OldAllClassroomPayload,
     OldIdClassroomPayload,
     StudioCreatedPayload,
-    MessageCountPayload,
     ScratcherInvitePayload,
-    NoElementsPayload,
     AnySuccessPayload,
     search_mode,
     explore_query
@@ -45,7 +43,6 @@ from ..utils.error import (
     ClientError,
     InvalidData,
     Forbidden,
-    HTTPError,
     LoginFailure
 )
 from ..utils.config import _config
@@ -53,7 +50,6 @@ from ..utils.file import File,_file,_read_file
 from ..event.cloud import ScratchCloud
 from ..event.temporal import MessageEvent
 from .base import _BaseSiteAPI
-
 from .classroom import Classroom,_get_class_from_token
 from .project import Project, search_projects, explore_projects
 from .studio import Studio, search_studios, explore_studios

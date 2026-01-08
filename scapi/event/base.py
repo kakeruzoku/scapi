@@ -2,8 +2,7 @@ from __future__ import annotations
 
 from abc import ABC, abstractmethod
 import asyncio
-from typing import Any, Awaitable, Callable, Coroutine, Generic, Literal, NoReturn, ParamSpec, TypeVar
-from ..utils.common import do_nothing
+from typing import Any, Callable, Coroutine, NoReturn, ParamSpec, TypeVar
 
 async_def_type = Callable[..., Coroutine[Any,Any,Any]]
 _CT = TypeVar("_CT", bound=async_def_type)

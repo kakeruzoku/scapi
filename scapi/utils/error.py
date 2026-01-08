@@ -7,8 +7,7 @@ from .types import (
     LoginFailurePayload,
     CommentMuteStatusPayload,
     CommentFailurePayload,
-    CommentFailureOldPayload,
-    CommentPostPayload
+    CommentFailureOldPayload
 )
 
 if TYPE_CHECKING:

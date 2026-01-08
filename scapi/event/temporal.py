@@ -1,9 +1,10 @@
+from __future__ import annotations
+
 from abc import abstractmethod
 import asyncio
 import datetime
 from typing import TYPE_CHECKING, AsyncGenerator, Callable, Generic, NoReturn,TypeVar
 
-from scapi.sites.activity import Activity
 from .base import _BaseEvent
 from ..utils.common import UNKNOWN_TYPE
 
@@ -109,10 +110,10 @@ class MessageEvent(_TemporalEvent["Activity"]):
         super().__init__(interval,session.get_messages,"created_at")
         self.session = session
 
-    def _make_event(self, obj:Activity):
+    def _make_event(self, obj:"Activity"):
         self._call_event(self.on_message,obj)
 
-    async def on_message(self,message:Activity):
+    async def on_message(self,message:"Activity"):
         """
         [イベント] メッセージを受信した。
 

@@ -1,11 +1,12 @@
 from __future__ import annotations
 
 from contextlib import asynccontextmanager
-from typing import IO, Any, AsyncGenerator, Generator
+from typing import IO, Any, AsyncGenerator
 
 from aiofiles.threadpool.binary import AsyncBufferedReader
 import io
 import aiofiles
+
 from .common import maybe_coroutine
 
 class File:

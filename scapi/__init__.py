@@ -1,3 +1,5 @@
+from __future__ import annotations
+
 from .sites.session import (
     Session,
     SessionStatus,

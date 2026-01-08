@@ -1,7 +1,7 @@
 from __future__ import annotations
 
 import datetime
-from typing import TYPE_CHECKING, Any, AsyncGenerator, Final, Literal, cast, overload
+from typing import TYPE_CHECKING, AsyncGenerator, Final, Literal, cast, overload
 import csv
 import io
 
@@ -16,7 +16,6 @@ from ..utils.types import (
     ClassTokenGeneratePayload,
     ClassStudioCreatePayload,
     OldAnyObjectPayload,
-    OldStudioPayload,
     StudentPayload
 )
 from ..utils.common import (
@@ -34,7 +33,6 @@ from ..utils.common import (
 from ..utils.client import HTTPClient
 from ..utils.file import File,_read_file
 from ..utils.error import Forbidden,InvalidData,NoDataError
-
 from .base import _BaseSiteAPI
 from .studio import Studio
 from .user import User

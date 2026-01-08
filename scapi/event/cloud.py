@@ -1,11 +1,11 @@
 from __future__ import annotations
 
 import asyncio
-import datetime
-import time
-from typing import TYPE_CHECKING, Any, AsyncGenerator, Callable, Coroutine, Iterable, Iterator, Literal, NoReturn, Self
-import aiohttp
+from typing import TYPE_CHECKING, Any, AsyncGenerator
 import json
+
+import aiohttp
+
 from .base import _BaseEvent
 from .temporal import _TemporalEvent
 from ..utils.client import HTTPClient
@@ -22,7 +22,6 @@ from ..utils.common import (
 
 if TYPE_CHECKING:
     from ..sites.session import Session
-    from ..sites.project import Project
 
 class NormalDisconnection(Exception):
     pass
@@ -199,7 +198,7 @@ class _BaseCloud(_BaseEvent):
                         case aiohttp.WSMsgType.ERROR:
                             raise w.data
                         case aiohttp.WSMsgType.TEXT:
-                            ws_data:str = w.data
+                            ws_data = w.data
                         case aiohttp.WSMsgType.BINARY:
                             ws_data:str = w.data.decode()
                         case aiohttp.WSMsgType.CLOSED|aiohttp.WSMsgType.CLOSING|aiohttp.WSMsgType.CLOSE:

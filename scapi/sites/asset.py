@@ -4,11 +4,9 @@ from enum import Enum
 from typing import Final,TYPE_CHECKING
 
 from ..utils.client import HTTPClient
-
 from ..utils.common import (
     MAYBE_UNKNOWN,
     UNKNOWN,
-    UNKNOWN_TYPE
 )
 from .base import _BaseSiteAPI
 from ..utils.types import (

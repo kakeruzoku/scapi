@@ -31,11 +31,8 @@ from ..utils.common import (
 )
 from ..utils.error import ClientError,NotFound,InvalidData
 from ..utils.file import File,_read_file
-
 from ..event.temporal import CommentEvent
-
 from .base import _BaseSiteAPI
-
 from .project import (
     Project,
     ProjectFeatured,
@@ -98,10 +95,7 @@ class User(_BaseSiteAPI[str]):
     def __init__(self,username:str,client_or_session:"HTTPClient|Session|None"=None,is_real:bool=False):
         super().__init__(client_or_session)
         self.lower_username:Final[str] = username.lower()
-        if is_real:
-            self.real_username:MAYBE_UNKNOWN[str] = username
-        else:
-            self.real_username:MAYBE_UNKNOWN[str] = UNKNOWN
+        self.real_username:MAYBE_UNKNOWN[str] = username if is_real else UNKNOWN
         self.id:MAYBE_UNKNOWN[int] = UNKNOWN
 
         self._joined_at:MAYBE_UNKNOWN[str] = UNKNOWN

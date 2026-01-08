@@ -34,9 +34,7 @@ from ..utils.file import (
     File,
     _read_file
 )
-
 from ..event.temporal import CommentEvent
-
 from .base import _BaseSiteAPI
 from .comment import (
     Comment,

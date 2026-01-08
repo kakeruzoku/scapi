@@ -2,7 +2,7 @@ from __future__ import annotations
 
 import datetime
 import json
-from typing import TYPE_CHECKING, Any, AsyncGenerator, Final
+from typing import TYPE_CHECKING, AsyncGenerator, Final
 
 import bs4
 from .base import _BaseSiteAPI
