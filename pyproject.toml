@@ -1,0 +1,41 @@
+[build-system]
+requires = ["setuptools>=61.0"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "scapi"
+dynamic = ["version", "dependencies"]
+description = "非同期なScratchAPIモジュール"
+readme = "README.md"
+authors = [
+  { name = "kakeruzoku", email = "kakeruzoku@gmail.com" },
+]
+maintainers = [
+  { name = "kakeruzoku", email = "kakeruzoku@gmail.com" },
+]
+license = { text = "MIT" }
+keywords = [
+    "scratch api", "scapi", "scratch api python", "scratch python",
+    "scratch for python", "scratch", "scratch bot", "scratch tools",
+    "scratchapi", "scratch cloud server", "scratch cloud"
+]
+classifiers = [
+    "Development Status :: 5 - Production/Stable",
+    "Intended Audience :: Developers",
+    "Programming Language :: Python :: 3",
+    "Operating System :: Unix",
+    "Operating System :: MacOS :: MacOS X",
+    "Operating System :: Microsoft :: Windows",
+]
+
+[project.urls]
+Homepage = "https://scapi.kakeru.f5.si/"
+Repository = "https://github.com/kakeruzoku/scapi"
+
+[tool.setuptools.dynamic]
+version = { attr = "scapi.utils.common.__version__" }
+dependencies = { file = ["requirements.txt"] }
+
+[tool.setuptools.packages.find]
+where = ["."]
+include = ["scapi*"]
