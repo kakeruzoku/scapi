@@ -2,3 +2,7 @@ aiohttp
 BeautifulSoup4
 aiofiles
 websockets
+sqlmodel
+aiosqlite
+typer
+rich
