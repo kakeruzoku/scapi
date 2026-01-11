@@ -1,5 +1,5 @@
 from pathlib import Path
-from typing import NoReturn
+from typing import Iterable, NoReturn
 import click
 from rich.console import Console
 
@@ -17,6 +17,16 @@ def create_app_folder():
     app_dir.mkdir(parents=True, exist_ok=True)
 
 
-class CustomError(click.ClickException):
-    def __init__(self, *messages):
-        super().__init__("\n".join(messages))
+def show_error(error: Exception, text: Iterable[str]) -> NoReturn:
+    if isinstance(text, str):
+        text = (text,)
+    console.print(Panel("\n".join(
+        text), title=f"Error: {error.__class__.__name__}", border_style="red b"))
+    raise typer.Abort()
+
+
+def boolean_attr(obj, name: str):
+    if getattr(obj, name):
+        return f"[green]{name}[/green]"
+    else:
+        return f"[red]{name}[/red]"

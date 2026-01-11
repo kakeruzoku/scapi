@@ -7,7 +7,7 @@ import scapi
 
 from ..utils.asyncwrapper import async_wrapper
 from ..utils.state import get_state
-from ..utils.common import console
+from ..utils.common import console, show_error
 from ..utils.database import ProxyTable
 
 app = typer.Typer(name="proxy")
@@ -43,7 +43,7 @@ async def add(
             state.config.use_proxy_id = proxy.id
             await state.config.save()
             console.print(
-                f"✅ Proxy changed to {proxy.to_text}."
+                f"✅ Proxy changed to {proxy.to_text} ."
             )
 
 
@@ -55,8 +55,8 @@ async def list(
     )] = False,
 ):
     async with get_state() as state:
-        proxies = await state.asyncsession.exec(select(ProxyTable))
-        table = Table(title="Your proxies")
+        proxies = (await state.asyncsession.exec(select(ProxyTable))).all()
+        table = Table(title=f"Your proxies: {len(proxies)}")
 
         table.add_column("name")
         table.add_column("url")
@@ -77,13 +77,39 @@ async def list(
 @app.command()
 @async_wrapper
 async def change(
-    name: Annotated[str, typer.Argument()],
+    name: Annotated[str | None, typer.Argument()] = None,
 ):
     async with get_state() as state:
-        stmt = select(ProxyTable).where(ProxyTable.name == name)
-        proxy = (await state.asyncsession.exec(stmt)).first()
-        if proxy is None:
-            raise typer.BadParameter(
-                f"Proxy: {name} is not found.",
-                param_hint="name"
+        if name is None:
+            state.config.use_proxy_id = None
+            await state.config.save()
+            console.print(
+                f"✅ Proxy changed to [red]not use[/red] ."
             )
+            return
+        proxy = await ProxyTable.get(state.asyncsession, name)
+        state.config.use_proxy_id = proxy.id
+        await state.config.save()
+        console.print(f"✅ Proxy changed to {proxy.to_text} .")
+
+
+@app.command()
+@async_wrapper
+async def delete(
+    name: Annotated[str | None, typer.Argument()] = None,
+):
+    async with get_state() as state:
+        if name is None:
+            proxy = state._proxy
+            if proxy is None:
+                show_error(ValueError(), "No proxy selected.")
+        else:
+            proxy = await ProxyTable.get(state.asyncsession, name)
+
+        await state.asyncsession.delete(proxy)
+        await state.asyncsession.commit()
+        console.print(
+            f"✅ Proxy {proxy.to_text} has been removed."
+        )
+        if state._proxy and proxy == state._proxy:
+            await change()

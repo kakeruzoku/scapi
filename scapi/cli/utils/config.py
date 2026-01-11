@@ -14,7 +14,7 @@ class Config(BaseModel):
     async def save(self):
         async with aiofiles.open(config_path, mode="w", encoding="utf-8") as f:
             await f.write(self.model_dump_json(indent=4))
-        console.print("✅ Config saved.")
+        console.print("📄 Config saved.")
 
     @classmethod
     async def get_config(cls) -> Self:

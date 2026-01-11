@@ -9,7 +9,7 @@ from rich.progress import Progress, SpinnerColumn, TextColumn
 import typer
 import scapi
 
-from .common import console, CustomError
+from .common import console, show_error
 
 
 class ProgressMiddleware:
@@ -22,8 +22,9 @@ class ProgressMiddleware:
 
     @contextmanager
     def add_task(self, text: str):
-        self.progress.add_task(text, total=None)
+        task = self.progress.add_task(text, total=None)
         yield
+        self.progress.stop_task(task)
 
     def __enter__(self):
         self.progress.__enter__()
@@ -39,7 +40,7 @@ class ProgressMiddleware:
 
 
 class ErrorMiddleware:
-    def __init__(self, errors: dict[type[Exception], Iterable[str]]):
+    def __init__(self, errors: dict[type[Exception], Iterable[str] | None]):
         self.errors = errors
 
     def __enter__(self):
@@ -56,6 +57,8 @@ class ErrorMiddleware:
 
         for k, v in self.errors.items():
             if isinstance(exc_val, k):
-                CustomError(*v)
+                if v is None:
+                    break
+                show_error(exc_val, v)
 
         return

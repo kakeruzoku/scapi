@@ -2,12 +2,15 @@
 from contextlib import asynccontextmanager
 from typing import Self
 import aiohttp
+from sqlalchemy.exc import IntegrityError
 from sqlalchemy.ext.asyncio import create_async_engine
 from sqlmodel.ext.asyncio.session import AsyncSession
-from sqlmodel import Column, Field, SQLModel, String
+from sqlmodel import Column, Field, SQLModel, String, select
 import scapi
 
-from .common import app_dir
+from .middleware import ErrorMiddleware
+from .error import CliNotFound
+from .common import app_dir, console, show_error
 
 
 database_path = app_dir / "database.sqlite3"
@@ -25,17 +28,45 @@ class SessionTable(SQLModel, table=True):
     session_id: str
 
     @classmethod
-    def from_session(cls, session: scapi.Session) -> Self:
-        assert session.user_id
+    def from_session(cls, scapi_session: scapi.Session) -> Self:
+        assert scapi_session.user_id
         return cls(
-            user_id=session.user_id,
-            username=session.username,
-            session_id=session.session_id
+            user_id=scapi_session.user_id,
+            username=scapi_session.username,
+            session_id=scapi_session.session_id
         )
 
     @property
     def to_text(self):
         return f"[b blue]@{self.username}[/b blue] (ID:#{self.user_id})"
+
+    @classmethod
+    async def get_or_none(cls, asyncsession: AsyncSession, username: str) -> "SessionTable | None":
+        stmt = select(SessionTable).where(SessionTable.username == username)
+        return (await asyncsession.exec(stmt)).first()
+
+    @classmethod
+    async def get(cls, asyncsession: AsyncSession, username: str) -> "SessionTable":
+        session = await cls.get_or_none(asyncsession, username)
+        if session is None:
+            show_error(
+                CliNotFound(),
+                f"Account [b blue]@{username}[/b blue] is not found."
+            )
+        return session
+
+    @classmethod
+    async def add_session(cls, asyncsession: AsyncSession, scapi_session: scapi.Session) -> Self:
+        session = cls.from_session(scapi_session)
+        asyncsession.add(session)
+        with ErrorMiddleware({
+            IntegrityError: (f"Account: {session.to_text} already exists.")
+        }):
+            await asyncsession.commit()
+        console.print(
+            f"✅ Logged in as {session.to_text}."
+        )
+        return session
 
 
 class ProxyTable(SQLModel, table=True):
@@ -56,6 +87,21 @@ class ProxyTable(SQLModel, table=True):
         auth = None if self.username is None else aiohttp.BasicAuth(
             self.username, self.password or "")
         scapi.set_default_proxy(self.url, auth)
+
+    @classmethod
+    async def get_or_none(cls, asyncsession: AsyncSession, name: str) -> "ProxyTable | None":
+        stmt = select(ProxyTable).where(ProxyTable.name == name)
+        return (await asyncsession.exec(stmt)).first()
+
+    @classmethod
+    async def get(cls, asyncsession: AsyncSession, name: str) -> "ProxyTable":
+        session = await cls.get_or_none(asyncsession, name)
+        if session is None:
+            show_error(
+                CliNotFound(),
+                f"Proxy [b]{name}[/b] is not found."
+            )
+        return session
 
 
 async def setup_database():
