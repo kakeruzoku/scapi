@@ -1,4 +1,3 @@
 aiohttp
 BeautifulSoup4
 aiofiles
-websockets

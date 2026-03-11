@@ -403,7 +403,7 @@ class Classroom(_BaseSiteAPI[int]):
         Returns:
             Session: 作成されたアカウント
         """
-        if self.token is None:
+        if not self.token:
             raise NoDataError(self)
         data = aiohttp.FormData({
             "classroom_id":self.id,

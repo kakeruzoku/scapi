@@ -209,7 +209,7 @@ class Session(_BaseSiteAPI[str]):
         try:
             data:SessionStatusPayload = response.json()
             self._update_from_data(data)
-        except Exception:
+        except ValueError:
             raise ClientError(response)
         self.client.scratch_headers["X-token"] = self.xtoken
     
@@ -465,7 +465,7 @@ class Session(_BaseSiteAPI[str]):
         )
         data:ClassCreatedPayload = response.json()[0]
         if not data["success"]:
-            raise 
+            raise InvalidData(response)
         classroom = Classroom(data["id"],self.session)
         classroom.title = data.get("title")
         classroom.description = description or ""
@@ -695,6 +695,40 @@ class Session(_BaseSiteAPI[str]):
         """
         async for _p in api_iterative(
             self.client,f"https://api.scratch.mit.edu/users/{self.username}/following/users/loves",
+            limit=limit,offset=offset
+        ):
+            yield Project._create_from_data(_p["id"],_p,self.client_or_session)
+
+    async def get_followings_studios_project(self,limit:int|None=None,offset:int|None=None) -> AsyncGenerator["Project", None]:
+        """
+        フォロー中のスタジオに入れられているプロジェクトを取得する。
+
+        Args:
+            limit (int|None, optional): 取得するプロジェクトの数。初期値は40です。
+            offset (int|None, optional): 取得するプロジェクトの開始位置。初期値は0です。
+
+        Yields:
+            Project: 取得したプロジェクト
+        """
+        async for _p in api_iterative(
+            self.client,f"https://api.scratch.mit.edu/users/{self.username}/following/studios/projects",
+            limit=limit,offset=offset
+        ):
+            yield Project._create_from_data(_p["id"],_p,self.client_or_session)
+
+    async def get_followings_project(self,limit:int|None=None,offset:int|None=None) -> AsyncGenerator["Project", None]:
+        """
+        フォロー中のユーザーが作成したプロジェクトを取得する。
+
+        Args:
+            limit (int|None, optional): 取得するプロジェクトの数。初期値は40です。
+            offset (int|None, optional): 取得するプロジェクトの開始位置。初期値は0です。
+
+        Yields:
+            Project: 取得したプロジェクト
+        """
+        async for _p in api_iterative(
+            self.client,f"https://api.scratch.mit.edu/users/{self.username}/following/users/projects",
             limit=limit,offset=offset
         ):
             yield Project._create_from_data(_p["id"],_p,self.client_or_session)

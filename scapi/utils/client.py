@@ -46,11 +46,11 @@ class Response:
         status_code (int): HTTPステータスコード
         _body (bytes):
     """
-    def __init__(self,response:aiohttp.ClientResponse,client:"HTTPClient"):
+    def __init__(self,response:aiohttp.ClientResponse,client:"HTTPClient", body: bytes):
         self.client = client
         self._response = response
         self.status_code:int = response.status
-        self._body = response._body or b""
+        self._body = body
 
     def _check(self):
         url = self._response.url
@@ -203,8 +203,7 @@ class HTTPClient:
             raise SessionClosed()
         try:
             async with self._session.request(method,url,proxy=self._proxy,proxy_auth=self._proxy_auth,**kwargs) as _response:
-                await _response.read()
-            response = Response(_response,self)
+                response = Response(_response,self, await _response.read())
         except Exception as e:
             raise ProcessingError(e) from e
         if check:

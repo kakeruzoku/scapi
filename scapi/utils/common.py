@@ -282,7 +282,6 @@ async def count_api_iterative(
     c = 1
     while True:
         objs_len = await _func(c,max_limit)
-        print(c,objs_len)
         if objs_len == 0:
             low = c//2
             high = c
@@ -300,7 +299,6 @@ async def count_api_iterative(
             return low*max_limit
         mid = (low+high)//2
         objs_len =  await _func(mid,max_limit)
-        print(mid,objs_len)
         if objs_len == 0:
             high = mid
         elif objs_len < max_limit:
