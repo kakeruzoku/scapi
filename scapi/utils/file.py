@@ -1,13 +1,24 @@
 from __future__ import annotations
 
+import asyncio
+import inspect
 from contextlib import asynccontextmanager
-from typing import IO, Any, AsyncGenerator
+from pathlib import Path
+from typing import Any, AsyncGenerator, Protocol, TypeGuard, runtime_checkable
 
 from aiofiles.threadpool.binary import AsyncBufferedReader
 import io
 import aiofiles
 
 from .common import maybe_coroutine
+
+@runtime_checkable
+class FileProtocol(Protocol):
+    def read(self) -> bytes | Any: ...
+    def close(self) -> None | Any: ...
+
+def _is_file_like(obj: object) -> TypeGuard[FileProtocol]:
+    return hasattr(obj, "read") and hasattr(obj, "close")
 
 class File:
     """
@@ -30,26 +41,25 @@ class File:
 
         これは ``file=scapi.File()`` のような操作を想定しています
     """
-    def __init__(self,data:str|bytes|IO[bytes]|AsyncBufferedReader):
+    def __init__(self,data:str|bytes|Path|AsyncBufferedReader|FileProtocol):
         """
         Args:
-            data (str | bytes | IO[bytes] | AsyncBufferedReader): データ本体またはファイルパスまたはファイルオブジェクト
+            data (str | bytes | Path | AsyncBufferedReader | FileProtocol): データ本体またはファイルパスまたはファイルオブジェクト
 
         Raises:
             TypeError: 処理できないデータ形式
         """
-        self._fp:IO[bytes]|AsyncBufferedReader|None = None
+        self._fp: FileProtocol | None = None
         self._coro_fp = None
         self._opened = False
-        self._need_close = False
-        if isinstance(data, (IO,AsyncBufferedReader)):
+        if _is_file_like(data):
             self._fp = data
             self._owner = False
         elif isinstance(data, (bytes, bytearray, memoryview)):
             self._fp = io.BytesIO(data)
             self._owner = True
-        elif isinstance(data, str):
-            self._coro_fp = aiofiles.open(data, "rb")
+        elif isinstance(data, (str, Path)):
+            self._coro_fp = aiofiles.open(str(data), "rb")
             self._owner = True
         else:
             raise TypeError(f"Unsupported data type: {type(data)}")
@@ -62,14 +72,15 @@ class File:
         return self
     
     async def read(self) -> bytes:
-        return await maybe_coroutine(self.fp.read)
+        if inspect.iscoroutinefunction(self.fp.read):
+            return await self.fp.read()
+        return await asyncio.to_thread(self.fp.read)
     
     async def close(self):
-        assert self._fp
-        await maybe_coroutine(self._fp.close)
+        await maybe_coroutine(self.fp.close)
         
     @property
-    def fp(self) -> IO[bytes] | AsyncBufferedReader:
+    def fp(self) -> FileProtocol:
         assert self._fp
         return self._fp
     
@@ -82,6 +93,15 @@ class File:
     async def __aexit__(self, exc_type, exc, tb):
         if self._owner:
             await self.close()
+
+    def __repr__(self):
+        if self._fp is None:
+            status = "pending"
+        elif self._opened:
+            status = "opened"
+        else:
+            status = "ready"
+        return f"<File status={status} owner={self._owner}>"
 
 class _FileLike:
     def __init__(self,data):
