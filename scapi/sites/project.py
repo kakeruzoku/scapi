@@ -2,7 +2,7 @@ from __future__ import annotations
 
 import datetime
 import json
-from typing import TYPE_CHECKING, Any, AsyncGenerator, Final, Literal
+from typing import TYPE_CHECKING, AsyncGenerator, Final, Literal
 
 import aiohttp
 import bs4
@@ -47,7 +47,6 @@ from ..utils.file import (
 )
 from ..event.cloud import ScratchCloud,CloudLogEvent
 from ..event.temporal import CommentEvent
-
 from .base import _BaseSiteAPI
 from .comment import (
     Comment,

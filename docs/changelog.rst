@@ -7,6 +7,11 @@
 3.x.x
 -----
 
+3.2.2
+^^^^^
+- 内部で発生していたいくつかのバグを修正
+- 利用規約の更新に伴うdocsの更新
+
 3.2.1
 ^^^^^
 - :attr:`scapi.User.membership_avatar_badge`, :attr:`scapi.User.membership_label` を追加

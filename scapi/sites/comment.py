@@ -2,7 +2,7 @@ from __future__ import annotations
 
 import datetime
 import json
-from typing import TYPE_CHECKING, Any, AsyncGenerator, Final
+from typing import TYPE_CHECKING, AsyncGenerator, Final
 
 import bs4
 from .base import _BaseSiteAPI
@@ -215,7 +215,7 @@ class Comment(_BaseSiteAPI[int]):
         """
         if not isinstance(self.parent_id,int):
             return self.parent_id
-        if self._cached_parent is None or use_cache:
+        if self._cached_parent is None or not use_cache:
             self._cached_parent = await Comment._create_from_api(self.parent_id,place=self.place)
         return self._cached_parent
     

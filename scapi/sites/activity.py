@@ -2,9 +2,8 @@ from __future__ import annotations
 
 import datetime
 from enum import Enum
-import json
 import re
-from typing import TYPE_CHECKING, Any, AsyncGenerator, Final, Literal, Self, TypedDict
+from typing import TYPE_CHECKING, Any, Self, TypedDict
 
 import bs4
 
@@ -30,7 +29,6 @@ from ..utils.common import (
     dt_to_str,
     split
 )
-
 from ..utils.error import (
     NoDataError,
 )
@@ -573,7 +571,7 @@ class Activity:
         while True:
             if isinstance(_activity_action,bs4.element.NavigableString) and str(_activity_action).strip():
                 break
-            _activity_action:Tag = _activity_action.next_sibling
+            _activity_action = _activity_action.next_sibling
             if _activity_action is None:
                 return activity
         activity_action = str(_activity_action).strip()

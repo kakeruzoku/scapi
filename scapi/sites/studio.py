@@ -34,9 +34,7 @@ from ..utils.file import (
     File,
     _read_file
 )
-
 from ..event.temporal import CommentEvent
-
 from .base import _BaseSiteAPI
 from .comment import (
     Comment,
@@ -68,6 +66,7 @@ class Studio(_BaseSiteAPI[int]):
         project_count (MAYBE_UNKNOWN[int]): プロジェクトの数(<=100)
 
         _host (MAYBE_UNKNOWN[User]): 所有者の情報。Session.get_mystuff_studios()からでのみ取得できます。
+        curator_count (MAYBE_UNKNOWN[int]): キュレーターの数
     """
     def __repr__(self) -> str:
         return f"<Studio id:{self.id} session:{self.session}>"
@@ -87,6 +86,7 @@ class Studio(_BaseSiteAPI[int]):
         self.comment_count:MAYBE_UNKNOWN[int] = UNKNOWN
         self.follower_count:MAYBE_UNKNOWN[int] = UNKNOWN
         self.manager_count:MAYBE_UNKNOWN[int] = UNKNOWN
+        self.curator_count:MAYBE_UNKNOWN[int] = UNKNOWN
         self.project_count:MAYBE_UNKNOWN[int] = UNKNOWN
 
         self._host:MAYBE_UNKNOWN["User"] = UNKNOWN

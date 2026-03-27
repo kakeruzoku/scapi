@@ -18,7 +18,6 @@ from ..utils.common import (
     api_iterative,
 )
 from ..utils.common import get_client_and_session
-
 from .user import User
 from .studio import Studio
 from .project import Project

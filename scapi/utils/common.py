@@ -5,7 +5,7 @@ from contextlib import asynccontextmanager
 from enum import Enum
 import string
 import datetime
-from typing import TYPE_CHECKING, Any, AsyncGenerator, Callable, Coroutine, Generic, Literal, ParamSpec, Protocol, Self, Sequence, TypeVar, overload,AsyncContextManager
+from typing import TYPE_CHECKING, Any, AsyncGenerator, Callable, Coroutine, Generic, Literal, ParamSpec, Protocol, Self, Sequence, TypeVar, overload, AsyncContextManager
 import inspect
 from functools import wraps
 
@@ -17,7 +17,7 @@ if TYPE_CHECKING:
     from .client import HTTPClient
     from ..sites.session import Session
 
-__version__ = "3.2.1"
+__version__ = "3.2.2"
 
 _KT = TypeVar("_KT")
 _VT = TypeVar("_VT")
@@ -282,7 +282,6 @@ async def count_api_iterative(
     c = 1
     while True:
         objs_len = await _func(c,max_limit)
-        print(c,objs_len)
         if objs_len == 0:
             low = c//2
             high = c
@@ -300,7 +299,6 @@ async def count_api_iterative(
             return low*max_limit
         mid = (low+high)//2
         objs_len =  await _func(mid,max_limit)
-        print(mid,objs_len)
         if objs_len == 0:
             high = mid
         elif objs_len < max_limit:
