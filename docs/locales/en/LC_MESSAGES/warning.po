@@ -19,41 +19,41 @@ msgstr ""
 
 #: ../../warning.rst:2
 msgid "使用上の注意"
-msgstr ""
+msgstr "Usage Notes"
 
 #: ../../warning.rst:5
 msgid "責任"
-msgstr ""
+msgstr "Responsibility"
 
 #: ../../warning.rst:6
 msgid "Scapiは `MITライセンス <https://github.com/kakeruzoku/scapi/blob/main/LICENSE>`_ のもとで提供されているオープンソースソフトウェアです。"
-msgstr ""
+msgstr "Scapi is open-source software provided under the `MIT License <https://github.com/kakeruzoku/scapi/blob/main/LICENSE>`_."
 
 #: ../../warning.rst:7
 msgid "これは、Scapiが現状のままで提供され、ライブラリが常にあなたの期待通りに動作することを保証するものではありません。"
-msgstr ""
+msgstr "This means that Scapi is provided as-is, and does not guarantee that the library will always work as you expect."
 
 #: ../../warning.rst:8
 msgid "**Scapiを使用したことによって生じたいかなる損害や問題についても、開発者および貢献者は一切の責任を負いません。** Scapiの使用は、すべて **自己責任** で行ってください。"
-msgstr ""
+msgstr "**Developers and contributors assume no responsibility for any damages or issues arising from the use of Scapi.** Please use Scapi entirely at **your own risk.**"
 
 #: ../../warning.rst:11
 msgid "Scratchの利用規約について"
-msgstr ""
+msgstr "About Scratch's Terms of Use"
 
 #: ../../warning.rst:12
 msgid "Scratchの利用規約では、Scapiのような非公式クライアントの使用が明確に禁止されているわけではありません。"
-msgstr ""
+msgstr "Scratch's Terms of Use do not explicitly prohibit the use of unofficial clients like Scapi."
 
 #: ../../warning.rst:13
 msgid "しかし、これはScapiを使って何でもして良いということではなく、必ず **Scratchの利用規約やコミュニティガイドラインを遵守するようにしてください。**"
-msgstr ""
+msgstr "However, this does not mean you may do anything using Scapi, so please be sure to **comply with Scratch's Terms of Use and Community Guidelines.**"
 
 #: ../../warning.rst:14
 msgid "Scapiの誤作動によってアカウントがブロックされた、などといった場合でも開発者は **責任を負いません。**"
-msgstr ""
+msgstr "Even in cases such as your account being blocked due to a malfunction of Scapi, the developers **assume no responsibility.**"
 
 #: ../../warning.rst:15
 msgid "Scratch Teamは、非公式クライアントの使用を理由にアカウントを停止するような対応を積極的にはしていませんが、あなたのアカウントに対してそのリスクが全くないわけではありません。 **使用者の責任のもとにおいて使用してください。**"
-msgstr ""
+msgstr "The Scratch Team does not actively take measures such as suspending accounts for using unofficial clients, but this does not mean there is no risk to your account whatsoever. **Please use it under your own responsibility.**"
 

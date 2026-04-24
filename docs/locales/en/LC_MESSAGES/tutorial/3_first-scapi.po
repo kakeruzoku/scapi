@@ -19,69 +19,68 @@ msgstr ""
 
 #: ../../tutorial/3_first-scapi.rst:2
 msgid "はじめてのScapi"
-msgstr ""
+msgstr "Your First Scapi"
 
 #: ../../tutorial/3_first-scapi.rst:5
 msgid "このチュートリアルでは `IPython <https://ipython.org/>`_ を使用します。詳しくは :ref:`こちら <use_ipython>` を確認してください。"
-msgstr ""
+msgstr "This tutorial uses `IPython <https://ipython.org/>`_. For details, please check :ref:`here <use_ipython>`."
 
 #: ../../tutorial/3_first-scapi.rst:7
 msgid "Scapiを使用する準備が整いました！まずは簡単なコードから実行してみましょう！"
-msgstr ""
+msgstr "You are ready to use Scapi! Let's start by running some simple code!"
 
 #: ../../tutorial/3_first-scapi.rst:9
 msgid "まずは IPython を起動してください。"
-msgstr ""
+msgstr "First, start IPython."
 
 #: ../../tutorial/3_first-scapi.rst:17
 msgid "まずはScapiをインポートしましょう。"
-msgstr ""
+msgstr "Let's import Scapi first."
 
 #: ../../tutorial/3_first-scapi.rst:24
 msgid "データを取得する"
-msgstr ""
+msgstr "Fetching Data"
 
 #: ../../tutorial/3_first-scapi.rst:26
 msgid "まずはプロジェクトを取得してみましょう。"
-msgstr ""
+msgstr "Let's try fetching a project first."
 
 #: ../../tutorial/3_first-scapi.rst:28
 msgid "Scratch上で公開されているプロジェクトを選んでみて下さい。この例では存在しないプロジェクトIDである ``0`` を使用しています。"
-msgstr ""
+msgstr "Please choose a project that is publicly available on Scratch. In this example, we are using a non-existent project ID ``0``."
 
 #: ../../tutorial/3_first-scapi.rst:30
 msgid "プロジェクトを選んだら、プロジェクトIDを探しましょう。URLの ``https://scratch.mit.edu/projects/`` のあとに続く数字のことです。"
-msgstr ""
+msgstr "Once you have chosen a project, let's find the project ID. It is the number that follows ``https://scratch.mit.edu/projects/`` in the URL."
 
 #: ../../tutorial/3_first-scapi.rst:32
 msgid "まずは以下のようにコードを書いてみましょう。コード内の ``0`` の部分をあなたが選んだプロジェクトのIDに変更してみてください。"
-msgstr ""
+msgstr "First, try writing code as shown below. Replace the ``0`` in the code with the ID of the project you chose."
 
 #: ../../tutorial/3_first-scapi.rst:38
 msgid "(プロジェクトが正常に共有されていて、Scratchサーバーとの通信に成功すれば、)エラーが発生せずに実行が完了します。"
-msgstr ""
+msgstr "(If the project is properly shared and communication with the Scratch server succeeds,) it will complete execution without any errors."
 
 #: ../../tutorial/3_first-scapi.rst:40
 msgid "取得したプロジェクトを確認してみましょう。直接変数を表示する他に、様々な属性があります。"
-msgstr ""
+msgstr "Let's check the fetched project. Besides viewing the variable directly, there are various attributes."
 
 #: ../../tutorial/3_first-scapi.rst:57
 msgid "async forを使用する"
-msgstr ""
+msgstr "Using async for"
 
 #: ../../tutorial/3_first-scapi.rst:59
 msgid "コメント欄やリミックス欄などの「リスト」的なデータを取得したい場合は ``async for`` 式を使用します。"
-msgstr ""
+msgstr "To fetch \"list-like\" data such as comments or remixes, use the ``async for`` expression."
 
 #: ../../tutorial/3_first-scapi.rst:71
 msgid "(コメントが投稿されている場合、)最大で40のコメントが表示されます。表示されない場合はコメントが投稿されているプロジェクトを選んで最初からやり直してみて下さい。"
-msgstr ""
+msgstr "(If comments have been posted,) up to 40 comments will be displayed. If none are displayed, please choose a project that has comments and try again from the beginning."
 
 #: ../../tutorial/3_first-scapi.rst:73
 msgid "このような関数では、 ``limit`` (取得上限)や ``offset`` (開始位置)を指定することができます。指定しない場合、Scapi1回のリクエストで取得できる最大の量を取得しようとします。"
-msgstr ""
+msgstr "In functions like this, you can specify ``limit`` (maximum number to fetch) and ``offset`` (starting position). If not specified, Scapi will attempt to fetch the maximum amount possible in a single request."
 
 #: ../../tutorial/3_first-scapi.rst:83
 msgid "また、 ``limit`` を大きい数(通常 ``41`` 以上)指定した場合はScapiは自動的にリクエストを分割して処理します。その際に、全てのリクエストを行ってからではなく、毎回のリクエストごとに ``async for`` 文の中を実行します。"
-msgstr ""
-
+msgstr "Also, if you specify a large number for ``limit`` (usually ``41`` or more), Scapi will automatically split and process the requests. At that time, instead of making all requests first, it executes the body of the ``async for`` loop for each individual request."

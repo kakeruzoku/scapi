@@ -43,7 +43,7 @@ msgstr "3.1.3"
 
 #: ../../changelog.rst:15
 msgid "|User| のユーザー名(:attr:`scapi.User.username`)が入力依存である場合の問題を修正"
-msgstr "Fixed an issue where the |User| username (:attr: `scapi.user.username`) was input-dependent"
+msgstr "Fixed an issue where the |User| username (:attr:`scapi.User.username`) was input-dependent"
 
 #: ../../changelog.rst:16
 msgid ":attr:`scapi.User.lower_username`, :attr:`scapi.User.real_username` の追加"
@@ -71,7 +71,7 @@ msgstr "3.1.1"
 
 #: ../../changelog.rst:27
 msgid "fix: AsyncGeneratorの引数が1つしかない型ヒントがある問題を修正"
-msgstr "Fix: Fixed an issue where there was a type hint with only one argument in AsyncGenerator\n"
+msgstr "Fixed an issue where there was a type hint with only one argument in AsyncGenerator\n"
 
 #: ../../changelog.rst:30
 msgid "3.1.0"
@@ -103,7 +103,7 @@ msgstr "Earlier updates"
 
 #: ../../changelog.rst:41
 msgid "``1.1.0 - 2.3.1`` の更新履歴は `旧ドキュメントへ <https://kakeruzoku.github.io/scapi/ja/update>`_"
-msgstr "The changelog for ``1.1.0 - 2.3.1`` is in `the old documentation<https://kakeruzoku.github.io/scapi/ja/update>`_"
+msgstr "The changelog for ``1.1.0 - 2.3.1`` is in `the old documentation <https://kakeruzoku.github.io/scapi/ja/update>`_"
 
 #: ../../changelog.rst:42
 msgid "``0.0.1 - 1.0.0`` の更新履歴は `Githubへ <https://github.com/kakeruzoku/scapi/blob/v2/changelog.md>`_"

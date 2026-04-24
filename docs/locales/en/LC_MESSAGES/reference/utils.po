@@ -19,312 +19,311 @@ msgstr ""
 
 #: ../../reference/utils.rst:2
 msgid "ユーティリティ"
-msgstr ""
+msgstr "Utilities"
 
 #: ../../reference/utils.rst:5
 msgid "目次"
-msgstr ""
+msgstr "Table of Contents"
 
 #: ../../reference/utils.rst:8
 msgid "定数"
-msgstr ""
+msgstr "Constants"
 
 #: ../../docstring of scapi.UNKNOWN:1
 msgid "「不明」を表す定数。"
-msgstr ""
+msgstr "A constant representing \"unknown\"."
 
 #: ../../reference/utils.rst:13
 msgid "変数に ``UNKNOWN`` が入っているか確認したい場合は、必ず ``is`` を使用してください。 ``==`` を使用した場合内容を問わず ``False`` を返すようになっているため、正確に判断できません。"
-msgstr ""
+msgstr "When checking whether a variable contains ``UNKNOWN``, always use ``is``. If you use ``==``, it will return ``False`` regardless of the content, so you cannot determine it accurately."
 
 #: ../../docstring of typing.Literal:1
 msgid "UNKNOWNを表す型ヒント"
-msgstr ""
+msgstr "Type hint representing UNKNOWN"
 
 #: ../../reference/utils.rst:19
 msgid "ユーティリティクラス"
-msgstr ""
+msgstr "Utility Classes"
 
 #: ../../../scapi/utils/common.py:docstring of scapi.utils.common._AwaitableContextManager:1
 msgid "ベースクラス: :py:class:`~typing.Generic`\\ [:py:obj:`~scapi.utils.common._AT`]"
-msgstr ""
+msgstr "Base class: :py:class:`~typing.Generic`\\ [:py:obj:`~scapi.utils.common._AT`]"
 
 #: ../../../scapi/utils/common.py:docstring of scapi.utils.common._AwaitableContextManager:1
 msgid "Coroutineからasync withとawaitどちらにも対応できるようにするクラス。"
-msgstr ""
+msgstr "A class that enables a coroutine to support both ``async with`` and ``await``."
 
 #: ../../../scapi/utils/common.py:docstring of scapi.utils.common._AwaitableContextManager:3
 msgid "obj = await coro または async with coro as obj: のようにして使用できます。"
-msgstr ""
+msgstr "Can be used as ``obj = await coro`` or ``async with coro as obj:``."
 
 #: ../../../scapi/utils/common.py:docstring of scapi.utils.common._AwaitableContextManager:6
 msgid "特別な理由がない限りは async with で使用すべきです。 awaitのみで使用する場合は、最後に実行すべき関数 (.client_close())などを確認してください。"
-msgstr ""
+msgstr "Unless there is a special reason, it should be used with ``async with``. When using it with only ``await``, please check the function that should be executed at the end (e.g., ``.client_close()``)."
 
 #: ../../../scapi/utils/common.py:docstring of scapi.utils.common.count_api_iterative:1
 msgid "データ一覧を取得する関数から、そのデータの長さを特定する。"
-msgstr ""
+msgstr "Determine the length of data from a function that retrieves a list of data."
 
 #: ../../../scapi/utils/common.py:docstring of scapi.utils.common.count_api_iterative:3
 msgid "2種類の関数が使用できます。 - タイプ A: 1番目に ``limit``, 2番目に ``offset`` を取る関数 - タイプ B: 1番目に ``start_page``, 2番目に ``end_page`` を取る関数"
-msgstr ""
+msgstr "Two types of functions can be used. - Type A: A function that takes ``limit`` as the first argument and ``offset`` as the second argument - Type B: A function that takes ``start_page`` as the first argument and ``end_page`` as the second argument"
 
 #: ../../reference/utils.rst:0
 msgid "パラメータ"
-msgstr ""
+msgstr "Parameters"
 
 #: ../../../scapi/utils/common.py:docstring of scapi.utils.common.count_api_iterative:7
 msgid "タイプ A または タイプ B の関数"
-msgstr ""
+msgstr "A Type A or Type B function"
 
 #: ../../../scapi/utils/common.py:docstring of scapi.utils.common.count_api_iterative:9
 msgid "タイプ B の場合 ``True`` にしてください。"
-msgstr ""
+msgstr "Set to ``True`` if it is Type B."
 
 #: ../../../scapi/utils/common.py:docstring of scapi.utils.common.count_api_iterative:11
 msgid "その関数が1回で取得できる最大の数。基本的に ``40`` です。 **正しい値でない場合、結果が正しく返されません。**"
-msgstr ""
+msgstr "The maximum number of items that the function can retrieve in one request. It is basically ``40``. **If the value is not correct, the result will not be returned correctly.**"
 
 #: ../../reference/utils.rst:0
 msgid "戻り値"
-msgstr ""
+msgstr "Returns"
 
 #: ../../../scapi/utils/common.py:docstring of scapi.utils.common.count_api_iterative:14
 msgid "そのデータの値"
-msgstr ""
+msgstr "The value of that data"
 
 #: ../../reference/utils.rst:0
 msgid "戻り値の型"
-msgstr ""
+msgstr "Return type"
 
 #: ../../../scapi/utils/client.py:docstring of scapi.utils.client.HTTPClient:1
 #: ../../../scapi/utils/client.py:docstring of scapi.utils.client.Response:1
 #: ../../../scapi/utils/file.py:docstring of scapi.utils.file.File:1
 msgid "ベースクラス: :py:class:`object`"
-msgstr ""
+msgstr "Base class: :py:class:`object`"
 
 #: ../../../scapi/utils/file.py:docstring of scapi.utils.file.File:1
 msgid "ファイルを表すクラス。"
-msgstr ""
+msgstr "A class representing a file."
 
 #: ../../../scapi/utils/file.py:docstring of scapi.utils.file.File:3
 msgid "このクラスは、ファイルの非同期操作を簡単に扱えるように設計されています。"
-msgstr ""
+msgstr "This class is designed to make it easy to handle asynchronous file operations."
 
 #: ../../../scapi/utils/file.py:docstring of scapi.utils.file.File:5
 msgid "オブジェクト生成後の使用方法:"
-msgstr ""
+msgstr "How to use after creating an object:"
 
 #: ../../../scapi/utils/file.py:docstring of scapi.utils.file.File:7
 msgid "await する場合:"
-msgstr ""
+msgstr "When using ``await``:"
 
 #: ../../../scapi/utils/file.py:docstring of scapi.utils.file.File:8
 msgid "オブジェクトを ``await`` するときは、使用後に必ず ``await file.close()`` を呼び出してファイルを閉じる必要があります。"
-msgstr ""
+msgstr "When ``await``-ing an object, you must always call ``await file.close()`` to close the file after use."
 
 #: ../../../scapi/utils/file.py:docstring of scapi.utils.file.File:10
 msgid "async with を使用する場合:"
-msgstr ""
+msgstr "When using ``async with``:"
 
 #: ../../../scapi/utils/file.py:docstring of scapi.utils.file.File:11
 msgid "``async with`` ブロックを抜ける際に、ファイルは自動的に閉じられます。"
-msgstr ""
+msgstr "When exiting the ``async with`` block, the file is automatically closed."
 
 #: ../../../scapi/utils/file.py:docstring of scapi.utils.file.File:13
 msgid "なにもしない場合:"
-msgstr ""
+msgstr "When doing nothing:"
 
 #: ../../../scapi/utils/file.py:docstring of scapi.utils.file.File:14
 msgid "オブジェクトを何もせず生成した場合は、必ず対応しているscapiの関数に1度だけ入力してください。 関数に渡すと、自動的にファイルが開かれ、処理終了後に閉じられます。 直接生成して放置することはできません。"
-msgstr ""
+msgstr "If you create an object without doing anything, be sure to pass it to the corresponding scapi function only once. When passed to a function, the file is automatically opened and closed after processing. You cannot create it directly and leave it alone."
 
 #: ../../../scapi/utils/file.py:docstring of scapi.utils.file.File:18
 msgid "これは ``file=scapi.File()`` のような操作を想定しています"
-msgstr ""
+msgstr "This assumes operations like ``file=scapi.File()``"
 
 #: ../../reference/utils.rst:28
 msgid "クライアント"
-msgstr ""
+msgstr "Client"
 
 #: ../../../scapi/utils/client.py:docstring of scapi.utils.client.HTTPClient:1
 msgid "通信を行うためのClient"
-msgstr ""
+msgstr "A client for performing communication"
 
 #: ../../../scapi/utils/client.py:docstring of scapi.utils.client.HTTPClient:0
 #: ../../../scapi/utils/client.py:docstring of scapi.utils.client.Response:0
 msgid "type"
-msgstr ""
+msgstr "type"
 
 #: ../../../scapi/utils/client.py:docstring of scapi.utils.client.HTTPClient:7
 #: ../../../scapi/utils/client.py:docstring of scapi.utils.client.HTTPClient:13
 #: ../../../scapi/utils/client.py:docstring of scapi.utils.client.HTTPClient:19
 #: ../../../scapi/utils/client.py:docstring of scapi.utils.client.HTTPClient:25
 msgid "dict[str,str]"
-msgstr ""
+msgstr "dict[str,str]"
 
 #: ../../../scapi/utils/client.py:docstring of scapi.utils.client.HTTPClient:17
 msgid "Scratchドメインにリクエストする場合のヘッダー"
-msgstr ""
+msgstr "Headers for requests to the Scratch domain"
 
 #: ../../../scapi/utils/client.py:docstring of scapi.utils.client.HTTPClient:23
 msgid "Scratchドメインにリクエストする場合のクッキー"
-msgstr ""
+msgstr "Cookies for requests to the Scratch domain"
 
 #: ../../../scapi/utils/client.py:docstring of scapi.utils.client.HTTPClient.is_scratch:1
 msgid "urlがscratch.mit.eduドメインを指しているか検証する。"
-msgstr ""
+msgstr "Check whether the URL points to the scratch.mit.edu domain."
 
 #: ../../../scapi/utils/client.py:docstring of scapi.utils.client.HTTPClient.is_scratch:3
 msgid "検証したいURL"
-msgstr ""
+msgstr "The URL to check"
 
 #: ../../../scapi/utils/client.py:docstring of scapi.HTTPClient.proxy:1
 msgid "プロキシの設定を返す。"
-msgstr ""
+msgstr "Return the proxy settings."
 
 #: ../../../scapi/utils/client.py:docstring of scapi.utils.client.HTTPClient.set_proxy:1
 msgid "プロキシを設定する。"
-msgstr ""
+msgstr "Set the proxy."
 
 #: ../../../scapi/utils/client.py:docstring of scapi.utils.client.HTTPClient.set_proxy:3
 msgid "プロキシのURL。Noneでプロキシを使用しません"
-msgstr ""
+msgstr "The proxy URL. Set to None to not use a proxy."
 
 #: ../../../scapi/utils/client.py:docstring of scapi.utils.client.HTTPClient.set_proxy:5
 msgid "プロキシの認証"
-msgstr ""
+msgstr "Proxy authentication"
 
 #: ../../../scapi/utils/client.py:docstring of scapi.utils.client.HTTPClient.get:1
 msgid "GETリクエストを送信する。"
-msgstr ""
+msgstr "Send a GET request."
 
 #: ../../../scapi/utils/client.py:docstring of scapi.utils.client.HTTPClient.delete:3
 #: ../../../scapi/utils/client.py:docstring of scapi.utils.client.HTTPClient.get:3
 #: ../../../scapi/utils/client.py:docstring of scapi.utils.client.HTTPClient.post:3
 #: ../../../scapi/utils/client.py:docstring of scapi.utils.client.HTTPClient.put:3
 msgid "リクエスト先のURL"
-msgstr ""
+msgstr "The target URL of the request"
 
 #: ../../../scapi/utils/client.py:docstring of scapi.utils.client.HTTPClient.delete:5
 #: ../../../scapi/utils/client.py:docstring of scapi.utils.client.HTTPClient.get:5
 #: ../../../scapi/utils/client.py:docstring of scapi.utils.client.HTTPClient.post:5
 #: ../../../scapi/utils/client.py:docstring of scapi.utils.client.HTTPClient.put:5
 msgid "URLパラメーター"
-msgstr ""
+msgstr "URL parameters"
 
 #: ../../../scapi/utils/client.py:docstring of scapi.utils.client.HTTPClient.delete:11
 #: ../../../scapi/utils/client.py:docstring of scapi.utils.client.HTTPClient.get:7
 #: ../../../scapi/utils/client.py:docstring of scapi.utils.client.HTTPClient.post:11
 #: ../../../scapi/utils/client.py:docstring of scapi.utils.client.HTTPClient.put:11
 msgid "クッキーを上書きする"
-msgstr ""
+msgstr "Override cookies"
 
 #: ../../../scapi/utils/client.py:docstring of scapi.utils.client.HTTPClient.delete:13
 #: ../../../scapi/utils/client.py:docstring of scapi.utils.client.HTTPClient.get:9
 #: ../../../scapi/utils/client.py:docstring of scapi.utils.client.HTTPClient.post:13
 #: ../../../scapi/utils/client.py:docstring of scapi.utils.client.HTTPClient.put:13
 msgid "ヘッダーを上書きする"
-msgstr ""
+msgstr "Override headers"
 
 #: ../../../scapi/utils/client.py:docstring of scapi.utils.client.HTTPClient.delete:15
 #: ../../../scapi/utils/client.py:docstring of scapi.utils.client.HTTPClient.get:11
 #: ../../../scapi/utils/client.py:docstring of scapi.utils.client.HTTPClient.post:15
 #: ../../../scapi/utils/client.py:docstring of scapi.utils.client.HTTPClient.put:15
 msgid "レスポンスコードなどに基づいて例外を送出するか。デフォルトはTrueです。"
-msgstr ""
+msgstr "Whether to raise an exception based on the response code, etc. The default is True."
 
 #: ../../../scapi/utils/client.py:docstring of scapi.utils.client.HTTPClient.post:1
 msgid "POSTリクエストを送信する。"
-msgstr ""
+msgstr "Send a POST request."
 
 #: ../../../scapi/utils/client.py:docstring of scapi.utils.client.HTTPClient.delete:7
 #: ../../../scapi/utils/client.py:docstring of scapi.utils.client.HTTPClient.post:7
 #: ../../../scapi/utils/client.py:docstring of scapi.utils.client.HTTPClient.put:7
 msgid "リクエスト本文"
-msgstr ""
+msgstr "Request body"
 
 #: ../../../scapi/utils/client.py:docstring of scapi.utils.client.HTTPClient.delete:9
 #: ../../../scapi/utils/client.py:docstring of scapi.utils.client.HTTPClient.post:9
 #: ../../../scapi/utils/client.py:docstring of scapi.utils.client.HTTPClient.put:9
 msgid "リクエスト本文のjson"
-msgstr ""
+msgstr "JSON of the request body"
 
 #: ../../../scapi/utils/client.py:docstring of scapi.utils.client.HTTPClient.put:1
 msgid "PUTリクエストを送信する。"
-msgstr ""
+msgstr "Send a PUT request."
 
 #: ../../../scapi/utils/client.py:docstring of scapi.utils.client.HTTPClient.delete:1
 msgid "DELETEリクエストを送信する。"
-msgstr ""
+msgstr "Send a DELETE request."
 
 #: ../../../scapi/utils/client.py:docstring of scapi.HTTPClient.closed:1
 msgid "クライアントが閉じているか"
-msgstr ""
+msgstr "Whether the client is closed"
 
 #: ../../../scapi/utils/client.py:docstring of scapi.utils.client.HTTPClient.close:1
 msgid "クライアントを閉じる"
-msgstr ""
+msgstr "Close the client"
 
 #: ../../../scapi/utils/client.py:docstring of scapi.utils.client.Response:1
 msgid "リクエストのレスポンスを表すクラス。"
-msgstr ""
+msgstr "A class representing the response to a request."
 
 #: ../../../scapi/utils/client.py:docstring of scapi.utils.client.Response:5
 msgid "通信に使用したHTTPClient"
-msgstr ""
+msgstr "The HTTPClient used for communication"
 
 #: ../../../scapi/utils/client.py:docstring of scapi.utils.client.Response:7
 msgid "HTTPClient"
-msgstr ""
+msgstr "HTTPClient"
 
 #: ../../../scapi/utils/client.py:docstring of scapi.utils.client.Response:13
 msgid "aiohttp.ClientResponse"
-msgstr ""
+msgstr "aiohttp.ClientResponse"
 
 #: ../../../scapi/utils/client.py:docstring of scapi.utils.client.Response:17
 msgid "HTTPステータスコード"
-msgstr ""
+msgstr "HTTP status code"
 
 #: ../../../scapi/utils/client.py:docstring of scapi.utils.client.Response:19
 msgid "int"
-msgstr ""
+msgstr "int"
 
 #: ../../../scapi/utils/client.py:docstring of scapi.utils.client.Response:25
 msgid "bytes"
-msgstr ""
+msgstr "bytes"
 
 #: ../../../scapi/utils/client.py:docstring of scapi.Response.data:1
 msgid "レスポンスの生データ。"
-msgstr ""
+msgstr "The raw data of the response."
 
 #: ../../../scapi/utils/client.py:docstring of scapi.Response.text:1
 msgid "レスポンスのテキスト。"
-msgstr ""
+msgstr "The text of the response."
 
 #: ../../../scapi/utils/client.py:docstring of scapi.utils.client.Response.json:1
 msgid "レスポンスをjsonに変換する。"
-msgstr ""
+msgstr "Convert the response to JSON."
 
 #: ../../../scapi/utils/client.py:docstring of scapi.utils.client.Response.json:3
 #: ../../../scapi/utils/client.py:docstring of scapi.utils.client.Response.json_or_text:3
 msgid "json.loadsの代わりに使うjsonデコーダー"
-msgstr ""
+msgstr "A JSON decoder to use instead of ``json.loads``"
 
 #: ../../../scapi/utils/client.py:docstring of scapi.utils.client.Response.json:5
 #: ../../../scapi/utils/client.py:docstring of scapi.utils.client.Response.json_or_text:5
 msgid ".get() を使用した際、キーがないのとnullを区別するためにUNKNOWNを返すdictを使用するか。デフォルトはTrueです。"
-msgstr ""
+msgstr "When using ``.get()``, whether to use a dict that returns ``UNKNOWN`` to distinguish between a missing key and ``null``. The default is ``True``."
 
 #: ../../../scapi/utils/client.py:docstring of scapi.utils.client.Response.json_or_text:1
 msgid "jsonをエンコードした結果か、失敗した場合テキストを返す。"
-msgstr ""
+msgstr "Returns the result of encoding JSON, or text if it fails."
 
 #: ../../../scapi/utils/client.py:docstring of scapi.utils.client.create_HTTPClient_async:1
 msgid "IPythonなどでの互換性のために追加されています。 通常は直接 ``HTTPClient()`` を使用してください。"
-msgstr ""
+msgstr "Added for compatibility with IPython and similar environments. Normally, use ``HTTPClient()`` directly."
 
 #: ../../../scapi/utils/client.py:docstring of scapi.utils.client.create_HTTPClient_async:4
 msgid "引数は |HTTPClient| の生成時に渡すものと同じです。"
-msgstr ""
-
+msgstr "The arguments are the same as those passed when creating |HTTPClient|."

@@ -19,23 +19,23 @@ msgstr ""
 
 #: ../../migrating.rst:2
 msgid "3.x.xへの移行"
-msgstr ""
+msgstr "Migrating to 3.x.x"
 
 #: ../../migrating.rst:4
 msgid "Scapi v3へようこそ！"
-msgstr ""
+msgstr "Welcome to Scapi v3!"
 
 #: ../../migrating.rst:5
 msgid "Scapi v3では完全な書き直しが行われたため、v2以前との互換性はほぼありません。"
-msgstr ""
+msgstr "Scapi v3 has been completely rewritten, so it is almost incompatible with v2 and earlier."
 
 #: ../../migrating.rst:6
 msgid "このページでScapiを3.0.0以降に移行してください。"
-msgstr ""
+msgstr "Use this page to migrate Scapi to 3.0.0 or later."
 
 #: ../../migrating.rst:9
 msgid "作者の書く気がなかったので、困ったことあれば `issue <https://github.com/kakeruzoku/scapi/issues>`_ か `discussion <https://github.com/kakeruzoku/scapi/discussions>`_ か `discordサーバー <https://discord.gg/Q4tkxFVzUX>`_ までお願いします"
-msgstr "The author (I) wasn't in the mood to write, so if you have any trouble, please contact us through `issue <https://github.com/kakeruzoku/scapi/issues>`_, `discussion <https://github.com/kakeruzoku/scapi/discussions>`_, or `discord server <https://discord.gg/Q4tkxFVzUX>`_"
+msgstr "The author wasn't in the mood to write, so if you have any trouble, please reach out via `issue <https://github.com/kakeruzoku/scapi/issues>`_, `discussion <https://github.com/kakeruzoku/scapi/discussions>`_, or `discord server <https://discord.gg/Q4tkxFVzUX>`_"
 
 #: ../../migrating.rst:12
 msgid "目次"
@@ -47,11 +47,11 @@ msgstr "Update Scapi"
 
 #: ../../migrating.rst:17
 msgid "コマンドプロンプトなどで ``pip install -U scapi`` と実行してください。"
-msgstr "Please run pip install -U scapi in the Command Prompt or another terminal."
+msgstr "Please run ``pip install -U scapi`` in the Command Prompt or another terminal."
 
 #: ../../migrating.rst:19
 msgid "以下のコードで ``3.0.0`` 以降のバージョンが表示されれば成功です。"
-msgstr "If the code below displays a version of ``3.0.0`` or later, it is successful."
+msgstr "If the code below displays a version of ``3.0.0`` or later, the update was successful."
 
 #: ../../migrating.rst:28
 msgid "全体に関わる変更"
@@ -67,303 +67,301 @@ msgstr "Full type hint support"
 
 #: ../../migrating.rst:35
 msgid "Scapi 3.0.0以降では、開発体験を向上させるため、完全な型ヒントのサポートを追加しました。全ての関数に返り値の型ヒントを付け、内部処理で扱うレスポンスの内容にも型ヒントを付与しています。"
-msgstr "Starting with Scapi 3.0.0, we've added full type hinting support to enhance the development experience. We've added return type hints to all functions and provided type hints for the response content handled internally."
+msgstr "Starting with Scapi 3.0.0, we've added full type hint support to enhance the development experience. Return type hints have been added to all functions, and type hints are also provided for the response content handled internally."
 
 #: ../../migrating.rst:38
 msgid "Unknownの追加"
-msgstr "Add Unknown"
+msgstr "Addition of Unknown"
 
 #: ../../migrating.rst:40
 msgid "「不明」を表すデータ形式として |UNKNOWN| が追加されました。 UNKNOWNは==の比較で常に ``False`` を返します。"
-msgstr "A data type representing ‘unknown’, |UNKNOWN|, has been added.\n"
-"UNKNOWN always returns False when compared using ==."
+msgstr "A data type representing ‘unknown’, |UNKNOWN|, has been added. UNKNOWN always returns ``False`` when compared using ==."
 
 #: ../../migrating.rst:43
 msgid "型ヒントとしてUNKNOWNを使いたい場合は :const:`UNKNOWN_TYPE <scapi.UNKNOWN_TYPE>` が使用できます。"
-msgstr ""
+msgstr "If you want to use UNKNOWN as a type hint, you can use :const:`UNKNOWN_TYPE <scapi.UNKNOWN_TYPE>`."
 
 #: ../../migrating.rst:57
 msgid "名称の変更"
-msgstr ""
+msgstr "Name Changes"
 
 #: ../../migrating.rst:59
 msgid "多くの関数/属性名を変更しました。"
-msgstr ""
+msgstr "Many function/attribute names have been changed."
 
 #: ../../migrating.rst:61
 msgid "「データを取得する」関数は先頭に ``get_`` がつくようになりました。 - ex) ``Project.remixes`` -> :func:`Project.get_remixes <scapi.Project.get_remixes>`"
-msgstr ""
+msgstr "Functions that \"retrieve data\" now start with ``get_``. - ex) ``Project.remixes`` -> :func:`Project.get_remixes <scapi.Project.get_remixes>`"
 
 #: ../../migrating.rst:63
 msgid "「オン/オフの設定をする」関数は2つに分離されました。 - ex) ``Project.love`` -> :func:`Project.add_love <scapi.Project.add_love>` / :func:`Project.remove_love <scapi.Project.remove_love>` - ただし、APIで「切り替える」のみ (``toggle_`` など)の関数は分離されません。"
-msgstr ""
+msgstr "Functions that \"set on/off\" have been split into two. - ex) ``Project.love`` -> :func:`Project.add_love <scapi.Project.add_love>` / :func:`Project.remove_love <scapi.Project.remove_love>` - However, functions that only \"toggle\" in the API (such as ``toggle_``) are not split."
 
 #: ../../migrating.rst:67
 msgid "変数名や属性名の変更は省略します。型ヒントチェッカーのエラーを確認して、ドキュメントで適切な関数を確認してください。"
-msgstr ""
+msgstr "Changes to variable and attribute names are omitted. Please check your type hint checker errors and refer to the documentation for the appropriate functions."
 
 #: ../../migrating.rst:70
 msgid "個別の変更"
-msgstr ""
+msgstr "Individual Changes"
 
 #: ../../migrating.rst:72
 msgid "型ヒントチェッカーを使用することを推奨します。"
-msgstr ""
+msgstr "We recommend using a type hint checker."
 
 #: ../../migrating.rst:75
 msgid "utils"
-msgstr ""
+msgstr "utils"
 
 #: ../../migrating.rst:77
 msgid "フォルダ名が ``other`` から ``utils`` に変更されました。"
-msgstr ""
+msgstr "The folder name has been changed from ``other`` to ``utils``."
 
 #: ../../migrating.rst:80
 msgid "HTTPClient (旧ClientSession)"
-msgstr ""
+msgstr "HTTPClient (formerly ClientSession)"
 
 #: ../../migrating.rst:82
 msgid "名前が ``ClientSession`` から |HTTPClient| に変更。"
-msgstr ""
+msgstr "The name has been changed from ``ClientSession`` to |HTTPClient|."
 
 #: ../../migrating.rst:83
 msgid "``aiohttp.ClientSession`` を継承しなくなり、 :attr:`<scapi.HTTPClient._session>` に移動。"
-msgstr ""
+msgstr "It no longer inherits from ``aiohttp.ClientSession`` and has been moved to :attr:`<scapi.HTTPClient._session>`."
 
 #: ../../migrating.rst:84
 msgid "``protect`` が削除。その代わりに ``scratch_header`` と ``scratch_cookie`` が追加。"
-msgstr ""
+msgstr "``protect`` has been removed. Instead, ``scratch_header`` and ``scratch_cookie`` have been added."
 
 #: ../../migrating.rst:87
 msgid "Response"
-msgstr ""
+msgstr "Response"
 
 #: ../../migrating.rst:89
 msgid "``client`` の追加"
-msgstr ""
+msgstr "Addition of ``client``"
 
 #: ../../migrating.rst:90
 msgid "``json()`` の引数の追加 - ``loads``: json.loads の代わりに使用する関数 - ``use_unknown`` ``dict.get()`` を使用した際の ``default`` 値のデフォルトを |UNKNOWN| にするか。これはNullとキーがない状態を区別するための機能です。"
-msgstr ""
+msgstr "Added arguments to ``json()`` - ``loads``: A function to use instead of json.loads - ``use_unknown``: Whether to set the default ``default`` value to |UNKNOWN| when using ``dict.get()``. This is a feature to distinguish between null and a missing key."
 
 #: ../../migrating.rst:95
 msgid "例外"
-msgstr ""
+msgstr "Exceptions"
 
 #: ../../migrating.rst:97
 msgid "一部の例外の名称が変更されました"
-msgstr ""
+msgstr "Some exception names have been changed."
 
 #: ../../migrating.rst:99
 msgid "|Forbidden| / |CheckingFailed| の追加"
-msgstr ""
+msgstr "Addition of |Forbidden| / |CheckingFailed|"
 
 #: ../../migrating.rst:100
 msgid "|IPBanned| / |AccountBrocked| / |CommentFailure| / |LoginFailure| は |Forbidden| を継承します"
-msgstr ""
+msgstr "|IPBanned| / |AccountBrocked| / |CommentFailure| / |LoginFailure| now inherit from |Forbidden|."
 
 #: ../../migrating.rst:101
 msgid "``ObjectFetchError`` 及び ``ObjectNotFound`` は削除されました"
-msgstr ""
+msgstr "``ObjectFetchError`` and ``ObjectNotFound`` have been removed."
 
 #: ../../migrating.rst:104
 msgid "File"
-msgstr ""
+msgstr "File"
 
 #: ../../migrating.rst:105
 msgid "画像データなどの入力としてこのクラスが要求されることがあります。"
-msgstr ""
+msgstr "This class may be required as input for image data, etc."
 
 #: ../../migrating.rst:107
 msgid "**新機能**: ファイルパス/ファイルオブジェクト/バイナリ などから簡単にファイルを開けます。"
-msgstr ""
+msgstr "**New feature**: You can easily open files from file paths, file objects, binaries, etc."
 
 #: ../../migrating.rst:109
 msgid "詳しくは :class:`こちら <scapi.File>` を確認してください。"
-msgstr ""
+msgstr "For details, please see :class:`here <scapi.File>`."
 
 #: ../../migrating.rst:112
 msgid "common"
-msgstr ""
+msgstr "common"
 
 #: ../../migrating.rst:115
 msgid "sites"
-msgstr ""
+msgstr "sites"
 
 #: ../../migrating.rst:118
 msgid "Base"
-msgstr ""
+msgstr "Base"
 
 #: ../../migrating.rst:120
 msgid "一部の属性の名称が変更されました"
-msgstr ""
+msgstr "Some attribute names have been changed."
 
 #: ../../migrating.rst:123
 msgid "旧"
-msgstr ""
+msgstr "Old"
 
 #: ../../migrating.rst:123
 msgid "新"
-msgstr ""
+msgstr "New"
 
 #: ../../migrating.rst:125
 msgid "Session"
-msgstr ""
+msgstr "Session"
 
 #: ../../migrating.rst:125
 msgid ":attr:`session <scapi._BaseSiteAPI.session>`"
-msgstr ""
+msgstr ":attr:`session <scapi._BaseSiteAPI.session>`"
 
 #: ../../migrating.rst:126
 msgid "ClientSession"
-msgstr ""
+msgstr "ClientSession"
 
 #: ../../migrating.rst:126
 msgid ":attr:`client <scapi._BaseSiteAPI.client>`"
-msgstr ""
+msgstr ":attr:`client <scapi._BaseSiteAPI.client>`"
 
 #: ../../migrating.rst:127
 msgid "session_closed"
-msgstr ""
+msgstr "session_closed"
 
 #: ../../migrating.rst:127
 msgid ":attr:`client_closed <scapi._BaseSiteAPI.client_closed>`"
-msgstr ""
+msgstr ":attr:`client_closed <scapi._BaseSiteAPI.client_closed>`"
 
 #: ../../migrating.rst:128
 msgid "session_close()"
-msgstr ""
+msgstr "session_close()"
 
 #: ../../migrating.rst:128
 msgid ":func:`client_close() <scapi._BaseSiteAPI.client_close>`"
-msgstr ""
+msgstr ":func:`client_close() <scapi._BaseSiteAPI.client_close>`"
 
 #: ../../migrating.rst:131
 msgid "権限チェックは行わなくなり、 |Session| の有無のみ確認されます。"
-msgstr ""
+msgstr "Permission checks are no longer performed; only the presence or absence of |Session| is checked."
 
 #: ../../migrating.rst:132
 msgid "``link_session`` は削除されました。"
-msgstr ""
+msgstr "``link_session`` has been removed."
 
 #: ../../migrating.rst:134
 msgid "``create_Partial_******`` は削除されました。代わりに直接クラスを呼び出して作成してください。"
-msgstr ""
+msgstr "``create_Partial_******`` has been removed. Please create objects by calling the class directly instead."
 
 #: ../../migrating.rst:136
 msgid "基本的には ``class( IDなどの識別情報 , HTTPClient/Session/None(空白でも可) )`` 形式で作成できます。"
-msgstr ""
+msgstr "Basically, you can create them in the format ``class( identification information such as ID, HTTPClient/Session/None (can be left blank) )``."
 
 #: ../../migrating.rst:150
 msgid "オブジェクトの比較は ``==`` のみのサポートになりました。"
-msgstr ""
+msgstr "Object comparison is now only supported with ``==``."
 
 #: ../../migrating.rst:153
 msgid "session"
-msgstr ""
+msgstr "session"
 
 #: ../../migrating.rst:154
 msgid "クラスが作成された際に自動的にアカウント情報を ``session_id`` からロードします。"
-msgstr ""
+msgstr "When the class is created, account information is automatically loaded from ``session_id``."
 
 #: ../../migrating.rst:156
 #: ../../migrating.rst:166
 msgid "削除:"
-msgstr ""
+msgstr "Removed:"
 
 #: ../../migrating.rst:158
 msgid "``Session.is_email_verified``"
-msgstr ""
+msgstr "``Session.is_email_verified``"
 
 #: ../../migrating.rst:159
 msgid "``Session.email``"
-msgstr ""
+msgstr "``Session.email``"
 
 #: ../../migrating.rst:160
 msgid "``Session.scratcher``"
-msgstr ""
+msgstr "``Session.scratcher``"
 
 #: ../../migrating.rst:161
 msgid "``Session.mute_status``"
-msgstr ""
+msgstr "``Session.mute_status``"
 
 #: ../../migrating.rst:162
 msgid "``Session.banned``"
-msgstr ""
+msgstr "``Session.banned``"
 
 #: ../../migrating.rst:164
 msgid ":attr:`Session.status <scapi.Session.status>` からアクセスしてください。"
-msgstr ""
+msgstr "Please access it from :attr:`Session.status <scapi.Session.status>`."
 
 #: ../../migrating.rst:168
 msgid "``Session.session_decode()`` クラス作成時に自動的にデコードされ、属性に保存されます。"
-msgstr ""
+msgstr "``Session.session_decode()`` is automatically decoded when the class is created and saved as an attribute."
 
 #: ../../migrating.rst:169
 msgid "``Session.me()`` :attr:`Session.user <scapi.Session.user>`.:func:`update() <scapi.User.update>` を使用してください。"
-msgstr ""
+msgstr "``Session.me()``: Please use :attr:`Session.user <scapi.Session.user>`.:func:`update() <scapi.User.update>` instead."
 
 #: ../../migrating.rst:170
 msgid "``Session.create_Partial_myself()`` :attr:`Session.user <scapi.Session.user>` を使用してください。"
-msgstr ""
+msgstr "``Session.create_Partial_myself()``: Please use :attr:`Session.user <scapi.Session.user>` instead."
 
 #: ../../migrating.rst:173
 msgid "大半の属性の名称が変更されました。"
-msgstr ""
+msgstr "Most attribute names have been changed."
 
 #: ../../migrating.rst:176
 msgid "Project"
-msgstr ""
+msgstr "Project"
 
 #: ../../migrating.rst:178
 msgid "プロジェクトサーバー上の問題から ``Project.download`` 及び ``Project.load_json`` を削除しました。この関数は将来再実装される予定です。"
-msgstr ""
+msgstr "``Project.download`` and ``Project.load_json`` have been removed due to issues with the project server. These functions are planned to be re-implemented in the future."
 
 #: ../../migrating.rst:180
 msgid "``3.1.3`` で追加: :attr:`scapi.Project.download_url`"
-msgstr ""
+msgstr "Added in ``3.1.3``: :attr:`scapi.Project.download_url`"
 
 #: ../../migrating.rst:183
 msgid "Forum"
-msgstr ""
+msgstr "Forum"
 
 #: ../../migrating.rst:185
 msgid "フォーラムのカテゴリーはEnumからクラスでの実装になります。"
-msgstr ""
+msgstr "Forum categories are now implemented as classes instead of an Enum."
 
 #: ../../migrating.rst:188
 msgid "Activity"
-msgstr ""
+msgstr "Activity"
 
 #: ../../migrating.rst:190
 msgid "htmlから読み込むタイプのアクティビティが未実装 (ユーザーページとクラスページのやつ)"
-msgstr ""
+msgstr "Activity types loaded from HTML are not yet implemented (the ones on user pages and class pages)."
 
 #: ../../migrating.rst:193
 msgid "classroom"
-msgstr ""
+msgstr "classroom"
 
 #: ../../migrating.rst:195
 msgid "公開アクティビティの取得が未実装"
-msgstr ""
+msgstr "Retrieving public activities is not yet implemented."
 
 #: ../../migrating.rst:198
 msgid "cloud"
-msgstr ""
+msgstr "cloud"
 
 #: ../../migrating.rst:200
 msgid "``CloudWebsocketEvent`` が削除。通常のクラウドクラスでイベントが使用できるようになりました。"
-msgstr ""
+msgstr "``CloudWebsocketEvent`` has been removed. Events can now be used with the normal cloud classes."
 
 #: ../../migrating.rst:201
 msgid "クラウドサーバーは未実装です。"
-msgstr ""
+msgstr "The cloud server is not yet implemented."
 
 #: ../../migrating.rst:204
 msgid "event"
-msgstr ""
+msgstr "event"
 
 #: ../../migrating.rst:206
 msgid "でかく変わったことはないと信じてます"
-msgstr ""
-
+msgstr "I believe there haven't been any major changes."

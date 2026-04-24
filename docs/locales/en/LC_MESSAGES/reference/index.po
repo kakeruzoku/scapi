@@ -19,9 +19,9 @@ msgstr ""
 
 #: ../../reference/index.rst:2
 msgid "リファレンス"
-msgstr ""
+msgstr "Reference"
 
 #: ../../reference/index.rst:4
 msgid "ほぼ全ての関数のリファレンスです。"
-msgstr ""
+msgstr "This is the reference for almost all functions."
 

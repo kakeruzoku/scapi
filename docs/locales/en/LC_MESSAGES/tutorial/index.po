@@ -19,17 +19,17 @@ msgstr ""
 
 #: ../../tutorial/index.rst:2
 msgid "チュートリアル"
-msgstr ""
+msgstr "Tutorial"
 
 #: ../../tutorial/index.rst:4
 msgid "Scapiのチュートリアルへようこそ！"
-msgstr ""
+msgstr "Welcome to the Scapi tutorial!"
 
 #: ../../tutorial/index.rst:13
 msgid "全く初めてですか?インストールから始めましょう！"
-msgstr ""
+msgstr "Completely new? Let's start with installation!"
 
 #: ../../tutorial/index.rst:15
 msgid ":doc:`インストール <1_install>`"
-msgstr ""
+msgstr ":doc:`Installation <1_install>`"
 

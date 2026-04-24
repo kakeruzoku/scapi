@@ -19,37 +19,37 @@ msgstr ""
 
 #: ../../tutorial/2_async.rst:2
 msgid "非同期処理"
-msgstr ""
+msgstr "Asynchronous Processing"
 
 #: ../../tutorial/2_async.rst:4
 msgid "Scapiでは非同期処理を採用してコードが書かれています。"
-msgstr ""
+msgstr "Scapi is written using asynchronous processing."
 
 #: ../../tutorial/2_async.rst:7
 msgid "非同期処理とは?"
-msgstr ""
+msgstr "What is asynchronous processing?"
 
 #: ../../tutorial/2_async.rst:9
 msgid "**制作中...**"
-msgstr ""
+msgstr "**Under construction...**"
 
 #: ../../tutorial/2_async.rst:14
 msgid "対話形式でScapiを使用する"
-msgstr ""
+msgstr "Using Scapi interactively"
 
 #: ../../tutorial/2_async.rst:16
 msgid "Scapiは非同期処理を採用しているため、Python標準の対話型シェルでは直接 ``await`` 式を簡単に使用することができません。 そのため、対話形式でScapiを試す場合は、 ``await`` 式をサポートする `iPython <https://ipython.org/>`_ のようなシェルの使用をおすすめします。 iPythonは ``pip install ipython`` でインストールでき、コンソールで ``ipython`` と入力することで起動できます。"
-msgstr ""
+msgstr "Because Scapi adopts asynchronous processing, you cannot easily use ``await`` expressions directly in Python's standard interactive shell. Therefore, when trying Scapi interactively, we recommend using a shell that supports ``await`` expressions, such as `iPython <https://ipython.org/>`_. iPython can be installed with ``pip install ipython`` and launched by typing ``ipython`` in the console."
 
 #: ../../tutorial/2_async.rst:20
 msgid "iPython上で |HTTPClient| を ``await`` 式なしに作成する際は、 :func:`scapi.create_HTTPClient_async` を使用してください。これは、内部で使用しているaiohttpがイベントループを必要とするためです。"
-msgstr ""
+msgstr "When creating |HTTPClient| on iPython without an ``await`` expression, please use :func:`scapi.create_HTTPClient_async`. This is because aiohttp, which is used internally, requires an event loop."
 
 #: ../../tutorial/2_async.rst:22
 msgid "例えば以下のように使用できます。"
-msgstr ""
+msgstr "For example, you can use it as follows:"
 
 #: ../../tutorial/2_async.rst:40
 msgid "Next: :doc:`はじめてのScapi <3_first-scapi>`"
-msgstr ""
+msgstr "Next: :doc:`First Steps with Scapi <3_first-scapi>`"
 
