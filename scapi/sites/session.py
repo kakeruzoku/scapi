@@ -1,57 +1,58 @@
 from __future__ import annotations
 
-import hashlib
-from typing import AsyncGenerator, Final, Literal, overload
-import zlib
 import base64
-import json
 import datetime
+import hashlib
+import json
+import zlib
+from typing import AsyncGenerator, Final, Literal, overload
 
 import aiohttp
-from ..utils.types import (
-    DecodedSessionID,
-    SessionStatusPayload,
-    ProjectServerPayload,
-    OldAnyObjectPayload,
-    OldProjectPayload,
-    OldStudioPayload,
-    ClassCreatedPayload,
-    OldAllClassroomPayload,
-    OldIdClassroomPayload,
-    StudioCreatedPayload,
-    ScratcherInvitePayload,
-    AnySuccessPayload,
-    search_mode,
-    explore_query,
-)
-from ..utils.client import HTTPClient
-from ..utils.common import (
-    UNKNOWN,
-    MAYBE_UNKNOWN,
-    UNKNOWN_TYPE,
-    api_iterative,
-    page_api_iterative,
-    dt_from_isoformat,
-    dt_from_timestamp,
-    _AwaitableContextManager,
-    b62decode,
-    try_int,
-    split,
-    empty_project_json,
-)
-from ..utils.error import ClientError, InvalidData, Forbidden, LoginFailure
-from ..utils.config import _config
-from ..utils.file import File, _file, _read_file
+
 from ..event.cloud import ScratchCloud
 from ..event.temporal import MessageEvent
-from .base import _BaseSiteAPI
-from .classroom import Classroom, _get_class_from_token
-from .project import Project, search_projects, explore_projects
-from .studio import Studio, search_studios, explore_studios
-from .user import User
-from .forum import ForumCategory, get_forum_categories, ForumTopic, ForumPost
+from ..utils.client import HTTPClient
+from ..utils.common import (
+    MAYBE_UNKNOWN,
+    UNKNOWN,
+    UNKNOWN_TYPE,
+    _AwaitableContextManager,
+    api_iterative,
+    b62decode,
+    dt_from_isoformat,
+    dt_from_timestamp,
+    empty_project_json,
+    page_api_iterative,
+    split,
+    try_int,
+)
+from ..utils.config import _config
+from ..utils.error import ClientError, Forbidden, InvalidData, LoginFailure
+from ..utils.file import File, _file, _read_file
+from ..utils.types import (
+    AnySuccessPayload,
+    ClassCreatedPayload,
+    DecodedSessionID,
+    OldAllClassroomPayload,
+    OldAnyObjectPayload,
+    OldIdClassroomPayload,
+    OldProjectPayload,
+    OldStudioPayload,
+    ProjectServerPayload,
+    ScratcherInvitePayload,
+    SessionStatusPayload,
+    StudioCreatedPayload,
+    explore_query,
+    search_mode,
+)
 from .activity import Activity
 from .asset import Backpack
+from .base import _BaseSiteAPI
+from .classroom import Classroom, _get_class_from_token
+from .forum import ForumCategory, ForumPost, ForumTopic, get_forum_categories
+from .project import Project, explore_projects, search_projects
+from .studio import Studio, explore_studios, search_studios
+from .user import User
 
 
 def decode_session(session_id: str) -> tuple[DecodedSessionID, int]:

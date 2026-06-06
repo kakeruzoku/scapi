@@ -2,22 +2,22 @@ from __future__ import annotations
 
 import asyncio
 import dataclasses
-from typing import TYPE_CHECKING, Any, AsyncGenerator
 import json
+from typing import TYPE_CHECKING, Any, AsyncGenerator
 
 import aiohttp
 
-from .base import _BaseEvent
-from .temporal import _TemporalEvent
-from ..utils.client import HTTPClient
 from ..sites.activity import CloudActivity
-from ..utils.types import WSCloudActivityPayload
+from ..utils.client import HTTPClient
 from ..utils.common import (
     __version__,
     api_iterative,
-    wait_all_event,
     get_client_and_session,
+    wait_all_event,
 )
+from ..utils.types import WSCloudActivityPayload
+from .base import _BaseEvent
+from .temporal import _TemporalEvent
 
 if TYPE_CHECKING:
     from ..sites.session import Session
@@ -88,8 +88,9 @@ class _BaseCloud(_BaseEvent):
         self._data: dict[str, str] = {}
 
         self.ws_timeout = ws_timeout or aiohttp.ClientWSTimeout(
-            ws_receive=None, ws_close=10.0
-        )  # pyright: ignore[reportCallIssue]
+            ws_receive=None,  # pyright: ignore[reportCallIssue]
+            ws_close=10.0,  # pyright: ignore[reportCallIssue]
+        )
         self.send_timeout = send_timeout or 10
 
     @property

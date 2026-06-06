@@ -1,20 +1,20 @@
 from __future__ import annotations
 
-from abc import abstractmethod
 import asyncio
 import datetime
+from abc import abstractmethod
 from typing import TYPE_CHECKING, AsyncGenerator, Callable, Generic, NoReturn, TypeVar
 
-from .base import _BaseEvent
 from ..utils.common import UNKNOWN_TYPE
+from .base import _BaseEvent
 
 if TYPE_CHECKING:
-    from ..sites.user import User
-    from ..sites.studio import Studio
-    from ..sites.project import Project
-    from ..sites.comment import Comment
     from ..sites.activity import Activity
+    from ..sites.comment import Comment
+    from ..sites.project import Project
     from ..sites.session import Session
+    from ..sites.studio import Studio
+    from ..sites.user import User
 
 _T = TypeVar("_T")
 

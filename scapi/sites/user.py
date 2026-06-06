@@ -1,8 +1,8 @@
 from __future__ import annotations
 
 import datetime
-from enum import Enum
 import random
+from enum import Enum
 from typing import (
     TYPE_CHECKING,
     AsyncGenerator,
@@ -15,39 +15,40 @@ from typing import (
 
 import aiohttp
 import bs4
-from ..utils.types import (
-    UserPayload,
-    UserMessageCountPayload,
-    OldUserPayload,
-    StudentPayload,
-    StudentPasswordRestPayliad,
-    OcularPayload,
-    AnySuccessPayload,
-)
+
+from ..event.temporal import CommentEvent
 from ..utils.client import HTTPClient
 from ..utils.common import (
-    UNKNOWN,
     MAYBE_UNKNOWN,
+    UNKNOWN,
     UNKNOWN_TYPE,
-    api_iterative,
-    page_html_iterative,
-    dt_from_isoformat,
-    _AwaitableContextManager,
     Tag,
-    split,
+    _AwaitableContextManager,
+    api_iterative,
+    dt_from_isoformat,
     get_any_count,
+    page_html_iterative,
+    split,
 )
-from ..utils.error import ClientError, NotFound, InvalidData
+from ..utils.error import ClientError, InvalidData, NotFound
 from ..utils.file import File, _read_file
-from ..event.temporal import CommentEvent
+from ..utils.types import (
+    AnySuccessPayload,
+    OcularPayload,
+    OldUserPayload,
+    StudentPasswordRestPayliad,
+    StudentPayload,
+    UserMessageCountPayload,
+    UserPayload,
+)
+from .activity import Activity
 from .base import _BaseSiteAPI
+from .comment import Comment, get_comment_from_old
 from .project import (
     Project,
     ProjectFeatured,
 )
 from .studio import Studio
-from .comment import Comment, get_comment_from_old
-from .activity import Activity
 
 if TYPE_CHECKING:
     from .session import Session

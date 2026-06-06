@@ -5,25 +5,26 @@ import json
 from typing import TYPE_CHECKING, AsyncGenerator, Final
 
 import bs4
-from .base import _BaseSiteAPI
-from ..utils.types import CommentPayload, CommentFailurePayload, CommentPostPayload
+
 from ..utils.common import (
+    MAYBE_UNKNOWN,
     UNKNOWN,
     UNKNOWN_TYPE,
-    MAYBE_UNKNOWN,
-    dt_from_isoformat,
-    api_iterative,
-    split,
     Tag,
+    api_iterative,
+    dt_from_isoformat,
+    split,
 )
-from ..utils.error import ServerError, NotFound, NoDataError, CommentFailure
+from ..utils.error import CommentFailure, NoDataError, NotFound, ServerError
+from ..utils.types import CommentFailurePayload, CommentPayload, CommentPostPayload
+from .base import _BaseSiteAPI
 
 if TYPE_CHECKING:
-    from .session import Session
     from ..utils.client import HTTPClient
-    from .user import User
-    from .studio import Studio
     from .project import Project
+    from .session import Session
+    from .studio import Studio
+    from .user import User
 
 
 class Comment(_BaseSiteAPI[int]):
@@ -85,8 +86,8 @@ class Comment(_BaseSiteAPI[int]):
 
     @staticmethod
     def _root_url(place: "Project|Studio|User"):
-        from .studio import Studio
         from .project import Project
+        from .studio import Studio
 
         if isinstance(place, Project):
             return f"https://api.scratch.mit.edu/users/{place._author_username}/projects/{place.id}/comments/"
@@ -101,9 +102,9 @@ class Comment(_BaseSiteAPI[int]):
 
     @staticmethod
     def _root_old_url(place: "Project|Studio|User"):
-        from .user import User
-        from .studio import Studio
         from .project import Project
+        from .studio import Studio
+        from .user import User
 
         if isinstance(place, Project):
             return f"https://scratch.mit.edu/site-api/comments/project/{place.id}/"
@@ -239,9 +240,9 @@ class Comment(_BaseSiteAPI[int]):
         is_old: bool = False,
     ) -> "Comment":
         place.require_session()
-        from .user import User
-        from .studio import Studio
         from .project import Project
+        from .studio import Studio
+        from .user import User
 
         if isinstance(place, User):
             is_old = True
@@ -334,9 +335,9 @@ class Comment(_BaseSiteAPI[int]):
             is_old (bool, optional): 古いAPIを使用するか
         """
         self.require_session()
-        from .user import User
-        from .studio import Studio
         from .project import Project
+        from .studio import Studio
+        from .user import User
 
         if isinstance(self.place, User):
             is_old = True
@@ -360,9 +361,9 @@ class Comment(_BaseSiteAPI[int]):
             is_old (bool, optional): 古いAPIを使用するか
         """
         self.require_session()
-        from .user import User
-        from .studio import Studio
         from .project import Project
+        from .studio import Studio
+        from .user import User
 
         if isinstance(self.place, User):
             is_old = True

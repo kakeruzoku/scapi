@@ -3,50 +3,50 @@ from __future__ import annotations
 import datetime
 import json
 from typing import TYPE_CHECKING, AsyncGenerator, Final, Literal
+from warnings import deprecated
 
 import aiohttp
 import bs4
-from warnings import deprecated
 
-from ..utils.types import (
-    ProjectPayload,
-    ProjectLovePayload,
-    ProjectFavoritePayload,
-    ProjectVisibilityPayload,
-    UserFeaturedPayload,
-    OldProjectPayload,
-    OldProjectEditPayload,
-    ReportPayload,
-    RemixTreePayload,
-    RemixTreeDatetimePayload,
-    search_mode,
-    explore_query,
-)
+from ..event.cloud import CloudLogEvent, ScratchCloud
+from ..event.temporal import CommentEvent
+from ..utils.client import HTTPClient
 from ..utils.common import (
-    UNKNOWN,
     MAYBE_UNKNOWN,
+    UNKNOWN,
     UNKNOWN_TYPE,
+    Tag,
+    _AwaitableContextManager,
     api_iterative,
     dt_from_isoformat,
     dt_from_timestamp,
-    _AwaitableContextManager,
-    Tag,
     split,
     temporary_httpclient,
 )
-from ..utils.client import HTTPClient
-from ..utils.error import NoDataError, TooManyRequests, InvalidData, NotFound
+from ..utils.error import InvalidData, NoDataError, NotFound, TooManyRequests
 from ..utils.file import File, _file
-from ..event.cloud import ScratchCloud, CloudLogEvent
-from ..event.temporal import CommentEvent
+from ..utils.types import (
+    OldProjectEditPayload,
+    OldProjectPayload,
+    ProjectFavoritePayload,
+    ProjectLovePayload,
+    ProjectPayload,
+    ProjectVisibilityPayload,
+    RemixTreeDatetimePayload,
+    RemixTreePayload,
+    ReportPayload,
+    UserFeaturedPayload,
+    explore_query,
+    search_mode,
+)
+from .activity import CloudActivity
 from .base import _BaseSiteAPI
 from .comment import Comment, get_comment_from_old
-from .activity import CloudActivity
 
 if TYPE_CHECKING:
     from .session import Session
-    from .user import User, ProjectFeaturedLabel
     from .studio import Studio
+    from .user import ProjectFeaturedLabel, User
 
 
 class Project(_BaseSiteAPI[int]):

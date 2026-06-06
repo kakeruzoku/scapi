@@ -4,16 +4,16 @@ from dataclasses import dataclass
 from enum import Enum
 from typing import TYPE_CHECKING, Literal
 
+from ..utils.common import MAYBE_UNKNOWN, UNKNOWN
 from ..utils.types import (
     CheckAnyPayload,
-    TranslatePayload,
-    TranslateSupportedPayload,
-    TotalSiteStatusPayload,
-    MonthlySiteTrafficPayload,
     MonthlyActivityGraphPayload,
     MonthlyActivityPayload,
+    MonthlySiteTrafficPayload,
+    TotalSiteStatusPayload,
+    TranslatePayload,
+    TranslateSupportedPayload,
 )
-from ..utils.common import UNKNOWN, MAYBE_UNKNOWN
 
 if TYPE_CHECKING:
     from ..utils.client import HTTPClient

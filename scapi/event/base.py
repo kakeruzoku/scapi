@@ -1,7 +1,7 @@
 from __future__ import annotations
 
-from abc import ABC, abstractmethod
 import asyncio
+from abc import ABC, abstractmethod
 from typing import Any, Callable, Coroutine, NoReturn, ParamSpec, TypeVar
 
 async_def_type = Callable[..., Coroutine[Any, Any, Any]]

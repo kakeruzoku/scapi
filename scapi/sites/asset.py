@@ -1,15 +1,15 @@
 from __future__ import annotations
 
 from enum import Enum
-from typing import Final, TYPE_CHECKING
+from typing import TYPE_CHECKING, Final
 
 from ..utils.client import HTTPClient
 from ..utils.common import (
     MAYBE_UNKNOWN,
     UNKNOWN,
 )
-from .base import _BaseSiteAPI
 from ..utils.types import BackpackPayload
+from .base import _BaseSiteAPI
 
 if TYPE_CHECKING:
     from .session import Session

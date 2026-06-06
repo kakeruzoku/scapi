@@ -1,51 +1,51 @@
 from __future__ import annotations
 
 import datetime
-from enum import Enum
 import re
+from enum import Enum
 from typing import TYPE_CHECKING, Any, Self, TypedDict
 
 import bs4
 
-from .base import _BaseSiteAPI
-from ..utils.types import WSCloudActivityPayload, CloudLogPayload, OldUserPayload
 from ..utils.activity_types import (
-    _BaseActivity,
     ClassAnyActivity,
-    StudioAnyActivity,
     FeedAnyActivity,
     MessageAnyActivity,
+    StudioAnyActivity,
+    _BaseActivity,
 )
 from ..utils.common import (
-    UNKNOWN,
     MAYBE_UNKNOWN,
-    dt_from_timestamp,
-    dt_from_isoformat,
+    UNKNOWN,
     Tag,
+    dt_from_isoformat,
+    dt_from_timestamp,
     split,
 )
 from ..utils.error import (
     NoDataError,
 )
+from ..utils.types import CloudLogPayload, OldUserPayload, WSCloudActivityPayload
+from .base import _BaseSiteAPI
 
 if TYPE_CHECKING:
-    from .session import Session
-    from ..utils.client import HTTPClient
     from ..event.cloud import _BaseCloud
-    from .user import User
-    from .project import Project
-    from .studio import Studio
+    from ..utils.client import HTTPClient
     from .comment import Comment
     from .forum import ForumTopic
+    from .project import Project
+    from .session import Session
+    from .studio import Studio
+    from .user import User
 
 
 def _import():
     global User, Project, Studio, Comment, ForumTopic
-    from .user import User
-    from .project import Project
-    from .studio import Studio
     from .comment import Comment
     from .forum import ForumTopic
+    from .project import Project
+    from .studio import Studio
+    from .user import User
 
 
 class CloudActivityPayload(TypedDict):

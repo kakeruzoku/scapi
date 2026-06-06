@@ -2,13 +2,13 @@ from __future__ import annotations
 
 import asyncio
 import inspect
+import io
 from contextlib import asynccontextmanager
 from pathlib import Path
 from typing import Any, AsyncGenerator, Protocol, TypeGuard, runtime_checkable
 
-from aiofiles.threadpool.binary import AsyncBufferedReader
-import io
 import aiofiles
+from aiofiles.threadpool.binary import AsyncBufferedReader
 
 from .common import maybe_coroutine
 

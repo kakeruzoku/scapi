@@ -1,25 +1,27 @@
 from __future__ import annotations
 
-from typing import Any, Callable, TypedDict, Unpack
-import aiohttp
 import json as _json
+from typing import Any, Callable, TypedDict, Unpack
 from urllib.parse import urlparse
+
+import aiohttp
+
+from .common import UnknownDict, split
 from .config import _config
 from .error import (
-    SessionClosed,
-    ProcessingError,
-    IPBanned,
     AccountBlocked,
-    Unauthorized,
-    Forbidden,
-    NotFound,
-    TooManyRequests,
     ClientError,
-    ServerError,
+    Forbidden,
+    IPBanned,
+    NotFound,
+    ProcessingError,
     RegistrationRequested,
     ResetPasswordRequested,
+    ServerError,
+    SessionClosed,
+    TooManyRequests,
+    Unauthorized,
 )
-from .common import split, UnknownDict
 
 default_headers = {
     "user-agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/75.0.3770.142 Safari/537.36",

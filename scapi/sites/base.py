@@ -1,7 +1,7 @@
 from __future__ import annotations
 
 from abc import ABC, abstractmethod
-from typing import TYPE_CHECKING, Any, Callable, Self, TypeVar, Generic
+from typing import TYPE_CHECKING, Any, Callable, Generic, Self, TypeVar
 
 from ..utils.client import HTTPClient
 from ..utils.common import (

@@ -1,13 +1,16 @@
 from __future__ import annotations
 
 import asyncio
+import datetime
+import inspect
+import string
 from contextlib import asynccontextmanager
 from enum import Enum
-import string
-import datetime
+from functools import wraps
 from typing import (
     TYPE_CHECKING,
     Any,
+    AsyncContextManager,
     AsyncGenerator,
     Callable,
     Coroutine,
@@ -19,21 +22,18 @@ from typing import (
     Sequence,
     TypeVar,
     overload,
-    AsyncContextManager,
 )
-import inspect
-from functools import wraps
 
 import bs4
 
-from .error import NotFound
 from .config import _config
+from .error import NotFound
 
 if TYPE_CHECKING:
-    from .client import HTTPClient
     from ..sites.session import Session
+    from .client import HTTPClient
 
-__version__ = "3.2.2"
+__version__ = "3.2.3"
 
 _KT = TypeVar("_KT")
 _VT = TypeVar("_VT")

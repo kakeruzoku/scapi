@@ -1,19 +1,19 @@
 from __future__ import annotations
 
 import datetime
-from typing import TYPE_CHECKING, Any, AsyncGenerator, Final
 import math
+from typing import TYPE_CHECKING, Any, AsyncGenerator, Final
 
 import bs4
 
 from ..utils.client import HTTPClient
 from ..utils.common import (
-    UNKNOWN,
     MAYBE_UNKNOWN,
-    _AwaitableContextManager,
-    temporary_httpclient,
-    split,
+    UNKNOWN,
     Tag,
+    _AwaitableContextManager,
+    split,
+    temporary_httpclient,
 )
 from ..utils.types import OcularReactionPayload
 from .base import _BaseSiteAPI

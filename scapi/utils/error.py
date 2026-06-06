@@ -2,12 +2,13 @@ from __future__ import annotations
 
 import time
 from typing import TYPE_CHECKING, Any
+
 from .types import (
-    NoElementsPayload,
-    LoginFailurePayload,
-    CommentMuteStatusPayload,
-    CommentFailurePayload,
     CommentFailureOldPayload,
+    CommentFailurePayload,
+    CommentMuteStatusPayload,
+    LoginFailurePayload,
+    NoElementsPayload,
 )
 
 if TYPE_CHECKING:

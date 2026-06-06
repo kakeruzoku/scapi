@@ -4,39 +4,40 @@ import datetime
 from typing import TYPE_CHECKING, AsyncGenerator, Final, Literal, Self
 
 import aiohttp
-from ..utils.types import (
-    StudioPayload,
-    StudioRolePayload,
-    OldStudioPayload,
-    StudioClassroomPayload,
-    ReportPayload,
-    search_mode,
-    explore_query,
-)
+
+from ..event.temporal import CommentEvent
 from ..utils.activity_types import StudioAnyActivity
+from ..utils.client import HTTPClient
 from ..utils.common import (
-    UNKNOWN,
     MAYBE_UNKNOWN,
+    UNKNOWN,
     UNKNOWN_TYPE,
+    Tag,
+    _AwaitableContextManager,
     api_iterative,
     dt_from_isoformat,
-    _AwaitableContextManager,
-    Tag,
     split,
 )
-from ..utils.client import HTTPClient
-from ..utils.error import ClientError, NotFound, InvalidData
+from ..utils.error import ClientError, InvalidData, NotFound
 from ..utils.file import File, _read_file
-from ..event.temporal import CommentEvent
+from ..utils.types import (
+    OldStudioPayload,
+    ReportPayload,
+    StudioClassroomPayload,
+    StudioPayload,
+    StudioRolePayload,
+    explore_query,
+    search_mode,
+)
+from .activity import Activity
 from .base import _BaseSiteAPI
 from .comment import Comment, get_comment_from_old
 from .project import Project
-from .activity import Activity
 
 if TYPE_CHECKING:
+    from .classroom import Classroom
     from .session import Session
     from .user import User
-    from .classroom import Classroom
 
 
 class Studio(_BaseSiteAPI[int]):
