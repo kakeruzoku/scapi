@@ -55,16 +55,18 @@ class Response:
     def _check(self):
         url = self._response.url
         status_code = self.status_code
-        if url.host == "scratch.mit.edu":
-            if url.path.startswith("/ip_ban_appeal/"):
-                raise IPBanned(self,split(url.path,"/ip_ban_appeal/","/"))
-            elif url.path.startswith("/accounts/banned-response"):
+        host: str | None = url.host # pyright: ignore[reportAttributeAccessIssue]
+        path: str = url.path  # pyright: ignore[reportAttributeAccessIssue]
+        if host == "scratch.mit.edu":
+            if path.startswith("/ip_ban_appeal/"):
+                raise IPBanned(self,split(path,"/ip_ban_appeal/","/"))
+            elif path.startswith("/accounts/banned-response"):
                 raise AccountBlocked(self)
-            elif url.path.startswith("/accounts/login"):
+            elif path.startswith("/accounts/login"):
                 raise Unauthorized(self)
-            elif url.path.startswith("/classes/complete_registration"):
+            elif path.startswith("/classes/complete_registration"):
                 raise RegistrationRequested(self)
-            elif url.path.startswith("/classes/student_password_reset"):
+            elif path.startswith("/classes/student_password_reset"):
                 raise ResetPasswordRequested(self)
         if status_code == 401:
             raise Unauthorized(self)
