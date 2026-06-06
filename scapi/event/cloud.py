@@ -11,21 +11,21 @@ from .base import _BaseEvent
 from .temporal import _TemporalEvent
 from ..utils.client import HTTPClient
 from ..sites.activity import CloudActivity
-from ..utils.types import (
-    WSCloudActivityPayload
-)
+from ..utils.types import WSCloudActivityPayload
 from ..utils.common import (
     __version__,
     api_iterative,
     wait_all_event,
-    get_client_and_session
+    get_client_and_session,
 )
 
 if TYPE_CHECKING:
     from ..sites.session import Session
 
+
 class NormalDisconnection(Exception):
     pass
+
 
 @dataclasses.dataclass(order=True)
 class CloudQueue:
@@ -33,6 +33,7 @@ class CloudQueue:
     body: str = dataclasses.field(compare=False)
     future: asyncio.Future = dataclasses.field(compare=False)
     len: int = dataclasses.field(compare=False)
+
 
 class _BaseCloud(_BaseEvent):
     """
@@ -54,38 +55,41 @@ class _BaseCloud(_BaseEvent):
         ws_timeout (aiohttp.ClientWSTimeout): aiohttpライブラリのタイムアウト設定
         send_timeout (float): データを送信する時のタイムアウトまでの時間
     """
-    max_length:int|None = None
-    rate_limit:float|None = None
+
+    max_length: int | None = None
+    rate_limit: float | None = None
 
     def __init__(
-            self,
-            url:str,
-            client:HTTPClient,
-            project_id:int|str,
-            username:str,
-            ws_timeout:aiohttp.ClientWSTimeout|None=None,
-            send_timeout:float|None=None
-        ):
+        self,
+        url: str,
+        client: HTTPClient,
+        project_id: int | str,
+        username: str,
+        ws_timeout: aiohttp.ClientWSTimeout | None = None,
+        send_timeout: float | None = None,
+    ):
         super().__init__()
         self.url = url
 
-        self.client:HTTPClient = client or HTTPClient()
-        self.session:"Session|None" = None
+        self.client: HTTPClient = client or HTTPClient()
+        self.session: "Session|None" = None
 
-        self._ws:aiohttp.ClientWebSocketResponse|None = None
-        self._ws_event:asyncio.Event = asyncio.Event()
+        self._ws: aiohttp.ClientWebSocketResponse | None = None
+        self._ws_event: asyncio.Event = asyncio.Event()
         self._ws_event.clear()
 
-        self.header:dict[str,str] = {}
+        self.header: dict[str, str] = {}
         self.project_id = project_id
         self.username = username
 
-        self._send_queue:asyncio.PriorityQueue[CloudQueue] = asyncio.PriorityQueue()
-        self._send_next:CloudQueue|None = None
+        self._send_queue: asyncio.PriorityQueue[CloudQueue] = asyncio.PriorityQueue()
+        self._send_next: CloudQueue | None = None
 
-        self._data:dict[str,str] = {}
+        self._data: dict[str, str] = {}
 
-        self.ws_timeout = ws_timeout or aiohttp.ClientWSTimeout(ws_receive=None, ws_close=10.0) # pyright: ignore[reportCallIssue]
+        self.ws_timeout = ws_timeout or aiohttp.ClientWSTimeout(
+            ws_receive=None, ws_close=10.0
+        )  # pyright: ignore[reportCallIssue]
         self.send_timeout = send_timeout or 10
 
     @property
@@ -102,8 +106,14 @@ class _BaseCloud(_BaseEvent):
         if self._ws is None:
             raise ValueError("Websocket is None")
         return self._ws
-    
-    def send(self,payload:list[dict[str,str]],*,project_id:str|int|None=None,priority:int=10) -> asyncio.Future:
+
+    def send(
+        self,
+        payload: list[dict[str, str]],
+        *,
+        project_id: str | int | None = None,
+        priority: int = 10,
+    ) -> asyncio.Future:
         """
         サーバーにデータを送信する。
 
@@ -116,14 +126,14 @@ class _BaseCloud(_BaseEvent):
             asyncio.Future: データの送信が完了するまで待つFuture
         """
         add_param = {
-            "user":self.username,
-            "project_id":str(self.project_id if project_id is None else project_id)
+            "user": self.username,
+            "project_id": str(self.project_id if project_id is None else project_id),
         }
-        text = "".join([json.dumps(add_param|i)+"\n" for i in payload])
+        text = "".join([json.dumps(add_param | i) + "\n" for i in payload])
         future = asyncio.Future()
-        self._send_queue.put_nowait(CloudQueue(priority,text,future,len(payload)))
+        self._send_queue.put_nowait(CloudQueue(priority, text, future, len(payload)))
         return future
-    
+
     def queue_len(self) -> int:
         """
         キューの長さを取得する。
@@ -137,36 +147,44 @@ class _BaseCloud(_BaseEvent):
         """
         ハンドシェイクを送信する
         """
-        await self.ws.send_str(json.dumps({
-            "method":"handshake",
-            "user":self.username,
-            "project_id":str(self.project_id)
-        })+"\n")
+        await self.ws.send_str(
+            json.dumps(
+                {
+                    "method": "handshake",
+                    "user": self.username,
+                    "project_id": str(self.project_id),
+                }
+            )
+            + "\n"
+        )
         if self.rate_limit is not None:
             await asyncio.sleep(self.rate_limit)
 
-    def _received_data(self,datas):
-        if isinstance(datas,bytes):
+    def _received_data(self, datas):
+        if isinstance(datas, bytes):
             try:
                 datas = datas.decode()
             except ValueError:
                 return
         for raw_data in datas.split("\n"):
             try:
-                data:WSCloudActivityPayload = json.loads(raw_data,parse_constant=str,parse_float=str,parse_int=str)
+                data: WSCloudActivityPayload = json.loads(
+                    raw_data, parse_constant=str, parse_float=str, parse_int=str
+                )
             except json.JSONDecodeError:
                 continue
-            if not isinstance(data,dict):
+            if not isinstance(data, dict):
                 continue
-            method = data.get("method","")
+            method = data.get("method", "")
             if method != "set":
                 continue
             self._data[data.get("name")] = data.get("value")
-            self._call_event(self.on_set,CloudActivity._create_from_ws(data,self))
+            self._call_event(self.on_set, CloudActivity._create_from_ws(data, self))
 
-    async def _event_monitoring(self,event:asyncio.Event):
-        await asyncio.gather(self._connecter(),self._sender(),self._reader())
-        if TYPE_CHECKING: raise #NoReturn
+    async def _event_monitoring(self, event: asyncio.Event):
+        await asyncio.gather(self._connecter(), self._sender(), self._reader())
+        if TYPE_CHECKING:
+            raise  # NoReturn
 
     async def _cleanup(self):
         self.clear_queue()
@@ -180,7 +198,7 @@ class _BaseCloud(_BaseEvent):
                     headers=self.header,
                     timeout=self.ws_timeout,
                     proxy=self.client._proxy,
-                    proxy_auth=self.client._proxy_auth
+                    proxy_auth=self.client._proxy_auth,
                 ) as ws:
                     self._ws = ws
                     await self.handshake()
@@ -189,9 +207,9 @@ class _BaseCloud(_BaseEvent):
                     wait_count = 0
                     await asyncio.Future()
             except Exception as e:
-                self._call_event(self.on_error,e)
+                self._call_event(self.on_error, e)
             self._ws_event.clear()
-            self._call_event(self.on_disconnect,wait_count)
+            self._call_event(self.on_disconnect, wait_count)
             await asyncio.sleep(wait_count)
             wait_count += 2
             await self._event.wait()
@@ -206,8 +224,12 @@ class _BaseCloud(_BaseEvent):
                         case aiohttp.WSMsgType.TEXT:
                             ws_data = w.data
                         case aiohttp.WSMsgType.BINARY:
-                            ws_data:str = w.data.decode()
-                        case aiohttp.WSMsgType.CLOSED|aiohttp.WSMsgType.CLOSING|aiohttp.WSMsgType.CLOSE:
+                            ws_data: str = w.data.decode()
+                        case (
+                            aiohttp.WSMsgType.CLOSED
+                            | aiohttp.WSMsgType.CLOSING
+                            | aiohttp.WSMsgType.CLOSE
+                        ):
                             raise NormalDisconnection
                         case _:
                             continue
@@ -215,21 +237,28 @@ class _BaseCloud(_BaseEvent):
                         continue
                     for raw_data in ws_data.split("\n"):
                         try:
-                            data:WSCloudActivityPayload = json.loads(raw_data,parse_constant=str,parse_float=str,parse_int=str)
+                            data: WSCloudActivityPayload = json.loads(
+                                raw_data,
+                                parse_constant=str,
+                                parse_float=str,
+                                parse_int=str,
+                            )
                         except json.JSONDecodeError:
                             continue
-                        if not isinstance(data,dict):
+                        if not isinstance(data, dict):
                             continue
-                        method = data.get("method","")
+                        method = data.get("method", "")
                         if method != "set":
                             continue
                         self._data[data.get("name")] = data.get("value")
-                        self._call_event(self.on_set,CloudActivity._create_from_ws(data,self))
+                        self._call_event(
+                            self.on_set, CloudActivity._create_from_ws(data, self)
+                        )
             except NormalDisconnection:
                 pass
             except Exception as e:
-                self._call_event(self.on_error,e)
-            await wait_all_event(self._event,self._ws_event)
+                self._call_event(self.on_error, e)
+            await wait_all_event(self._event, self._ws_event)
 
     async def _sender(self):
         self._send_next = None
@@ -238,7 +267,7 @@ class _BaseCloud(_BaseEvent):
             try:
                 if self._send_next is None:
                     self._send_next = await self._send_queue.get()
-                if not all((self._event.is_set(),self._ws_event.is_set())):
+                if not all((self._event.is_set(), self._ws_event.is_set())):
                     raise NormalDisconnection
                 await self.ws.send_str(self._send_next.body)
                 self._send_next.future.set_result(None)
@@ -247,10 +276,10 @@ class _BaseCloud(_BaseEvent):
             except NormalDisconnection:
                 pass
             except Exception as e:
-                self._call_event(self.on_error,e)
+                self._call_event(self.on_error, e)
             if self.rate_limit is not None:
-                await asyncio.sleep(self.rate_limit*(min(1,send_count)))
-            await wait_all_event(self._event,self._ws_event)
+                await asyncio.sleep(self.rate_limit * (min(1, send_count)))
+            await wait_all_event(self._event, self._ws_event)
 
     async def on_connect(self):
         """
@@ -258,7 +287,7 @@ class _BaseCloud(_BaseEvent):
         """
         pass
 
-    async def on_set(self,activity:CloudActivity):
+    async def on_set(self, activity: CloudActivity):
         """
         [イベント] 変数の値が変更された。
 
@@ -267,7 +296,7 @@ class _BaseCloud(_BaseEvent):
         """
         pass
 
-    async def on_disconnect(self,interval:int):
+    async def on_disconnect(self, interval: int):
         """
         [イベント] サーバーから切断された。
 
@@ -284,8 +313,8 @@ class _BaseCloud(_BaseEvent):
             dict[str, str]: 変数名と値のペア
         """
         return self._data.copy()
-    
-    def get_var(self,var:str,*,add_cloud_symbol:bool=True) -> str | None:
+
+    def get_var(self, var: str, *, add_cloud_symbol: bool = True) -> str | None:
         """
         クラウド変数を読み込む
 
@@ -300,21 +329,21 @@ class _BaseCloud(_BaseEvent):
             var = self.add_cloud_symbol(var)
         return self._data.get(var)
 
-    async def wait_connect(self,timeout:float|None=None):
+    async def wait_connect(self, timeout: float | None = None):
         """
         サーバーに接続するまで待機します。
 
         Args:
             timeout (float|None, optional): タイムアウトさせたい場合、その時間
         """
-        await asyncio.wait_for(self._ws_event.wait(),timeout)
+        await asyncio.wait_for(self._ws_event.wait(), timeout)
 
     @property
     def is_connect(self) -> bool:
         return self._ws_event.is_set()
 
     @staticmethod
-    def add_cloud_symbol(text:str) -> str:
+    def add_cloud_symbol(text: str) -> str:
         """
         先頭に☁がない場合☁を先頭に挿入する。
 
@@ -325,10 +354,18 @@ class _BaseCloud(_BaseEvent):
             str: 変換されたテキスト
         """
         if not text.startswith("☁ "):
-            return "☁ "+text
+            return "☁ " + text
         return text
 
-    def set_var(self,variable:str,value:Any,*,project_id:str|int|None=None,add_cloud_symbol:bool=True,priority:int=10) -> asyncio.Future:
+    def set_var(
+        self,
+        variable: str,
+        value: Any,
+        *,
+        project_id: str | int | None = None,
+        add_cloud_symbol: bool = True,
+        priority: int = 10,
+    ) -> asyncio.Future:
         """
         クラウド変数を変更する。
 
@@ -342,13 +379,28 @@ class _BaseCloud(_BaseEvent):
         Returns:
             asyncio.Future: データの送信が完了するまで待つFuture
         """
-        return self.send([{
-            "method":"set",
-            "name":self.add_cloud_symbol(variable) if add_cloud_symbol else variable,
-            "value":str(value)
-        }],project_id=project_id,priority=priority)
+        return self.send(
+            [
+                {
+                    "method": "set",
+                    "name": self.add_cloud_symbol(variable)
+                    if add_cloud_symbol
+                    else variable,
+                    "value": str(value),
+                }
+            ],
+            project_id=project_id,
+            priority=priority,
+        )
 
-    def set_vars(self,data:dict[str,Any],*,project_id:str|int|None=None,add_cloud_symbol:bool=True,priority:int=10) -> asyncio.Future:
+    def set_vars(
+        self,
+        data: dict[str, Any],
+        *,
+        project_id: str | int | None = None,
+        add_cloud_symbol: bool = True,
+        priority: int = 10,
+    ) -> asyncio.Future:
         """
         クラウド変数を変更する。
 
@@ -361,13 +413,28 @@ class _BaseCloud(_BaseEvent):
         Returns:
             asyncio.Future: データの送信が完了するまで待つFuture
         """
-        return self.send([{
-            "method":"set",
-            "name":self.add_cloud_symbol(k) if add_cloud_symbol else k,
-            "value":str(v)
-        } for k,v in data],project_id=project_id,priority=priority)
-    
-    def create_var(self,variable:str,value:Any=0,*,project_id:str|int|None=None,add_cloud_symbol:bool=True,priority:int=10) -> asyncio.Future:
+        return self.send(
+            [
+                {
+                    "method": "set",
+                    "name": self.add_cloud_symbol(k) if add_cloud_symbol else k,
+                    "value": str(v),
+                }
+                for k, v in data
+            ],
+            project_id=project_id,
+            priority=priority,
+        )
+
+    def create_var(
+        self,
+        variable: str,
+        value: Any = 0,
+        *,
+        project_id: str | int | None = None,
+        add_cloud_symbol: bool = True,
+        priority: int = 10,
+    ) -> asyncio.Future:
         """
         クラウド変数を作成する。
 
@@ -381,13 +448,29 @@ class _BaseCloud(_BaseEvent):
         Returns:
             asyncio.Future: データの送信が完了するまで待つFuture
         """
-        return self.send([{
-            "method":"create",
-            "name":self.add_cloud_symbol(variable) if add_cloud_symbol else variable,
-            "value":str(value)
-        }],project_id=project_id,priority=priority)
-    
-    def rename_var(self,old:str,new:str,*,project_id:str|int|None=None,add_cloud_symbol:bool=True,priority:int=10) -> asyncio.Future:
+        return self.send(
+            [
+                {
+                    "method": "create",
+                    "name": self.add_cloud_symbol(variable)
+                    if add_cloud_symbol
+                    else variable,
+                    "value": str(value),
+                }
+            ],
+            project_id=project_id,
+            priority=priority,
+        )
+
+    def rename_var(
+        self,
+        old: str,
+        new: str,
+        *,
+        project_id: str | int | None = None,
+        add_cloud_symbol: bool = True,
+        priority: int = 10,
+    ) -> asyncio.Future:
         """
         クラウド変数名を変更する。
 
@@ -401,13 +484,26 @@ class _BaseCloud(_BaseEvent):
         Returns:
             asyncio.Future: データの送信が完了するまで待つFuture
         """
-        return self.send([{
-            "method":"rename",
-            "name":self.add_cloud_symbol(old) if add_cloud_symbol else old,
-            "new_name":self.add_cloud_symbol(new) if add_cloud_symbol else new
-        }],project_id=project_id,priority=priority)
-    
-    def delete_var(self,name:str,*,project_id:str|int|None=None,add_cloud_symbol:bool=True,priority:int=10) -> asyncio.Future:
+        return self.send(
+            [
+                {
+                    "method": "rename",
+                    "name": self.add_cloud_symbol(old) if add_cloud_symbol else old,
+                    "new_name": self.add_cloud_symbol(new) if add_cloud_symbol else new,
+                }
+            ],
+            project_id=project_id,
+            priority=priority,
+        )
+
+    def delete_var(
+        self,
+        name: str,
+        *,
+        project_id: str | int | None = None,
+        add_cloud_symbol: bool = True,
+        priority: int = 10,
+    ) -> asyncio.Future:
         """
         クラウド変数を削除する。
 
@@ -420,10 +516,16 @@ class _BaseCloud(_BaseEvent):
         Returns:
             asyncio.Future: データの送信が完了するまで待つFuture
         """
-        return self.send([{
-            "method":"delete",
-            "name":self.add_cloud_symbol(name) if add_cloud_symbol else name,
-        }],project_id=project_id,priority=priority)
+        return self.send(
+            [
+                {
+                    "method": "delete",
+                    "name": self.add_cloud_symbol(name) if add_cloud_symbol else name,
+                }
+            ],
+            project_id=project_id,
+            priority=priority,
+        )
 
     def clear_queue(self):
         """
@@ -436,24 +538,27 @@ class _BaseCloud(_BaseEvent):
         except asyncio.QueueEmpty:
             pass
 
+
 turbowarp_cloud_url = "wss://clouddata.turbowarp.org"
 scratch_cloud_url = "wss://clouddata.scratch.mit.edu"
+
 
 class TurboWarpCloud(_BaseCloud):
     """
     turbowarpクラウドサーバー用クラス
     """
+
     def __init__(
-            self,
-            client: HTTPClient,
-            project_id:int|str,
-            username:str="scapi",
-            *,
-            reason:str="Unknown",
-            url:str=turbowarp_cloud_url,
-            timeout:aiohttp.ClientWSTimeout|None=None,
-            send_timeout:float|None=None
-        ):
+        self,
+        client: HTTPClient,
+        project_id: int | str,
+        username: str = "scapi",
+        *,
+        reason: str = "Unknown",
+        url: str = turbowarp_cloud_url,
+        timeout: aiohttp.ClientWSTimeout | None = None,
+        send_timeout: float | None = None,
+    ):
         """
 
         Args:
@@ -469,6 +574,7 @@ class TurboWarpCloud(_BaseCloud):
 
         self.header["User-Agent"] = f"Scapi/{__version__} ({reason})"
 
+
 class ScratchCloud(_BaseCloud):
     """
     scratchクラウドサーバー用クラス
@@ -479,14 +585,15 @@ class ScratchCloud(_BaseCloud):
 
     max_length = 256
     rate_limit = 0.1
+
     def __init__(
-            self,
-            session:"Session",
-            project_id:int|str,
-            *,
-            timeout:aiohttp.ClientWSTimeout|None=None,
-            send_timeout:float|None=None
-        ):
+        self,
+        session: "Session",
+        project_id: int | str,
+        *,
+        timeout: aiohttp.ClientWSTimeout | None = None,
+        send_timeout: float | None = None,
+    ):
         """
 
         Args:
@@ -495,14 +602,23 @@ class ScratchCloud(_BaseCloud):
             timeout (aiohttp.ClientWSTimeout | None, optional): aiohttp側で使用するタイムアウト
             send_timeout (float | None, optional): set_var()などを実行してから、送信できるようになるまで待つ最大時間
         """
-        super().__init__(scratch_cloud_url, session.client, project_id, session.username, timeout, send_timeout)
+        super().__init__(
+            scratch_cloud_url,
+            session.client,
+            project_id,
+            session.username,
+            timeout,
+            send_timeout,
+        )
         self.session = session
         self.header = {
-            "Cookie":f'scratchsessionsid="{self.session.session_id}";',
-            "Origin":"https://scratch.mit.edu"
+            "Cookie": f'scratchsessionsid="{self.session.session_id}";',
+            "Origin": "https://scratch.mit.edu",
         }
 
-    async def get_logs(self,limit:int|None=None,offset:int|None=None) -> AsyncGenerator["CloudActivity", None]:
+    async def get_logs(
+        self, limit: int | None = None, offset: int | None = None
+    ) -> AsyncGenerator["CloudActivity", None]:
         """
         クラウド変数のログを取得する。
 
@@ -514,12 +630,18 @@ class ScratchCloud(_BaseCloud):
             CloudActivity:
         """
         async for _a in api_iterative(
-            self.client,"https://clouddata.scratch.mit.edu/logs",
-            limit=limit,offset=offset,max_limit=100,params={"projectid":self.project_id},
+            self.client,
+            "https://clouddata.scratch.mit.edu/logs",
+            limit=limit,
+            offset=offset,
+            max_limit=100,
+            params={"projectid": self.project_id},
         ):
-            yield CloudActivity._create_from_log(_a,self.project_id,self.session or self.client)
+            yield CloudActivity._create_from_log(
+                _a, self.project_id, self.session or self.client
+            )
 
-    def log_event(self,*,interval:float=1) -> CloudLogEvent:
+    def log_event(self, *, interval: float = 1) -> CloudLogEvent:
         """
         :class:`CloudLogEvent` を作成する。
 
@@ -529,7 +651,8 @@ class ScratchCloud(_BaseCloud):
         Returns:
             CloudLogEvent:
         """
-        return CloudLogEvent(self.project_id,interval,self.session)
+        return CloudLogEvent(self.project_id, interval, self.session)
+
 
 class CloudLogEvent(_TemporalEvent[CloudActivity]):
     """
@@ -541,25 +664,31 @@ class CloudLogEvent(_TemporalEvent[CloudActivity]):
         interval (float):
         lastest_time (datetime.datetime):
     """
-    def __init__(self,project_id:str|int,interval:float=1,client_or_session:"HTTPClient|Session|None"=None):
-        super().__init__(interval,self.get_logs,"datetime")
 
-        self.client,self.session = get_client_and_session(client_or_session)
+    def __init__(
+        self,
+        project_id: str | int,
+        interval: float = 1,
+        client_or_session: "HTTPClient|Session|None" = None,
+    ):
+        super().__init__(interval, self.get_logs, "datetime")
+
+        self.client, self.session = get_client_and_session(client_or_session)
         self.project_id = str(project_id)
 
-    def _make_event(self, obj:CloudActivity):
-        self._call_event(self.on_change,obj)
+    def _make_event(self, obj: CloudActivity):
+        self._call_event(self.on_change, obj)
         match obj.method:
             case "set":
-                self._call_event(self.on_set,obj)
+                self._call_event(self.on_set, obj)
             case "create":
-                self._call_event(self.on_create,obj)
+                self._call_event(self.on_create, obj)
             case "rename":
-                self._call_event(self.on_rename,obj)
+                self._call_event(self.on_rename, obj)
             case "delete":
-                self._call_event(self.on_delete,obj)
+                self._call_event(self.on_delete, obj)
 
-    async def on_change(self,activity:CloudActivity):
+    async def on_change(self, activity: CloudActivity):
         """
         [イベント] 変数が編集された。
         これは全てのログに対して呼び出されます。
@@ -569,7 +698,7 @@ class CloudLogEvent(_TemporalEvent[CloudActivity]):
         """
         pass
 
-    async def on_set(self,activity:CloudActivity):
+    async def on_set(self, activity: CloudActivity):
         """
         [イベント] 変数がセットされた。
 
@@ -578,7 +707,7 @@ class CloudLogEvent(_TemporalEvent[CloudActivity]):
         """
         pass
 
-    async def on_create(self,activity:CloudActivity):
+    async def on_create(self, activity: CloudActivity):
         """
         [イベント] 変数が作成された。
 
@@ -587,7 +716,7 @@ class CloudLogEvent(_TemporalEvent[CloudActivity]):
         """
         pass
 
-    async def on_rename(self,activity:CloudActivity):
+    async def on_rename(self, activity: CloudActivity):
         """
         [イベント] 変数名が変更された。
 
@@ -596,7 +725,7 @@ class CloudLogEvent(_TemporalEvent[CloudActivity]):
         """
         pass
 
-    async def on_delete(self,activity:CloudActivity):
+    async def on_delete(self, activity: CloudActivity):
         """
         [イベント] 変数が削除された。
 
@@ -605,7 +734,9 @@ class CloudLogEvent(_TemporalEvent[CloudActivity]):
         """
         pass
 
-    async def get_logs(self,limit:int|None=None,offset:int|None=None) -> AsyncGenerator["CloudActivity", None]:
+    async def get_logs(
+        self, limit: int | None = None, offset: int | None = None
+    ) -> AsyncGenerator["CloudActivity", None]:
         """
         クラウド変数のログを取得する。
 
@@ -617,7 +748,13 @@ class CloudLogEvent(_TemporalEvent[CloudActivity]):
             CloudActivity:
         """
         async for _a in api_iterative(
-            self.client,"https://clouddata.scratch.mit.edu/logs",
-            limit=limit,offset=offset,max_limit=100,params={"projectid":self.project_id},
+            self.client,
+            "https://clouddata.scratch.mit.edu/logs",
+            limit=limit,
+            offset=offset,
+            max_limit=100,
+            params={"projectid": self.project_id},
         ):
-            yield CloudActivity._create_from_log(_a,self.project_id,self.session or self.client)
+            yield CloudActivity._create_from_log(
+                _a, self.project_id, self.session or self.client
+            )

@@ -8,7 +8,7 @@ from ..utils.types import (
     NewsPayload,
     CommunityFeaturedPayload,
     CommunityFeaturedProjectPayload,
-    CommunityFeaturedRemixProjectPayload
+    CommunityFeaturedRemixProjectPayload,
 )
 from ..utils.common import (
     UNKNOWN,
@@ -26,6 +26,7 @@ if TYPE_CHECKING:
     from .session import Session
     from ..utils.client import HTTPClient
 
+
 class News(_BaseSiteAPI):
     """
     Scratchのニュース欄
@@ -37,23 +38,24 @@ class News(_BaseSiteAPI):
         image (str): アイコンの画像のurl
         copy (str): 説明文
     """
-    def __init__(self, id:int, client_or_session:"HTTPClient|Session|None") -> None:
+
+    def __init__(self, id: int, client_or_session: "HTTPClient|Session|None") -> None:
         super().__init__(client_or_session)
 
-        self.id:Final[int] = id
-        self._created_at:MAYBE_UNKNOWN[str] = UNKNOWN
-        self.headline:MAYBE_UNKNOWN[str] = UNKNOWN
-        self.url:MAYBE_UNKNOWN[str] = UNKNOWN
-        self.image:MAYBE_UNKNOWN[str] = UNKNOWN
-        self.copy:MAYBE_UNKNOWN[str] = UNKNOWN
+        self.id: Final[int] = id
+        self._created_at: MAYBE_UNKNOWN[str] = UNKNOWN
+        self.headline: MAYBE_UNKNOWN[str] = UNKNOWN
+        self.url: MAYBE_UNKNOWN[str] = UNKNOWN
+        self.image: MAYBE_UNKNOWN[str] = UNKNOWN
+        self.copy: MAYBE_UNKNOWN[str] = UNKNOWN
 
     def __repr__(self) -> str:
         return f"<News id:{self.id} headline:{self.headline}>"
-    
-    def __eq__(self, value:object) -> bool:
-        return isinstance(value,News) and self.id == value.id
 
-    def _update_from_data(self, data:NewsPayload):
+    def __eq__(self, value: object) -> bool:
+        return isinstance(value, News) and self.id == value.id
+
+    def _update_from_data(self, data: NewsPayload):
         self._created_at = data.get("stamp")
         self.headline = data.get("headline")
         self.url = data.get("url")
@@ -61,7 +63,7 @@ class News(_BaseSiteAPI):
         self.copy = data.get("copy")
 
     @property
-    def created_at(self) -> datetime.datetime|UNKNOWN_TYPE:
+    def created_at(self) -> datetime.datetime | UNKNOWN_TYPE:
         """
         ニュースが投稿された時間を返す
 
@@ -72,11 +74,13 @@ class News(_BaseSiteAPI):
             datetime.datetime|UNKNOWN_TYPE:
         """
         return dt_from_isoformat(self._created_at)
-    
+
+
 async def get_news(
-        client_or_session:"HTTPClient|Session|None",
-        limit:int|None=None,offset:int|None=None
-    ) -> AsyncGenerator[News,None]:
+    client_or_session: "HTTPClient|Session|None",
+    limit: int | None = None,
+    offset: int | None = None,
+) -> AsyncGenerator[News, None]:
     """
     ニュースを取得する。
 
@@ -88,37 +92,43 @@ async def get_news(
     Yields:
         News:
     """
-    client,_ = get_client_and_session(client_or_session)
+    client, _ = get_client_and_session(client_or_session)
     client_or_session = client_or_session or client
     async for _p in api_iterative(
-        client,f"https://api.scratch.mit.edu/news",
-        limit=limit,offset=offset
+        client, "https://api.scratch.mit.edu/news", limit=limit, offset=offset
     ):
-        yield News._create_from_data(_p["id"],_p,client_or_session or client)
+        yield News._create_from_data(_p["id"], _p, client_or_session or client)
+
 
 class CommunityFeaturedResponse(TypedDict):
-    featured_projects:list[Project]
-    featured_studios:list[Studio]
-    most_loved_projects:list[Project]
-    most_remixed_projects:list[Project]
-    newest_projects:list[Project]
-    design_studio_projects:list[Project]
-    design_studio:Studio|None
+    featured_projects: list[Project]
+    featured_studios: list[Studio]
+    most_loved_projects: list[Project]
+    most_remixed_projects: list[Project]
+    newest_projects: list[Project]
+    design_studio_projects: list[Project]
+    design_studio: Studio | None
+
 
 def _add_community_featured_project(
-        client_or_session:"HTTPClient|Session",
-        list_object:"list[Project]",
-        payload:Sequence[CommunityFeaturedProjectPayload|CommunityFeaturedRemixProjectPayload]
-    ):
+    client_or_session: "HTTPClient|Session",
+    list_object: "list[Project]",
+    payload: Sequence[
+        CommunityFeaturedProjectPayload | CommunityFeaturedRemixProjectPayload
+    ],
+):
     for data in payload:
-        project = Project(data.get("id"),client_or_session)
+        project = Project(data.get("id"), client_or_session)
         project.title = data.get("title")
         project.love_count = data.get("love_count")
-        project.author = User(data.get("creator"),client_or_session,is_real=True)
-        project.remix_count = data.get("remixers_count",UNKNOWN)
+        project.author = User(data.get("creator"), client_or_session, is_real=True)
+        project.remix_count = data.get("remixers_count", UNKNOWN)
         list_object.append(project)
 
-async def get_community_featured(client_or_session:"HTTPClient|Session") -> CommunityFeaturedResponse:
+
+async def get_community_featured(
+    client_or_session: "HTTPClient|Session",
+) -> CommunityFeaturedResponse:
     """
     コミュニティ特集を取得する。
 
@@ -128,30 +138,50 @@ async def get_community_featured(client_or_session:"HTTPClient|Session") -> Comm
     Returns:
         CommunityFeaturedResponse:
     """
-    client,_ = get_client_and_session(client_or_session)
+    client, _ = get_client_and_session(client_or_session)
 
     response = await client.get("https://api.scratch.mit.edu/proxy/featured")
-    data:CommunityFeaturedPayload = response.json()
+    data: CommunityFeaturedPayload = response.json()
 
-    _return:CommunityFeaturedResponse = {
-        "featured_projects":[],
-        "featured_studios":[],
-        "most_loved_projects":[],
-        "most_remixed_projects":[],
-        "newest_projects":[],
-        "design_studio_projects":[],
-        "design_studio":None
+    _return: CommunityFeaturedResponse = {
+        "featured_projects": [],
+        "featured_studios": [],
+        "most_loved_projects": [],
+        "most_remixed_projects": [],
+        "newest_projects": [],
+        "design_studio_projects": [],
+        "design_studio": None,
     }
     for _data in data.get("community_featured_studios"):
-        studio = Studio(_data.get("id"),client_or_session)
-        studio.title = _data.get("title",UNKNOWN)
+        studio = Studio(_data.get("id"), client_or_session)
+        studio.title = _data.get("title", UNKNOWN)
         _return["featured_studios"].append(studio)
 
-    _add_community_featured_project(client_or_session,_return["featured_projects"],data.get("community_featured_projects"))
-    _add_community_featured_project(client_or_session,_return["most_loved_projects"],data.get("community_most_loved_projects"))
-    _add_community_featured_project(client_or_session,_return["most_remixed_projects"],data.get("community_most_remixed_projects"))
-    _add_community_featured_project(client_or_session,_return["newest_projects"],data.get("community_newest_projects"))
-    _add_community_featured_project(client_or_session,_return["design_studio_projects"],data.get("scratch_design_studio"))
+    _add_community_featured_project(
+        client_or_session,
+        _return["featured_projects"],
+        data.get("community_featured_projects"),
+    )
+    _add_community_featured_project(
+        client_or_session,
+        _return["most_loved_projects"],
+        data.get("community_most_loved_projects"),
+    )
+    _add_community_featured_project(
+        client_or_session,
+        _return["most_remixed_projects"],
+        data.get("community_most_remixed_projects"),
+    )
+    _add_community_featured_project(
+        client_or_session,
+        _return["newest_projects"],
+        data.get("community_newest_projects"),
+    )
+    _add_community_featured_project(
+        client_or_session,
+        _return["design_studio_projects"],
+        data.get("scratch_design_studio"),
+    )
 
     if data.get("scratch_design_studio"):
         _payload = data.get("scratch_design_studio")[0]

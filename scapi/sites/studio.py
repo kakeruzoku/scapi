@@ -11,7 +11,7 @@ from ..utils.types import (
     StudioClassroomPayload,
     ReportPayload,
     search_mode,
-    explore_query
+    explore_query,
 )
 from ..utils.activity_types import StudioAnyActivity
 from ..utils.common import (
@@ -22,24 +22,14 @@ from ..utils.common import (
     dt_from_isoformat,
     _AwaitableContextManager,
     Tag,
-    split
+    split,
 )
 from ..utils.client import HTTPClient
-from ..utils.error import (
-    ClientError,
-    NotFound,
-    InvalidData
-)
-from ..utils.file import (
-    File,
-    _read_file
-)
+from ..utils.error import ClientError, NotFound, InvalidData
+from ..utils.file import File, _read_file
 from ..event.temporal import CommentEvent
 from .base import _BaseSiteAPI
-from .comment import (
-    Comment,
-    get_comment_from_old
-)
+from .comment import Comment, get_comment_from_old
 from .project import Project
 from .activity import Activity
 
@@ -47,6 +37,7 @@ if TYPE_CHECKING:
     from .session import Session
     from .user import User
     from .classroom import Classroom
+
 
 class Studio(_BaseSiteAPI[int]):
     """
@@ -68,45 +59,47 @@ class Studio(_BaseSiteAPI[int]):
         _host (MAYBE_UNKNOWN[User]): 所有者の情報。Session.get_mystuff_studios()からでのみ取得できます。
         curator_count (MAYBE_UNKNOWN[int]): キュレーターの数
     """
+
     def __repr__(self) -> str:
         return f"<Studio id:{self.id} session:{self.session}>"
 
-    def __init__(self,id:int,client_or_session:"HTTPClient|Session|None"=None):
+    def __init__(self, id: int, client_or_session: "HTTPClient|Session|None" = None):
         super().__init__(client_or_session)
-        self.id:Final[int] = id
-        self.title:MAYBE_UNKNOWN[str] = UNKNOWN
-        self.host_id:MAYBE_UNKNOWN[int] = UNKNOWN
-        self.description:MAYBE_UNKNOWN[str] = UNKNOWN
-        self.open_to_all:MAYBE_UNKNOWN[bool] = UNKNOWN
-        self.comments_allowed:MAYBE_UNKNOWN[bool] = UNKNOWN
+        self.id: Final[int] = id
+        self.title: MAYBE_UNKNOWN[str] = UNKNOWN
+        self.host_id: MAYBE_UNKNOWN[int] = UNKNOWN
+        self.description: MAYBE_UNKNOWN[str] = UNKNOWN
+        self.open_to_all: MAYBE_UNKNOWN[bool] = UNKNOWN
+        self.comments_allowed: MAYBE_UNKNOWN[bool] = UNKNOWN
 
-        self._created_at:MAYBE_UNKNOWN[str] = UNKNOWN
-        self._modified_at:MAYBE_UNKNOWN[str] = UNKNOWN
+        self._created_at: MAYBE_UNKNOWN[str] = UNKNOWN
+        self._modified_at: MAYBE_UNKNOWN[str] = UNKNOWN
 
-        self.comment_count:MAYBE_UNKNOWN[int] = UNKNOWN
-        self.follower_count:MAYBE_UNKNOWN[int] = UNKNOWN
-        self.manager_count:MAYBE_UNKNOWN[int] = UNKNOWN
-        self.curator_count:MAYBE_UNKNOWN[int] = UNKNOWN
-        self.project_count:MAYBE_UNKNOWN[int] = UNKNOWN
+        self.comment_count: MAYBE_UNKNOWN[int] = UNKNOWN
+        self.follower_count: MAYBE_UNKNOWN[int] = UNKNOWN
+        self.manager_count: MAYBE_UNKNOWN[int] = UNKNOWN
+        self.curator_count: MAYBE_UNKNOWN[int] = UNKNOWN
+        self.project_count: MAYBE_UNKNOWN[int] = UNKNOWN
 
-        self._host:MAYBE_UNKNOWN["User"] = UNKNOWN
+        self._host: MAYBE_UNKNOWN["User"] = UNKNOWN
 
-    def __eq__(self, value:object) -> bool:
-        return isinstance(value,Studio) and self.id == value.id
-    
+    def __eq__(self, value: object) -> bool:
+        return isinstance(value, Studio) and self.id == value.id
+
     async def update(self):
-        response = await self.client.get(f"https://api.scratch.mit.edu/studios/{self.id}")
+        response = await self.client.get(
+            f"https://api.scratch.mit.edu/studios/{self.id}"
+        )
         self._update_from_data(response.json())
 
-    def _update_from_data(self, data:StudioPayload):
+    def _update_from_data(self, data: StudioPayload):
         self._update_to_attributes(
             title=data.get("title"),
             host_id=data.get("host"),
             description=data.get("description"),
             open_to_all=data.get("open_to_all"),
-            comments_allowed=data.get("comments_allowed")
+            comments_allowed=data.get("comments_allowed"),
         )
-        
 
         _history = data.get("history")
         if _history:
@@ -121,45 +114,53 @@ class Studio(_BaseSiteAPI[int]):
                 comment_count=_stats.get("comments"),
                 follower_count=_stats.get("followers"),
                 manager_count=_stats.get("managers"),
-                project_count=_stats.get("projects")
+                project_count=_stats.get("projects"),
             )
 
-    def _update_from_old_data(self, data:OldStudioPayload):
+    def _update_from_old_data(self, data: OldStudioPayload):
         from .user import User
+
         _author = data.get("owner")
 
         if _author:
             if self._host is UNKNOWN:
-                self._host = User(_author.get("username"),self.client_or_session,is_real=True)
+                self._host = User(
+                    _author.get("username"), self.client_or_session, is_real=True
+                )
             self._host._update_from_old_data(_author)
-        
+
         self._update_to_attributes(
             title=data.get("title"),
             host_id=self._host and self._host.id,
-
             _created_at=data.get("datetime_created"),
             _modified_at=data.get("datetime_modified"),
-
             comment_count=data.get("commenters_count"),
             curator_count=data.get("curators_count"),
             project_count=data.get("projecters_count"),
-
-            description=data.get("description")
+            description=data.get("description"),
         )
 
     @classmethod
-    def _create_from_html(cls,data:Tag,client_or_session:"HTTPClient|Session",*,host:"User|None|UNKNOWN_TYPE"=None) -> Self:
-        _span:Tag = data.find("span",{"class":"title"})
-        _a:Tag = _span.find("a")
-        studio = cls(int(split(str(_a["href"]),"/studios/","/",True)),client_or_session)
+    def _create_from_html(
+        cls,
+        data: Tag,
+        client_or_session: "HTTPClient|Session",
+        *,
+        host: "User|None|UNKNOWN_TYPE" = None,
+    ) -> Self:
+        _span: Tag = data.find("span", {"class": "title"})
+        _a: Tag = _span.find("a")
+        studio = cls(
+            int(split(str(_a["href"]), "/studios/", "/", True)), client_or_session
+        )
         studio.title = _a.get_text().strip()
         if host:
             studio._host = host
             studio.host_id = host.id
         return studio
-    
+
     @property
-    def created_at(self) -> datetime.datetime|UNKNOWN_TYPE:
+    def created_at(self) -> datetime.datetime | UNKNOWN_TYPE:
         """
         スタジオが作成された時間を返す
 
@@ -167,9 +168,9 @@ class Studio(_BaseSiteAPI[int]):
             datetime.datetime|UNKNOWN_TYPE: データがある場合、その時間。
         """
         return dt_from_isoformat(self._created_at)
-    
+
     @property
-    def modified_at(self) -> datetime.datetime|UNKNOWN_TYPE:
+    def modified_at(self) -> datetime.datetime | UNKNOWN_TYPE:
         """
         スタジオが最後に編集された時間を返す
 
@@ -177,7 +178,7 @@ class Studio(_BaseSiteAPI[int]):
             datetime.datetime|UNKNOWN_TYPE: データがある場合、その時間。
         """
         return dt_from_isoformat(self._modified_at)
-    
+
     @property
     def url(self) -> str:
         """
@@ -187,7 +188,7 @@ class Studio(_BaseSiteAPI[int]):
             str:
         """
         return f"https://scratch.mit.edu/studios/{self.id}"
-    
+
     @property
     def thumbnail_url(self) -> str:
         """
@@ -196,22 +197,26 @@ class Studio(_BaseSiteAPI[int]):
         Returns:
             str:
         """
-        return f"https://uploads.scratch.mit.edu/get_image/gallery/{self.id}_170x100.png"
+        return (
+            f"https://uploads.scratch.mit.edu/get_image/gallery/{self.id}_170x100.png"
+        )
 
     @property
     def is_host(self) -> MAYBE_UNKNOWN[bool]:
         """
         紐づけられている |Session| がスタジオの所有者かどうか
         :attr:`Studio.host_id` が |UNKNOWN| の場合は |UNKNOWN| が返されます。
-        
+
         Returns:
             MAYBE_UNKNOWN[bool]:
         """
         if self.host_id is UNKNOWN:
             return UNKNOWN
         return self._session.user_id == self.host_id
-    
-    async def get_projects(self,limit:int|None=None,offset:int|None=None) -> AsyncGenerator["Project", None]:
+
+    async def get_projects(
+        self, limit: int | None = None, offset: int | None = None
+    ) -> AsyncGenerator["Project", None]:
         """
         スタジオに入れられているプロジェクトを取得する。
 
@@ -223,10 +228,12 @@ class Studio(_BaseSiteAPI[int]):
             Project: 取得したプロジェクト
         """
         async for _p in api_iterative(
-            self.client,f"https://api.scratch.mit.edu/studios/{self.id}/projects",
-            limit=limit,offset=offset
+            self.client,
+            f"https://api.scratch.mit.edu/studios/{self.id}/projects",
+            limit=limit,
+            offset=offset,
         ):
-            yield Project._create_from_data(_p["id"],_p,self.client_or_session)
+            yield Project._create_from_data(_p["id"], _p, self.client_or_session)
 
     async def get_host(self) -> "User":
         """
@@ -237,7 +244,9 @@ class Studio(_BaseSiteAPI[int]):
         """
         return await anext(self.get_managers(limit=1))
 
-    async def get_managers(self,limit:int|None=None,offset:int|None=None) -> AsyncGenerator["User", None]:
+    async def get_managers(
+        self, limit: int | None = None, offset: int | None = None
+    ) -> AsyncGenerator["User", None]:
         """
         スタジオのマネージャーを取得する。
 
@@ -249,13 +258,18 @@ class Studio(_BaseSiteAPI[int]):
             User: 取得したユーザー
         """
         from .user import User
-        async for _u in api_iterative(
-            self.client,f"https://api.scratch.mit.edu/studios/{self.id}/managers",
-            limit=limit,offset=offset
-        ):
-            yield User._create_from_data(_u["username"],_u,self.client_or_session)
 
-    async def get_curators(self,limit:int|None=None,offset:int|None=None) -> AsyncGenerator["User", None]:
+        async for _u in api_iterative(
+            self.client,
+            f"https://api.scratch.mit.edu/studios/{self.id}/managers",
+            limit=limit,
+            offset=offset,
+        ):
+            yield User._create_from_data(_u["username"], _u, self.client_or_session)
+
+    async def get_curators(
+        self, limit: int | None = None, offset: int | None = None
+    ) -> AsyncGenerator["User", None]:
         """
         スタジオのキュレーターを取得する。
 
@@ -267,13 +281,18 @@ class Studio(_BaseSiteAPI[int]):
             User: 取得したユーザー
         """
         from .user import User
-        async for _u in api_iterative(
-            self.client,f"https://api.scratch.mit.edu/studios/{self.id}/curators",
-            limit=limit,offset=offset
-        ):
-            yield User._create_from_data(_u["username"],_u,self.client_or_session)
 
-    async def get_comments(self,limit:int|None=None,offset:int|None=None) -> AsyncGenerator["Comment", None]:
+        async for _u in api_iterative(
+            self.client,
+            f"https://api.scratch.mit.edu/studios/{self.id}/curators",
+            limit=limit,
+            offset=offset,
+        ):
+            yield User._create_from_data(_u["username"], _u, self.client_or_session)
+
+    async def get_comments(
+        self, limit: int | None = None, offset: int | None = None
+    ) -> AsyncGenerator["Comment", None]:
         """
         スタジオに投稿されたコメントを取得する。
 
@@ -285,12 +304,14 @@ class Studio(_BaseSiteAPI[int]):
             Comment: プロジェクトに投稿されたコメント
         """
         async for _c in api_iterative(
-            self.client,f"https://api.scratch.mit.edu/studios/{self.id}/comments",
-            limit=limit,offset=offset
+            self.client,
+            f"https://api.scratch.mit.edu/studios/{self.id}/comments",
+            limit=limit,
+            offset=offset,
         ):
-            yield Comment._create_from_data(_c["id"],_c,place=self)
+            yield Comment._create_from_data(_c["id"], _c, place=self)
 
-    async def get_comment_by_id(self,comment_id:int) -> "Comment":
+    async def get_comment_by_id(self, comment_id: int) -> "Comment":
         """
         コメントIDからコメントを取得する。
 
@@ -299,13 +320,13 @@ class Studio(_BaseSiteAPI[int]):
 
         Raises:
             error.NotFound: コメントが見つからない
-        
+
         Returns:
             Comment: 見つかったコメント
         """
-        return await Comment._create_from_api(comment_id,place=self)
-    
-    def comment_event(self,interval:int=30,is_old:bool=False) -> CommentEvent:
+        return await Comment._create_from_api(comment_id, place=self)
+
+    def comment_event(self, interval: int = 30, is_old: bool = False) -> CommentEvent:
         """
         コメントイベントを作成する。
 
@@ -316,9 +337,11 @@ class Studio(_BaseSiteAPI[int]):
         Returns:
             CommentEvent:
         """
-        return CommentEvent(self,interval,is_old)
-    
-    def get_comments_from_old(self,start_page:int|None=None,end_page:int|None=None) -> AsyncGenerator["Comment", None]:
+        return CommentEvent(self, interval, is_old)
+
+    def get_comments_from_old(
+        self, start_page: int | None = None, end_page: int | None = None
+    ) -> AsyncGenerator["Comment", None]:
         """
         スタジオに投稿されたコメントを古いAPIから取得する。
 
@@ -329,9 +352,9 @@ class Studio(_BaseSiteAPI[int]):
         Returns:
             Comment: 取得したコメント
         """
-        return get_comment_from_old(self,start_page,end_page)
-    
-    async def get_classroom_id(self) -> int|None:
+        return get_comment_from_old(self, start_page, end_page)
+
+    async def get_classroom_id(self) -> int | None:
         """_
         スタジオが属しているクラスのIDを返す
 
@@ -339,12 +362,14 @@ class Studio(_BaseSiteAPI[int]):
             int|None:
         """
         try:
-            response = await self.client.get(f"https://api.scratch.mit.edu/studios/{self.id}/classroom")
+            response = await self.client.get(
+                f"https://api.scratch.mit.edu/studios/{self.id}/classroom"
+            )
         except NotFound:
             return
-        data:StudioClassroomPayload = response.json()
+        data: StudioClassroomPayload = response.json()
         return data.get("id")
-    
+
     async def get_classroom(self) -> "Classroom|None":
         """_
         スタジオが属しているクラスを返す
@@ -353,12 +378,15 @@ class Studio(_BaseSiteAPI[int]):
             Classroom|None:
         """
         from .classroom import Classroom
+
         classroom_id = await self.get_classroom_id()
         if classroom_id is None:
             return
-        return await Classroom._create_from_api(classroom_id,self.client_or_session)
-    
-    async def get_activities(self,limit:int|None=None,offset_dt:datetime.datetime|None=None) -> AsyncGenerator[Activity,None]:
+        return await Classroom._create_from_api(classroom_id, self.client_or_session)
+
+    async def get_activities(
+        self, limit: int | None = None, offset_dt: datetime.datetime | None = None
+    ) -> AsyncGenerator[Activity, None]:
         """
         スタジオのアクティビティを取得する。
 
@@ -374,34 +402,38 @@ class Studio(_BaseSiteAPI[int]):
                 offset_dt = offset_dt.replace(tzinfo=datetime.timezone.utc)
             else:
                 offset_dt = offset_dt.astimezone(datetime.timezone.utc)
-            
-            offset:dict[str,str|int|float] = {"dateLimit":offset_dt.strftime('%Y-%m-%dT%H:%M:%S.000Z')}
+
+            offset: dict[str, str | int | float] = {
+                "dateLimit": offset_dt.strftime("%Y-%m-%dT%H:%M:%S.000Z")
+            }
         else:
             offset = {}
 
         limit = limit or 40
-        for i in range(0,limit,40):
+        for i in range(0, limit, 40):
             response = await self.client.get(
                 f"https://api.scratch.mit.edu/studios/{self.id}/activity/",
-                params={"limit":min(40,limit-i)}|offset
+                params={"limit": min(40, limit - i)} | offset,
             )
-            data:list[StudioAnyActivity] = response.json()
+            data: list[StudioAnyActivity] = response.json()
             last = None
             for i in data:
-                last = Activity._create_from_studio(i,self)
+                last = Activity._create_from_studio(i, self)
                 yield last
             if not data:
                 return
             created_at = last and last.created_at
             if created_at is None:
                 return
-            offset_dt = created_at+datetime.timedelta(seconds=1)
-            offset = {"dateLimit":offset_dt.strftime('%Y-%m-%dT%H:%M:%S.000Z')}
+            offset_dt = created_at + datetime.timedelta(seconds=1)
+            offset = {"dateLimit": offset_dt.strftime("%Y-%m-%dT%H:%M:%S.000Z")}
 
     async def post_comment(
-        self,content:str,
-        parent:"Comment|int|None"=None,commentee:"User|int|None"=None,
-        is_old:bool=False
+        self,
+        content: str,
+        parent: "Comment|int|None" = None,
+        commentee: "User|int|None" = None,
+        is_old: bool = False,
     ) -> "Comment":
         """
         コメントを投稿します。
@@ -415,7 +447,7 @@ class Studio(_BaseSiteAPI[int]):
         Returns:
             Comment: 投稿されたコメント
         """
-        return await Comment.post_comment(self,content,parent,commentee,is_old)
+        return await Comment.post_comment(self, content, parent, commentee, is_old)
 
     async def follow(self):
         """
@@ -424,7 +456,7 @@ class Studio(_BaseSiteAPI[int]):
         self.require_session()
         await self.client.put(
             f"https://scratch.mit.edu/site-api/users/bookmarkers/{self.id}/add/",
-            params={"usernames":self._session.username}
+            params={"usernames": self._session.username},
         )
 
     async def unfollow(self):
@@ -434,10 +466,10 @@ class Studio(_BaseSiteAPI[int]):
         self.require_session()
         await self.client.put(
             f"https://scratch.mit.edu/site-api/users/bookmarkers/{self.id}/remove/",
-            params={"usernames":self._session.username}
+            params={"usernames": self._session.username},
         )
 
-    async def add_project(self,project:"Project|int"):
+    async def add_project(self, project: "Project|int"):
         """
         プロジェクトをスタジオに追加する。
 
@@ -445,10 +477,12 @@ class Studio(_BaseSiteAPI[int]):
             project (Project|int): 追加するプロジェクトかそのID
         """
         self.require_session()
-        project_id = project.id if isinstance(project,Project) else project
-        await self.client.post(f"https://api.scratch.mit.edu/studios/{self.id}/project/{project_id}")
+        project_id = project.id if isinstance(project, Project) else project
+        await self.client.post(
+            f"https://api.scratch.mit.edu/studios/{self.id}/project/{project_id}"
+        )
 
-    async def remove_project(self,project:"Project|int"):
+    async def remove_project(self, project: "Project|int"):
         """
         プロジェクトをスタジオから削除する。
 
@@ -456,10 +490,12 @@ class Studio(_BaseSiteAPI[int]):
             project (Project|int): 削除するプロジェクトかそのID
         """
         self.require_session()
-        project_id = project.id if isinstance(project,Project) else project
-        await self.client.delete(f"https://api.scratch.mit.edu/studios/{self.id}/project/{project_id}")
+        project_id = project.id if isinstance(project, Project) else project
+        await self.client.delete(
+            f"https://api.scratch.mit.edu/studios/{self.id}/project/{project_id}"
+        )
 
-    async def invite(self,user:"User|str"):
+    async def invite(self, user: "User|str"):
         """
         スタジオにユーザーを招待する
 
@@ -468,25 +504,26 @@ class Studio(_BaseSiteAPI[int]):
         """
         self.require_session()
         from .user import User
-        username = user.username if isinstance(user,User) else user
+
+        username = user.username if isinstance(user, User) else user
         response = await self.client.put(
             f"https://scratch.mit.edu/site-api/users/curators-in/{self.id}/invite_curator/",
-            params={"usernames":username}
+            params={"usernames": username},
         )
         data = response.json()
         if data.get("status") != "success":
-            raise ClientError(response,data.get("message"))
-        
+            raise ClientError(response, data.get("message"))
+
     async def accept_invite(self):
         """
         招待を受け取る
         """
         await self.client.put(
             f"https://scratch.mit.edu/site-api/users/curators-in/{self.id}/add/",
-            params={"usernames":self._session.username}
+            params={"usernames": self._session.username},
         )
 
-    async def promote(self,user:"User|str"):
+    async def promote(self, user: "User|str"):
         """
         ユーザーをマネージャーに昇格する
 
@@ -495,13 +532,14 @@ class Studio(_BaseSiteAPI[int]):
         """
         self.require_session()
         from .user import User
-        username = user.username if isinstance(user,User) else user
+
+        username = user.username if isinstance(user, User) else user
         await self.client.put(
             f"https://scratch.mit.edu/site-api/users/curators-in/{self.id}/promote/",
-            params={"usernames":username}
+            params={"usernames": username},
         )
-    
-    async def remove_curator(self,user:"User|str"):
+
+    async def remove_curator(self, user: "User|str"):
         """
         スタジオからユーザーを削除する。
 
@@ -510,10 +548,11 @@ class Studio(_BaseSiteAPI[int]):
         """
         self.require_session()
         from .user import User
-        username = user.username if isinstance(user,User) else user
+
+        username = user.username if isinstance(user, User) else user
         await self.client.put(
             f"https://scratch.mit.edu/site-api/users/curators-in/{self.id}/remove/",
-            params={"usernames":username}
+            params={"usernames": username},
         )
 
     async def leave(self):
@@ -522,7 +561,7 @@ class Studio(_BaseSiteAPI[int]):
         """
         await self.remove_curator(self._session.username)
 
-    async def transfer_ownership(self,user:"str|User",password:str):
+    async def transfer_ownership(self, user: "str|User", password: str):
         """
         スタジオの所有権を移行する
 
@@ -532,10 +571,11 @@ class Studio(_BaseSiteAPI[int]):
         """
         self.require_session()
         from .user import User
-        username = user.username if isinstance(user,User) else user
+
+        username = user.username if isinstance(user, User) else user
         await self.client.put(
             f"https://api.scratch.mit.edu/studios/{self.id}/transfer/{username}",
-            json={"password":password}
+            json={"password": password},
         )
 
     async def get_my_role(self) -> "StudioStatus":
@@ -546,10 +586,12 @@ class Studio(_BaseSiteAPI[int]):
             StudioStatus: アカウントのステータス
         """
         self.require_session()
-        response = await self.client.get(f"https://api.scratch.mit.edu/studios/{self.id}/users/{self._session.username}")
-        return StudioStatus(response.json(),self)
-    
-    async def report(self,type:Literal["title","description","thumbnail"]) -> str:
+        response = await self.client.get(
+            f"https://api.scratch.mit.edu/studios/{self.id}/users/{self._session.username}"
+        )
+        return StudioStatus(response.json(), self)
+
+    async def report(self, type: Literal["title", "description", "thumbnail"]) -> str:
         """
         スタジオを報告する
 
@@ -561,9 +603,9 @@ class Studio(_BaseSiteAPI[int]):
         """
         response = await self.client.post(
             f"https://scratch.mit.edu/site-api/galleries/all/{self.id}/report/",
-            data=aiohttp.FormData({"selected_field":type})
+            data=aiohttp.FormData({"selected_field": type}),
         )
-        data:ReportPayload|Literal[""] = response.json_or_text()
+        data: ReportPayload | Literal[""] = response.json_or_text()
         if data == "":
             raise InvalidData(response)
         if not data.get("success"):
@@ -571,11 +613,11 @@ class Studio(_BaseSiteAPI[int]):
         return data.get("moderation_status")
 
     async def edit(
-            self,
-            title:str|None=None,
-            description:str|None=None,
-            trash:bool|None=None
-        ) -> None:
+        self,
+        title: str | None = None,
+        description: str | None = None,
+        trash: bool | None = None,
+    ) -> None:
         """
         スタジオを編集する。
 
@@ -586,13 +628,18 @@ class Studio(_BaseSiteAPI[int]):
         """
         self.require_session()
         data = {}
-        if description is not None: data["description"] = description + "\n"
-        if title is not None: data["title"] = title
-        if trash: data["visibility"] = "delbyusr"
-        response = await self.client.put(f"https://scratch.mit.edu/site-api/galleries/all/{self.id}",json=data)
+        if description is not None:
+            data["description"] = description + "\n"
+        if title is not None:
+            data["title"] = title
+        if trash:
+            data["visibility"] = "delbyusr"
+        response = await self.client.put(
+            f"https://scratch.mit.edu/site-api/galleries/all/{self.id}", json=data
+        )
         self._update_from_data(response.json())
 
-    async def set_thumbnail(self,thumbnail:File|bytes):
+    async def set_thumbnail(self, thumbnail: File | bytes):
         """
         サムネイルを設定する。
 
@@ -603,7 +650,7 @@ class Studio(_BaseSiteAPI[int]):
             self.require_session()
             await self.client.post(
                 f"https://scratch.mit.edu/site-api/galleries/all/{self.id}/",
-                data=aiohttp.FormData({"file":f})
+                data=aiohttp.FormData({"file": f}),
             )
 
     async def open_project(self):
@@ -611,21 +658,28 @@ class Studio(_BaseSiteAPI[int]):
         プロジェクトを誰でも入れれるように変更する。
         """
         self.require_session()
-        await self.client.put(f"https://scratch.mit.edu/site-api/galleries/{self.id}/mark/open/")
+        await self.client.put(
+            f"https://scratch.mit.edu/site-api/galleries/{self.id}/mark/open/"
+        )
 
     async def close_project(self):
         """
         プロジェクトをキュレーター以上のみ入れれるように変更する。
         """
         self.require_session()
-        await self.client.put(f"https://scratch.mit.edu/site-api/galleries/{self.id}/mark/closed/")
+        await self.client.put(
+            f"https://scratch.mit.edu/site-api/galleries/{self.id}/mark/closed/"
+        )
 
     async def toggle_comment(self):
         """
         コメント欄を開閉する。
         """
         self.require_session()
-        await self.client.post(f"https://scratch.mit.edu/site-api/comments/gallery/{self.id}/toggle-comments/")
+        await self.client.post(
+            f"https://scratch.mit.edu/site-api/comments/gallery/{self.id}/toggle-comments/"
+        )
+
 
 class StudioStatus:
     """
@@ -637,14 +691,18 @@ class StudioStatus:
         invited (bool): 招待されているか
         following (bool): フォローしているか
     """
-    def __init__(self,data:StudioRolePayload,studio:Studio):
-        self.studio:Studio = studio
-        self.manager:bool = data.get("manager")
-        self.curator:bool = data.get("curator")
-        self.invited:bool = data.get("invited")
-        self.following:bool = data.get("following")
 
-def get_studio(studio_id:int,*,_client:HTTPClient|None=None) -> _AwaitableContextManager[Studio]:
+    def __init__(self, data: StudioRolePayload, studio: Studio):
+        self.studio: Studio = studio
+        self.manager: bool = data.get("manager")
+        self.curator: bool = data.get("curator")
+        self.invited: bool = data.get("invited")
+        self.following: bool = data.get("following")
+
+
+def get_studio(
+    studio_id: int, *, _client: HTTPClient | None = None
+) -> _AwaitableContextManager[Studio]:
     """
     スタジオを取得する。
 
@@ -654,18 +712,19 @@ def get_studio(studio_id:int,*,_client:HTTPClient|None=None) -> _AwaitableContex
     Returns:
         common._AwaitableContextManager[Studio]: await か async with で取得できるスタジオ
     """
-    return _AwaitableContextManager(Studio._create_from_api(studio_id,_client))
+    return _AwaitableContextManager(Studio._create_from_api(studio_id, _client))
+
 
 async def explore_studios(
-        client:HTTPClient,
-        query:explore_query="*",
-        mode:search_mode="trending",
-        language:str="en",
-        limit:int|None=None,
-        offset:int|None=None,
-        *,
-        session:Session|None=None
-    ) -> AsyncGenerator[Studio,None]:
+    client: HTTPClient,
+    query: explore_query = "*",
+    mode: search_mode = "trending",
+    language: str = "en",
+    limit: int | None = None,
+    offset: int | None = None,
+    *,
+    session: Session | None = None,
+) -> AsyncGenerator[Studio, None]:
     """
     スタジオの傾向を取得する
 
@@ -683,21 +742,25 @@ async def explore_studios(
     """
     client_or_session = session or client
     async for _s in api_iterative(
-        client,"https://api.scratch.mit.edu/explore/studios",limit,offset,
-        params={"language":language,"mode":mode,"q":query}
+        client,
+        "https://api.scratch.mit.edu/explore/studios",
+        limit,
+        offset,
+        params={"language": language, "mode": mode, "q": query},
     ):
-        yield Studio._create_from_data(_s["id"],_s,client_or_session)
+        yield Studio._create_from_data(_s["id"], _s, client_or_session)
+
 
 async def search_studios(
-        client:HTTPClient,
-        query:str,
-        mode:search_mode="trending",
-        language:str="en",
-        limit:int|None=None,
-        offset:int|None=None,
-        *,
-        session:Session|None=None
-    ) -> AsyncGenerator[Studio,None]:
+    client: HTTPClient,
+    query: str,
+    mode: search_mode = "trending",
+    language: str = "en",
+    limit: int | None = None,
+    offset: int | None = None,
+    *,
+    session: Session | None = None,
+) -> AsyncGenerator[Studio, None]:
     """
     スタジオを検索する
 
@@ -715,7 +778,10 @@ async def search_studios(
     """
     client_or_session = session or client
     async for _s in api_iterative(
-        client,"https://api.scratch.mit.edu/search/studios",limit,offset,
-        params={"language":language,"mode":mode,"q":query}
+        client,
+        "https://api.scratch.mit.edu/search/studios",
+        limit,
+        offset,
+        params={"language": language, "mode": mode, "q": query},
     ):
-        yield Studio._create_from_data(_s["id"],_s,client_or_session)
+        yield Studio._create_from_data(_s["id"], _s, client_or_session)

@@ -6,11 +6,7 @@ from typing import TYPE_CHECKING, AsyncGenerator, Final
 
 import bs4
 from .base import _BaseSiteAPI
-from ..utils.types import (
-    CommentPayload,
-    CommentFailurePayload,
-    CommentPostPayload
-)
+from ..utils.types import CommentPayload, CommentFailurePayload, CommentPostPayload
 from ..utils.common import (
     UNKNOWN,
     UNKNOWN_TYPE,
@@ -18,14 +14,9 @@ from ..utils.common import (
     dt_from_isoformat,
     api_iterative,
     split,
-    Tag
+    Tag,
 )
-from ..utils.error import (
-    ServerError,
-    NotFound,
-    NoDataError,
-    CommentFailure
-)
+from ..utils.error import ServerError, NotFound, NoDataError, CommentFailure
 
 if TYPE_CHECKING:
     from .session import Session
@@ -33,6 +24,7 @@ if TYPE_CHECKING:
     from .user import User
     from .studio import Studio
     from .project import Project
+
 
 class Comment(_BaseSiteAPI[int]):
     """
@@ -53,64 +45,71 @@ class Comment(_BaseSiteAPI[int]):
         author (MAYBE_UNKNOWN[User]): コメントしたユーザー
         reply_count (MAYBE_UNKNOWN[int]): コメントにある返信の数
     """
+
     def __repr__(self) -> str:
         return f"<Comment id:{self.id} content:{self.content} place:{self.place} user:{self.author} Session:{self.session}>"
 
     def __init__(
-            self,
-            id:int,
-            client_or_session:"HTTPClient|Session|None"=None,
-            *,
-            place:"Project|Studio|User",
-            _parent:"Comment|None|UNKNOWN_TYPE" = UNKNOWN,
-            _reply:"list[Comment]|None" = None
-        ):
-
+        self,
+        id: int,
+        client_or_session: "HTTPClient|Session|None" = None,
+        *,
+        place: "Project|Studio|User",
+        _parent: "Comment|None|UNKNOWN_TYPE" = UNKNOWN,
+        _reply: "list[Comment]|None" = None,
+    ):
         super().__init__(place.client_or_session)
-        self.id:Final[int] = id
+        self.id: Final[int] = id
         self.place = place
 
-        self.parent_id:MAYBE_UNKNOWN[int|None] = _parent.id if isinstance(_parent,Comment) else _parent
-        self.commentee_id:MAYBE_UNKNOWN[int|None] = UNKNOWN
-        self.content:MAYBE_UNKNOWN[str] = UNKNOWN
+        self.parent_id: MAYBE_UNKNOWN[int | None] = (
+            _parent.id if isinstance(_parent, Comment) else _parent
+        )
+        self.commentee_id: MAYBE_UNKNOWN[int | None] = UNKNOWN
+        self.content: MAYBE_UNKNOWN[str] = UNKNOWN
 
-        self._created_at:MAYBE_UNKNOWN[str] = UNKNOWN
-        self._modified_at:MAYBE_UNKNOWN[str] = UNKNOWN
-        self.author:"MAYBE_UNKNOWN[User]" = UNKNOWN
-        self.reply_count:MAYBE_UNKNOWN[int] = UNKNOWN
+        self._created_at: MAYBE_UNKNOWN[str] = UNKNOWN
+        self._modified_at: MAYBE_UNKNOWN[str] = UNKNOWN
+        self.author: "MAYBE_UNKNOWN[User]" = UNKNOWN
+        self.reply_count: MAYBE_UNKNOWN[int] = UNKNOWN
 
-        self._cached_parent:"Comment|None" = _parent or None
-        self._cached_reply:"list[Comment]|None" = _reply
+        self._cached_parent: "Comment|None" = _parent or None
+        self._cached_reply: "list[Comment]|None" = _reply
 
-    def __eq__(self, value:object) -> bool:
-        return isinstance(value,Comment) and self.place.__class__ == value.place.__class__ and self.id == value.id
+    def __eq__(self, value: object) -> bool:
+        return (
+            isinstance(value, Comment)
+            and self.place.__class__ == value.place.__class__
+            and self.id == value.id
+        )
 
     @staticmethod
-    def _root_url(place:"Project|Studio|User"):
+    def _root_url(place: "Project|Studio|User"):
         from .studio import Studio
         from .project import Project
-        if isinstance(place,Project):
+
+        if isinstance(place, Project):
             return f"https://api.scratch.mit.edu/users/{place._author_username}/projects/{place.id}/comments/"
-        elif isinstance(place,Studio):
+        elif isinstance(place, Studio):
             return f"https://api.scratch.mit.edu/studios/{place.id}/comments/"
         else:
             raise TypeError("User comment updates are not supported.")
 
-
     @property
     def root_url(self):
         return self._root_url(self.place) + str(self.id)
-        
+
     @staticmethod
-    def _root_old_url(place:"Project|Studio|User"):
+    def _root_old_url(place: "Project|Studio|User"):
         from .user import User
         from .studio import Studio
         from .project import Project
-        if isinstance(place,Project):
+
+        if isinstance(place, Project):
             return f"https://scratch.mit.edu/site-api/comments/project/{place.id}/"
-        elif isinstance(place,Studio):
+        elif isinstance(place, Studio):
             return f"https://scratch.mit.edu/site-api/comments/gallery/{place.id}/"
-        elif isinstance(place,User):
+        elif isinstance(place, User):
             return f"https://scratch.mit.edu/site-api/comments/user/{place.username}/"
         else:
             raise TypeError("Unknown comment place type.")
@@ -122,42 +121,46 @@ class Comment(_BaseSiteAPI[int]):
     async def update(self):
         response = await self.client.get(self.root_url)
         self._update_from_data(response.json())
-        
-    def _update_from_data(self, data:CommentPayload):
+
+    def _update_from_data(self, data: CommentPayload):
         self._update_to_attributes(
             parent_id=data.get("parent_id"),
             commentee_id=data.get("commentee_id"),
             content=data.get("content"),
             _created_at=data.get("datetime_created"),
             _modified_at=data.get("datetime_modified"),
-            reply_count=data.get("reply_count")
+            reply_count=data.get("reply_count"),
         )
 
         _author = data.get("author")
         if _author:
             if self.author is UNKNOWN:
                 from .user import User
-                self.author = User(_author.get("username"),self.client_or_session,is_real=True)
+
+                self.author = User(
+                    _author.get("username"), self.client_or_session, is_real=True
+                )
             self.author._update_from_data(_author)
 
-    def _update_from_html(self,data:bs4.element.Tag):
+    def _update_from_html(self, data: bs4.element.Tag):
         comment = data
 
-        _created_at = str(comment.find("span", class_="time")["title"]) # type: ignore
+        _created_at = str(comment.find("span", class_="time")["title"])  # type: ignore
         self._update_to_attributes(
-            content=str(comment.find("div", class_="content").get_text(strip=True)), # type: ignore
+            content=str(comment.find("div", class_="content").get_text(strip=True)),  # type: ignore
             _created_at=_created_at,
             _modified_at=_created_at,
         )
-        author_username = comment.find("div", class_="name").get_text(strip=True) # type: ignore
-        author_user_id = int(comment.find("a", class_="reply")["data-commentee-id"]) # type: ignore
+        author_username = comment.find("div", class_="name").get_text(strip=True)  # type: ignore
+        author_user_id = int(comment.find("a", class_="reply")["data-commentee-id"])  # type: ignore
         if self.author is UNKNOWN:
             from .user import User
-            self.author = User(author_username,self.client_or_session,is_real=True)
+
+            self.author = User(author_username, self.client_or_session, is_real=True)
         self.author.id = author_user_id
 
     @property
-    def created_at(self) -> datetime.datetime|UNKNOWN_TYPE:
+    def created_at(self) -> datetime.datetime | UNKNOWN_TYPE:
         """
         コメントが作成された時間を返す
 
@@ -165,9 +168,9 @@ class Comment(_BaseSiteAPI[int]):
             datetime.datetime|UNKNOWN_TYPE: データがある場合、その時間。
         """
         return dt_from_isoformat(self._created_at)
-    
+
     @property
-    def modified_at(self) -> datetime.datetime|UNKNOWN_TYPE:
+    def modified_at(self) -> datetime.datetime | UNKNOWN_TYPE:
         """
         コメントが最後に編集された時間を返す
         ユーザーがコメントを編集することはできないため、基本的に created_at と同じになります。
@@ -176,9 +179,14 @@ class Comment(_BaseSiteAPI[int]):
             datetime.datetime|UNKNOWN_TYPE: データがある場合、その時間。
         """
         return dt_from_isoformat(self._modified_at)
-    
 
-    async def get_replies(self,limit:int|None=None,offset:int|None=None,*,use_cache:bool=True) -> AsyncGenerator["Comment", None]:
+    async def get_replies(
+        self,
+        limit: int | None = None,
+        offset: int | None = None,
+        *,
+        use_cache: bool = True,
+    ) -> AsyncGenerator["Comment", None]:
         """
         コメントの返信を取得する。
         ユーザーページや、作者の不明なプロジェクト欄では取得できません。
@@ -196,14 +204,14 @@ class Comment(_BaseSiteAPI[int]):
                 limit = 40
             if offset is None:
                 offset = 0
-            for c in self._cached_reply[offset:offset+limit]:
+            for c in self._cached_reply[offset : offset + limit]:
                 yield c
         else:
             url = self.root_url + "/replies"
-            async for _c in api_iterative(self.client,url,limit,offset):
-                yield Comment._create_from_data(_c["id"],_c,place=self.place)
+            async for _c in api_iterative(self.client, url, limit, offset):
+                yield Comment._create_from_data(_c["id"], _c, place=self.place)
 
-    async def get_parent(self,use_cache:bool=True) -> "Comment|None|UNKNOWN_TYPE":
+    async def get_parent(self, use_cache: bool = True) -> "Comment|None|UNKNOWN_TYPE":
         """
         親コメントを取得する。
 
@@ -213,78 +221,94 @@ class Comment(_BaseSiteAPI[int]):
         Returns:
             Comment|None|UNKNOWN_TYPE: 取得できる場合、取得されたコメント
         """
-        if not isinstance(self.parent_id,int):
+        if not isinstance(self.parent_id, int):
             return self.parent_id
         if self._cached_parent is None or not use_cache:
-            self._cached_parent = await Comment._create_from_api(self.parent_id,place=self.place)
+            self._cached_parent = await Comment._create_from_api(
+                self.parent_id, place=self.place
+            )
         return self._cached_parent
-    
 
     @classmethod
     async def post_comment(
-        cls,place:"Project|Studio|User",
-        content:str,parent:"Comment|int|None",commentee:"User|int|None",
-        is_old:bool=False
+        cls,
+        place: "Project|Studio|User",
+        content: str,
+        parent: "Comment|int|None",
+        commentee: "User|int|None",
+        is_old: bool = False,
     ) -> "Comment":
         place.require_session()
         from .user import User
         from .studio import Studio
         from .project import Project
 
-        if isinstance(place,User):
+        if isinstance(place, User):
             is_old = True
         if is_old:
             url = cls._root_old_url(place) + "add/"
         else:
-            if isinstance(place,Project):
-                url =  f"https://api.scratch.mit.edu/proxy/comments/project/{place.id}/"
-            elif isinstance(place,Studio):
-                url =  f"https://api.scratch.mit.edu/proxy/comments/studio/{place.id}/"
+            if isinstance(place, Project):
+                url = f"https://api.scratch.mit.edu/proxy/comments/project/{place.id}/"
+            elif isinstance(place, Studio):
+                url = f"https://api.scratch.mit.edu/proxy/comments/studio/{place.id}/"
             else:
                 raise TypeError("User comment updates are not supported.")
-        parent_id = parent.id if isinstance(parent,Comment) else parent
-        commentee_id = commentee.id if isinstance(commentee,User) else commentee
+        parent_id = parent.id if isinstance(parent, Comment) else parent
+        commentee_id = commentee.id if isinstance(commentee, User) else commentee
         if commentee_id is UNKNOWN:
-            raise NoDataError(commentee) # type: ignore
+            raise NoDataError(commentee)  # type: ignore
 
-        _data:CommentPostPayload = {
+        _data: CommentPostPayload = {
             "commentee_id": commentee_id or "",
             "content": str(content),
             "parent_id": parent_id or "",
         }
 
-        response = await place.client.post(url,json=_data)
+        response = await place.client.post(url, json=_data)
 
         if is_old:
             text = response.text.strip()
             if text.startswith('<script id="error-data" type="application/json">'):
-                error_data = json.loads(split(
-                    text,'<script id="error-data" type="application/json">',"</script>",True
-                ))
-                raise CommentFailure._from_old_data(response,place._session,_data["content"],error_data)
+                error_data = json.loads(
+                    split(
+                        text,
+                        '<script id="error-data" type="application/json">',
+                        "</script>",
+                        True,
+                    )
+                )
+                raise CommentFailure._from_old_data(
+                    response, place._session, _data["content"], error_data
+                )
             soup = bs4.BeautifulSoup(response.text, "html.parser")
-            tag:Tag = soup.find("div")
-            
+            tag: Tag = soup.find("div")
+
             comment = Comment._create_from_data(
-                int(tag["data-comment-id"]), # type: ignore
-                tag,place.client_or_session,
+                int(tag["data-comment-id"]),  # type: ignore
+                tag,
+                place.client_or_session,
                 Comment._update_from_html,
                 place=place,
-                _reply=[]
+                _reply=[],
             )
         else:
-            data:CommentFailurePayload|CommentPayload = response.json()
+            data: CommentFailurePayload | CommentPayload = response.json()
             if "rejected" in data:
-                raise CommentFailure._from_data(response,place._session,_data["content"],data)
-            comment = Comment._create_from_data(data["id"],data,place.client_or_session)
+                raise CommentFailure._from_data(
+                    response, place._session, _data["content"], data
+                )
+            comment = Comment._create_from_data(
+                data["id"], data, place.client_or_session
+            )
         return comment
-    
+
     async def post_reply(
-            self,
-            content:str,
-            commentee:"User|int|None|UNKNOWN_TYPE"=UNKNOWN,
-            is_old:bool=False
-        ) -> "Comment":
+        self,
+        content: str,
+        commentee: "User|int|None|UNKNOWN_TYPE" = UNKNOWN,
+        is_old: bool = False,
+    ) -> "Comment":
         """
         コメントを返信する。
 
@@ -298,9 +322,11 @@ class Comment(_BaseSiteAPI[int]):
         """
         if commentee is UNKNOWN:
             commentee = self.author and self.author.id or None
-        return await Comment.post_comment(self.place,content,self.parent_id or self.id,commentee,is_old)
-    
-    async def delete(self,is_old:bool=False):
+        return await Comment.post_comment(
+            self.place, content, self.parent_id or self.id, commentee, is_old
+        )
+
+    async def delete(self, is_old: bool = False):
         """
         コメントを削除する。
 
@@ -311,22 +337,22 @@ class Comment(_BaseSiteAPI[int]):
         from .user import User
         from .studio import Studio
         from .project import Project
-        
-        if isinstance(self.place,User):
+
+        if isinstance(self.place, User):
             is_old = True
         if is_old:
             url = self.root_old_url + "del/"
-            await self.client.post(url,json={"id":str(self.id)})
+            await self.client.post(url, json={"id": str(self.id)})
         else:
-            if isinstance(self.place,Project):
-                url =  f"https://api.scratch.mit.edu/proxy/comments/project/{self.place.id}/comment/{self.id}"
-            elif isinstance(self.place,Studio):
-                url =  f"https://api.scratch.mit.edu/proxy/comments/studio/{self.place.id}/comment/{self.id}"
+            if isinstance(self.place, Project):
+                url = f"https://api.scratch.mit.edu/proxy/comments/project/{self.place.id}/comment/{self.id}"
+            elif isinstance(self.place, Studio):
+                url = f"https://api.scratch.mit.edu/proxy/comments/studio/{self.place.id}/comment/{self.id}"
             else:
                 raise TypeError("User comment updates are not supported.")
-            await self.client.delete(url,json={"reportId":None})
+            await self.client.delete(url, json={"reportId": None})
 
-    async def report(self,is_old:bool=False):
+    async def report(self, is_old: bool = False):
         """
         コメントを報告する。
 
@@ -337,25 +363,27 @@ class Comment(_BaseSiteAPI[int]):
         from .user import User
         from .studio import Studio
         from .project import Project
-        
-        if isinstance(self.place,User):
+
+        if isinstance(self.place, User):
             is_old = True
         if is_old:
             url = self.root_old_url + "rep/"
-            await self.client.post(url,json={"id":str(self.id)})
+            await self.client.post(url, json={"id": str(self.id)})
         else:
-            if isinstance(self.place,Project):
+            if isinstance(self.place, Project):
                 url = f"https://api.scratch.mit.edu/proxy/project/{self.place.id}/comment/{self.id}/report"
-            elif isinstance(self.place,Studio):
+            elif isinstance(self.place, Studio):
                 url = f"https://api.scratch.mit.edu/proxy/studio/{self.place.id}/comment/{self.id}/report"
             else:
                 raise TypeError("User comment updates are not supported.")
-            await self.client.post(url,json={"reportId":None})
+            await self.client.post(url, json={"reportId": None})
+
 
 async def get_comment_from_old(
-        place:"Project|Studio|User",
-        start_page:int|None=None,end_page:int|None=None
-    ) -> AsyncGenerator[Comment,None]:
+    place: "Project|Studio|User",
+    start_page: int | None = None,
+    end_page: int | None = None,
+) -> AsyncGenerator[Comment, None]:
     if start_page is None:
         start_page = 1
     if end_page is None:
@@ -363,40 +391,44 @@ async def get_comment_from_old(
 
     url = Comment._root_old_url(place)
 
-    for i in range(start_page,end_page+1):
+    for i in range(start_page, end_page + 1):
         try:
-            response = await place.client.get(url,params={"page":i})
+            response = await place.client.get(url, params={"page": i})
         except NotFound:
             return
         except ServerError as e:
             raise NotFound(e.response)
-        
+
         soup = bs4.BeautifulSoup(response.text, "html.parser")
         _comments = soup.find_all("li", {"class": "top-level-reply"})
-        if TYPE_CHECKING: _comment:Tag
+        if TYPE_CHECKING:
+            _comment: Tag
         for _comment_outside in _comments:
-            _comment = _comment_outside.find("div") # type: ignore
+            _comment = _comment_outside.find("div")  # type: ignore
             c = Comment._create_from_data(
-                int(_comment["data-comment-id"]), # type: ignore
+                int(_comment["data-comment-id"]),  # type: ignore
                 _comment,
                 place.client_or_session,
                 Comment._update_from_html,
                 place=place,
                 _parent=None,
-                _reply=[]
+                _reply=[],
             )
             assert c._cached_reply is not None
-            _comment_replies = _comment_outside.find("ul", {"class":"replies"}) # type: ignore
-            _replies = _comment_replies.find_all("div", {"class": "comment"}) # type: ignore
-            if TYPE_CHECKING: _reply:Tag
+            _comment_replies = _comment_outside.find("ul", {"class": "replies"})  # type: ignore
+            _replies = _comment_replies.find_all("div", {"class": "comment"})  # type: ignore
+            if TYPE_CHECKING:
+                _reply: Tag
             for _reply in _replies:
-                c._cached_reply.append(Comment._create_from_data(
-                    int(_reply["data-comment-id"]), # type: ignore
-                    _reply,
-                    place.client_or_session,
-                    Comment._update_from_html,
-                    place=place,
-                    _parent=c,
-                    _reply=[]
-                ))
+                c._cached_reply.append(
+                    Comment._create_from_data(
+                        int(_reply["data-comment-id"]),  # type: ignore
+                        _reply,
+                        place.client_or_session,
+                        Comment._update_from_html,
+                        place=place,
+                        _parent=c,
+                        _reply=[],
+                    )
+                )
             yield c

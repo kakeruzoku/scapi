@@ -16,7 +16,7 @@ from ..utils.types import (
     ClassTokenGeneratePayload,
     ClassStudioCreatePayload,
     OldAnyObjectPayload,
-    StudentPayload
+    StudentPayload,
 )
 from ..utils.common import (
     UNKNOWN,
@@ -28,11 +28,11 @@ from ..utils.common import (
     page_api_iterative,
     page_html_iterative,
     split,
-    get_any_count
+    get_any_count,
 )
 from ..utils.client import HTTPClient
-from ..utils.file import File,_read_file
-from ..utils.error import Forbidden,InvalidData,NoDataError
+from ..utils.file import File, _read_file
+from ..utils.error import Forbidden, InvalidData, NoDataError
 from .base import _BaseSiteAPI
 from .studio import Studio
 from .user import User
@@ -40,6 +40,7 @@ from .activity import Activity
 
 if TYPE_CHECKING:
     from .session import Session
+
 
 class Classroom(_BaseSiteAPI[int]):
     """
@@ -58,32 +59,41 @@ class Classroom(_BaseSiteAPI[int]):
         student_count (MAYBE_UNKNOWN[int]): 生徒の数
         unread_alert_count (MAYBE_UNKNOWN[int]): アラートの数
     """
-    def __init__(self,id:int,client_or_session:"HTTPClient|Session|None"=None,*,token:str|None=None):
+
+    def __init__(
+        self,
+        id: int,
+        client_or_session: "HTTPClient|Session|None" = None,
+        *,
+        token: str | None = None,
+    ):
         super().__init__(client_or_session)
-        self.id:Final[int] = id
+        self.id: Final[int] = id
 
-        self.title:MAYBE_UNKNOWN[str] = UNKNOWN
-        self._started_at:MAYBE_UNKNOWN[str] = UNKNOWN
-        self.educator:MAYBE_UNKNOWN[User] = UNKNOWN
-        self.closed:MAYBE_UNKNOWN[bool] = UNKNOWN
+        self.title: MAYBE_UNKNOWN[str] = UNKNOWN
+        self._started_at: MAYBE_UNKNOWN[str] = UNKNOWN
+        self.educator: MAYBE_UNKNOWN[User] = UNKNOWN
+        self.closed: MAYBE_UNKNOWN[bool] = UNKNOWN
 
-        self.token:MAYBE_UNKNOWN[str] = token or UNKNOWN
-        self.description:MAYBE_UNKNOWN[str] = UNKNOWN
-        self.status:MAYBE_UNKNOWN[str] = UNKNOWN
+        self.token: MAYBE_UNKNOWN[str] = token or UNKNOWN
+        self.description: MAYBE_UNKNOWN[str] = UNKNOWN
+        self.status: MAYBE_UNKNOWN[str] = UNKNOWN
 
-        self.studio_count:MAYBE_UNKNOWN[int] = UNKNOWN
-        self.student_count:MAYBE_UNKNOWN[int] = UNKNOWN
-        self.unread_alert_count:MAYBE_UNKNOWN[int] = UNKNOWN
+        self.studio_count: MAYBE_UNKNOWN[int] = UNKNOWN
+        self.student_count: MAYBE_UNKNOWN[int] = UNKNOWN
+        self.unread_alert_count: MAYBE_UNKNOWN[int] = UNKNOWN
 
-    def __eq__(self, value:object) -> bool:
-        return isinstance(value,Classroom) and self.id == value.id
+    def __eq__(self, value: object) -> bool:
+        return isinstance(value, Classroom) and self.id == value.id
 
     async def update(self) -> None:
-        response = await self.client.get(f"https://api.scratch.mit.edu/classrooms/{self.id}")
+        response = await self.client.get(
+            f"https://api.scratch.mit.edu/classrooms/{self.id}"
+        )
         self._update_from_data(response.json())
 
     @property
-    def started_at(self) -> datetime.datetime|UNKNOWN_TYPE:
+    def started_at(self) -> datetime.datetime | UNKNOWN_TYPE:
         """
         クラスが開始した時間。
 
@@ -101,7 +111,7 @@ class Classroom(_BaseSiteAPI[int]):
             str:
         """
         return f"https://scratch.mit.edu/classrooms/{self.id}"
-    
+
     @property
     def thumbnail_url(self) -> str:
         """
@@ -117,7 +127,7 @@ class Classroom(_BaseSiteAPI[int]):
         """
         紐づけられている |Session| がクラスの教師かどうか
         :attr:`Classroom.educator` が |UNKNOWN| の場合は |UNKNOWN| が返されます。
-        
+
         Returns:
             MAYBE_UNKNOWN[bool]:
         """
@@ -125,8 +135,8 @@ class Classroom(_BaseSiteAPI[int]):
             return UNKNOWN
         return self.educator.lower_username == self._session.username.lower()
 
-    def _update_from_data(self, data:ClassroomPayload):
-        self.closed = False #closeしてたらapiから取得できない
+    def _update_from_data(self, data: ClassroomPayload):
+        self.closed = False  # closeしてたらapiから取得できない
         self._update_to_attributes(
             title=data.get("title"),
             description=data.get("description"),
@@ -137,26 +147,28 @@ class Classroom(_BaseSiteAPI[int]):
         _educator = data.get("educator")
         if _educator:
             if self.educator is UNKNOWN:
-                self.educator = User(_educator["username"],self.client_or_session,is_real=True)
+                self.educator = User(
+                    _educator["username"], self.client_or_session, is_real=True
+                )
             self.educator._update_from_data(_educator)
 
-    def _update_from_old_data(self, data:OldBaseClassroomPayload):
+    def _update_from_old_data(self, data: OldBaseClassroomPayload):
         self._update_to_attributes(
             title=data.get("title"),
             _started_at=data.get("datetime_created"),
             token=data.get("token"),
             studio_count=data.get("gallery_count"),
             student_count=data.get("student_count"),
-            unread_alert_count=data.get("unread_alert_count")
+            unread_alert_count=data.get("unread_alert_count"),
         )
         if self.session is not None:
             self.educator = self.educator or self.session.user
 
-    def _update_from_all_mystuff_data(self,data:OldAllClassroomPayload):
+    def _update_from_all_mystuff_data(self, data: OldAllClassroomPayload):
         self.closed = data.get("visibility") == "closed"
         self._update_from_old_data(data)
 
-    def _update_from_id_mystuff_data(self,data:OldIdClassroomPayload):
+    def _update_from_id_mystuff_data(self, data: OldIdClassroomPayload):
         self._update_to_attributes(
             description=data.get("description"),
             status=data.get("status"),
@@ -164,12 +176,12 @@ class Classroom(_BaseSiteAPI[int]):
         self._update_from_old_data(data)
 
     async def edit(
-            self,
-            title:str|None=None,
-            description:str|None=None,
-            status:str|None=None,
-            open:bool|None=None
-        ):
+        self,
+        title: str | None = None,
+        description: str | None = None,
+        status: str | None = None,
+        open: bool | None = None,
+    ):
         """
         クラスを編集する。
 
@@ -181,14 +193,20 @@ class Classroom(_BaseSiteAPI[int]):
         """
         data = {}
         self.require_session()
-        if title is not None: data["title"] = title
-        if description is not None: data["description"] = description
-        if status is not None: data["status"] = status
-        if open is not None: data["visibility"] = "visible" if open else "closed"
-        response = await self.client.put(f"https://scratch.mit.edu/site-api/classrooms/all/{self.id}/",json=data)
+        if title is not None:
+            data["title"] = title
+        if description is not None:
+            data["description"] = description
+        if status is not None:
+            data["status"] = status
+        if open is not None:
+            data["visibility"] = "visible" if open else "closed"
+        response = await self.client.put(
+            f"https://scratch.mit.edu/site-api/classrooms/all/{self.id}/", json=data
+        )
         self._update_from_id_mystuff_data(response.json())
 
-    async def set_icon(self,icon:File|bytes):
+    async def set_icon(self, icon: File | bytes):
         """
         アイコンを変更する。
 
@@ -200,10 +218,12 @@ class Classroom(_BaseSiteAPI[int]):
             self.require_session()
             await self.client.post(
                 f"https://scratch.mit.edu/site-api/classrooms/all/{self.id}/",
-                data=aiohttp.FormData({"file":f})
+                data=aiohttp.FormData({"file": f}),
             )
 
-    async def create_class_studio(self,title:str,description:str|None=None) -> Studio:
+    async def create_class_studio(
+        self, title: str, description: str | None = None
+    ) -> Studio:
         """
         クラスのスタジオを作成する
 
@@ -218,20 +238,20 @@ class Classroom(_BaseSiteAPI[int]):
         response = await self.client.post(
             "https://scratch.mit.edu/classes/create_classroom_gallery/",
             json={
-                "classroom_id":str(self.id),
-                "classroom_token":self.token,
-                "title":title,
-                "description":description or "",
-                "csrfmiddlewaretoken":"a"
-            }
+                "classroom_id": str(self.id),
+                "classroom_token": self.token,
+                "title": title,
+                "description": description or "",
+                "csrfmiddlewaretoken": "a",
+            },
         )
-        data:ClassStudioCreatePayload = response.json()[0]
+        data: ClassStudioCreatePayload = response.json()[0]
         if not data["msg"]:
-            raise Forbidden(response,data.get("msg"))
-        studio = Studio(data["gallery_id"],self.client_or_session)
+            raise Forbidden(response, data.get("msg"))
+        studio = Studio(data["gallery_id"], self.client_or_session)
         studio.title = data.get("gallery_title")
         return studio
-    
+
     async def get_class_studio_count(self) -> int:
         """
         クラススタジオの数を取得する
@@ -239,9 +259,19 @@ class Classroom(_BaseSiteAPI[int]):
         Returns:
             int:
         """
-        return await get_any_count(self.client,f"https://scratch.mit.edu/classes/{self.id}/studios/","Class Studios (")
-    
-    async def get_class_studios(self,start_page:int|None=None,end_page:int|None=None,*,use_api:bool=False) -> AsyncGenerator[Studio,None]:
+        return await get_any_count(
+            self.client,
+            f"https://scratch.mit.edu/classes/{self.id}/studios/",
+            "Class Studios (",
+        )
+
+    async def get_class_studios(
+        self,
+        start_page: int | None = None,
+        end_page: int | None = None,
+        *,
+        use_api: bool = False,
+    ) -> AsyncGenerator[Studio, None]:
         """
         クラスのスタジオを取得する。
 
@@ -256,16 +286,28 @@ class Classroom(_BaseSiteAPI[int]):
         if use_api:
             self.require_session()
             async for _s in page_api_iterative(
-                self.client,f"https://scratch.mit.edu/site-api/classrooms/studios/{self.id}/",
-                start_page,end_page
+                self.client,
+                f"https://scratch.mit.edu/site-api/classrooms/studios/{self.id}/",
+                start_page,
+                end_page,
             ):
-                yield Studio._create_from_data(_s["pk"],_s["fields"],self.client_or_session,Studio._update_from_old_data)
+                yield Studio._create_from_data(
+                    _s["pk"],
+                    _s["fields"],
+                    self.client_or_session,
+                    Studio._update_from_old_data,
+                )
         else:
             async for _t in page_html_iterative(
-                self.client,f"https://scratch.mit.edu/classes/{self.id}/studios/",
-                start_page,end_page,list_class="gallery thumb item"
+                self.client,
+                f"https://scratch.mit.edu/classes/{self.id}/studios/",
+                start_page,
+                end_page,
+                list_class="gallery thumb item",
             ):
-                yield Studio._create_from_html(_t,self.client_or_session,host=self.educator)
+                yield Studio._create_from_html(
+                    _t, self.client_or_session, host=self.educator
+                )
 
     async def get_student_count(self) -> int:
         """
@@ -274,9 +316,19 @@ class Classroom(_BaseSiteAPI[int]):
         Returns:
             int:
         """
-        return await get_any_count(self.client,f"https://scratch.mit.edu/classes/{self.id}/students/","Students (")
+        return await get_any_count(
+            self.client,
+            f"https://scratch.mit.edu/classes/{self.id}/students/",
+            "Students (",
+        )
 
-    async def get_students(self,start_page:int|None=None,end_page:int|None=None,*,use_api:bool=False) -> AsyncGenerator[User,None]:
+    async def get_students(
+        self,
+        start_page: int | None = None,
+        end_page: int | None = None,
+        *,
+        use_api: bool = False,
+    ) -> AsyncGenerator[User, None]:
         """
         クラスの生徒を取得する。
 
@@ -291,26 +343,36 @@ class Classroom(_BaseSiteAPI[int]):
         if use_api:
             self.require_session()
             async for _u in page_api_iterative(
-                self.client,f"https://scratch.mit.edu/site-api/classrooms/students/{self.id}/",
-                start_page,end_page
+                self.client,
+                f"https://scratch.mit.edu/site-api/classrooms/students/{self.id}/",
+                start_page,
+                end_page,
             ):
-                _u:OldAnyObjectPayload[StudentPayload]
-                yield User._create_from_data(_u["fields"]["user"]["username"],_u["fields"],self.client_or_session,User._update_from_student_data)
+                _u: OldAnyObjectPayload[StudentPayload]
+                yield User._create_from_data(
+                    _u["fields"]["user"]["username"],
+                    _u["fields"],
+                    self.client_or_session,
+                    User._update_from_student_data,
+                )
         else:
             async for _t in page_html_iterative(
-                self.client,f"https://scratch.mit.edu/classes/{self.id}/students/",
-                start_page,end_page,list_class="user thumb item"
+                self.client,
+                f"https://scratch.mit.edu/classes/{self.id}/students/",
+                start_page,
+                end_page,
+                list_class="user thumb item",
             ):
-                yield User._create_from_html(_t,self.client_or_session)
+                yield User._create_from_html(_t, self.client_or_session)
 
     async def get_privete_activity(
-            self,
-            start_page:int|None=None,
-            end_page:int|None=None,
-            student:str|User|None=None,
-            sort:Literal["","username"]="",
-            descending:bool=True
-        ) -> AsyncGenerator[Activity,None]:
+        self,
+        start_page: int | None = None,
+        end_page: int | None = None,
+        student: str | User | None = None,
+        sort: Literal["", "username"] = "",
+        descending: bool = True,
+    ) -> AsyncGenerator[Activity, None]:
         """
         クラスの非公開アクティビティを取得する
         このAPIは教師アカウントでのみ使用できます。
@@ -321,24 +383,31 @@ class Classroom(_BaseSiteAPI[int]):
             student (str | User | None, optional): 生徒を指定したい場合、そのユーザー。
             sort (Literal["","username"], optional): ソートしたい場合
             descending (bool, optional): 降順にするか。デフォルトはTrueです。
-        
+
         Yields:
             Activity:
         """
         self.require_session()
-        add_params:dict[str,str|int|float] = {"descsort":sort} if descending else {"ascsort":sort}
-        student = student.lower_username if isinstance(student,User) else (student or "all")
+        add_params: dict[str, str | int | float] = (
+            {"descsort": sort} if descending else {"ascsort": sort}
+        )
+        student = (
+            student.lower_username if isinstance(student, User) else (student or "all")
+        )
         async for _a in page_api_iterative(
-            self.client,f"https://scratch.mit.edu/site-api/classrooms/activity/{self.id}/{student}/",
-            start_page,end_page,add_params
+            self.client,
+            f"https://scratch.mit.edu/site-api/classrooms/activity/{self.id}/{student}/",
+            start_page,
+            end_page,
+            add_params,
         ):
-            yield Activity._create_from_class(_a,self.client_or_session)
+            yield Activity._create_from_class(_a, self.client_or_session)
 
     async def get_public_activity(
-            self,
-            limit:int|None=None,
-            offset:int|None=None,
-        ) -> AsyncGenerator[Activity,None]:
+        self,
+        limit: int | None = None,
+        offset: int | None = None,
+    ) -> AsyncGenerator[Activity, None]:
         """
         クラスの公開アクティビティを取得する。
 
@@ -351,42 +420,49 @@ class Classroom(_BaseSiteAPI[int]):
         """
         limit = limit or 20
         offset = offset or 0
-        for i in range(offset,offset+limit,20):
+        for i in range(offset, offset + limit, 20):
             response = await self.client.get(
                 f"https://scratch.mit.edu/site-api/classrooms/activity/public/{self.id}/",
                 params={
-                    "limit":min(20,offset+limit-i),
-                    "offset":i,
-                }
+                    "limit": min(20, offset + limit - i),
+                    "offset": i,
+                },
             )
-            soup = bs4.BeautifulSoup(response.text,'html.parser')
+            soup = bs4.BeautifulSoup(response.text, "html.parser")
             data = soup.find_all("li")
             for i in data:
-                yield Activity._create_from_html(cast(bs4.Tag,i),self.client_or_session,None)
+                yield Activity._create_from_html(
+                    cast(bs4.Tag, i), self.client_or_session, None
+                )
             if not data:
                 return
 
     @overload
     async def create_student_account(
-        self,username:str,*,load_status:bool=True
-    ) -> "Session":
-        ...
-    
+        self, username: str, *, load_status: bool = True
+    ) -> "Session": ...
+
     @overload
     async def create_student_account(
-        self,username:str,password:str,birth_day:datetime.date,gender:str,country:str,
-        *,load_status:bool=True
-    ) -> "Session":
-        ...
+        self,
+        username: str,
+        password: str,
+        birth_day: datetime.date,
+        gender: str,
+        country: str,
+        *,
+        load_status: bool = True,
+    ) -> "Session": ...
 
     async def create_student_account(
-        self,username:str,
-        password:str|None=None,
-        birth_day:datetime.date|None=None,
-        gender:str|None=None,
-        country:str|None=None,
+        self,
+        username: str,
+        password: str | None = None,
+        birth_day: datetime.date | None = None,
+        gender: str | None = None,
+        country: str | None = None,
         *,
-        load_status:bool=True
+        load_status: bool = True,
     ) -> "Session":
         """
         tokenから生徒アカウントを作成する。
@@ -405,34 +481,39 @@ class Classroom(_BaseSiteAPI[int]):
         """
         if not self.token:
             raise NoDataError(self)
-        data = aiohttp.FormData({
-            "classroom_id":self.id,
-            "classroom_token": self.token,
-            "username": username,
-            "is_robot": False
-        })
-        if password and birth_day and gender and country:
-            data.add_fields({
-                "password": password,
-                "birth_month": birth_day.month,
-                "birth_year": birth_day.year,
-                "gender": gender,
-                "country": country,
-            })
-        response = await self.client.post(
-            "https://scratch.mit.edu/classes/register_new_student/",data=data,
-            cookies={"scratchcsrftoken": 'a'}
+        data = aiohttp.FormData(
+            {
+                "classroom_id": self.id,
+                "classroom_token": self.token,
+                "username": username,
+                "is_robot": False,
+            }
         )
-        set_cookie = response._response.headers.get("Set-Cookie","")
-        session_id = split(set_cookie,"scratchsessionsid=\"","\"")
+        if password and birth_day and gender and country:
+            data.add_fields(
+                {
+                    "password": password,
+                    "birth_month": birth_day.month,
+                    "birth_year": birth_day.year,
+                    "gender": gender,
+                    "country": country,
+                }
+            )
+        response = await self.client.post(
+            "https://scratch.mit.edu/classes/register_new_student/",
+            data=data,
+            cookies={"scratchcsrftoken": "a"},
+        )
+        set_cookie = response._response.headers.get("Set-Cookie", "")
+        session_id = split(set_cookie, 'scratchsessionsid="', '"')
         if not session_id:
             raise InvalidData(response)
         if load_status:
             return await Session._create_from_api(session_id)
         else:
             return Session(session_id)
-        
-    async def create_student_accounts(self,data:dict[str,str]):
+
+    async def create_student_accounts(self, data: dict[str, str]):
         """
         教師アカウントから生徒アカウントを作成します。
         同時に40アカウントまで作成できます。
@@ -446,14 +527,15 @@ class Classroom(_BaseSiteAPI[int]):
         temp_stream.seek(0)
         csv_data = temp_stream.getvalue()
         form_data = aiohttp.FormData(default_to_multipart=True)
-        form_data.add_field("csrfmiddlewaretoken","a")
-        form_data.add_field("csv_file",csv_data.encode(),content_type="text/plain")
-        form_data.add_field("piiConfirm","on")
+        form_data.add_field("csrfmiddlewaretoken", "a")
+        form_data.add_field("csv_file", csv_data.encode(), content_type="text/plain")
+        form_data.add_field("piiConfirm", "on")
 
-        await self.client.post(f"https://scratch.mit.edu/classes/{self.id}/student_upload/",data=form_data)
+        await self.client.post(
+            f"https://scratch.mit.edu/classes/{self.id}/student_upload/", data=form_data
+        )
 
-
-    async def get_token(self,generate:bool=True) -> tuple[str,datetime.datetime]:
+    async def get_token(self, generate: bool = True) -> tuple[str, datetime.datetime]:
         """
         生徒アカウントを作成するためのトークンを取得する。
         新たにトークンを生成した場合、過去のトークンは無効になります。
@@ -466,17 +548,24 @@ class Classroom(_BaseSiteAPI[int]):
         """
         self.require_session()
         if generate:
-            response = await self.client.post(f"https://scratch.mit.edu/site-api/classrooms/generate_registration_link/{self.id}/")
+            response = await self.client.post(
+                f"https://scratch.mit.edu/site-api/classrooms/generate_registration_link/{self.id}/"
+            )
         else:
-            response = await self.client.get(f"https://scratch.mit.edu/site-api/classrooms/generate_registration_link/{self.id}/")
-        data:ClassTokenGeneratePayload = response.json()
+            response = await self.client.get(
+                f"https://scratch.mit.edu/site-api/classrooms/generate_registration_link/{self.id}/"
+            )
+        data: ClassTokenGeneratePayload = response.json()
         if not data["success"]:
-            raise Forbidden(response,data.get("error"))
-        
-        self.token = split(data.get("reg_link"),"/signup/","/",True)
-        return self.token,dt_from_isoformat(data.get("expires_at"))
+            raise Forbidden(response, data.get("error"))
 
-def get_class(class_id:int,*,_client:HTTPClient|None=None) -> _AwaitableContextManager[Classroom]:
+        self.token = split(data.get("reg_link"), "/signup/", "/", True)
+        return self.token, dt_from_isoformat(data.get("expires_at"))
+
+
+def get_class(
+    class_id: int, *, _client: HTTPClient | None = None
+) -> _AwaitableContextManager[Classroom]:
     """
     クラスを取得する。
 
@@ -486,15 +575,23 @@ def get_class(class_id:int,*,_client:HTTPClient|None=None) -> _AwaitableContextM
     Returns:
         _AwaitableContextManager[Classroom]: await か async with で取得できるクラス
     """
-    return _AwaitableContextManager(Classroom._create_from_api(class_id,_client))
+    return _AwaitableContextManager(Classroom._create_from_api(class_id, _client))
 
-async def _get_class_from_token(token:str,client_or_session:"HTTPClient|Session|None"=None) -> Classroom:
+
+async def _get_class_from_token(
+    token: str, client_or_session: "HTTPClient|Session|None" = None
+) -> Classroom:
     async with temporary_httpclient(client_or_session) as client:
         response = await client.get(f"https://api.scratch.mit.edu/classtoken/{token}")
-        data:ClassroomPayload = response.json()
-        return Classroom._create_from_data(data["id"],data,client_or_session,token=token)
+        data: ClassroomPayload = response.json()
+        return Classroom._create_from_data(
+            data["id"], data, client_or_session, token=token
+        )
 
-def get_class_from_token(token:str,*,_client:HTTPClient|None=None) -> _AwaitableContextManager[Classroom]:
+
+def get_class_from_token(
+    token: str, *, _client: HTTPClient | None = None
+) -> _AwaitableContextManager[Classroom]:
     """
     クラストークンからクラスを取得する。
 
@@ -504,4 +601,4 @@ def get_class_from_token(token:str,*,_client:HTTPClient|None=None) -> _Awaitable
     Returns:
         _AwaitableContextManager[Classroom]: await か async with で取得できるクラス
     """
-    return _AwaitableContextManager(_get_class_from_token(token,_client))
+    return _AwaitableContextManager(_get_class_from_token(token, _client))

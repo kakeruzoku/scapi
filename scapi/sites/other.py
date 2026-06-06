@@ -11,23 +11,24 @@ from ..utils.types import (
     TotalSiteStatusPayload,
     MonthlySiteTrafficPayload,
     MonthlyActivityGraphPayload,
-    MonthlyActivityPayload
+    MonthlyActivityPayload,
 )
-from ..utils.common import (
-    UNKNOWN,
-    MAYBE_UNKNOWN
-)
+from ..utils.common import UNKNOWN, MAYBE_UNKNOWN
 
 if TYPE_CHECKING:
     from ..utils.client import HTTPClient
 
-class UsernameStatus(Enum):
-    valid="valid username"
-    exist="username exists"
-    invalid="invalid username"
-    bad="bad username"
 
-async def check_username(client:"HTTPClient",username:str) -> MAYBE_UNKNOWN[UsernameStatus]:
+class UsernameStatus(Enum):
+    valid = "valid username"
+    exist = "username exists"
+    invalid = "invalid username"
+    bad = "bad username"
+
+
+async def check_username(
+    client: "HTTPClient", username: str
+) -> MAYBE_UNKNOWN[UsernameStatus]:
     """
     ユーザー名が利用可能か確認する。
 
@@ -38,19 +39,25 @@ async def check_username(client:"HTTPClient",username:str) -> MAYBE_UNKNOWN[User
     Returns:
         MAYBE_UNKNOWN[UsernameStatus]:
     """
-    response = await client.get(f"https://api.scratch.mit.edu/accounts/checkusername/{username}")
-    data:CheckAnyPayload = response.json()
+    response = await client.get(
+        f"https://api.scratch.mit.edu/accounts/checkusername/{username}"
+    )
+    data: CheckAnyPayload = response.json()
     msg = data.get("msg")
     if msg in UsernameStatus:
         return UsernameStatus(data.get("msg"))
     else:
         return UNKNOWN
-    
+
+
 class PasswordStatus(Enum):
-    valid="valid password"
-    invalid="invalid password"
-    
-async def check_password(client:"HTTPClient",password:str) -> MAYBE_UNKNOWN[PasswordStatus]:
+    valid = "valid password"
+    invalid = "invalid password"
+
+
+async def check_password(
+    client: "HTTPClient", password: str
+) -> MAYBE_UNKNOWN[PasswordStatus]:
     """
     パスワードが使用可能か確認する。
 
@@ -61,19 +68,24 @@ async def check_password(client:"HTTPClient",password:str) -> MAYBE_UNKNOWN[Pass
     Returns:
         MAYBE_UNKNOWN[PasswordStatus]:
     """
-    response = await client.post(f"https://api.scratch.mit.edu/accounts/checkpassword/",json={"password":password})
-    data:CheckAnyPayload = response.json()
+    response = await client.post(
+        "https://api.scratch.mit.edu/accounts/checkpassword/",
+        json={"password": password},
+    )
+    data: CheckAnyPayload = response.json()
     msg = data.get("msg")
     if msg in PasswordStatus:
         return PasswordStatus(data.get("msg"))
     else:
         return UNKNOWN
 
-class EmailStatus(Enum):
-    vaild="valid email"
-    invaild="Scratch is not allowed to send email to this address."
 
-async def check_email(client:"HTTPClient",email:str) -> MAYBE_UNKNOWN[EmailStatus]:
+class EmailStatus(Enum):
+    vaild = "valid email"
+    invaild = "Scratch is not allowed to send email to this address."
+
+
+async def check_email(client: "HTTPClient", email: str) -> MAYBE_UNKNOWN[EmailStatus]:
     """
     メールアドレスが利用可能か確認する。
 
@@ -84,15 +96,18 @@ async def check_email(client:"HTTPClient",email:str) -> MAYBE_UNKNOWN[EmailStatu
     Returns:
         MAYBE_UNKNOWN[EmailStatus]:
     """
-    response = await client.get(f"https://scratch.mit.edu/accounts/check_email/",params={"email":email})
-    data:CheckAnyPayload = response.json()[0]
+    response = await client.get(
+        "https://scratch.mit.edu/accounts/check_email/", params={"email": email}
+    )
+    data: CheckAnyPayload = response.json()[0]
     msg = data.get("msg")
     if msg in EmailStatus:
         return EmailStatus(data.get("msg"))
     else:
         return UNKNOWN
-    
-async def translation(client:"HTTPClient",language:str,text:str) -> str:
+
+
+async def translation(client: "HTTPClient", language: str, text: str) -> str:
     """
     テキストを翻訳する。
 
@@ -106,15 +121,13 @@ async def translation(client:"HTTPClient",language:str,text:str) -> str:
     """
     response = await client.get(
         "https://translate-service.scratch.mit.edu/translate",
-        params={
-            "language":language,
-            "text":text
-        }
+        params={"language": language, "text": text},
     )
-    data:TranslatePayload = response.json()
+    data: TranslatePayload = response.json()
     return data.get("result")
 
-async def get_supported_translation_language(client:"HTTPClient") -> dict[str,str]:
+
+async def get_supported_translation_language(client: "HTTPClient") -> dict[str, str]:
     """
     翻訳でサポートされているテキストを取得する。
 
@@ -125,10 +138,13 @@ async def get_supported_translation_language(client:"HTTPClient") -> dict[str,st
         dict[str,str]: 対応している言語の言語コードと名前のペア
     """
     response = await client.get("https://translate-service.scratch.mit.edu/supported")
-    data:TranslateSupportedPayload = response.json()
-    return {i.get("code"):i.get("name") for i in data.get("result")}
+    data: TranslateSupportedPayload = response.json()
+    return {i.get("code"): i.get("name") for i in data.get("result")}
 
-async def tts(client:"HTTPClient",language:str,type:Literal["male","female"],text:str) -> bytes:
+
+async def tts(
+    client: "HTTPClient", language: str, type: Literal["male", "female"], text: str
+) -> bytes:
     """
     読み上げ音声を取得する。
 
@@ -143,26 +159,24 @@ async def tts(client:"HTTPClient",language:str,type:Literal["male","female"],tex
     """
     response = await client.get(
         "https://synthesis-service.scratch.mit.edu/synth",
-        params={
-            "locale":language,
-            "gender":type,
-            "text":text
-        }
+        params={"locale": language, "gender": type, "text": text},
     )
     return response.data
 
+
 @dataclass
 class TotalSiteStats:
-    project_count:int
-    user_count:int
-    studio_comment_count:int
-    profile_comment_count:int
-    studio_count:int
-    comment_count:int
-    project_comment_count:int
-    _timestamp:float
+    project_count: int
+    user_count: int
+    studio_comment_count: int
+    profile_comment_count: int
+    studio_count: int
+    comment_count: int
+    project_comment_count: int
+    _timestamp: float
 
-async def get_total_site_stats(client:HTTPClient) -> TotalSiteStats:
+
+async def get_total_site_stats(client: HTTPClient) -> TotalSiteStats:
     """
     全体の統計情報を取得する
 
@@ -173,7 +187,7 @@ async def get_total_site_stats(client:HTTPClient) -> TotalSiteStats:
         TotalSiteStats:
     """
     response = await client.get("https://scratch.mit.edu/statistics/data/daily/")
-    data:TotalSiteStatusPayload = response.json()
+    data: TotalSiteStatusPayload = response.json()
     return TotalSiteStats(
         project_count=data.get("PROJECT_COUNT"),
         user_count=data.get("USER_COUNT"),
@@ -182,17 +196,19 @@ async def get_total_site_stats(client:HTTPClient) -> TotalSiteStats:
         studio_count=data.get("STUDIO_COUNT"),
         comment_count=data.get("COMMENT_COUNT"),
         project_comment_count=data.get("PROJECT_COMMENT_COUNT"),
-        _timestamp=data.get("_TS")
+        _timestamp=data.get("_TS"),
     )
+
 
 @dataclass
 class MonthlySiteTraffic:
-    pageviews:int
-    users:int
-    sessions:int
-    _timestamp:float
+    pageviews: int
+    users: int
+    sessions: int
+    _timestamp: float
 
-async def get_monthly_site_traffic(client:HTTPClient) -> MonthlySiteTraffic:
+
+async def get_monthly_site_traffic(client: HTTPClient) -> MonthlySiteTraffic:
     """
     月のアクティビティ数を取得する。
 
@@ -203,66 +219,81 @@ async def get_monthly_site_traffic(client:HTTPClient) -> MonthlySiteTraffic:
         MonthlySiteTraffic:
     """
     response = await client.get("https://scratch.mit.edu/statistics/data/monthly-ga/")
-    data:MonthlySiteTrafficPayload = response.json()
+    data: MonthlySiteTrafficPayload = response.json()
     return MonthlySiteTraffic(
         pageviews=data.get("pageviews"),
         users=data.get("users"),
         sessions=data.get("sessions"),
-        _timestamp=data.get("_TS")
+        _timestamp=data.get("_TS"),
     )
-
 
 
 GraphData = list[tuple[int, int]]
 
+
 @dataclass
 class CommentData:
     """コメント統計データ"""
+
     project: GraphData
     studio: GraphData
     profile: GraphData
 
+
 @dataclass
 class ActivityData:
     """アクティビティ統計データ"""
+
     new_projects: GraphData
     new_users: GraphData
     new_comments: GraphData
 
+
 @dataclass
 class ActiveUserData:
     """アクティブユーザー統計データ"""
+
     project_creators: GraphData
     comment_creators: GraphData
+
 
 @dataclass
 class ProjectData:
     """プロジェクト統計データ"""
+
     new_projects: GraphData
     remix_projects: GraphData
+
 
 @dataclass
 class AgeDistributionData:
     """年齢分布データ"""
+
     registration_age: GraphData
+
 
 @dataclass
 class MonthlyActivity:
     """
     月間アクティビティ統計情報を表す
     """
+
     _timestamp: float
     comment_data: CommentData
     activity_data: ActivityData
     active_user_data: ActiveUserData
     project_data: ProjectData
     age_distribution_data: AgeDistributionData
-    country_distribution: dict[str,int]
+    country_distribution: dict[str, int]
 
-def _parse_graph_data(raw_data: list[MonthlyActivityGraphPayload], index: int) -> GraphData:
+
+def _parse_graph_data(
+    raw_data: list[MonthlyActivityGraphPayload], index: int
+) -> GraphData:
     if index < len(raw_data) and "values" in raw_data[index]:
         return [(d["x"], d["y"]) for d in raw_data[index]["values"]]
     return []
+
 
 async def get_monthly_activity(client: HTTPClient) -> MonthlyActivity:
     """
@@ -275,7 +306,7 @@ async def get_monthly_activity(client: HTTPClient) -> MonthlyActivity:
         MonthlyActivity:
     """
     response = await client.get("https://scratch.mit.edu/statistics/data/monthly/")
-    data:MonthlyActivityPayload = response.json()
+    data: MonthlyActivityPayload = response.json()
 
     raw_comment_data = data.get("comment_data", [])
     comment_data = CommentData(

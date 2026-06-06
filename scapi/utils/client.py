@@ -17,9 +17,9 @@ from .error import (
     ClientError,
     ServerError,
     RegistrationRequested,
-    ResetPasswordRequested
+    ResetPasswordRequested,
 )
-from .common import split,UnknownDict
+from .common import split, UnknownDict
 
 default_headers = {
     "user-agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/75.0.3770.142 Safari/537.36",
@@ -28,13 +28,15 @@ default_headers = {
     "referer": "https://scratch.mit.edu",
 }
 
+
 class _RequestOptions(TypedDict, total=False):
-    params: dict[str,str|int|float]
+    params: dict[str, str | int | float]
     data: Any
     json: Any
-    cookies: dict[str,str]|None
-    headers: dict[str,str]|None
+    cookies: dict[str, str] | None
+    headers: dict[str, str] | None
     check: bool
+
 
 class Response:
     """
@@ -46,20 +48,23 @@ class Response:
         status_code (int): HTTPステータスコード
         _body (bytes):
     """
-    def __init__(self,response:aiohttp.ClientResponse,client:"HTTPClient", body: bytes):
+
+    def __init__(
+        self, response: aiohttp.ClientResponse, client: "HTTPClient", body: bytes
+    ):
         self.client = client
         self._response = response
-        self.status_code:int = response.status
+        self.status_code: int = response.status
         self._body = body
 
     def _check(self):
         url = self._response.url
         status_code = self.status_code
-        host: str | None = url.host # pyright: ignore[reportAttributeAccessIssue]
+        host: str | None = url.host  # pyright: ignore[reportAttributeAccessIssue]
         path: str = url.path  # pyright: ignore[reportAttributeAccessIssue]
         if host == "scratch.mit.edu":
             if path.startswith("/ip_ban_appeal/"):
-                raise IPBanned(self,split(path,"/ip_ban_appeal/","/"))
+                raise IPBanned(self, split(path, "/ip_ban_appeal/", "/"))
             elif path.startswith("/accounts/banned-response"):
                 raise AccountBlocked(self)
             elif path.startswith("/accounts/login"):
@@ -90,7 +95,7 @@ class Response:
             bytes:
         """
         return self._body
-    
+
     @property
     def text(self) -> str:
         """
@@ -100,8 +105,14 @@ class Response:
             str:
         """
         return self._body.decode(self._response.get_encoding())
-    
-    def json(self,loads:Callable[[str], Any]=_json.loads,use_unknown:bool=True,/,**kwargs) -> Any:
+
+    def json(
+        self,
+        loads: Callable[[str], Any] = _json.loads,
+        use_unknown: bool = True,
+        /,
+        **kwargs,
+    ) -> Any:
         """
         レスポンスをjsonに変換する。
 
@@ -111,9 +122,15 @@ class Response:
         """
         if use_unknown:
             kwargs["object_hook"] = UnknownDict
-        return loads(self.text,**kwargs)
-    
-    def json_or_text(self,loads:Callable[[str], Any]=_json.loads,use_unknown:bool=True,/,**kwargs) -> Any:
+        return loads(self.text, **kwargs)
+
+    def json_or_text(
+        self,
+        loads: Callable[[str], Any] = _json.loads,
+        use_unknown: bool = True,
+        /,
+        **kwargs,
+    ) -> Any:
         """
         jsonをエンコードした結果か、失敗した場合テキストを返す。
 
@@ -122,9 +139,10 @@ class Response:
             use_unknown (bool, optional): .get() を使用した際、キーがないのとnullを区別するためにUNKNOWNを返すdictを使用するか。デフォルトはTrueです。
         """
         try:
-            return self.json(loads,use_unknown,**kwargs)
+            return self.json(loads, use_unknown, **kwargs)
         except Exception:
             return self.text
+
 
 class HTTPClient:
     """
@@ -136,28 +154,30 @@ class HTTPClient:
         scratch_headers (dict[str,str]): Scratchドメインにリクエストする場合のヘッダー
         scratch_cookies (dict[str,str]): Scratchドメインにリクエストする場合のクッキー
     """
+
     def __repr__(self):
         return f"<HTTPClient proxy:{bool(self._proxy)}>"
 
     def __init__(
-            self,*,
-            headers:dict[str,str]|None=None,
-            cookies:dict[str,str]|None=None,
-            scratch_headers:dict[str,str]|None=None,
-            scratch_cookies:dict[str,str]|None=None
-        ):
+        self,
+        *,
+        headers: dict[str, str] | None = None,
+        cookies: dict[str, str] | None = None,
+        scratch_headers: dict[str, str] | None = None,
+        scratch_cookies: dict[str, str] | None = None,
+    ):
         self.headers = headers or {}
         self.cookies = cookies or {}
         self.scratch_headers = scratch_headers or default_headers
         self.scratch_cookies = scratch_cookies or {}
         self._proxy = _config.default_proxy
         self._proxy_auth = _config.default_proxy_auth
-        self._session:aiohttp.ClientSession = aiohttp.ClientSession(
+        self._session: aiohttp.ClientSession = aiohttp.ClientSession(
             cookie_jar=aiohttp.DummyCookieJar()
         )
 
     @staticmethod
-    def is_scratch(url:str) -> bool:
+    def is_scratch(url: str) -> bool:
         """
         urlがscratch.mit.eduドメインを指しているか検証する。
 
@@ -171,18 +191,18 @@ class HTTPClient:
         if hostname is None:
             return False
         return hostname.endswith("scratch.mit.edu")
-    
+
     @property
-    def proxy(self) -> tuple[str|None,aiohttp.BasicAuth|None]:
+    def proxy(self) -> tuple[str | None, aiohttp.BasicAuth | None]:
         """
         プロキシの設定を返す。
 
         Returns:
             tuple[str|None,aiohttp.BasicAuth|None]:
         """
-        return self._proxy,self._proxy_auth
-    
-    def set_proxy(self,url:str|None=None,auth:aiohttp.BasicAuth|None=None):
+        return self._proxy, self._proxy_auth
+
+    def set_proxy(self, url: str | None = None, auth: aiohttp.BasicAuth | None = None):
         """
         プロキシを設定する。
 
@@ -192,27 +212,37 @@ class HTTPClient:
         """
         self._proxy = url
         self._proxy_auth = auth
-    
-    async def _request(self,method:str,url:str,**kwargs:Unpack[_RequestOptions]) -> Response:
+
+    async def _request(
+        self, method: str, url: str, **kwargs: Unpack[_RequestOptions]
+    ) -> Response:
         kwargs["cookies"] = kwargs.get("cookies")
         kwargs["headers"] = kwargs.get("headers")
 
-        if kwargs["cookies"] is None: kwargs["cookies"] = self.scratch_cookies if self.is_scratch(url) else self.cookies
-        if kwargs["headers"] is None: kwargs["headers"] = self.scratch_headers if self.is_scratch(url) else self.headers
-        
-        check = kwargs.pop("check",True)
+        if kwargs["cookies"] is None:
+            kwargs["cookies"] = (
+                self.scratch_cookies if self.is_scratch(url) else self.cookies
+            )
+        if kwargs["headers"] is None:
+            kwargs["headers"] = (
+                self.scratch_headers if self.is_scratch(url) else self.headers
+            )
+
+        check = kwargs.pop("check", True)
         if self.closed:
             raise SessionClosed()
         try:
-            async with self._session.request(method,url,proxy=self._proxy,proxy_auth=self._proxy_auth,**kwargs) as _response:
-                response = Response(_response,self, await _response.read())
+            async with self._session.request(
+                method, url, proxy=self._proxy, proxy_auth=self._proxy_auth, **kwargs
+            ) as _response:
+                response = Response(_response, self, await _response.read())
         except Exception as e:
             raise ProcessingError(e) from e
         if check:
             response._check()
         return response
 
-    async def get(self,url:str,**kwargs:Unpack[_RequestOptions]) -> Response:
+    async def get(self, url: str, **kwargs: Unpack[_RequestOptions]) -> Response:
         """
         GETリクエストを送信する。
 
@@ -226,9 +256,9 @@ class HTTPClient:
         Returns:
             Response:
         """
-        return await self._request("GET",url,**kwargs)
-    
-    async def post(self,url:str,**kwargs:Unpack[_RequestOptions]) -> Response:
+        return await self._request("GET", url, **kwargs)
+
+    async def post(self, url: str, **kwargs: Unpack[_RequestOptions]) -> Response:
         """
         POSTリクエストを送信する。
 
@@ -244,9 +274,9 @@ class HTTPClient:
         Returns:
             Response:
         """
-        return await self._request("POST",url,**kwargs)
-    
-    async def put(self,url:str,**kwargs:Unpack[_RequestOptions]) -> Response:
+        return await self._request("POST", url, **kwargs)
+
+    async def put(self, url: str, **kwargs: Unpack[_RequestOptions]) -> Response:
         """
         PUTリクエストを送信する。
 
@@ -262,9 +292,9 @@ class HTTPClient:
         Returns:
             Response:
         """
-        return await self._request("PUT",url,**kwargs)
-    
-    async def delete(self,url:str,**kwargs:Unpack[_RequestOptions]) -> Response:
+        return await self._request("PUT", url, **kwargs)
+
+    async def delete(self, url: str, **kwargs: Unpack[_RequestOptions]) -> Response:
         """
         DELETEリクエストを送信する。
 
@@ -280,8 +310,8 @@ class HTTPClient:
         Returns:
             Response:
         """
-        return await self._request("DELETE",url,**kwargs)
-    
+        return await self._request("DELETE", url, **kwargs)
+
     @property
     def closed(self):
         """
@@ -291,24 +321,25 @@ class HTTPClient:
             bool:
         """
         return self._session.closed
-    
+
     async def close(self):
         """
         クライアントを閉じる
         """
         await self._session.close()
-    
+
     async def __aenter__(self):
         return self
-    
+
     async def __aexit__(self, exc_type, exc, tb):
         await self.close()
 
-async def create_HTTPClient_async(*args,**kwargs) -> HTTPClient:
+
+async def create_HTTPClient_async(*args, **kwargs) -> HTTPClient:
     """
     IPythonなどでの互換性のために追加されています。
     通常は直接 ``HTTPClient()`` を使用してください。
 
     引数は |HTTPClient| の生成時に渡すものと同じです。
     """
-    return HTTPClient(*args,**kwargs)
+    return HTTPClient(*args, **kwargs)

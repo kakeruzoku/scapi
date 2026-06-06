@@ -12,13 +12,16 @@ import aiofiles
 
 from .common import maybe_coroutine
 
+
 @runtime_checkable
 class FileProtocol(Protocol):
     def read(self) -> bytes | Any: ...
     def close(self) -> None | Any: ...
 
+
 def _is_file_like(obj: object) -> TypeGuard[FileProtocol]:
     return hasattr(obj, "read") and hasattr(obj, "close")
+
 
 class File:
     """
@@ -41,7 +44,8 @@ class File:
 
         これは ``file=scapi.File()`` のような操作を想定しています
     """
-    def __init__(self,data:str|bytes|Path|AsyncBufferedReader|FileProtocol):
+
+    def __init__(self, data: str | bytes | Path | AsyncBufferedReader | FileProtocol):
         """
         Args:
             data (str | bytes | Path | AsyncBufferedReader | FileProtocol): データ本体またはファイルパスまたはファイルオブジェクト
@@ -63,33 +67,33 @@ class File:
             self._owner = True
         else:
             raise TypeError(f"Unsupported data type: {type(data)}")
-        
+
     async def _open(self):
         if self._fp is None:
             assert self._coro_fp
             self._fp = await self._coro_fp
         self._opened = True
         return self
-    
+
     async def read(self) -> bytes:
         if inspect.iscoroutinefunction(self.fp.read):
             return await self.fp.read()
         return await asyncio.to_thread(self.fp.read)
-    
+
     async def close(self):
         await maybe_coroutine(self.fp.close)
-        
+
     @property
     def fp(self) -> FileProtocol:
         assert self._fp
         return self._fp
-    
+
     def __await__(self):
         return self._open().__await__()
 
     async def __aenter__(self):
         return await self._open()
-    
+
     async def __aexit__(self, exc_type, exc, tb):
         if self._owner:
             await self.close()
@@ -103,13 +107,15 @@ class File:
             status = "ready"
         return f"<File status={status} owner={self._owner}>"
 
+
 class _FileLike:
-    def __init__(self,data):
+    def __init__(self, data):
         self.fp = data
 
+
 @asynccontextmanager
-async def _file(data:Any) -> AsyncGenerator[File | _FileLike,None]:
-    if isinstance(data,File):
+async def _file(data: Any) -> AsyncGenerator[File | _FileLike, None]:
+    if isinstance(data, File):
         if data._opened:
             yield data
         else:
@@ -118,9 +124,10 @@ async def _file(data:Any) -> AsyncGenerator[File | _FileLike,None]:
     else:
         yield _FileLike(data)
 
+
 @asynccontextmanager
-async def _read_file(data:File|bytes) -> AsyncGenerator[bytes,None]:
-    if isinstance(data,File):
+async def _read_file(data: File | bytes) -> AsyncGenerator[bytes, None]:
+    if isinstance(data, File):
         if data._opened:
             yield await data.read()
         else:

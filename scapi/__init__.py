@@ -1,11 +1,95 @@
 from __future__ import annotations
 
+__all__ = [
+    "Session",
+    "SessionStatus",
+    "session_login",
+    "login",
+    "send_password_reset_email",
+    "UsernameStatus",
+    "check_username",
+    "PasswordStatus",
+    "check_password",
+    "EmailStatus",
+    "check_email",
+    "translation",
+    "get_supported_translation_language",
+    "tts",
+    "TotalSiteStats",
+    "get_total_site_stats",
+    "MonthlySiteTraffic",
+    "get_monthly_site_traffic",
+    "MonthlyActivity",
+    "get_monthly_activity",
+    "News",
+    "get_news",
+    "CommunityFeaturedResponse",
+    "get_community_featured",
+    "Project",
+    "ProjectFeatured",
+    "ProjectVisibility",
+    "RemixTree",
+    "get_project",
+    "explore_projects",
+    "search_projects",
+    "get_remixtree",
+    "User",
+    "ProjectFeaturedLabel",
+    "OcularStatus",
+    "get_user",
+    "Classroom",
+    "get_class",
+    "get_class_from_token",
+    "Studio",
+    "StudioStatus",
+    "get_studio",
+    "explore_studios",
+    "search_studios",
+    "Comment",
+    "ActivityType",
+    "ActivityAction",
+    "Activity",
+    "CloudActivity",
+    "ForumCategory",
+    "ForumTopic",
+    "ForumPost",
+    "get_forum_categories",
+    "get_forum_topic",
+    "get_forum_post",
+    "get_forum_category",
+    "OcularReactions",
+    "BackpackType",
+    "Backpack",
+    "_BaseSiteAPI",
+    "_TemporalEvent",
+    "CommentEvent",
+    "MessageEvent",
+    "_BaseCloud",
+    "TurboWarpCloud",
+    "ScratchCloud",
+    "CloudLogEvent",
+    "_BaseEvent",
+    "Response",
+    "HTTPClient",
+    "create_HTTPClient_async",
+    "count_api_iterative",
+    "empty_project_json",
+    "UNKNOWN",
+    "UNKNOWN_TYPE",
+    "MAYBE_UNKNOWN",
+    "__version__",
+    "File",
+    "set_default_proxy",
+    "set_debug",
+    "exceptions",
+]
+
 from .sites.session import (
     Session,
     SessionStatus,
     session_login,
     login,
-    send_password_reset_email
+    send_password_reset_email,
 )
 
 from .sites.other import (
@@ -41,40 +125,24 @@ from .sites.project import (
     get_project,
     explore_projects,
     search_projects,
-    get_remixtree
+    get_remixtree,
 )
 
-from .sites.user import (
-    User,
-    ProjectFeaturedLabel,
-    OcularStatus,
-    get_user
-)
+from .sites.user import User, ProjectFeaturedLabel, OcularStatus, get_user
 
-from .sites.classroom import (
-    Classroom,
-    get_class,
-    get_class_from_token
-)
+from .sites.classroom import Classroom, get_class, get_class_from_token
 
 from .sites.studio import (
     Studio,
     StudioStatus,
     get_studio,
     explore_studios,
-    search_studios
+    search_studios,
 )
 
-from .sites.comment import (
-    Comment
-)
+from .sites.comment import Comment
 
-from .sites.activity import (
-    ActivityType,
-    ActivityAction,
-    Activity,
-    CloudActivity
-)
+from .sites.activity import ActivityType, ActivityAction, Activity, CloudActivity
 
 from .sites.forum import (
     ForumCategory,
@@ -84,40 +152,20 @@ from .sites.forum import (
     get_forum_topic,
     get_forum_post,
     get_forum_category,
-    OcularReactions
+    OcularReactions,
 )
 
-from .sites.asset import (
-    BackpackType,
-    Backpack
-)
+from .sites.asset import BackpackType, Backpack
 
-from .sites.base import (
-    _BaseSiteAPI
-)
+from .sites.base import _BaseSiteAPI
 
-from .event.temporal import (
-    _TemporalEvent,
-    CommentEvent,
-    MessageEvent
-)
+from .event.temporal import _TemporalEvent, CommentEvent, MessageEvent
 
-from .event.cloud import (
-    _BaseCloud,
-    TurboWarpCloud,
-    ScratchCloud,
-    CloudLogEvent
-)
+from .event.cloud import _BaseCloud, TurboWarpCloud, ScratchCloud, CloudLogEvent
 
-from .event.base import (
-    _BaseEvent
-)
+from .event.base import _BaseEvent
 
-from .utils.client import (
-    Response,
-    HTTPClient,
-    create_HTTPClient_async
-)
+from .utils.client import Response, HTTPClient, create_HTTPClient_async
 
 from .utils.common import (
     count_api_iterative,
@@ -125,14 +173,11 @@ from .utils.common import (
     UNKNOWN,
     UNKNOWN_TYPE,
     MAYBE_UNKNOWN,
-    __version__
+    __version__,
 )
 
 from .utils.file import File
 
-from .utils.config import (
-    set_default_proxy,
-    set_debug
-)
+from .utils.config import set_default_proxy, set_debug
 
 from .utils import error as exceptions

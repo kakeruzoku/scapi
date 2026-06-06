@@ -8,17 +8,13 @@ from typing import TYPE_CHECKING, Any, Self, TypedDict
 import bs4
 
 from .base import _BaseSiteAPI
-from ..utils.types import (
-    WSCloudActivityPayload,
-    CloudLogPayload,
-    OldUserPayload
-)
+from ..utils.types import WSCloudActivityPayload, CloudLogPayload, OldUserPayload
 from ..utils.activity_types import (
     _BaseActivity,
     ClassAnyActivity,
     StudioAnyActivity,
     FeedAnyActivity,
-    MessageAnyActivity
+    MessageAnyActivity,
 )
 from ..utils.common import (
     UNKNOWN,
@@ -26,8 +22,7 @@ from ..utils.common import (
     dt_from_timestamp,
     dt_from_isoformat,
     Tag,
-    dt_to_str,
-    split
+    split,
 )
 from ..utils.error import (
     NoDataError,
@@ -43,22 +38,25 @@ if TYPE_CHECKING:
     from .comment import Comment
     from .forum import ForumTopic
 
+
 def _import():
-    global User,Project,Studio,Comment,ForumTopic
+    global User, Project, Studio, Comment, ForumTopic
     from .user import User
     from .project import Project
     from .studio import Studio
     from .comment import Comment
     from .forum import ForumTopic
 
+
 class CloudActivityPayload(TypedDict):
-    method:str
-    variable:str
-    value:str
-    username:str|None
-    project_id:int|str
-    datetime:datetime.datetime
-    cloud:"_BaseCloud|None"
+    method: str
+    variable: str
+    value: str
+    username: str | None
+    project_id: int | str
+    datetime: datetime.datetime
+    cloud: "_BaseCloud|None"
+
 
 class ActivityType(Enum):
     """
@@ -72,12 +70,14 @@ class ActivityType(Enum):
         Feed: 最新の情報
         Classroom: クラスのプライベートアクティビティ
     """
-    Unknown="unkown"
-    Studio="studio"
-    User="user"
-    Message="message"
-    Feed="feed"
-    Classroom="classroom"
+
+    Unknown = "unkown"
+    Studio = "studio"
+    User = "user"
+    Message = "message"
+    Feed = "feed"
+    Classroom = "classroom"
+
 
 class ActivityAction(Enum):
     """
@@ -85,11 +85,11 @@ class ActivityAction(Enum):
 
     .. warning::
         この欄に表示されているデータは必ず使用できるとは保証されず、場合によってNoneになる可能性があります。 ``isinstance()`` や ``is not None`` などでデータが正しいものであるか確認するようにしてください。
-    
+
     Attributes:
         Unknown:
             不明なアクティビティ。
-        
+
         StudioFollow:
             | スタジオをフォローした。
             | |actor| : |User| フォローした人
@@ -177,36 +177,39 @@ class ActivityAction(Enum):
             | |place| |target| : |ForumTopic| 投稿された場所
 
     """
-    Unknown="unknown"
 
-    #studio
-    StudioFollow="studio_follow"
-    StudioAddProject="studio_add_project"
-    StudioRemoveProject="studio_remove_project"
-    StudioInviteCurator="studio_invite_curetor"
-    StudioBecomeCurator="studio_become_curetor"
-    StudioBecomeManager="studio_become_manager"
-    StudioBecomeHost="studio_become_host"
-    StudioRemoveCurator="studio_remove_curator"
-    StudioUpdate="studio_update"
-    StudioActivity="studio_activity"
+    Unknown = "unknown"
 
-    #project
-    ProjectLove="project_love"
-    ProjectFavorite="project_favorite"
-    ProjectShare="project_share"
-    ProjectRemix="project_remix"
+    # studio
+    StudioFollow = "studio_follow"
+    StudioAddProject = "studio_add_project"
+    StudioRemoveProject = "studio_remove_project"
+    StudioInviteCurator = "studio_invite_curetor"
+    StudioBecomeCurator = "studio_become_curetor"
+    StudioBecomeManager = "studio_become_manager"
+    StudioBecomeHost = "studio_become_host"
+    StudioRemoveCurator = "studio_remove_curator"
+    StudioUpdate = "studio_update"
+    StudioActivity = "studio_activity"
 
-    #user
-    UserFollow="user_follow"
-    UserEditProfile="user_edit_profile"
-    UserJoin="user_join"
+    # project
+    ProjectLove = "project_love"
+    ProjectFavorite = "project_favorite"
+    ProjectShare = "project_share"
+    ProjectRemix = "project_remix"
 
-    #other
-    Comment="comment"
-    ForumPost="forum_post"
+    # user
+    UserFollow = "user_follow"
+    UserEditProfile = "user_edit_profile"
+    UserJoin = "user_join"
 
-get_number_re = re.compile(r'\d+')
+    # other
+    Comment = "comment"
+    ForumPost = "forum_post"
+
+
+get_number_re = re.compile(r"\d+")
+
 
 class Activity:
     """
@@ -228,30 +231,31 @@ class Activity:
         place (Studio|Project|User): アクティビティが実行された場所
         other (Any): 追加の(上記に振り分けられない)追加データ
     """
+
     def __repr__(self) -> str:
         return f"<Acticity type:{self.type} action:{self.action}>"
 
     def __init__(
-            self,
-            type:ActivityType,
-            action:ActivityAction=ActivityAction.Unknown,
-            *,
-            id:int|None=None,
-            actor:"User|None"=None,
-            target:"Comment|Studio|Project|User|ForumTopic|None"=None,
-            place:"Studio|Project|User|ForumTopic|None"=None,
-            datetime:"str|None"=None,
-            other:Any=None
-        ):
-        self.type:ActivityType = type
-        self.action:ActivityAction = action
-            
-        self.id:int|None = id
-        self.actor:"User|None" = actor
-        self.target:"Comment|Studio|Project|User|ForumTopic|None" = target
-        self.place:"Studio|Project|User|ForumTopic|None" = place
-        self._created_at:"str|None" = datetime
-        self.other:Any = other
+        self,
+        type: ActivityType,
+        action: ActivityAction = ActivityAction.Unknown,
+        *,
+        id: int | None = None,
+        actor: "User|None" = None,
+        target: "Comment|Studio|Project|User|ForumTopic|None" = None,
+        place: "Studio|Project|User|ForumTopic|None" = None,
+        datetime: "str|None" = None,
+        other: Any = None,
+    ):
+        self.type: ActivityType = type
+        self.action: ActivityAction = action
+
+        self.id: int | None = id
+        self.actor: "User|None" = actor
+        self.target: "Comment|Studio|Project|User|ForumTopic|None" = target
+        self.place: "Studio|Project|User|ForumTopic|None" = place
+        self._created_at: "str|None" = datetime
+        self.other: Any = other
 
     @property
     def created_at(self) -> datetime.datetime | None:
@@ -263,118 +267,159 @@ class Activity:
         """
         return dt_from_isoformat(self._created_at)
 
-    
-    def _setup_from_json(self,data:_BaseActivity,client_or_session:"HTTPClient|Session"):
+    def _setup_from_json(
+        self, data: _BaseActivity, client_or_session: "HTTPClient|Session"
+    ):
         _import()
-        self.actor = User(data["actor_username"],client_or_session,is_real=True)
+        self.actor = User(data["actor_username"], client_or_session, is_real=True)
         self.actor.id = data.get("actor_id")
-        self._created_at = data.get("datetime_created",None)
+        self._created_at = data.get("datetime_created", None)
 
     @classmethod
-    def _create_from_studio(cls,data:StudioAnyActivity,studio:Studio) -> Self:
+    def _create_from_studio(cls, data: StudioAnyActivity, studio: Studio) -> Self:
         client_or_session = studio.client_or_session
         activity = cls(ActivityType.Studio)
         activity.place = studio
-        activity._setup_from_json(data,client_or_session)
-        activity.id = int(str(data["id"]).split("-")[1]) #(type)-(id)
+        activity._setup_from_json(data, client_or_session)
+        activity.id = int(str(data["id"]).split("-")[1])  # (type)-(id)
         match data["type"]:
             case "updatestudio":
                 activity.action = ActivityAction.StudioUpdate
                 activity.target = activity.place
             case "becomecurator":
                 activity.action = ActivityAction.StudioBecomeCurator
-                activity.target = User(data["username"],client_or_session,is_real=True)
+                activity.target = User(
+                    data["username"], client_or_session, is_real=True
+                )
             case "removecuratorstudio":
                 activity.action = ActivityAction.StudioRemoveCurator
-                activity.target = User(data["username"],client_or_session,is_real=True)
+                activity.target = User(
+                    data["username"], client_or_session, is_real=True
+                )
             case "becomehoststudio":
                 activity.action = ActivityAction.StudioBecomeHost
-                activity.target = User(data["recipient_username"],client_or_session,is_real=True)
+                activity.target = User(
+                    data["recipient_username"], client_or_session, is_real=True
+                )
             case "addprojecttostudio":
                 activity.action = ActivityAction.StudioAddProject
-                activity.target = Project(data["project_id"],client_or_session)
+                activity.target = Project(data["project_id"], client_or_session)
                 activity.target.title = data["project_title"]
             case "removeprojectstudio":
                 activity.action = ActivityAction.StudioRemoveProject
-                activity.target = Project(data["project_id"],client_or_session)
+                activity.target = Project(data["project_id"], client_or_session)
                 activity.target.title = data["project_title"]
             case "becomeownerstudio":
                 activity.action = ActivityAction.StudioBecomeManager
-                activity.target = User(data["recipient_username"],client_or_session,is_real=True)
+                activity.target = User(
+                    data["recipient_username"], client_or_session, is_real=True
+                )
         return activity
 
     @staticmethod
-    def _load_user(data:OldUserPayload,client_or_session:"HTTPClient|Session"):
-        return User._create_from_data(data["username"],data,client_or_session,User._update_from_old_data)
+    def _load_user(data: OldUserPayload, client_or_session: "HTTPClient|Session"):
+        return User._create_from_data(
+            data["username"], data, client_or_session, User._update_from_old_data
+        )
 
     @classmethod
-    def _create_from_class(cls,data:ClassAnyActivity,client_or_session:"HTTPClient|Session") -> Self:
+    def _create_from_class(
+        cls, data: ClassAnyActivity, client_or_session: "HTTPClient|Session"
+    ) -> Self:
         _import()
         activity = cls(ActivityType.Classroom)
         _actor = data["actor"]
-        activity.actor = User._create_from_data(_actor["username"],_actor,client_or_session,User._update_from_old_data)
+        activity.actor = User._create_from_data(
+            _actor["username"], _actor, client_or_session, User._update_from_old_data
+        )
         activity._created_at = data["datetime_created"]
         match data["type"]:
             case 0:
                 activity.action = ActivityAction.UserFollow
-                activity.place = activity.target = cls._load_user(data["followed_user"],client_or_session)
+                activity.place = activity.target = cls._load_user(
+                    data["followed_user"], client_or_session
+                )
             case 1:
                 activity.action = ActivityAction.StudioFollow
-                activity.place = activity.target = Studio(data["gallery"],client_or_session)
+                activity.place = activity.target = Studio(
+                    data["gallery"], client_or_session
+                )
                 activity.place.title = data["title"]
             case 2:
                 activity.action = ActivityAction.ProjectLove
-                activity.place = activity.target = Project(data["project"],client_or_session)
-                activity.place.author = cls._load_user(data["recipient"],client_or_session)
+                activity.place = activity.target = Project(
+                    data["project"], client_or_session
+                )
+                activity.place.author = cls._load_user(
+                    data["recipient"], client_or_session
+                )
                 activity.place.title = data["title"]
             case 3:
                 activity.action = ActivityAction.ProjectFavorite
-                activity.place = activity.target = Project(data["project"],client_or_session)
-                activity.place.author = cls._load_user(data["project_creator"],client_or_session)
+                activity.place = activity.target = Project(
+                    data["project"], client_or_session
+                )
+                activity.place.author = cls._load_user(
+                    data["project_creator"], client_or_session
+                )
                 activity.place.title = data["project_title"]
             case 7:
                 activity.action = ActivityAction.StudioAddProject
-                activity.place = Studio(data["gallery"],client_or_session)
+                activity.place = Studio(data["gallery"], client_or_session)
                 activity.place.title = data["gallery_title"]
-                activity.target = Project(data["project"],client_or_session)
+                activity.target = Project(data["project"], client_or_session)
                 activity.target.title = data["project_title"]
-                activity.target.author = cls._load_user(data["recipient"],client_or_session)
+                activity.target.author = cls._load_user(
+                    data["recipient"], client_or_session
+                )
             case 10:
                 activity.action = ActivityAction.ProjectShare
-                activity.place = activity.target = Project(data["project"],client_or_session)
+                activity.place = activity.target = Project(
+                    data["project"], client_or_session
+                )
                 activity.place.title = data["title"]
                 activity.place.author = activity.actor
                 activity.other = data["is_reshare"]
             case 11:
                 activity.action = ActivityAction.ProjectRemix
-                activity.place = Project(data["project"],client_or_session)
+                activity.place = Project(data["project"], client_or_session)
                 activity.place.title = data["title"]
                 activity.place.author = activity.actor
-                activity.target = Project(data["parent"],client_or_session)
+                activity.target = Project(data["parent"], client_or_session)
                 activity.target.title = data["parent_title"]
-                activity.target.author = cls._load_user(data["recipient"],client_or_session)
+                activity.target.author = cls._load_user(
+                    data["recipient"], client_or_session
+                )
             case 13:
                 activity.action = ActivityAction.StudioBecomeHost
-                activity.place = activity.target = Studio(data["gallery"],client_or_session)
+                activity.place = activity.target = Studio(
+                    data["gallery"], client_or_session
+                )
             case 15:
                 activity.action = ActivityAction.StudioUpdate
-                activity.place = activity.target = Studio(data["gallery"],client_or_session)
+                activity.place = activity.target = Studio(
+                    data["gallery"], client_or_session
+                )
                 activity.place.title = data["title"]
             case 19:
                 activity.action = ActivityAction.StudioRemoveProject
-                activity.place = Studio(data["gallery"],client_or_session)
+                activity.place = Studio(data["gallery"], client_or_session)
                 activity.place.title = data["gallery_title"]
-                activity.target = Project(data["project"],client_or_session)
+                activity.target = Project(data["project"], client_or_session)
                 activity.target.title = data["project_title"]
-                activity.target.author = cls._load_user(data["recipient"],client_or_session)
+                activity.target.author = cls._load_user(
+                    data["recipient"], client_or_session
+                )
             case 22:
                 activity.action = ActivityAction.StudioBecomeManager
-                activity.place = Studio(data["gallery"],client_or_session)
+                activity.place = Studio(data["gallery"], client_or_session)
                 activity.place.title = data["gallery_title"]
                 if data["recipient"] is None:
                     activity.target = activity.actor
                 else:
-                    activity.target = cls._load_user(data["recipient"],client_or_session)
+                    activity.target = cls._load_user(
+                        data["recipient"], client_or_session
+                    )
             case 25:
                 activity.action = ActivityAction.UserEditProfile
                 activity.place = activity.target = activity.actor
@@ -383,133 +428,153 @@ class Activity:
                 activity.action = ActivityAction.Comment
                 match data["comment_type"]:
                     case 0:
-                        activity.place = Project(data["comment_obj_id"],client_or_session)
+                        activity.place = Project(
+                            data["comment_obj_id"], client_or_session
+                        )
                         activity.place.title = data["comment_obj_title"]
                     case 1:
-                        activity.place = User(data["comment_obj_title"],client_or_session,is_real=True)
+                        activity.place = User(
+                            data["comment_obj_title"], client_or_session, is_real=True
+                        )
                         activity.place.id = data["comment_obj_id"]
                     case 2:
-                        activity.place = Studio(data["comment_obj_id"],client_or_session)
+                        activity.place = Studio(
+                            data["comment_obj_id"], client_or_session
+                        )
                         activity.place.title = data["comment_obj_title"]
-                activity.target = Comment(data["comment_id"],client_or_session,place=activity.place)
+                activity.target = Comment(
+                    data["comment_id"], client_or_session, place=activity.place
+                )
                 activity.target.content = data["comment_fragment"]
-                activity.target.commentee_id = data["recipient"] and data["recipient"]["pk"]
+                activity.target.commentee_id = (
+                    data["recipient"] and data["recipient"]["pk"]
+                )
                 activity.other = data["recipient"]
 
         return activity
 
     @classmethod
-    def _create_from_message(cls,data:MessageAnyActivity,session:"Session") -> Self:
+    def _create_from_message(cls, data: MessageAnyActivity, session: "Session") -> Self:
         activity = cls(ActivityType.Message)
-        activity._setup_from_json(data,session)
-        activity.id = int(data["id"]) #int
+        activity._setup_from_json(data, session)
+        activity.id = int(data["id"])  # int
         match data["type"]:
             case "userjoin":
                 activity.action = ActivityAction.UserJoin
                 activity.target = activity.place = activity.actor = session.user
             case "favoriteproject":
                 activity.action = ActivityAction.ProjectLove
-                activity.target = activity.place = Project(data["project_id"],session)
+                activity.target = activity.place = Project(data["project_id"], session)
                 activity.target.title = data["project_title"]
                 activity.target.author = session.user
             case "loveproject":
                 activity.action = ActivityAction.ProjectLove
-                activity.target = activity.place = Project(data["project_id"],session)
+                activity.target = activity.place = Project(data["project_id"], session)
                 activity.target.title = data["title"]
                 activity.target.author = session.user
             case "remixproject":
                 activity.action = ActivityAction.ProjectRemix
-                activity.target = Project(data["parent_id"],session)
+                activity.target = Project(data["parent_id"], session)
                 activity.target.title = data["title"]
                 activity.target.author = activity.actor or UNKNOWN
-                activity.place = Project(data["project_id"],session)
+                activity.place = Project(data["project_id"], session)
                 activity.place.title = data["parent_title"]
                 activity.place.author = session.user
             case "followuser":
                 activity.action = ActivityAction.UserFollow
-                activity.target = activity.place = User(data["followed_username"],session,is_real=True)
+                activity.target = activity.place = User(
+                    data["followed_username"], session, is_real=True
+                )
                 activity.target.id = data["followed_user_id"]
             case "curatorinvite":
                 activity.action = ActivityAction.StudioInviteCurator
                 activity.target = session.user
-                activity.place = Studio(data["gallery_id"],session)
+                activity.place = Studio(data["gallery_id"], session)
                 activity.place.title = data["title"]
             case "becomeownerstudio":
                 activity.action = ActivityAction.StudioBecomeManager
                 activity.target = session.user
-                activity.place = Studio(data["gallery_id"],session)
+                activity.place = Studio(data["gallery_id"], session)
                 activity.place.title = data["gallery_title"]
             case "addcomment":
                 activity.action = ActivityAction.Comment
                 match data["comment_type"]:
                     case 0:
-                        activity.place = Project(data["comment_obj_id"],session)
+                        activity.place = Project(data["comment_obj_id"], session)
                         activity.place.title = data["comment_obj_title"]
                     case 1:
-                        activity.place = User(data["comment_obj_title"],session,is_real=True)
+                        activity.place = User(
+                            data["comment_obj_title"], session, is_real=True
+                        )
                         activity.place.id = data["comment_obj_id"]
                     case 2:
-                        activity.place = Studio(data["comment_obj_id"],session)
+                        activity.place = Studio(data["comment_obj_id"], session)
                         activity.place.title = data["comment_obj_title"]
-                activity.target = Comment(data["comment_id"],session,place=activity.place)
+                activity.target = Comment(
+                    data["comment_id"], session, place=activity.place
+                )
                 activity.target.content = data["comment_fragment"]
                 activity.other = data["commentee_username"]
             case "forumpost":
                 activity.action = ActivityAction.ForumPost
-                activity.target = activity.place = ForumTopic(data["topic_id"],session)
+                activity.target = activity.place = ForumTopic(data["topic_id"], session)
                 activity.target.name = data["topic_title"]
             case "studioactivity":
                 activity.action = ActivityAction.StudioActivity
                 activity.actor = None
-                activity.target = activity.place = Studio(data["gallery_id"],session)
+                activity.target = activity.place = Studio(data["gallery_id"], session)
                 activity.target.title = data["title"]
 
         return activity
 
     @classmethod
-    def _create_from_feed(cls,data:FeedAnyActivity,session:"Session") -> Self:
+    def _create_from_feed(cls, data: FeedAnyActivity, session: "Session") -> Self:
         activity = cls(ActivityType.Feed)
-        activity._setup_from_json(data,session)
-        activity.id = int(data["id"]) #int
+        activity._setup_from_json(data, session)
+        activity.id = int(data["id"])  # int
         match data["type"]:
             case "becomeownerstudio":
                 activity.action = ActivityAction.StudioBecomeManager
-                activity.target = User(data["recipient_username"],session,is_real=True)
+                activity.target = User(
+                    data["recipient_username"], session, is_real=True
+                )
                 activity.target.id = data["recipient_id"]
-                activity.place = Studio(data["gallery_id"],session)
+                activity.place = Studio(data["gallery_id"], session)
                 activity.place.title = data["gallery_title"]
             case "becomecurator":
                 activity.action = ActivityAction.StudioBecomeCurator
-                activity.target = User(data["username"],session,is_real=True)
-                activity.place = Studio(data["gallery_id"],session)
+                activity.target = User(data["username"], session, is_real=True)
+                activity.place = Studio(data["gallery_id"], session)
                 activity.place.title = data["gallery_title"]
             case "loveproject":
                 activity.action = ActivityAction.ProjectLove
-                activity.target = activity.place = Project(data["project_id"],session)
+                activity.target = activity.place = Project(data["project_id"], session)
                 activity.target.title = data["title"]
             case "favoriteproject":
                 activity.action = ActivityAction.ProjectLove
-                activity.target = activity.place = Project(data["project_id"],session)
+                activity.target = activity.place = Project(data["project_id"], session)
                 activity.target.title = data["project_title"]
             case "shareproject":
                 activity.action = ActivityAction.ProjectShare
-                activity.target = activity.place = Project(data["project_id"],session)
+                activity.target = activity.place = Project(data["project_id"], session)
                 activity.target.title = data["title"]
                 activity.target.author = activity.actor or UNKNOWN
             case "followstudio":
                 activity.action = ActivityAction.StudioFollow
-                activity.target = activity.place = Studio(data["gallery_id"],session)
+                activity.target = activity.place = Studio(data["gallery_id"], session)
                 activity.target.title = data["title"]
             case "remixproject":
                 activity.action = ActivityAction.ProjectRemix
-                activity.target = Project(data["parent_id"],session)
+                activity.target = Project(data["parent_id"], session)
                 activity.target.title = data["title"]
                 activity.target.author = activity.actor or UNKNOWN
-                activity.place = Project(data["project_id"],session)
+                activity.place = Project(data["project_id"], session)
                 activity.place.title = data["parent_title"]
             case "followuser":
                 activity.action = ActivityAction.UserFollow
-                activity.target = activity.place = User(data["followed_username"],session,is_real=True)
+                activity.target = activity.place = User(
+                    data["followed_username"], session, is_real=True
+                )
                 activity.target.id = data["followed_user_id"]
         return activity
 
@@ -530,85 +595,120 @@ class Activity:
     """
 
     @staticmethod
-    def _load_studio_from_html(data:bs4.Tag|None,client_or_session:"HTTPClient|Session") -> "Studio|None":
-        if data is None: return
+    def _load_studio_from_html(
+        data: bs4.Tag | None, client_or_session: "HTTPClient|Session"
+    ) -> "Studio|None":
+        if data is None:
+            return
         try:
-            studio = Studio(int(split(str(data["href"]),"/studios/","/",True)),client_or_session)
+            studio = Studio(
+                int(split(str(data["href"]), "/studios/", "/", True)), client_or_session
+            )
             studio.title = data.text
             return studio
         except Exception:
             return
-    
+
     @staticmethod
-    def _load_project_from_html(data:bs4.Tag|None,client_or_session:"HTTPClient|Session") -> "Project|None":
-        if data is None: return
+    def _load_project_from_html(
+        data: bs4.Tag | None, client_or_session: "HTTPClient|Session"
+    ) -> "Project|None":
+        if data is None:
+            return
         try:
-            project = Project(int(split(str(data["href"]),"/projects/","/",True)),client_or_session)
+            project = Project(
+                int(split(str(data["href"]), "/projects/", "/", True)),
+                client_or_session,
+            )
             project.title = data.text
             return project
         except Exception:
             return
-    
+
     @staticmethod
-    def _load_user_from_html(data:bs4.Tag|None,client_or_session:"HTTPClient|Session") -> "User|None":
-        if data is None: return
+    def _load_user_from_html(
+        data: bs4.Tag | None, client_or_session: "HTTPClient|Session"
+    ) -> "User|None":
+        if data is None:
+            return
         try:
-            return User(split(str(data["href"]),"/projects/","/",True),client_or_session)
+            return User(
+                split(str(data["href"]), "/projects/", "/", True), client_or_session
+            )
         except Exception:
             return
 
     @classmethod
-    def _create_from_html(cls,data:bs4.Tag,client_or_session:"HTTPClient|Session",user:User|None) -> Self:
+    def _create_from_html(
+        cls, data: bs4.Tag, client_or_session: "HTTPClient|Session", user: User | None
+    ) -> Self:
         _import()
         activity = cls(ActivityType.User)
-        _dt_data:Tag = data.find("span",{"class":"time"})
+        _dt_data: Tag = data.find("span", {"class": "time"})
         activity.other = _dt_data.text
-        _user_tag:Tag = data.find("span",{"class":"actor"})
+        _user_tag: Tag = data.find("span", {"class": "actor"})
         if user is None:
-            user = User(_user_tag.text.strip(),client_or_session,True)
+            user = User(_user_tag.text.strip(), client_or_session, True)
         activity.actor = user
-        _activity_action:Tag = _user_tag.next_sibling
+        _activity_action: Tag = _user_tag.next_sibling
         while True:
-            if isinstance(_activity_action,bs4.element.NavigableString) and str(_activity_action).strip():
+            if (
+                isinstance(_activity_action, bs4.element.NavigableString)
+                and str(_activity_action).strip()
+            ):
                 break
             _activity_action = _activity_action.next_sibling
             if _activity_action is None:
                 return activity
         activity_action = str(_activity_action).strip()
-        _target1:Tag|None = None if _activity_action is None else _activity_action.next_sibling
-        _text:Tag|None = None if _target1 is None else _target1.next_sibling
-        _target2:Tag|None = None if _text is None else _text.next_sibling
+        _target1: Tag | None = (
+            None if _activity_action is None else _activity_action.next_sibling
+        )
+        _text: Tag | None = None if _target1 is None else _target1.next_sibling
+        _target2: Tag | None = None if _text is None else _text.next_sibling
         match activity_action:
             case "was promoted to manager of":
                 activity.action = ActivityAction.StudioBecomeManager
-                activity.place = cls._load_studio_from_html(_target1,client_or_session)
+                activity.place = cls._load_studio_from_html(_target1, client_or_session)
                 activity.target, activity.actor = activity.actor, None
             case "added":
                 activity.action = ActivityAction.StudioAddProject
-                activity.place = cls._load_studio_from_html(_target2,client_or_session)
-                activity.target = cls._load_project_from_html(_target1,client_or_session)
+                activity.place = cls._load_studio_from_html(_target2, client_or_session)
+                activity.target = cls._load_project_from_html(
+                    _target1, client_or_session
+                )
             case "became a curator of":
                 activity.action = ActivityAction.StudioBecomeCurator
-                activity.place = cls._load_studio_from_html(_target1,client_or_session)
+                activity.place = cls._load_studio_from_html(_target1, client_or_session)
             case "is now following the studio":
                 activity.action = ActivityAction.StudioFollow
-                activity.place = cls._load_studio_from_html(_target1,client_or_session)
+                activity.place = cls._load_studio_from_html(_target1, client_or_session)
             case "shared the project":
                 activity.action = ActivityAction.ProjectShare
-                activity.target = cls._load_project_from_html(_target1,client_or_session)
+                activity.target = cls._load_project_from_html(
+                    _target1, client_or_session
+                )
             case "is now following":
                 activity.action = ActivityAction.UserFollow
-                activity.target = cls._load_user_from_html(_target1,client_or_session)
+                activity.target = cls._load_user_from_html(_target1, client_or_session)
             case "favorited":
                 activity.action = ActivityAction.ProjectFavorite
-                activity.target = cls._load_project_from_html(_target1,client_or_session)
+                activity.target = cls._load_project_from_html(
+                    _target1, client_or_session
+                )
             case "loved":
                 activity.action = ActivityAction.ProjectLove
-                activity.target = cls._load_project_from_html(_target1,client_or_session)
+                activity.target = cls._load_project_from_html(
+                    _target1, client_or_session
+                )
             case "remixed":
                 activity.action = ActivityAction.ProjectRemix
-                activity.target = cls._load_project_from_html(_target1,client_or_session)
-                activity.place = cls._load_project_from_html(_target2,client_or_session)
+                activity.target = cls._load_project_from_html(
+                    _target1, client_or_session
+                )
+                activity.place = cls._load_project_from_html(
+                    _target2, client_or_session
+                )
             case "joined Scratch":
                 activity.action = ActivityAction.UserJoin
 
@@ -628,20 +728,25 @@ class CloudActivity(_BaseSiteAPI):
         datetime (datetime.datetime) ログが実行された時間
         cloud (_BaseCloud|None) このログに関連付けられているクラウド変数クラス
     """
+
     def __repr__(self):
         return f"<CloudActivity method:{self.method} id:{self.project_id} user:{self.username} variable:{self.variable} value:{self.value}>"
 
-    def __init__(self,payload:CloudActivityPayload,client_or_session:"HTTPClient|Session|None"=None):
+    def __init__(
+        self,
+        payload: CloudActivityPayload,
+        client_or_session: "HTTPClient|Session|None" = None,
+    ):
         super().__init__(client_or_session)
 
-        self.method:str = payload.get("method")
-        self.variable:str = payload.get("variable")
-        self.value:str = payload.get("value")
+        self.method: str = payload.get("method")
+        self.variable: str = payload.get("variable")
+        self.value: str = payload.get("value")
 
-        self.username:MAYBE_UNKNOWN[str] = payload.get("username") or UNKNOWN
-        self.project_id:int|str = payload.get("project_id")
-        self.datetime:datetime.datetime = payload.get("datetime")
-        self.cloud:"_BaseCloud|None" = payload.get("cloud")
+        self.username: MAYBE_UNKNOWN[str] = payload.get("username") or UNKNOWN
+        self.project_id: int | str = payload.get("project_id")
+        self.datetime: datetime.datetime = payload.get("datetime")
+        self.cloud: "_BaseCloud|None" = payload.get("cloud")
 
     async def get_user(self) -> "User":
         """
@@ -657,7 +762,7 @@ class CloudActivity(_BaseSiteAPI):
         if self.username is UNKNOWN:
             raise NoDataError(self)
         return await User._create_from_api(self.username)
-    
+
     async def get_project(self) -> "Project":
         """
         プロジェクトIDからプロジェクトを取得する。
@@ -669,31 +774,44 @@ class CloudActivity(_BaseSiteAPI):
             Project:
         """
         _import()
-        if isinstance(self.project_id,str) and not self.project_id.isdecimal():
+        if isinstance(self.project_id, str) and not self.project_id.isdecimal():
             raise ValueError("Invalid project ID")
         return await Project._create_from_api(int(self.project_id))
-    
+
     @classmethod
-    def _create_from_ws(cls,payload:WSCloudActivityPayload,cloud:"_BaseCloud") -> "CloudActivity":
-        return cls({
-            "method":"set",
-            "cloud":cloud,
-            "datetime":datetime.datetime.now(),
-            "project_id":cloud.project_id,
-            "username":None,
-            "value":payload.get("value"),
-            "variable":payload.get("name")
-        },cloud.session or cloud.client)
-    
+    def _create_from_ws(
+        cls, payload: WSCloudActivityPayload, cloud: "_BaseCloud"
+    ) -> "CloudActivity":
+        return cls(
+            {
+                "method": "set",
+                "cloud": cloud,
+                "datetime": datetime.datetime.now(),
+                "project_id": cloud.project_id,
+                "username": None,
+                "value": payload.get("value"),
+                "variable": payload.get("name"),
+            },
+            cloud.session or cloud.client,
+        )
+
     @classmethod
-    def _create_from_log(cls,payload:CloudLogPayload,id:int|str,client_or_session:"HTTPClient|Session"):
-        _value = payload.get("value",None)
-        return cls({
-            "method":payload.get("verb").removesuffix("_var"),
-            "cloud":None,
-            "datetime":dt_from_timestamp(payload.get("timestamp")/1000),
-            "project_id":id,
-            "username":payload.get("user"),
-            "value":"" if _value is None else str(_value),
-            "variable":payload.get("name")
-        },client_or_session)
+    def _create_from_log(
+        cls,
+        payload: CloudLogPayload,
+        id: int | str,
+        client_or_session: "HTTPClient|Session",
+    ):
+        _value = payload.get("value", None)
+        return cls(
+            {
+                "method": payload.get("verb").removesuffix("_var"),
+                "cloud": None,
+                "datetime": dt_from_timestamp(payload.get("timestamp") / 1000),
+                "project_id": id,
+                "username": payload.get("user"),
+                "value": "" if _value is None else str(_value),
+                "variable": payload.get("name"),
+            },
+            client_or_session,
+        )

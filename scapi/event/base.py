@@ -4,19 +4,21 @@ from abc import ABC, abstractmethod
 import asyncio
 from typing import Any, Callable, Coroutine, NoReturn, ParamSpec, TypeVar
 
-async_def_type = Callable[..., Coroutine[Any,Any,Any]]
+async_def_type = Callable[..., Coroutine[Any, Any, Any]]
 _CT = TypeVar("_CT", bound=async_def_type)
-_P = ParamSpec('_P')
+_P = ParamSpec("_P")
+
 
 class _BaseEvent(ABC):
     """
     イベントのベースクラス。
     """
-    def __init__(self):
-        self._task:asyncio.Task|None = None
-        self._event:asyncio.Event = asyncio.Event()
 
-    def event(self,func:_CT) -> _CT:
+    def __init__(self):
+        self._task: asyncio.Task | None = None
+        self._event: asyncio.Event = asyncio.Event()
+
+    def event(self, func: _CT) -> _CT:
         """
         イベントを追加するデコレータ。
 
@@ -33,8 +35,8 @@ class _BaseEvent(ABC):
             class MyEvent(_BaseEvent):
                 async def on_ready(self):
                     print("ready!")
-        
-        
+
+
         Args:
             func (_CT): 追加したい関数
 
@@ -46,27 +48,29 @@ class _BaseEvent(ABC):
             raise TypeError("Enter the async def function")
         if not func.__name__.startswith("on_"):
             raise ValueError("Enter the function name beginning with on_")
-        
-        setattr(self,func.__name__,func)
+
+        setattr(self, func.__name__, func)
         return func
-    
-    
-    def _call_event(self,func:Callable[_P,Coroutine[Any,Any,Any]],*args:_P.args,**kwargs:_P.kwargs):
+
+    def _call_event(
+        self,
+        func: Callable[_P, Coroutine[Any, Any, Any]],
+        *args: _P.args,
+        **kwargs: _P.kwargs,
+    ):
         if self.is_running:
-            asyncio.create_task(func(*args,**kwargs))
-    
-    async def _middleware(self,event:asyncio.Event):
+            asyncio.create_task(func(*args, **kwargs))
+
+    async def _middleware(self, event: asyncio.Event):
         try:
             await self._event_monitoring(event)
         except asyncio.CancelledError:
             pass
         finally:
             await self._cleanup()
-    
-    
+
     @abstractmethod
-    async def _event_monitoring(self,event:asyncio.Event) -> NoReturn:
-        ...
+    async def _event_monitoring(self, event: asyncio.Event) -> NoReturn: ...
 
     async def _cleanup(self):
         pass
@@ -74,7 +78,7 @@ class _BaseEvent(ABC):
     async def _wait(self):
         await self._event.wait()
 
-    async def on_error(self,error:Exception):
+    async def on_error(self, error: Exception):
         """
         [イベント] イベントモニター関数内でエラーが発生した。
 
@@ -82,7 +86,6 @@ class _BaseEvent(ABC):
             error (Exception): 発生したエラー
         """
         pass
-
 
     @property
     def is_running(self) -> bool:
@@ -109,13 +112,13 @@ class _BaseEvent(ABC):
         self._event.set()
         self._task = asyncio.create_task(self._middleware(self._event))
         return self._task
-    
+
     async def _asyncio_run(self):
         await self.run()
-    
+
     def asyncio_run(self):
         asyncio.run(self._asyncio_run())
-    
+
     def pause(self):
         """
         監視を一時停止する。
@@ -146,7 +149,7 @@ class _BaseEvent(ABC):
         self._task = None
         task.cancel()
         return task
-    
+
     async def __aenter__(self):
         self.run()
         return self

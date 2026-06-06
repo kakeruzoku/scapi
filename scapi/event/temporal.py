@@ -3,7 +3,7 @@ from __future__ import annotations
 from abc import abstractmethod
 import asyncio
 import datetime
-from typing import TYPE_CHECKING, AsyncGenerator, Callable, Generic, NoReturn,TypeVar
+from typing import TYPE_CHECKING, AsyncGenerator, Callable, Generic, NoReturn, TypeVar
 
 from .base import _BaseEvent
 from ..utils.common import UNKNOWN_TYPE
@@ -19,7 +19,7 @@ if TYPE_CHECKING:
 _T = TypeVar("_T")
 
 
-class _TemporalEvent(_BaseEvent,Generic[_T]):
+class _TemporalEvent(_BaseEvent, Generic[_T]):
     """
     一定期間ごとにリストを取得して新着のものをイベントとして送出するタイプのイベントの共通関数
 
@@ -27,18 +27,21 @@ class _TemporalEvent(_BaseEvent,Generic[_T]):
         interval (float): 更新間隔
         lastest_time (datetime.datetime): 確認したイベントの最後の時間
     """
+
     def __init__(
-            self,
-            interval:float,
-            check_func:Callable[[],AsyncGenerator[_T,None]],
-            datetime_attr:str
-        ):
+        self,
+        interval: float,
+        check_func: Callable[[], AsyncGenerator[_T, None]],
+        datetime_attr: str,
+    ):
         super().__init__()
 
         self.interval = interval
         self._check_func = check_func
         self._datetime_attr = datetime_attr
-        self.lastest_time:datetime.datetime = datetime.datetime.now(tz=datetime.timezone.utc)
+        self.lastest_time: datetime.datetime = datetime.datetime.now(
+            tz=datetime.timezone.utc
+        )
 
     async def _event_monitoring(self, event: asyncio.Event) -> NoReturn:
         while True:
@@ -47,7 +50,9 @@ class _TemporalEvent(_BaseEvent,Generic[_T]):
                 objs.reverse()
                 lastest_time = self.lastest_time
                 for obj in objs:
-                    created_at:datetime.datetime|None|UNKNOWN_TYPE = getattr(obj,self._datetime_attr)
+                    created_at: datetime.datetime | None | UNKNOWN_TYPE = getattr(
+                        obj, self._datetime_attr
+                    )
                     if created_at and created_at > self.lastest_time:
                         self._make_event(obj)
                         if created_at > lastest_time:
@@ -55,13 +60,13 @@ class _TemporalEvent(_BaseEvent,Generic[_T]):
                 if lastest_time > self.lastest_time:
                     self.lastest_time = lastest_time
             except Exception as e:
-                self._call_event(self.on_error,e)
+                self._call_event(self.on_error, e)
             await asyncio.sleep(self.interval)
             await event.wait()
 
     @abstractmethod
-    def _make_event(self,obj:_T):
-        ...
+    def _make_event(self, obj: _T): ...
+
 
 class CommentEvent(_TemporalEvent["Comment"]):
     """
@@ -71,7 +76,10 @@ class CommentEvent(_TemporalEvent["Comment"]):
         place (User|Project|Studio): 監視する場所
         is_old (bool): 古いAPIから取得するか
     """
-    def __init__(self,place:"User|Project|Studio",interval:int=30,is_old:bool=False):
+
+    def __init__(
+        self, place: "User|Project|Studio", interval: int = 30, is_old: bool = False
+    ):
         """
 
         Args:
@@ -80,17 +88,17 @@ class CommentEvent(_TemporalEvent["Comment"]):
             is_old (bool, optional): 古いAPIから取得するか。デフォルトはFalseです。
         """
         if is_old:
-            super().__init__(interval,place.get_comments_from_old,"created_at")
+            super().__init__(interval, place.get_comments_from_old, "created_at")
         else:
-            super().__init__(interval,place.get_comments,"created_at")
-        
+            super().__init__(interval, place.get_comments, "created_at")
+
         self.place = place
         self.is_old = is_old
 
-    def _make_event(self, obj:"Comment"):
-        self._call_event(self.on_comment,obj)
-    
-    async def on_comment(self,comment:"Comment"):
+    def _make_event(self, obj: "Comment"):
+        self._call_event(self.on_comment, obj)
+
+    async def on_comment(self, comment: "Comment"):
         """
         [イベント] コメントが送信された。
 
@@ -99,6 +107,7 @@ class CommentEvent(_TemporalEvent["Comment"]):
         """
         pass
 
+
 class MessageEvent(_TemporalEvent["Activity"]):
     """
     メッセージイベントクラス
@@ -106,14 +115,15 @@ class MessageEvent(_TemporalEvent["Activity"]):
     Attributes:
         session (Session): メッセージを監視しているアカウント
     """
-    def __init__(self,session:"Session",interval:float=30):
-        super().__init__(interval,session.get_messages,"created_at")
+
+    def __init__(self, session: "Session", interval: float = 30):
+        super().__init__(interval, session.get_messages, "created_at")
         self.session = session
 
-    def _make_event(self, obj:"Activity"):
-        self._call_event(self.on_message,obj)
+    def _make_event(self, obj: "Activity"):
+        self._call_event(self.on_message, obj)
 
-    async def on_message(self,message:"Activity"):
+    async def on_message(self, message: "Activity"):
         """
         [イベント] メッセージを受信した。
 
