@@ -6,6 +6,7 @@ import hashlib
 import json
 import zlib
 from typing import AsyncGenerator, Final, Literal, overload
+from warnings import deprecated
 
 import aiohttp
 
@@ -245,6 +246,7 @@ class Session(_BaseSiteAPI[str]):
             json={"csrfmiddlewaretoken": "a"},
         )
 
+    @deprecated("Session.change_account_settings(country=country) を使用してください。")
     async def change_country(self, country: str):
         """
         アカウントに表示される国を変更する
@@ -252,10 +254,31 @@ class Session(_BaseSiteAPI[str]):
         Args:
             country (str): 変更先の国名
         """
-        await self.client.post(
-            "https://scratch.mit.edu/accounts/settings/",
-            data=aiohttp.FormData({"country": country}),
-        )
+        await self.change_account_settings(country=country)
+
+    async def change_account_settings(
+        self,
+        *,
+        country: str | None = None,
+        state: str | None = None,
+        avatar_badge_type: bool | None = None,
+    ):
+        """
+        アカウントに表示される国を変更する
+
+        Args:
+            country (str | None): 変更先の国名
+            state (str | None): 変更先の州名
+            avatar_badge_type (str | None): ネコミミデコレーションを使用するか
+        """
+        data = aiohttp.FormData({"csrfmiddlewaretoken": "a"})
+        if country is not None:
+            data.add_field("country", country)
+        if state is not None:
+            data.add_field("state", state)
+        if avatar_badge_type is not None:
+            data.add_field("avatar_badge_type", str(int(avatar_badge_type)))
+        await self.client.post("https://scratch.mit.edu/accounts/settings/", data=data)
 
     async def change_password(
         self, old_password: str | None, new_password: str, is_reset: bool = False
