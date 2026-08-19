@@ -33,7 +33,7 @@ if TYPE_CHECKING:
     from ..sites.session import Session
     from .client import HTTPClient
 
-__version__ = "3.2.3"
+__version__ = "3.2.4"
 
 _KT = TypeVar("_KT")
 _VT = TypeVar("_VT")
