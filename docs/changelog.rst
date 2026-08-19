@@ -7,6 +7,10 @@
 3.x.x
 -----
 
+3.2.3
+^^^^^
+- :attr:`scapi.Session.change_badge_state` を追加
+
 3.2.2
 ^^^^^
 - 内部で発生していたいくつかのバグを修正

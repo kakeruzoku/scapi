@@ -383,6 +383,16 @@ msgid "変更先の国名"
 msgstr "The destination country name"
 
 #: ../../../scapi/sites/session.py:docstring of
+#: scapi.sites.session.Session.change_badge_state:1
+msgid "アカウントのメンバーシップバッジの表示状態を変更する"
+msgstr "Changes the visibility of the cat badge on your account"
+
+#: ../../../scapi/sites/session.py:docstring of
+#: scapi.sites.session.Session.change_badge_state:3
+msgid "メンバーシップバッジを表示するか"
+msgstr "Whether to display the membership badge"
+
+#: ../../../scapi/sites/session.py:docstring of
 #: scapi.sites.session.Session.change_password:1
 msgid "アカウントのパスワードを変更します。"
 msgstr "Changes the account password."

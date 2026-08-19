@@ -257,6 +257,24 @@ class Session(_BaseSiteAPI[str]):
             data=aiohttp.FormData({"country": country}),
         )
 
+    async def change_badge_state(self, show_badge: bool = False):
+        """
+        アカウントのメンバーシップバッジの表示状態を変更する
+
+        Args:
+            show_badge (bool): メンバーシップバッジを表示するか。
+        """
+        if show_badge:
+            await self.client.post(
+                "https://scratch.mit.edu/accounts/settings/",
+                data=aiohttp.FormData({"avatar_badge_type": 1}),
+            )
+        else:
+            await self.client.post(
+                "https://scratch.mit.edu/accounts/settings/",
+                data=aiohttp.FormData({"avatar_badge_type": 0}),
+            )
+
     async def change_password(
         self, old_password: str | None, new_password: str, is_reset: bool = False
     ):
